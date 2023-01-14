@@ -3,21 +3,12 @@ import dotenv from "dotenv";
 import { instrument } from "@socket.io/admin-ui";
 import { Socket } from "socket.io";
 import globalChatHandler from "./namespaces/global-chat";
+import serverOptions from "./server-options";
 dotenv.config();
 
 const port = Number(process.env.PORT);
 
-const io = new Server(port, {
-  cookie: true,
-  cors: {
-    origin: [
-      "https://admin.socket.io",
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-    ],
-    credentials: true,
-  },
-});
+const io = new Server(port, serverOptions);
 
 instrument(io, { auth: false, mode: "development" });
 
