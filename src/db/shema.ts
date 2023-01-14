@@ -1,22 +1,12 @@
-import { ConnectStatus } from "./ConnectStatus";
-import { PrivacySettings } from "./privacySettings";
+import { ConnectStatus } from "./enum/connect-status.enum";
 
 export type User = {
-  id?: string | number; // id
+  id?: string | number; // @id @unique
   nickname: string;
   accName: string;
-  urlToProfile?: string; // relation to Profile
+  urlToProfile?: string; // relation to Profile @unique
   photoUrl: string;
   connectStatus: ConnectStatus;
   isInvisible?: boolean;
 };
 
-export type Profile = {
-  urlToProfile: string; // id
-  email: string;
-  privacySettings: PrivacySettings; // json?
-  // ADD:
-  //  GameHistory[]
-  //  GameStat
-  //  PrivateMessage[]
-};

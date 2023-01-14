@@ -1,15 +1,23 @@
-import { GlobalChat } from "./GlobalChat";
+import { GlobalChat } from "./global-chat";
 import { User } from "./shema";
-import users from "./users";
+import { Socket } from "socket.io";
 
+import findOrThrow from "./methods/findOrThrow";
+import getAll from "./methods/getAll";
 
 export type DB = {
-  User: User[];
-  GlobalChat: GlobalChat;
+  User: {
+    getAll: () => User[],
+    findOrThrow: (socket: Socket & { accName?: string }) => User | never
+  };
+  GlobalChat: GlobalChat.GlobalChat;
 };
 
 const DB: DB = {
-  User: users,
+  User: {
+    getAll,
+    findOrThrow,
+  },
   GlobalChat: {
     messages: [],
   },

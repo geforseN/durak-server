@@ -1,5 +1,5 @@
-import { ConnectStatus } from "./ConnectStatus";
-import { User } from "./shema";
+import { ConnectStatus } from "../enum/connect-status.enum";
+import { User } from "../shema";
 
 const users: User[] = [
   {
