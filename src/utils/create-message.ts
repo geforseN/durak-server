@@ -1,7 +1,7 @@
-import { User } from "../db/shema";
-import { GlobalChat } from "../db/global-chat";
+import { User } from "../db/user";
+import { GlobalChatDB } from "../db/global-chat";
 
-export default function createMessage(user: User, text: string): GlobalChat.Message {
+export default function createMessage(user: User, text: string): GlobalChatDB.Message {
   return {
     sender: user,
     date: new Date().getTime(),
