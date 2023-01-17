@@ -1,11 +1,8 @@
-export default function checkTextLength(text: string): undefined | never {
-  const error = new Error();
-
+export default function checkTextLength(text: string): void | never {
   if (!text.length) {
-    error.message = "Нельзя прислать пустое сообщение";
-  } else if (text.length >= 128) {
-    error.message = "Длинна сообщения превышает 128";
-  } else return;
-  
-  throw error;
+    throw new Error("Нельзя прислать пустое сообщение");
+  }
+  if (text.length >= 128) {
+    throw new Error("Длинна сообщения превышает 128");
+  }
 }
