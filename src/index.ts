@@ -1,4 +1,6 @@
 import { Server, Socket } from "socket.io";
+import express from "express";
+import { createServer } from "http";
 import { instrument } from "@socket.io/admin-ui";
 import dotenv from "dotenv";
 import serverOptions from "./server-options";
@@ -12,10 +14,13 @@ import globalChatHandler from "./namespaces/global-chat/global-chat.handler";
 import gameLobbiesHandler from "./namespaces/game-lobbies/game-lobbies.handler";
 
 dotenv.config();
+const app = express();
+const httpServer = createServer(app);
 
 const port = Number(process.env.PORT);
 
-const io: IO.ServerIO = new Server(port, serverOptions);
+const io: IO.ServerIO = new Server(httpServer, serverOptions);
+
 
 instrument(io, { auth: false, mode: "development" });
 
@@ -31,3 +36,5 @@ globalChat.on("connect", globalChatHandler);
 export const gameLobbies: GameLobbiesIO.NamespaceIO = io.of("/game-lobbies");
 
 gameLobbies.on("connect", gameLobbiesHandler);
+
+httpServer.listen(port);
