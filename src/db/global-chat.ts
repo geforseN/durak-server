@@ -1,8 +1,8 @@
-import { User } from "./shema";
+import { User } from "./user";
 
-export namespace GlobalChat {
+export namespace GlobalChatDB {
   export type GlobalChat = {
-    messages: GlobalChat.Message[];
+    messages: GlobalChatDB.Message[];
     users?: User[];
   };
 
