@@ -1,4 +1,4 @@
-export type Notification = {
+export type NotificationAlert = {
   message: string;
   type: "Error" | "Warning" | "Success";
   id: string;

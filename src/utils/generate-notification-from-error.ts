@@ -1,10 +1,10 @@
-import {randomUUID} from "node:crypto"
-import {Notification} from "../notification";
+import { randomUUID } from "node:crypto";
+import { NotificationAlert } from "../notification-alert.type";
 
 export default function generateNotificationFromError(
   error: Error,
-  notification?: Notification,
-): Notification {
+  notification?: NotificationAlert,
+): NotificationAlert {
   return {
     message: error.message,
     durationInMS: notification?.durationInMS || 5_000,
