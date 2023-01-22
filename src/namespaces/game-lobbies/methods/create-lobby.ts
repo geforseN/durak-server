@@ -26,7 +26,7 @@ export default function createLobby(
     lobbies.push(lobby);
   } catch (error) {
     if (error instanceof Error) {
-      const notification = generateNotificationFromError(error);
+      const notification = new NotificationAlert().fromError(error);
       gameLobbies.to(this.socket.id).emit("sendNotification", notification);
     } else {
       console.log("GlobalChat CreateLobby Error:", error);
