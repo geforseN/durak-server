@@ -4,13 +4,13 @@ import { NotificationAlert } from "../../notification-alert.type";
 
 export namespace GlobalChatIO {
   export type ClientToServerEvents = {
-    "client:sendMessage": (text: string) => void;
+    "sendMessage": (text: string) => void;
   };
 
   export type ServerToClientEvents = {
-    "server:restoreHistory": (globalChat: GlobalChatDB.Message[]) => void;
-    "server:sendMessage": (message: GlobalChatDB.Message) => void;
-    "server:sendNotification": (notification: NotificationAlert) => void;
+    "restoreHistory": (globalChat: GlobalChatDB.Message[]) => void;
+    "sendMessage": (message: GlobalChatDB.Message) => void;
+    "sendNotification": (notification: NotificationAlert) => void;
   };
 
   export type InterServerEvents = {};
