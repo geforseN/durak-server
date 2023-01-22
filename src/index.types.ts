@@ -1,7 +1,14 @@
 import { Server, Socket } from "socket.io";
+import { NotificationAlert } from "./notification-alert.type";
+import { User } from "./db/user";
+
+export type UserA = Omit<User, "id" | "isInvisible">
 
 export namespace IO {
-  export type ServerToClientEvents = {};
+  export type ServerToClientEvents = {
+    "authenticationSuccess": (user: UserA) => void,
+    "sendNotification": (notification: NotificationAlert) => void;
+  };
 
   export type ClientToServerEvents = {};
 
