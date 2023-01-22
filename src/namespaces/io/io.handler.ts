@@ -1,10 +1,10 @@
 import { IO } from "../../index.types";
 import tryAuth from "../../checkers/try-auth";
 import { io } from "../../index";
-import generateNotificationFromError from "../../utils/generate-notification-from-error";
 import DB from "../../db";
 import { ConnectStatus } from "../../db/enum/connect-status.enum";
 import { User } from "../../db/user";
+import NotificationAlert from "../../module/notification-alert";
 
 
 export default function ioHandler(socket: IO.SocketIO) {
@@ -20,7 +20,7 @@ export default function ioHandler(socket: IO.SocketIO) {
     // TODO send to friends of this.socket alert that this.user is online
   } catch (error) {
     if (error instanceof Error) {
-      const notification = generateNotificationFromError(error);
+      const notification = new NotificationAlert().fromError(error);
       io.to(socket.id).emit("sendNotification", notification);
     } else {
       console.log("GlobalChat Error:", error);

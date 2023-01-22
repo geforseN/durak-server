@@ -1,12 +1,12 @@
 import { gameLobbies } from "../../../index";
 import DB from "../../../db";
-import generateNotificationFromError from "../../../utils/generate-notification-from-error";
 import { lobbies } from "../game-lobbies.handler";
 import { GameLobbiesIO } from "../game-lobbies.types";
 import tryAuth from "../../../checkers/try-auth";
 import handleUserAlreadyInLobby from "./handle-user-already-in-lobby";
 import userMatcher from "../../../db/user.matcher";
 import Lobby from "../lobby";
+import NotificationAlert from "../../../module/notification-alert";
 
 export default function joinLobby(
   this: { socket: GameLobbiesIO.SocketIO },
@@ -29,7 +29,7 @@ export default function joinLobby(
     gameLobbies.emit("addedUser", user, lobby.id);
   } catch (error) {
     if (error instanceof Error) {
-      const notification = generateNotificationFromError(error);
+      const notification = new NotificationAlert().fromError(error);
       gameLobbies.to(this.socket.id).emit("sendNotification", notification);
     } else {
       console.log("GlobalChat Error:", error);

@@ -1,11 +1,11 @@
 import { gameLobbies } from "../../../index";
 import { lobbies } from "../game-lobbies.handler";
-import generateNotificationFromError from "../../../utils/generate-notification-from-error";
 import { GameLobbiesIO, LobbySettings } from "../game-lobbies.types";
 import DB from "../../../db";
 import handleUserAlreadyInLobby from "./handle-user-already-in-lobby";
 import Lobby from "../lobby";
 import tryAuth from "../../../checkers/try-auth";
+import NotificationAlert from "../../../module/notification-alert";
 
 export default function createLobby(
   this: { socket: GameLobbiesIO.SocketIO },

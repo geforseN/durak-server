@@ -1,6 +1,6 @@
 import { Namespace, Socket } from "socket.io";
 import { GlobalChatDB } from "../../db/global-chat";
-import { NotificationAlert } from "../../notification-alert.type";
+import NotificationAlert from "../../module/notification-alert";
 
 export namespace GlobalChatIO {
   export type ClientToServerEvents = {

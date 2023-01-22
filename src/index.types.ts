@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { NotificationAlert } from "./notification-alert.type";
+import NotificationAlert from "./module/notification-alert";
 import { User } from "./db/user";
 
 export type UserA = Omit<User, "id" | "isInvisible">

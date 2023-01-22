@@ -1,6 +1,6 @@
 import { Namespace, Socket } from "socket.io";
 import { User } from "../../db/user";
-import { NotificationAlert } from "../../notification-alert.type";
+import NotificationAlert from "../../module/notification-alert";
 import Lobby from "./lobby";
 
 export type MaxUserCount = 2 | 3 | 4 | 5 | 6;
