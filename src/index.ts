@@ -3,7 +3,7 @@ import express from "express";
 import { createServer } from "http";
 import { instrument } from "@socket.io/admin-ui";
 import dotenv from "dotenv";
-import serverOptions from "./server-options";
+import serverOptions from "./server.options";
 
 import { IO } from "./index.types";
 
