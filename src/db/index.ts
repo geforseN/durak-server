@@ -1,6 +1,5 @@
 import { GlobalChatDB } from "./global-chat";
 import { User } from "./user";
-import { Socket } from "socket.io";
 
 import findByAccNameOrThrow from "./methods/findByAccNameOrThrow";
 import getAll from "./methods/getAll";
@@ -8,7 +7,7 @@ import getAll from "./methods/getAll";
 export type DB = {
   User: {
     getAll: () => User[],
-    findByAccNameOrThrow: (socket: Socket) => User | never
+    findByAccNameOrThrow: (accName: string) => User | never
   };
   GlobalChat: GlobalChatDB.GlobalChat;
 };
