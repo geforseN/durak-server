@@ -1,35 +1,29 @@
 import { Namespace, Socket } from "socket.io";
 import { User } from "../../db/user";
 import { NotificationAlert } from "../../notification-alert.type";
+import Lobby from "./lobby";
 
-export type MaxUser = 2 | 3 | 4 | 5 | 6;
+export type MaxUserCount = 2 | 3 | 4 | 5 | 6;
 export type GameType = "basic" | "perevodnoy";
 
-
-export type Lobby = {
-  id: string;
-  users: User[];
-  settings: LobbySettings;
-};
-
 export type LobbySettings = {
-  maxUsers: MaxUser;
+  maxUserCount: MaxUserCount;
   gameType: GameType;
 };
 
-
 type LoggedUserToServerEvents = {
-  initiateLobbyCreation: (room: LobbySettings) => void;
+  createLobby: (room: LobbySettings) => void;
 
   joinLobby: (lobbyId: string, cellIndex: number) => void;
   leaveLobby: () => void;
 };
 
 type LobbyAdminToServerEvents = {
-  removeUser: () => void;
-  inviteUser: () => void;
-  deleteLobby: () => void;
-  makeOtherUserLobbyAdmin: () => void;
+  removeUser__: () => void;
+  inviteUser__: () => void;
+  deleteLobby__: () => void;
+
+  makeUserLobbyAdmin__: () => void;
 };
 
 export namespace GameLobbiesIO {
@@ -37,13 +31,15 @@ export namespace GameLobbiesIO {
     LobbyAdminToServerEvents;
 
   export type ServerToClientEvents = {
-    restoreHistory: (gameLobbiesCashe: Lobby[]) => void;
+    restoreLobbies: (lobbies: Lobby[]) => void;
     lobbyCreated: (lobby: Lobby) => void;
-    updateLobbySettings: () => void;
     addedUser: (user: User, lobbyId: string) => void;
-    removePlayer: () => void;
-    deleteLobby: () => void;
-    sendNotification: (notification: NotificationAlert) => void
+    removePlayer: (accName: string, lobbyId: string) => void;
+    deleteLobby: (lobbyId: string) => void;
+    sendNotification: (notification: NotificationAlert) => void;
+    updateLobbyAdmin: (adminAccName: string, lobbyId: string) => void;
+
+    updateLobbySettings__: (settings: LobbySettings, lobbyId: string) => void;
   };
 
   export type InterServerEvents = {};
