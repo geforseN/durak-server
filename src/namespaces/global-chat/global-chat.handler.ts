@@ -1,6 +1,3 @@
-import tryGetCookie from "../../checkers/try-get-cookie";
-import tryAppendSocketData from "../../checkers/try-append-socket-data";
-import checkSocketAuth from "../../checkers/check-socket-auth";
 import checkTextLength from "../../checkers/check-text-length";
 import DB from "../../db";
 import createMessage from "../../utils/create-message";
@@ -8,26 +5,27 @@ import generateNotificationFromError from "../../utils/generate-notification-fro
 import { globalChat } from "../../index";
 import { GlobalChatDB } from "../../db/global-chat";
 import { GlobalChatIO } from "./global-chat.types";
+import tryAuth from "../../checkers/try-auth";
 
-const globalChatCashe: GlobalChatDB.Message[] = [];
+const globalChatCache: GlobalChatDB.Message[] = [];
 
 export default function globalChatHandler(socket: GlobalChatIO.SocketIO) {
-  globalChat.emit("server:restoreHistory", globalChatCashe);
+  globalChat.emit("restoreHistory", globalChatCache);
 
-  socket.on("client:sendMessage", (text) => {
+  socket.on("sendMessage", (text) => {
     try {
-      const cookie = tryGetCookie(socket);
-      tryAppendSocketData(cookie, socket);
-      checkSocketAuth(socket);
+      const { accName } = tryAuth(socket).data;
       checkTextLength(text);
-      const user = DB.User.findByAccNameOrThrow(socket);
+
+      const user = DB.User.findByAccNameOrThrow(accName!);
+
       const message = createMessage(user, text);
-      globalChatCashe.push(message);
-      globalChat.emit("server:sendMessage", message);
+      globalChatCache.push(message);
+      globalChat.emit("sendMessage", message);
     } catch (error) {
       if (error instanceof Error) {
         const notification = generateNotificationFromError(error);
-        globalChat.to(socket.id).emit("server:sendNotification", notification);
+        globalChat.to(socket.id).emit("sendNotification", notification);
       } else {
         console.log("GlobalChat Error:", error);
       }
