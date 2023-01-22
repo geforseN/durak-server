@@ -12,18 +12,18 @@ export type LobbySettings = {
 };
 
 type LoggedUserToServerEvents = {
-  createLobby: (room: LobbySettings) => void;
+  "createLobby": (room: LobbySettings) => void;
 
-  joinLobby: (lobbyId: string, cellIndex: number) => void;
-  leaveLobby: () => void;
+  "joinLobby": (lobbyId: string, cellIndex: number) => void;
+  "leaveLobby": () => void;
 };
 
 type LobbyAdminToServerEvents = {
-  removeUser__: () => void;
-  inviteUser__: () => void;
-  deleteLobby__: () => void;
+  "removeUser__": () => void;
+  "inviteUser__": () => void;
+  "deleteLobby__": () => void;
 
-  makeUserLobbyAdmin__: () => void;
+  "makeUserLobbyAdmin__": () => void;
 };
 
 export namespace GameLobbiesIO {
@@ -31,15 +31,15 @@ export namespace GameLobbiesIO {
     LobbyAdminToServerEvents;
 
   export type ServerToClientEvents = {
-    restoreLobbies: (lobbies: Lobby[]) => void;
-    lobbyCreated: (lobby: Lobby) => void;
-    addedUser: (user: User, lobbyId: string) => void;
-    removePlayer: (accName: string, lobbyId: string) => void;
-    deleteLobby: (lobbyId: string) => void;
-    sendNotification: (notification: NotificationAlert) => void;
-    updateLobbyAdmin: (adminAccName: string, lobbyId: string) => void;
+    "restoreLobbies": (lobbies: Lobby[]) => void;
+    "lobbyCreated": (lobby: Lobby) => void;
+    "addedUser": (user: User, lobbyId: string) => void;
+    "removePlayer": (accName: string, lobbyId: string) => void;
+    "deleteLobby": (lobbyId: string) => void;
+    "sendNotification": (notification: NotificationAlert) => void;
+    "updateLobbyAdmin": (adminAccName: string, lobbyId: string) => void;
 
-    updateLobbySettings__: (settings: LobbySettings, lobbyId: string) => void;
+    "updateLobbySettings__": (settings: LobbySettings, lobbyId: string) => void;
   };
 
   export type InterServerEvents = {};
