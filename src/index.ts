@@ -40,4 +40,11 @@ gameLobbies.on("connect", gameLobbiesHandler);
 
 httpServer.listen(port);
 
+const uuidGameIdRegExp = /^\/game\/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/;
+
+export const uncompletedGames = io.of(uuidGameIdRegExp);
+uncompletedGames.on("connect", () => {
+  console.log("ASD")
+});
+
 instrument(io, { auth: false, mode: "development" });

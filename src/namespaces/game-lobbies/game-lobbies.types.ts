@@ -11,6 +11,8 @@ type LoggedUserToServerEvents = {
 };
 
 type LobbyAdminToServerEvents = {
+  "createGame": (accName: string, lobbyId: string) => void;
+
   "removeUser__": () => void;
   "inviteUser__": () => void;
   "deleteLobby__": () => void;
@@ -31,6 +33,8 @@ export namespace GameLobbiesIO {
     "updateLobbyAdmin": (adminAccName: string, lobbyId: string) => void;
 
     "updateLobbySettings__": (settings: LobbySettings, lobbyId: string) => void;
+
+    "startGame": (gameId: string) => void;
   };
 
   export type InterServerEvents = {};
