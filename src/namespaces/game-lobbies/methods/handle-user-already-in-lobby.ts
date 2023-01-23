@@ -13,7 +13,7 @@ export default function handleUserAlreadyInLobby(accName: string): undefined {
 
   // console.log("remove player from lobby");
   const lobby = lobbies[lobbyIndex];
-  gameLobbies.emit("removePlayer", accName, lobby.id);
+  gameLobbies.emit("removeUser", accName, lobby.id);
   lobby.users.splice(userIndex, 1);
 
   const isLastUserInLobby = lobby.users.length === 0;
