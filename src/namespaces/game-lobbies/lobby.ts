@@ -17,16 +17,6 @@ export default class Lobby {
     this.adminAccName = adminAccName;
   }
 
-  private validateSettingsOrThrow({ gameType, maxUserCount }: LobbySettings): LobbySettings | never {
-    if (maxUserCount < 2 || maxUserCount > 6)
-      throw new Error("Нельзя создать лобби из менее 2 или более 6 игроков");
-
-    const isGameTypeCorrect = ["basic", "perevodnoy"].includes(gameType);
-    if (!isGameTypeCorrect) throw new Error("Неверный тип игры");
-
-    return { gameType, maxUserCount };
-  }
-
   get hasMaxUsers(): boolean {
     return this.settings.maxUserCount === this.users.length;
   }
@@ -42,5 +32,15 @@ export default class Lobby {
   // should be this.users.add(user)
   addUser(user: User) {
     this.users.push(user);
+  }
+
+  private validateSettingsOrThrow({ gameType, maxUserCount }: LobbySettings): LobbySettings | never {
+    if (maxUserCount < 2 || maxUserCount > 6)
+      throw new Error("Нельзя создать лобби из менее 2 или более 6 игроков");
+
+    const isGameTypeCorrect = ["basic", "perevodnoy"].includes(gameType);
+    if (!isGameTypeCorrect) throw new Error("Неверный тип игры");
+
+    return { gameType, maxUserCount };
   }
 }
