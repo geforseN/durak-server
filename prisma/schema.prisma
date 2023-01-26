@@ -11,77 +11,18 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  accName       String    @unique
-  email         String?   @unique
-  name          String?
-  emailVerified DateTime?
-  imageUrl      String?
-  accounts      Account[]
-  sessions      Session[]
-  profile       Profile?
-  updatedAt     DateTime  @updatedAt
-  createdAt     DateTime  @default(now())
+  num           Int           @unique @default(autoincrement())
+  accname       String        @id @unique
+  personalLink  String?       @unique @default(cuid())
+  photoUrl      String?
+  nickname      String
+  connectStatus ConnectStatus @default(OFFLINE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  id_token          String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
-}
-
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime @unique
-
-  @@unique([identifier, token])
-}
-
-model Profile {
-  user             User             @relation(fields: [urlToProfile], references: [id])
-  urlToProfile     String           @id @unique
-  photoUrl         String?
-  summary          String?
-  connectionStatus ConnectionStatus @default(offline)
-  nickname         String
-  privacySettings  Json
-  isInvisible      Boolean          @default(false)
-}
-
-// privacySettings: [
-//  "public",
-//  "private",
-//  "friendsOnly"
-// ];
-//
-// "showFriendList"           "public"
-// "showGameStat"             "public"
-// "showGameHistory"          "public"
-// "canPostCommentsOnProfile" "friendsOnly"
-
-enum ConnectionStatus {
-  online
-  away
-  offline
+enum ConnectStatus {
+  ONLINE
+  AWAY
+  OFFLINE
 }
