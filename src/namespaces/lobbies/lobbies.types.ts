@@ -1,17 +1,17 @@
 import { Namespace, Socket } from "socket.io";
-import { User } from "../../db/user";
 import NotificationAlert from "../../module/notification-alert";
-import Lobby from "./lobby";
+import Lobby from "./entity/lobby";
+import { LobbyUser } from "./entity/lobby-users";
 
 type LoggedUserToServerEvents = {
-  "createLobby": (room: LobbySettings) => void;
+  "createLobby": (room: GameSettings) => void;
 
   "joinLobby": (lobbyId: string, cellIndex: number) => void;
   "leaveLobby": () => void;
 };
 
 type LobbyAdminToServerEvents = {
-  "createGame": (accName: string, lobbyId: string) => void;
+  "createGame": (accname: string, lobbyId: string) => void;
 
   "removeUser__": () => void;
   "inviteUser__": () => void;
@@ -19,20 +19,20 @@ type LobbyAdminToServerEvents = {
   "makeUserLobbyAdmin__": () => void;
 };
 
-export namespace GameLobbiesIO {
+export namespace LobbiesIO {
   export type ClientToServerEvents =
     LoggedUserToServerEvents & LobbyAdminToServerEvents;
 
   export type ServerToClientEvents = {
     "restoreLobbies": (lobbies: Lobby[]) => void;
     "lobbyCreated": (lobby: Lobby) => void;
-    "addedUser": (user: User, lobbyId: string) => void;
-    "removeUser": (accName: string, lobbyId: string) => void;
+    "addedUser": (user: LobbyUser, lobbyId: string) => void;
+    "removeUser": (accname: string, lobbyId: string) => void;
     "deleteLobby": (lobbyId: string) => void;
     "sendNotification": (notification: NotificationAlert) => void;
-    "updateLobbyAdmin": (adminAccName: string, lobbyId: string) => void;
-
-    "updateLobbySettings__": (settings: LobbySettings, lobbyId: string) => void;
+    "updateLobbyAdmin": (adminAccname: string, lobbyId: string) => void;
+    "redirectToLogin": () => void
+    "updateLobbySettings__": (settings: GameSettings, lobbyId: string) => void;
 
     "startGame": (gameId: string) => void;
   };
@@ -40,29 +40,33 @@ export namespace GameLobbiesIO {
   export type InterServerEvents = {};
 
   export type SocketData = {
-    accName: string
+    accname: string
+    role: "USER" | "GUEST" // "ADMIN"
+    badTriesCount: number
   };
 
   export type SocketIO = Socket<
-    GameLobbiesIO.ClientToServerEvents,
-    GameLobbiesIO.ServerToClientEvents,
-    GameLobbiesIO.InterServerEvents,
-    GameLobbiesIO.SocketData
+    LobbiesIO.ClientToServerEvents,
+    LobbiesIO.ServerToClientEvents,
+    LobbiesIO.InterServerEvents,
+    LobbiesIO.SocketData
   >;
 
   export type NamespaceIO = Namespace<
-    GameLobbiesIO.ClientToServerEvents,
-    GameLobbiesIO.ServerToClientEvents,
-    GameLobbiesIO.InterServerEvents,
-    GameLobbiesIO.SocketData
+    LobbiesIO.ClientToServerEvents,
+    LobbiesIO.ServerToClientEvents,
+    LobbiesIO.InterServerEvents,
+    LobbiesIO.SocketData
   >;
 }
 
 export type MaxUserCount = 2 | 3 | 4 | 5 | 6;
 export type GameType = "basic" | "perevodnoy";
+export type CardCount = 24 | 36 | 52;
 
-export type LobbySettings = {
+export type GameSettings = {
   maxUserCount: MaxUserCount;
   gameType: GameType;
+  cardCount: CardCount
 };
 

@@ -1,12 +1,10 @@
 import { Server, Socket } from "socket.io";
 import NotificationAlert from "./module/notification-alert";
-import { User } from "./db/user";
-
-export type UserA = Omit<User, "id" | "isInvisible">
+import { LobbyUser } from "./namespaces/lobbies/entity/lobby-users";
 
 export namespace IO {
   export type ServerToClientEvents = {
-    "authenticationSuccess": (user: UserA) => void,
+    "authenticationSuccess": (user: LobbyUser) => void,
     "sendNotification": (notification: NotificationAlert) => void;
   };
 
@@ -15,7 +13,7 @@ export namespace IO {
   export type InterServerEvents = {};
 
   export type SocketData = {
-    accName: string;
+    accname: string;
   };
 
   export type SocketIO = Socket<

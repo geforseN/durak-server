@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { LobbyUserIdentifier } from "../src/namespaces/game-lobbies/entity/lobby-users";
+import { LobbyUserIdentifier } from "../src/namespaces/lobbies/entity/lobby-users";
 
 const prisma = new PrismaClient();
 

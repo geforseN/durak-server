@@ -1,8 +1,8 @@
-import { GameLobbiesIO } from "../lobbies.types";
+import { LobbiesIO } from "../lobbies.types";
 import NotAuthorizedError from "../errors/NotAuthorized.error";
 import assertSocketData from "./assert-socket-data";
 
-export default function assertGuestSocket(socket: GameLobbiesIO.SocketIO): string | never {
+export default function assertGuestSocket(socket: LobbiesIO.SocketIO): string | never {
   assertSocketData(socket)
   if (socket.data.role === "GUEST") {
     incrementBadTriesCount(socket);
@@ -11,11 +11,11 @@ export default function assertGuestSocket(socket: GameLobbiesIO.SocketIO): strin
   } else return socket.data.accname!;
 }
 
-function assertBadTriesCount(socket: GameLobbiesIO.SocketIO) {
+function assertBadTriesCount(socket: LobbiesIO.SocketIO) {
   if (socket.data.badTriesCount === 2)
     socket.to(socket.data.accname!).emit("redirectToLogin");
 }
 
-function incrementBadTriesCount(socket: GameLobbiesIO.SocketIO) {
+function incrementBadTriesCount(socket: LobbiesIO.SocketIO) {
   socket.data.badTriesCount!++;
 }
