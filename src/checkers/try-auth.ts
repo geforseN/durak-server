@@ -1,14 +1,16 @@
 import { Socket } from "socket.io";
 import { parse } from "cookie";
 
-export default function tryAuth(socket: Socket): Socket<{}, {}, {}, {accName: string}> {
+type SocketData = {accname?: string}
+
+export default function tryAuth(socket: Socket): Socket<{}, {}, {}, SocketData> {
   const { cookie } = socket.handshake.headers;
 
   if (!cookie) throw new Error("Не удалось получить cookie");
 
-  const { accName } = parse(cookie);
-  if (!accName) throw new Error("Не авторизированны");
+  const { accname } = parse(cookie);
+  if (!accname) throw new Error("Не авторизированны");
 
-  socket.data.accName = accName;
+  socket.data.accname = accname;
   return socket;
 }
