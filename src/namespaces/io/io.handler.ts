@@ -1,23 +1,15 @@
 import { IO } from "../../index.types";
 import tryAuth from "../../checkers/try-auth";
 import { io } from "../../index";
-import DB from "../../db";
-import { ConnectStatus } from "../../db/enum/connect-status.enum";
-import { User } from "../../db/user";
 import NotificationAlert from "../../module/notification-alert";
+import { xprisma } from "../../../prisma";
 
 
-export default function ioHandler(socket: IO.SocketIO) {
+export default async function ioHandler(socket: IO.SocketIO) {
   try {
-    const accName = tryAuth(socket).data.accName!;
-
-    const { photoUrl, urlToProfile, nickname, ...user } = DB.User.findByAccNameOrThrow(accName);
-    const connectStatus = handleConnectStatus({
-      connectStatus: user.connectStatus,
-      isInvisible: user.isInvisible,
-    });
-    io.to(socket.id).emit("authenticationSuccess", { accName, photoUrl, urlToProfile, connectStatus, nickname });
-    // TODO send to friends of this.socket alert that this.user is online
+    const accname = tryAuth(socket).data.accname!;
+    const user = await xprisma.user.findOrThrow({accname})
+    io.to(socket.id).emit("authenticationSuccess", user);
   } catch (error) {
     if (error instanceof Error) {
       const notification = new NotificationAlert().fromError(error);
@@ -26,14 +18,4 @@ export default function ioHandler(socket: IO.SocketIO) {
       console.log("GlobalChat Error:", error);
     }
   }
-}
-
-type UserConnectInfo = Pick<User, "connectStatus" | "isInvisible">
-
-function handleConnectStatus({ isInvisible, connectStatus }: UserConnectInfo): ConnectStatus {
-  if (isInvisible) return ConnectStatus.offline;
-
-  if (connectStatus === ConnectStatus.offline) {
-    return ConnectStatus.online;
-  } else return ConnectStatus.away;
 }
