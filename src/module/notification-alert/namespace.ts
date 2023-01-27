@@ -4,4 +4,12 @@ export namespace NotificationAlert {
   export type id = string;
   export type durationInMS = number;
   export type header = string | undefined;
+
+  export type NotificationAlert = {
+    message?: NotificationAlert.message;
+    type?: NotificationAlert.type;
+    durationInMS?: NotificationAlert.durationInMS;
+    id?: NotificationAlert.id;
+  }
 }
+
