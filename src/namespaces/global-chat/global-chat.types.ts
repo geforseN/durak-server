@@ -1,5 +1,5 @@
 import { Namespace, Socket } from "socket.io";
-import { GlobalChatDB } from "../../db/global-chat";
+import { GlobalChatDB } from "./global-chat.namespace";
 import NotificationAlert from "../../module/notification-alert";
 
 export namespace GlobalChatIO {
