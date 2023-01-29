@@ -13,7 +13,6 @@ export type CreateLobbyContext = {
 export type JoinLobbyContext = CreateLobbyContext;
 
 
-// TODO middleware which add socket data
 export default function gameLobbiesHandler(socket: LobbiesIO.SocketIO) {
   socket.emit("restoreLobbies", lobbiesService.getLobbies());
 
