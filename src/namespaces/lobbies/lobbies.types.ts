@@ -41,8 +41,8 @@ export namespace LobbiesIO {
 
   export type SocketData = {
     accname: string
-    role: "USER" | "GUEST" // "ADMIN"
-    badTriesCount: number
+    role?: "USER" | "GUEST" // "ADMIN"
+    badTriesCount?: number
   };
 
   export type SocketIO = Socket<
