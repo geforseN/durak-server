@@ -1,6 +1,6 @@
 import { lobbiesNamespace, lobbiesService, lobbies, durakGames } from "../../../index";
 import { LobbiesIO } from "../lobbies.types";
-import DurakGame from "../../../module/durak-game";
+import DurakGame from "../../../durak-game/durak-game";
 
 export default function createGame(
   this: { socket: LobbiesIO.SocketIO },
@@ -14,10 +14,10 @@ export default function createGame(
     if (!isEmitFromAdmin) throw Error("Нет доступа");
 
     const game = new DurakGame(lobby);
-    durakGames.set(lobbyId, game);
+    durakGames.set(`/game/${lobby.id}`, game);
     lobbiesNamespace.to(lobby.id).emit("startGame", game.id);
-    lobbies.deleteLobbyById({id: lobbyId})
+    lobbies.deleteLobbyById({ id: lobbyId });
   } catch (error) {
-    lobbiesService.handleError({ name: "CreateGameError", error, socket: this.socket  });
+    lobbiesService.handleError({ name: "CreateGameError", error, socket: this.socket });
   }
 }
