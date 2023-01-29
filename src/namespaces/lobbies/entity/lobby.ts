@@ -20,8 +20,8 @@ export default class Lobby {
   get value(): any {
     return {
       ...this,
-      users: this.users._value
-    }
+      users: this.users.value,
+    };
   }
 
   get hasMaxUsers(): boolean {
@@ -46,10 +46,6 @@ export default class Lobby {
 
   removeUser({ accname }: LobbyUserIdentifier) {
     this.users.remove({ accname });
-  }
-
-  removeUserByIndex(index: number) {
-    this.users.removeByIndex(index);
   }
 
   hasSameId(id: string): boolean {
