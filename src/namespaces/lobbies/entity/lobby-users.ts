@@ -1,5 +1,4 @@
 import { ConnectStatus } from "@prisma/client";
-import NoUserOrLobbyError from "../errors/NoUserOrLobby.error";
 
 export type LobbyUser = {
   accname: string
@@ -11,23 +10,22 @@ export type LobbyUser = {
 export type LobbyUserIdentifier = { accname: string }
 
 export default class LobbyUsers {
-  _value: LobbyUser[];
+  __value: LobbyUser[];
 
   constructor() {
-    this._value = [];
+    this.__value = [];
+  }
+
+  get value(): LobbyUser[] {
+    return this.__value;
   }
 
   get count(): number {
-    return this._value.length;
+    return this.__value.length;
   }
 
   get firstUser(): LobbyUser {
-    return this._value[0];
-  }
-
-  get tryFirstUser(): LobbyUser | never {
-    if (this.firstUser) return this.firstUser;
-    throw new NoUserOrLobbyError();
+    return this.__value[0];
   }
 
   hasUser({ accname }: LobbyUserIdentifier) {
@@ -35,28 +33,18 @@ export default class LobbyUsers {
   }
 
   add(user: LobbyUser) {
-    this._value.push(user);
+    this.__value.push(user);
   }
 
   find({ accname }: LobbyUserIdentifier): LobbyUser | undefined {
-    return this._value.find((user) => user.accname === accname);
-  }
-
-  findIndex({ accname }: LobbyUserIdentifier): number {
-    return this._value.findIndex(user => user.accname === accname);
+    return this.__value.find((user) => user.accname === accname);
   }
 
   remove({accname}: LobbyUserIdentifier) {
-    this._value = this._value.filter((user) => user.accname !== accname)
+    this.__value = this.__value.filter((user) => user.accname !== accname)
   }
 
   removeByIndex(index: number) {
-    this._value.splice(index, 1);
-  }
-
-  tryRemove({ accname }: LobbyUserIdentifier): void {
-    const index = this.findIndex({ accname });
-    if (index === -1) throw new NoUserOrLobbyError();
-    this.removeByIndex(index)
+    this.__value.splice(index, 1);
   }
 }
