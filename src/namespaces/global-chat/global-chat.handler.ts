@@ -1,23 +1,25 @@
-import checkTextLength from "../../checkers/check-text-length";
-import DB from "../../db";
+import checkTextLength from "./check-text-length";
 import createMessage from "../../utils/create-message";
 import { globalChat } from "../../index";
-import { GlobalChatDB } from "../../db/global-chat";
+import { GlobalChatDB } from "./global-chat.namespace";
 import { GlobalChatIO } from "./global-chat.types";
 import tryAuth from "../../checkers/try-auth";
 import NotificationAlert from "../../module/notification-alert";
+import { PrismaClient } from "@prisma/client";
 
 const globalChatCache: GlobalChatDB.Message[] = [];
 
-export default function globalChatHandler(socket: GlobalChatIO.SocketIO) {
-  globalChat.emit("restoreHistory", globalChatCache);
+const prisma = new PrismaClient();
 
-  socket.on("sendMessage", (text) => {
+export default function globalChatHandler(socket: GlobalChatIO.SocketIO) {
+  socket.emit("restoreHistory", globalChatCache);
+
+  socket.on("sendMessage", async (text) => {
     try {
-      const { accName } = tryAuth(socket).data;
+      const { accname } = tryAuth(socket).data!;
       checkTextLength(text);
 
-      const user = DB.User.findByAccNameOrThrow(accName!);
+      const user = await prisma.user.findUniqueOrThrow({ where: { accname: accname } });
 
       const message = createMessage(user, text);
       globalChatCache.push(message);
