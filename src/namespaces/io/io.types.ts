@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
-import NotificationAlert from "./module/notification-alert";
-import { LobbyUser } from "./namespaces/lobbies/entity/lobby-users";
+import NotificationAlert from "../../module/notification-alert";
+import { LobbyUser } from "../lobbies/entity/lobby-users";
 
 export namespace IO {
   export type ServerToClientEvents = {

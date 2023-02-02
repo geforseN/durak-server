@@ -1,4 +1,4 @@
-import { IO } from "../../index.types";
+import { IO } from "./io.types";
 import tryAuth from "../../checkers/try-auth";
 import { io } from "../../index";
 import NotificationAlert from "../../module/notification-alert";
