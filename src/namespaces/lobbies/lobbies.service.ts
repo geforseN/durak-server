@@ -27,12 +27,12 @@ export default class LobbiesService {
       this.addUserInLobby(lobby, user);
       return lobby;
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
   private createLobby({ adminAccname, settings }: LobbyConstructor): Lobby {
-    let lobby = new Lobby({ adminAccname, settings });
+    const lobby = new Lobby({ adminAccname, settings });
     this.lobbies.addLobby(lobby);
     this.namespace.emit("lobbyCreated", lobby.value);
     return lobby;
@@ -83,19 +83,9 @@ export default class LobbiesService {
   }
 
   handleError({ name, error, socket }: { name: string, error: Error | unknown, socket: LobbiesIO.SocketIO }) {
-    if (!socket?.data?.accname) {
-      const notification = new NotificationAlert().fromError(error as Error);
-      this.namespace.to(socket.id).emit("sendNotification", notification);
-      return;
-    }
-
-    const {accname} = socket.data;
-    if (error instanceof Error) {
-      error.name = name;
-      lobbiesService.sendNotification(error, { accname });
-    } else {
-      lobbiesService.sendNotification(error as Error, { accname });
-      console.log(name, ": ", error);
-    }
+    const accname = socket.data?.accname ?? socket.id;
+    if (error instanceof Error) error.name = name;
+    lobbiesService.sendNotification(error as Error, { accname });
+    console.log(name, ": ", error);
   }
 }
