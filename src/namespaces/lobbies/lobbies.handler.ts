@@ -13,8 +13,8 @@ export type CreateLobbyContext = {
 export type JoinLobbyContext = CreateLobbyContext;
 
 
-export default function gameLobbiesHandler(socket: LobbiesIO.SocketIO) {
-  socket.emit("restoreLobbies", lobbiesService.getLobbies());
+export default function lobbiesHandler(socket: LobbiesIO.SocketIO) {
+  socket.emit("restoreLobbies", lobbiesService.lobbiesValue);
 
   socket.on("createLobby", createLobby.bind({ socket, xprisma }));
   socket.on("joinLobby", joinLobby.bind({ socket, xprisma }));

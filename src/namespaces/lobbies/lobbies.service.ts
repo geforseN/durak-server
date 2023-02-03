@@ -8,11 +8,11 @@ import NotificationAlert from "../../module/notification-alert";
 export default class LobbiesService {
   constructor(
     private lobbies: Lobbies,
-    private namespace: LobbiesIO.NamespaceIO
+    private namespace: LobbiesIO.NamespaceIO,
   ) {
   }
 
-  getLobbies() {
+  get lobbiesValue() {
     return this.lobbies.value;
   }
 
