@@ -15,6 +15,10 @@ export default class Desk {
     return this.slots.flatMap((slot) => slot.values);
   }
 
+  getSlot({ index }: { index: number }): DeskSlot {
+    return this.slots[index];
+  }
+
   hasCardWithSuit(suit: Suit): boolean {
     return this.slots.some((slot) => slot.hasSuit(suit));
   }
@@ -31,12 +35,12 @@ export default class Desk {
     return this.slots.every((slot) => slot.isFull);
   }
 
-  putAttackerCard({ index, card }: { index: number, card: Card }) {
-    this.slots[index].pushAttackCard(card);
+  insertAttackerCard({ index, card }: { index: number, card: Card }) {
+    this.getSlot({ index }).insertAttackCard(card);
   }
 
-  putDefenderCard({ index, card }: { index: number, card: Card }) {
-    this.slots[index].pushDefendCard(card);
+  insertDefenderCard({ index, card }: { index: number, card: Card }) {
+    this.getSlot({ index }).insertDefendCard(card);
   }
 
   clear(): void {
