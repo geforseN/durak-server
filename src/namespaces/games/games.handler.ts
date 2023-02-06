@@ -1,6 +1,8 @@
 import { GamesIO } from "./games.types";
 import assertGuestSocket from "../lobbies/helpers/assert-guest-socket";
-import { durakGames } from "../../index";
+import { durakGames, gamesNamespace } from "../../index";
+import { assertBeforeAttack } from "./assertions";
+import DurakGame from "../../durak-game/durak-game";
 
 export default function gamesHandler(socket: GamesIO.SocketIO) {
   try {
@@ -8,14 +10,51 @@ export default function gamesHandler(socket: GamesIO.SocketIO) {
   } catch (e) {
     socket.disconnect();
   }
-
   const { data: { accname }, nsp: { name: gameId } } = socket;
 
-  const game = durakGames.get(gameId);
+  const game: DurakGame | undefined = durakGames.get(gameId);
   if (!game || !accname) return socket.disconnect();
 
   const player = game.players.getPlayer({ accname });
   if (!player) return socket.disconnect();
 
-  console.log("МОЯ ИГРА", gameId, ":", durakGames.get(gameId)!.talon.count);
+  if (game.stat.roundNumber === 0) {
+    game.makeFirstDistributionByOne();
+    game.stat.roundNumber++;
+  }
+
+  socket.on("state__restore", () => {
+    socket.emit("state__restore", game.restoreState({ accname }));
+  });
+
+  socket.on("attack__placeCard", (card, slotIndex) => {
+    assertBeforeAttack({ game, accname, card, slotIndex });
+    // уже есть подобная проверка assertSlotIsAvailable(game, slotIndex);
+    game.desk.putAttackerCard({ index: slotIndex, card });
+    gamesNamespace.emit("desk__putCard", card, slotIndex);
+  });
+
+  socket.on("attack__stopAttack", () => {
+    //assertSelfIsAttacker({ game , accname});
+    game.gameService.hideAttackUI({ accname });
+    // allowDefenderToDefend
+    //game.desk.stopAttack({ accname });
+  });
+
+  socket.on("defend__takeCards", () => {
+    //assertSelfIsDefender(game, socket.data.accname);
+    game.gameService.hideDefenderUI({ accname });
+    game.gameService.hideAttackUI({ accname });
+    gamesNamespace.emit("discard__pushCards");
+  });
+
+  socket.on("defend__beatCard", () => {
+    // assertSelfIsDefender(game, socket.data.accname);
+    //assertAllowedToPut(game, socket.data.accname);
+    if (game.desk.isFull) {
+      gamesNamespace.emit("desk__clear")
+    }
+  });
+
+  console.log("МОЯ ИГРА", gameId, ":", game.talon.count);
 }
