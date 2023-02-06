@@ -13,7 +13,7 @@ export namespace GamesIO {
     "state__restore": () => void
 
     "attack__stopAttack": () => void
-    "attack__placeCard": (card: Card, slotIndex: number) => void
+    "player__placeCard": (card: Card, slotIndex: number) => void
 
     "defend__takeCards": () => void
     "defend__beatCard": (card: Card, slotIndex: number) => void
@@ -32,7 +32,8 @@ export namespace GamesIO {
     "defendUI__shouldShow": (shouldShow: boolean) => void;
 
     "desk__clear": () => void;
-    "desk__putCard": (card: Card, slotIndex: number) => void;
+    "desk__insertAttackCard": (card: Card, slotIndex: number) => void;
+    "desk__insertDefendCard": (card: Card, slotIndex: number) => void;
     "": () => void;
   }
 
