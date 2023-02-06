@@ -23,8 +23,12 @@ export default class Players {
     });
   }
 
-  getPlayer({ accname }: LobbyUserIdentifier): Player {
-    return this.__value.find((player) => player.info.accname === accname)!;
+  getPlayer({ accname }: LobbyUserIdentifier): Player | undefined {
+    return this.__value.find((player) => player.info.accname === accname);
+  }
+
+  getPlayerIndex({ accname }: LobbyUserIdentifier): number {
+    return this.__value.findIndex((player) => player.info.accname === accname);
   }
 
   getSelf({ accname }: LobbyUserIdentifier): Self {
