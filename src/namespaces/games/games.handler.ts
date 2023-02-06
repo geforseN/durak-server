@@ -3,6 +3,7 @@ import assertGuestSocket from "../lobbies/helpers/assert-guest-socket";
 import { durakGames, gamesNamespace } from "../../index";
 import { assertBeforeAttack } from "./assertions";
 import DurakGame from "../../durak-game/durak-game";
+import handleInsertCardOnDesk from "./methods/handle-insert-card-on-desk";
 
 export default function gamesHandler(socket: GamesIO.SocketIO) {
   try {
@@ -27,12 +28,7 @@ export default function gamesHandler(socket: GamesIO.SocketIO) {
     socket.emit("state__restore", game.restoreState({ accname }));
   });
 
-  socket.on("attack__placeCard", (card, slotIndex) => {
-    assertBeforeAttack({ game, accname, card, slotIndex });
-    // уже есть подобная проверка assertSlotIsAvailable(game, slotIndex);
-    game.desk.putAttackerCard({ index: slotIndex, card });
-    gamesNamespace.emit("desk__putCard", card, slotIndex);
-  });
+  socket.on("player__placeCard", handleInsertCardOnDesk.bind({socket, game, accname}));
 
   socket.on("attack__stopAttack", () => {
     //assertSelfIsAttacker({ game , accname});
