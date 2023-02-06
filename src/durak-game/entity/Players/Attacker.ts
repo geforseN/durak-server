@@ -1,5 +1,5 @@
 import Player from "./Player";
-import { CardInsert, PlaceCardData } from "../../../namespaces/games/methods/handle-place.card";
+import { CardInsert, PlaceCardData } from "../../../namespaces/games/methods/handle-insert-card-on-desk";
 
 export default class Attacker extends Player implements CardInsert {
   constructor(player: Player) {
