@@ -1,8 +1,9 @@
 import Card from "./Card";
 import { Rank, Suit } from "../utility.durak";
+import DurakGame from "../durak-game";
 
 
-export class DeskSlot {
+export default class DeskSlot {
   constructor(
     public attackCard: Card | null = null,
     public defendCard: Card | null = null,
@@ -23,6 +24,10 @@ export class DeskSlot {
 
   get isEmpty(): boolean {
     return !this.hasAttackCard && !this.hasDefendCard;
+  }
+
+  hasTrumpAttackCard({ game }: { game: DurakGame }): boolean {
+    return this.attackCard!?.isTrump({ game });
   }
 
   get values(): Card[] {
@@ -53,19 +58,11 @@ export class DeskSlot {
     this.removeDefendCard();
   }
 
-  pushAttackCard(card: Card) {
+  insertAttackCard(card: Card) {
     this.attackCard = card;
   }
 
-  pushDefendCard(card: Card) {
+  insertDefendCard(card: Card) {
     this.defendCard = card;
-  }
-
-  assertNoAttack() {
-    if (!this.hasAttackCard) throw new Error("Нет от чего защищаться");
-  }
-
-  assertAlreadyDefended() {
-    if (this.hasDefendCard) throw new Error("Уже есть бита");
   }
 }

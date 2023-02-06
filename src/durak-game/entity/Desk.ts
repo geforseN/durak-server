@@ -1,5 +1,5 @@
 import Card from "./Card";
-import { DeskSlot } from "./DeskSlot";
+import DeskSlot from "./DeskSlot";
 import { Rank, Suit } from "../utility.durak";
 
 export default class Desk {

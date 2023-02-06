@@ -2,7 +2,7 @@ import { Namespace, Socket } from "socket.io";
 import Card from "../../durak-game/entity/Card";
 import { Suit } from "../../durak-game/utility.durak";
 import { CardPlayerRole, CardPlayerStatus } from "../../durak-game/entity/Players/Player";
-import { DeskSlot } from "../../durak-game/entity/DeskSlot";
+import DeskSlot from "../../durak-game/entity/DeskSlot";
 import Self from "../../durak-game/DTO/Self.dto";
 import Enemy from "../../durak-game/DTO/Enemy.dto";
 
