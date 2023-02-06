@@ -1,20 +1,42 @@
 import { Namespace, Socket } from "socket.io";
 import Card from "../../durak-game/entity/card";
+import { Suit } from "../../durak-game/utility.durak";
+import { CardPlayerRole, CardPlayerStatus } from "../../durak-game/entity/card-player";
+import { DeskSlot } from "../../durak-game/entity/DeskSlot";
+import Self from "../../durak-game/DTO/Self.dto";
+import Enemy from "../../durak-game/DTO/Enemy.dto";
+
+export type GameState = { self: Self, enemies: Enemy[], desk: DeskSlot[] }
 
 export namespace GamesIO {
   export type ClientToServerEvents = {
-    "firstDistribution": () => void
-    "playersIndexes": () => void
+    "state__restore": () => void
+
+    "attack__stopAttack": () => void
+    "attack__placeCard": (card: Card, slotIndex: number) => void
+
+    "defend__takeCards": () => void
+    "defend__beatCard": (card: Card, slotIndex: number) => void
   }
 
   export type ServerToClientEvents = {
-    "playersIndexes": (indexes: ({ accname: string, index: number })[]) => void
-    "firstDistribution:me": (cards: Card[]) => void
-    "firstDistribution": (accname: string, cardCount: number) => void
+    "state__restore": (state: GameState) => void;
+
+    "talon__distributeCards": () => void;
+    "discard__pushCards": () => void;
+
+    "role__update": (accname: string, role: CardPlayerRole) => void;
+    "status__update": (accname: string, status: CardPlayerStatus) => void;
+
+    "attackUI__shouldShow": (shouldShow: boolean) => void;
+    "defendUI__shouldShow": (shouldShow: boolean) => void;
+
+    "desk__clear": () => void;
+    "desk__putCard": (card: Card, slotIndex: number) => void;
+    "": () => void;
   }
 
-  export type InterServerEvents = {
-  }
+  export type InterServerEvents = {}
 
   export type SocketData = {
     accname: string
@@ -36,3 +58,15 @@ export namespace GamesIO {
     GamesIO.SocketData
   >
 }
+
+export type AdditionalGameState = {
+  isDiscardEmpty: boolean;
+  isTalonEmpty: boolean;
+  turnNumber: number;
+  trumpSuit: Suit;
+  trump?: Card;
+}
+
+
+// ClientToServer "talon__distributeCards": () => void
+// ClientToServer "discard__pushCards": () => void
