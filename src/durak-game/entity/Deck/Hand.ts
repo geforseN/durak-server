@@ -10,8 +10,8 @@ export default class Hand extends Deck {
     return this._value;
   }
 
-  get trumpCard(): Card {
-    return this._value[0];
+  has({ card: { suit, rank } }: { card: Card }) {
+    return this._value.some((card) => card.suit === suit && card.rank === rank);
   }
 
   receiveCards(...cards: Card[]): void {
