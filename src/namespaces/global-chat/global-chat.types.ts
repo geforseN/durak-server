@@ -16,7 +16,7 @@ export namespace GlobalChatIO {
   export type InterServerEvents = {};
 
   export type SocketData = {
-    accName: string;
+    accname: string;
   };
 
   export type SocketIO = Socket<
