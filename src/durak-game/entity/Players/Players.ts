@@ -1,16 +1,14 @@
-import LobbyUsers, { LobbyUserIdentifier } from "../../namespaces/lobbies/entity/lobby-users";
-import CardPlayer from "./card-player";
-import Card from "./card";
-import Self from "../DTO/Self.dto";
-import Enemy from "../DTO/Enemy.dto";
+import LobbyUsers, { LobbyUserIdentifier } from "../../../namespaces/lobbies/entity/lobby-users";
+import Player from "./Player";
+import Card from "../Card";
+import Self from "../../DTO/Self.dto";
+import Enemy from "../../DTO/Enemy.dto";
 
-export type OtherPlayerInfo = { accname: string, cardCount: number };
-
-export default class CardPlayers {
-  __value: CardPlayer[];
+export default class Players {
+  __value: Player[];
 
   constructor(users: LobbyUsers) {
-    this.__value = users.value.map((user) => new CardPlayer(user));
+    this.__value = users.value.map((user) => new Player(user));
     this.defineSidePlayers();
   }
 
@@ -25,7 +23,7 @@ export default class CardPlayers {
     });
   }
 
-  getPlayer({ accname }: LobbyUserIdentifier): CardPlayer {
+  getPlayer({ accname }: LobbyUserIdentifier): Player {
     return this.__value.find((player) => player.info.accname === accname)!;
   }
 
@@ -34,7 +32,7 @@ export default class CardPlayers {
     return new Self(player);
   }
 
-  getPlayerEnemies({ accname }: LobbyUserIdentifier): CardPlayer[] {
+  getPlayerEnemies({ accname }: LobbyUserIdentifier): Player[] {
     return this.__value.filter((player) => player.info.accname !== accname);
   }
 

@@ -1,5 +1,5 @@
 import Deck, { CardCount } from "./Deck.abstract";
-import Card from "../card";
+import Card from "../Card";
 import { randomInt } from "crypto";
 
 export default class Talon extends Deck {

@@ -1,13 +1,13 @@
 import { LobbyUserIdentifier } from "../../lobbies/entity/lobby-users";
 import DurakGame from "../../../durak-game/durak-game";
-import Card from "../../../durak-game/entity/card";
-import { assertDefenderRole, assertPlayerHasCard } from "./index";
+import Card from "../../../durak-game/entity/Card";
+import { assertPlayerHasCard } from "./index";
 
 export default function assertBeforeAttack(
   { game, accname, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number } & LobbyUserIdentifier,
 ) {
   const player = game.players.getPlayer({ accname });
-  assertDefenderRole(player.role);
+  // assertDefenderRole({ player });
 
   assertPlayerHasCard({player, card});
 

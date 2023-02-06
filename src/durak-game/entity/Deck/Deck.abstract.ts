@@ -1,4 +1,4 @@
-import Card from "../card";
+import Card from "../Card";
 import { ranks, suits } from "../../utility.durak";
 
 export type CardCount = 24 | 36 | 52;

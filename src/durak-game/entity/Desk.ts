@@ -1,4 +1,4 @@
-import Card from "./card";
+import Card from "./Card";
 import { DeskSlot } from "./DeskSlot";
 import { Rank, Suit } from "../utility.durak";
 
@@ -41,5 +41,16 @@ export default class Desk {
 
   clear(): void {
     this.slots.forEach((slot) => slot.clear());
+  }
+
+  ensureCorrectIndex(index: number): this | never {
+    const isInt = Number.isInteger(index);
+    const isInRange = index >= 0 && index <= this.maxSlotCount;
+    if (!isInt || !isInRange) throw new Error("Некорректный индекс");
+    return this;
+  }
+
+  ensureCanPut() {
+
   }
 }

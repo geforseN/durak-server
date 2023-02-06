@@ -1,17 +1,15 @@
-import CardPlayer, { CardPlayerRole, CardPlayerStatus } from "../entity/card-player";
+import Player, { CardPlayerStatus } from "../entity/Players/Player";
 import { LobbyUser } from "../../namespaces/lobbies/entity/lobby-users";
-import Card from "../entity/card";
+import Card from "../entity/Card";
 
 export default class Self {
   cards: Card[];
   info: LobbyUser;
-  role: CardPlayerRole;
   status: CardPlayerStatus;
 
-  constructor(cardPlayer: CardPlayer) {
+  constructor(cardPlayer: Player) {
     this.cards = cardPlayer.hand.value;
     this.info = cardPlayer.info;
-    this.role = cardPlayer.role;
     this.status = cardPlayer.status;
   }
 }

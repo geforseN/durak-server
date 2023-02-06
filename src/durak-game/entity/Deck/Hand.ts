@@ -1,5 +1,5 @@
 import Deck, { CardCount } from "./Deck.abstract";
-import Card from "../card";
+import Card from "../Card";
 
 export default class Hand extends Deck {
   constructor(size?: CardCount) {

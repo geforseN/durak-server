@@ -1,4 +1,4 @@
-import Card from "./card";
+import Card from "./Card";
 import { Rank, Suit } from "../utility.durak";
 
 
@@ -59,5 +59,13 @@ export class DeskSlot {
 
   pushDefendCard(card: Card) {
     this.defendCard = card;
+  }
+
+  assertNoAttack() {
+    if (!this.hasAttackCard) throw new Error("Нет от чего защищаться");
+  }
+
+  assertAlreadyDefended() {
+    if (this.hasDefendCard) throw new Error("Уже есть бита");
   }
 }
