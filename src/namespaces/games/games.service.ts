@@ -1,12 +1,21 @@
 import { GamesIO } from "./games.types";
-import { GameId, io } from "../../index";
+import { GameId, gamesNamespace, io } from "../../index";
 import { LobbyUserIdentifier } from "../lobbies/entity/lobby-users";
+import Card from "../../durak-game/entity/Card";
 
 export class GamesService {
   private namespace: GamesIO.NamespaceIO;
 
   constructor(gameId: GameId) {
     this.namespace = io.of(gameId);
+  }
+
+  insertAttackCard({ card, index }: { card: Card, index: number }){
+    gamesNamespace.emit("desk__insertAttackCard", card, index);
+  }
+
+  insertDefendCard({ card, index }: { card: Card, index: number }){
+    gamesNamespace.emit("desk__insertDefendCard", card, index);
   }
 
   hideAttackUI({ accname }: LobbyUserIdentifier) {
