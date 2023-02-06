@@ -15,7 +15,7 @@ export default function createGame(
 
     const game = new DurakGame(lobby);
     durakGames.set(`/game/${lobby.id}`, game);
-    lobbiesNamespace.to(lobby.id).emit("startGame", game.id);
+    lobbiesNamespace.to(lobby.id).emit("startGame", game.info.id);
     lobbies.deleteLobbyById({ id: lobbyId });
   } catch (error) {
     lobbiesService.handleError({ name: "CreateGameError", error, socket: this.socket });
