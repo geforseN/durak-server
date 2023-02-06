@@ -1,6 +1,8 @@
 import LobbyUsers, { LobbyUserIdentifier } from "../../namespaces/lobbies/entity/lobby-users";
 import CardPlayer from "./card-player";
-import Hand from "./Deck/Hand";
+import Card from "./card";
+import Self from "../DTO/Self.dto";
+import Enemy from "../DTO/Enemy.dto";
 
 export type OtherPlayerInfo = { accname: string, cardCount: number };
 
@@ -9,32 +11,45 @@ export default class CardPlayers {
 
   constructor(users: LobbyUsers) {
     this.__value = users.value.map((user) => new CardPlayer(user));
+    this.defineSidePlayers();
   }
 
   get count() {
     return this.__value.length;
   }
 
-  get playersIndexes(): { accname: string, index: number }[] {
-    return this.__value.map((player, index) => ({ accname: player.info.accname, index }));
+  receiveCardsByOne(cards: Card[]) {
+    cards.forEach((card, index) => {
+      const playerIndex = index % this.count;
+      this.__value[playerIndex].receiveCards(card);
+    });
   }
 
-  getPlayerByAccname({ accname }: LobbyUserIdentifier): CardPlayer | undefined {
-    return this.__value.find((player) => player.info.accname === accname);
+  getPlayer({ accname }: LobbyUserIdentifier): CardPlayer {
+    return this.__value.find((player) => player.info.accname === accname)!;
   }
 
-  getPlayerHandByAccname({ accname }: LobbyUserIdentifier): Hand | undefined {
-    return this.getPlayerByAccname({ accname })?.hand;
+  getSelf({ accname }: LobbyUserIdentifier): Self {
+    const player = this.getPlayer({ accname })!;
+    return new Self(player);
   }
 
-  private getAllOtherPlayers({ accname }: LobbyUserIdentifier): CardPlayer[] {
+  getPlayerEnemies({ accname }: LobbyUserIdentifier): CardPlayer[] {
     return this.__value.filter((player) => player.info.accname !== accname);
   }
 
-  getAllOtherPlayersCardsInfo({ accname }: LobbyUserIdentifier): OtherPlayerInfo[] {
-    return this.getAllOtherPlayers({ accname }).map((player) => ({
-      accname: player.info.accname,
-      cardCount: player.hand.count,
-    }));
+  getEnemies({ accname }: LobbyUserIdentifier): Enemy[] {
+    const players = this.getPlayerEnemies({ accname });
+    return players.map(player => new Enemy(player));
+  }
+
+  private defineSidePlayers(): void {
+    this.__value.forEach((player, playerIndex, players) => {
+      const leftPlayerIndex = this.count % (playerIndex + 1);
+      const rightPlayerIndex = playerIndex === 0 ? this.count - 1 : playerIndex - 1;
+
+      player.left = players[leftPlayerIndex];
+      player.right = players[rightPlayerIndex];
+    });
   }
 }
