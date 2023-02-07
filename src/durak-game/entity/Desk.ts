@@ -8,7 +8,7 @@ export default class Desk {
 
   constructor(slotCount = 6) {
     this.maxSlotCount = slotCount;
-    this.slots = new Array(slotCount).fill(new DeskSlot());
+    this.slots = [...Array(slotCount)].map(() => new DeskSlot());
   }
 
   get cards(): Card[] {
@@ -28,7 +28,7 @@ export default class Desk {
   }
 
   get isEmpty(): boolean {
-    return this.slots.some((slot) => slot.isEmpty);
+    return this.slots.every((slot) => slot.isEmpty);
   }
 
   get isFull(): boolean {
