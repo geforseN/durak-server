@@ -1,6 +1,7 @@
 import Deck, { CardCount } from "./Deck.abstract";
 import Card from "../Card";
 import { randomInt } from "crypto";
+import { Suit } from "../../utility.durak";
 
 export default class Talon extends Deck {
   constructor(size: CardCount) {
@@ -9,6 +10,10 @@ export default class Talon extends Deck {
 
   get trumpCard(): Card {
     return this._value[0];
+  }
+
+  get trumpSuit(): Suit {
+    return this.trumpCard.suit;
   }
 
   shuffle(): this {
