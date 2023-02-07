@@ -143,3 +143,27 @@ export default class DurakGame {
     this.players.receiveCardsByOne(cards);
   }
 }
+
+
+export function isDefender(player: Player): player is Defender {
+  return player instanceof Defender;
+}
+
+export function isAttacker(player: Player): player is Attacker {
+  return player instanceof Attacker;
+}
+
+export function makeDefender({ playerIndex, players }: { playerIndex: number, players: Player[] }) {
+  const player = players[playerIndex];
+  players[playerIndex] = new Defender(player);
+}
+
+export function makeAttacker({ playerIndex, players }: { playerIndex: number, players: Player[] }) {
+  const player = players[playerIndex];
+  players[playerIndex] = new Attacker(player);
+}
+
+export function makePlayer({ playerIndex, players }: { playerIndex: number, players: Player[] }) {
+  const player = players[playerIndex];
+  players[playerIndex] = new Player(player);
+}

@@ -1,8 +1,6 @@
 import { LobbyUser } from "../../../namespaces/lobbies/entity/lobby-users";
 import Hand from "../Deck/Hand";
 import Card from "../Card";
-import Defender from "./Defender";
-import Attacker from "./Attacker";
 
 export type CardPlayerRole = "DEFENDER" | "ATTACKER" | "NONE"
 export type CardPlayerStatus = "WAITING OPPONENT" | "WAITING ANOTHER ATTACKER" | "ATTACKING" | "DEFENDING" | "NONE";
@@ -37,12 +35,5 @@ export default class Player {
     this.hand = new Hand();
     this.status = "NONE";
   }
-
-  static isDefender(player: Player): player is Defender {
-    return player instanceof Defender;
-  }
-
-  static isAttacker(player: Player): player is Attacker {
-    return player instanceof Attacker;
-  }
 }
+
