@@ -1,9 +1,9 @@
 import { GamesIO } from "./games.types";
 import assertGuestSocket from "../lobbies/helpers/assert-guest-socket";
 import { durakGames, gamesNamespace } from "../../index";
-import { assertBeforeAttack } from "./assertions";
-import DurakGame from "../../durak-game/durak-game";
+import DurakGame, { isAttacker, isDefender, makePlayer } from "../../durak-game/durak-game";
 import handleInsertCardOnDesk from "./methods/handle-insert-card-on-desk";
+import NotificationAlert from "../../module/notification-alert";
 
 export default function gamesHandler(
   this: { namespace: GamesIO.NamespaceIO },
@@ -51,14 +51,6 @@ export default function gamesHandler(
     game.gameService.hideDefenderUI({ accname });
     game.gameService.hideAttackUI({ accname });
     gamesNamespace.emit("discard__pushCards");
-  });
-
-  socket.on("defend__beatCard", () => {
-    // assertSelfIsDefender(game, socket.data.accname);
-    //assertAllowedToPut(game, socket.data.accname);
-    if (game.desk.isFull) {
-      gamesNamespace.emit("desk__clear")
-    }
   });
 
   console.log("МОЯ ИГРА", gameId, ":", game.talon.count);

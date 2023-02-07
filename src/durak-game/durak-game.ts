@@ -1,146 +1,99 @@
 import { GameSettings } from "../namespaces/lobbies/lobbies.types";
 import Lobby from "../namespaces/lobbies/entity/lobby";
-import CardPlayers from "./entity/card-players";
+import Players from "./entity/Players/Players";
 import Discard from "./entity/Deck/Discard";
 import Talon from "./entity/Deck/Talon";
-import CardPlayer from "./entity/card-player";
 import Desk from "./entity/Desk";
 import { LobbyUserIdentifier } from "../namespaces/lobbies/entity/lobby-users";
-import { clearTimeout } from "node:timers";
 import { GamesService } from "../namespaces/games/games.service";
-import { GameState } from "../namespaces/games/games.types";
-
+import { GamesIO, GameState } from "../namespaces/games/games.types";
+import Card from "./entity/Card";
+import Attacker from "./entity/Players/Attacker";
+import Defender from "./entity/Players/Defender";
+import Player from "./entity/Players/Player";
 
 export type GameStat = { roundNumber: number };
-export type GameInfo = { id: string, adminAccname: string | null }
-const ROUND_TIME = 20_000;
+export type GameInfo = { id: string, adminAccname: string | null };
 
 export default class DurakGame {
   info: GameInfo;
   stat: GameStat;
   settings: GameSettings;
-  players: CardPlayers;
+  players: Players;
   talon: Talon;
   discard: Discard;
   desk: Desk;
-  cardDistributionQueue: CardPlayer[] = [];
   gameService: GamesService;
 
   constructor({ id, settings, users, adminAccname }: Lobby) {
     this.info = { id, adminAccname };
     this.settings = settings;
-    this.stat = { roundNumber: 0 };
-    this.players = new CardPlayers(users);
+    this.stat = { roundNumber: 0 }; // new GameStat
+    this.players = new Players(users);
     this.talon = new Talon(settings.cardCount);
     this.discard = new Discard();
     this.desk = new Desk();
     this.gameService = new GamesService(id);
   }
 
-  async initialize() {
+  start() {
     this.makeFirstDistributionByOne();
-    const { attacker, defender } = this.findInitialDefenderAndAttacker();
-    this.cardDistributionQueue.push(defender, attacker);
-
-    // ALSO makeEmits who is attacker and defender ALSO update roles & statuses in instances
-    this.gameService.revealAttackUI({ accname: attacker.info.accname });
-    // ALSO add accname in queue in which shown who can put cards
-    const transitIntoDefence = () => {
-      this.gameService.hideAttackUI({ accname: attacker.info.accname });
-      this.gameService.revealDefenderUI({ accname: defender.info.accname });
-
-    };
-    const handleDefense = () => {
-      this.gameService.hideAttackUI({ accname: attacker.info.accname });
-      this.gameService.revealDefenderUI({ accname: defender.info.accname });
-      // ALSO makeEmits who is statuses ALSO update statuses in instances
-
-      const t = setTimeout(dissalowedToPutCards, ROUND_TIME);
-      // on timeout remove from queue allowedPutCard
-      // timeout this
-      defenderSocket.on("putCardOnDesk", tryDefendCardDesk);
-    };
-
-    const handleAttack = () => {
-      this.gameNamespace.to(defender.info.accname).emit("showDefenderUI", false);
-      this.gameNamespace.to(attacker.info.accname).emit("showAttackerUI", true);
-      attacker.status = "ATTACKING";
-      defender.status = "WAITING";
-    };
-
-    // ЛИБО по окончанию интервала даем право защиты
-    const handleDefenseTimeout = setTimeout(handleDefense, ROUND_TIME);
-    // ЛИБО по нажатию кнопки заверешения раунда от атакующего
-    attackerSocket.on("attackEnd", () => {
-      clearTimeout(handleDefenseTimeout);
-      handleDefense();
-    });
-
-    on("successfullyDefended", () => {
-      this.discard.push(...this.desk.cards);
-      this.desk.clear();
-
-      defender.role = "ATTACKER";
-      defender.status = "ATTACKING";
-      defender.left!.role = "DEFENDER";
-      defender.left!.status = "WAITING";
-    });
-
-    on("takeCardsFromDesk", () => {
-      defender.hand.receiveCards(...this.desk.values());
-      this.desk.clear();
-
-      attacker.role = "NONE";
-      defender.role = "NONE";
-      attacker.status = "NONE";
-      defender.status = "NONE";
-
-      defender.left!.role = "ATTACKER";
-      defender.left!.status = "ATTACKING";
-      defender.left!.left!.role = "DEFENDER";
-      defender.left!.left!.status = "WAITING";
-    });
-
-
-    // делаем интервал
-    // даем возможность кидать карты
-    // при конце хода очищаем интервал и
-    // выдаем право хода защищающемуся
-
-    // защищающийся пытается отбится
-    //
-    // при успешной защите можно:
-    // - ЛИБО повторить заход атаки
-    //   - спросить у первого атаковавшего
-    //   - если не может кинуть карты, то спрашиваем остальных слева
-    // - ЛИБО перевести карты в биту
-    //
-    // при провале:
-    // - неотбившийся забирает карты
-    // - ход достается левому от проигравшего
+    this.stat.roundNumber++;
+    this.findInitialDefenderAndAttacker();
   }
 
-  private findInitialDefenderAndAttacker(): { attacker: CardPlayer, defender: CardPlayer } {
-    const attacker = this.players.getPlayer({ accname: this.info.adminAccname }).makeAttacker();
-    const defender = attacker.left!.makeDefender();
-    return { attacker, defender };
+  insertAttackCardOnDesk({ card, index, socket }: { card: Card, index: number, socket: GamesIO.SocketIO }): void {
+    this.desk.insertAttackerCard({ index, card });
+    this.gameService.insertAttackCard({ index, card, socket });
   }
 
-  loop() {
-
+  insertDefendCardOnDesk({ card, index, socket }: { card: Card, index: number, socket: GamesIO.SocketIO }): void {
+    this.desk.insertDefenderCard({ index, card });
+    this.gameService.insertDefendCard({ index, card, socket });
   }
+
+  // делаем интервал
+  // даем возможность кидать карты
+  // при конце хода очищаем интервал и
+  // выдаем право хода защищающемуся
+
+  // защищающийся пытается отбится
+  //
+  // при успешной защите можно:
+  // - ЛИБО повторить заход атаки
+  //   - спросить у первого атаковавшего
+  //   - если не может кинуть карты, то спрашиваем остальных слева
+  // - ЛИБО перевести карты в биту
+  //
+  // при провале:
+  // - неотбившийся забирает карты
+  // - ход достается левому от проигравшего
 
   restoreState({ accname }: LobbyUserIdentifier): GameState {
+    // return new GameState({ accname });
     const self = this.players.getSelf({ accname })!;
     const enemies = this.players.getEnemies({ accname });
     const desk = this.desk.slots;
     return { self, enemies, desk };
   }
 
-  makeFirstDistributionByOne() {
+  private makeFirstDistributionByOne() {
     const cardCount = this.players.count * 6;
     const cards = this.talon.shuffle().popCards(cardCount);
     this.players.receiveCardsByOne(cards);
+  }
+
+  private findInitialDefenderAndAttacker(): { attacker: Attacker, defender: Defender } {
+    const attackerIndex = this.players.getPlayerIndex({ accname: this.info.adminAccname! });
+    makeAttacker({ playerIndex: attackerIndex, players: this.players.__value });
+    const attacker = this.players.__value[attackerIndex] as Attacker;
+    console.log("att", attacker.info.accname);
+    const defenderIndex = this.players.getPlayerIndex({ accname: attacker.left.info.accname });
+    makeDefender({ playerIndex: defenderIndex, players: this.players.__value });
+    const defender = attacker.left as Defender;
+    console.log("def", defender.info.accname);
+
+    return { attacker, defender };
   }
 }
 
