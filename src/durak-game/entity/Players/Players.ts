@@ -27,6 +27,16 @@ export default class Players {
     return this.__value.find((player) => player.info.accname === accname);
   }
 
+  tryGetPlayer({ accname }: LobbyUserIdentifier): Player {
+    const player = this.getPlayer({ accname });
+    this.assertPlayer(player);
+    return player;
+  }
+
+  assertPlayer(player: Player | undefined): asserts player is Player {
+    if (player === undefined) throw new Error("Нет такого игрока");
+  }
+
   getPlayerIndex({ accname }: LobbyUserIdentifier): number {
     return this.__value.findIndex((player) => player.info.accname === accname);
   }
