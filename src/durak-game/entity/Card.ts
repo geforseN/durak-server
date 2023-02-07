@@ -1,5 +1,4 @@
 import { Power, powerRecord, Rank, Suit } from "../utility.durak";
-import DurakGame from "../durak-game";
 
 export type CardConstructor = { suit: Suit, rank: Rank };
 
@@ -12,9 +11,5 @@ export default class Card {
     this.rank = rank;
     this.suit = suit;
     this.power = powerRecord[rank];
-  }
-
-  isTrump({ game }: { game: DurakGame }): boolean {
-    return game.talon.trumpCard.suit === this.suit;
   }
 }
