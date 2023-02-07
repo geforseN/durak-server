@@ -1,7 +1,5 @@
 import Card from "./Card";
 import { Rank, Suit } from "../utility.durak";
-import DurakGame from "../durak-game";
-
 
 export default class DeskSlot {
   constructor(
@@ -10,24 +8,12 @@ export default class DeskSlot {
   ) {
   }
 
-  get hasAttackCard(): boolean {
-    return this.attackCard !== null;
-  }
-
-  get hasDefendCard(): boolean {
-    return this.defendCard !== null;
-  }
-
   get isFull(): boolean {
-    return this.hasAttackCard && this.hasDefendCard;
+    return !!(this.attackCard && this.defendCard);
   }
 
   get isEmpty(): boolean {
-    return !this.hasAttackCard && !this.hasDefendCard;
-  }
-
-  hasTrumpAttackCard({ game }: { game: DurakGame }): boolean {
-    return this.attackCard!?.isTrump({ game });
+    return !this.attackCard && !this.defendCard;
   }
 
   get values(): Card[] {
@@ -45,6 +31,14 @@ export default class DeskSlot {
     return this.attackCard?.rank === rank || this.defendCard?.rank === rank;
   }
 
+  insertAttackCard(card: Card) {
+    this.attackCard = card;
+  }
+
+  insertDefendCard(card: Card) {
+    this.defendCard = card;
+  }
+
   removeAttackCard() {
     this.attackCard = null;
   }
@@ -56,13 +50,5 @@ export default class DeskSlot {
   clear() {
     this.removeAttackCard();
     this.removeDefendCard();
-  }
-
-  insertAttackCard(card: Card) {
-    this.attackCard = card;
-  }
-
-  insertDefendCard(card: Card) {
-    this.defendCard = card;
   }
 }
