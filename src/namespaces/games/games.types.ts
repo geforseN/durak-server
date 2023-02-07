@@ -5,6 +5,7 @@ import { CardPlayerRole, CardPlayerStatus } from "../../durak-game/entity/Player
 import DeskSlot from "../../durak-game/entity/DeskSlot";
 import Self from "../../durak-game/DTO/Self.dto";
 import Enemy from "../../durak-game/DTO/Enemy.dto";
+import NotificationAlert from "../../module/notification-alert";
 
 export type GameState = { self: Self, enemies: Enemy[], desk: DeskSlot[] }
 
@@ -13,7 +14,7 @@ export namespace GamesIO {
     "state__restore": () => void
 
     "attack__stopAttack": () => void
-    "player__placeCard": (card: Card, slotIndex: number) => void
+    "player__placeCard": (card: Card, slotIndex: number, cb?: any) => void
 
     "defend__takeCards": () => void
     "defend__beatCard": (card: Card, slotIndex: number) => void
@@ -21,15 +22,18 @@ export namespace GamesIO {
 
   export type ServerToClientEvents = {
     "state__restore": (state: GameState) => void;
+    "notification__send": (notification: NotificationAlert) => void;
 
     "talon__distributeCards": () => void;
     "discard__pushCards": () => void;
 
     "role__update": (accname: string, role: CardPlayerRole) => void;
     "status__update": (accname: string, status: CardPlayerStatus) => void;
-
-    "attackUI__shouldShow": (shouldShow: boolean) => void;
     "defendUI__shouldShow": (shouldShow: boolean) => void;
+    "attackUI__shouldShow": (shouldShow: boolean) => void;
+
+    "self__removeCard": (card: Card) => void;
+    "enemies__changeCardCount": (accname: string, cardCount: number) => void;
 
     "desk__clear": () => void;
     "desk__insertAttackCard": (card: Card, slotIndex: number) => void;
