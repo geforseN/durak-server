@@ -22,13 +22,19 @@ export default function gamesHandler(
   const player = game.players.getPlayer({ accname });
   if (!player) return socket.disconnect();
 
-  if (game.stat.roundNumber === 0) {
-    game.makeFirstDistributionByOne();
-    game.stat.roundNumber++;
-  }
+  if (game.stat.roundNumber === 0) game.start();
 
-  socket.on("state__restore", () => {
-    socket.emit("state__restore", game.restoreState({ accname }));
+  socket.on("state__restore", () => socket.emit("state__restore", game.restoreState({ accname })));
+
+  socket.on("player__placeCard", (card, slotIndex, callback) => {
+    try {
+      handleInsertCardOnDesk.call({ socket, game, accname }, card, slotIndex, callback);
+    } catch (error) {
+      console.log("ERROR", error);
+      const notification = new NotificationAlert().fromError(error as Error);
+      this.namespace.to(accname).emit("notification__send", notification);
+      callback({ status: "NOK", message: (error as Error).message});
+    }
   });
 
   socket.on("player__placeCard", handleInsertCardOnDesk.bind({socket, game, accname}));
