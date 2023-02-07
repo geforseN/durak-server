@@ -3,7 +3,7 @@ import { LobbiesIO } from "../lobbies.types";
 import { NextSocketIO } from "../../../index";
 
 export default function onConnectMiddleware(socket: LobbiesIO.SocketIO, next: NextSocketIO) {
-  socket.data.role = "GUEST"
+  socket.data.role = "GUEST";
   socket.data.badTriesCount = 0;
 
   const { cookie } = socket.handshake.headers;
@@ -14,6 +14,6 @@ export default function onConnectMiddleware(socket: LobbiesIO.SocketIO, next: Ne
 
   socket.data.role = "USER";
   socket.data.accname = accname;
-  socket.join(socket.data.accname)
+  socket.join(socket.data.accname);
   return next();
 }
