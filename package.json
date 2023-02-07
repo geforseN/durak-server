@@ -6,7 +6,9 @@
   "scripts": {
     "start": "ts-node-dev --respawn --transpile-only src/index.ts",
     "nodemon": "nodemon dist/index.js",
-    "ts": "tsc -w",
+    "ts": "tsc",
+    "node": "node dist/src/index.js",
+    "tsw": "tsc -w",
     "old": "tsc -w & node --watch dist/index.js",
     "prisma": "ts-node prisma/seed.ts"
   },
