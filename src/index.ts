@@ -51,7 +51,7 @@ export const durakGames = new Map<GameId, DurakGame>();
 
 export const gamesNamespace: GamesIO.NamespaceIO = io.of(uuidGameIdRegExp);
 gamesNamespace.use(onConnectMiddleware);
-gamesNamespace.on("connect", gamesHandler);
+gamesNamespace.on("connect", gamesHandler.bind({namespace: gamesNamespace}));
 
 httpServer.listen(port);
 instrument(io, { auth: false, mode: "development" });

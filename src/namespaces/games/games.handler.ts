@@ -5,7 +5,10 @@ import { assertBeforeAttack } from "./assertions";
 import DurakGame from "../../durak-game/durak-game";
 import handleInsertCardOnDesk from "./methods/handle-insert-card-on-desk";
 
-export default function gamesHandler(socket: GamesIO.SocketIO) {
+export default function gamesHandler(
+  this: { namespace: GamesIO.NamespaceIO },
+  socket: GamesIO.SocketIO,
+) {
   try {
     assertGuestSocket(socket);
   } catch (e) {
