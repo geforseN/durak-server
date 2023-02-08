@@ -64,7 +64,6 @@ export default class Players {
     const attacker = new Attacker(this.__value[playerIndex]);
     this.__value[playerIndex] = attacker;
     return attacker;
-    // return { attacker, index: playerIndex };
   }
 
   makeDefender({ accname }: LobbyUserIdentifier): Defender {
