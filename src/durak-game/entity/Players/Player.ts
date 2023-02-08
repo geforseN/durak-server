@@ -21,14 +21,17 @@ export default class Player {
   status!: CardPlayerStatus;
   left!: Player;
   right!: Player;
+  index!: number
 
   constructor(lobbyUser: LobbyUser | Player) {
     if (lobbyUser instanceof Player) {
-      this.hand = lobbyUser.hand;
-      this.status = lobbyUser.status;
-      this.info = lobbyUser.info;
-      this.left = lobbyUser.left;
-      this.right = lobbyUser.right;
+      const player = lobbyUser;
+      this.hand = player.hand;
+      this.status = player.status;
+      this.info = player.info;
+      this.left = player.left;
+      this.right = player.right;
+      this.index = player.index
     } else this.initialize(lobbyUser);
   }
 
@@ -36,7 +39,7 @@ export default class Player {
     this.hand.receiveCards(...cardsToReceive);
   }
 
-  get missingCardNumber(): number {
+  get missingNumberOfCards(): number {
     return 6 - this.hand.count;
   }
 
