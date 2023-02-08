@@ -56,12 +56,19 @@ export default class Players {
   }
 
   private defineSidePlayers(): void {
-    this.__value.forEach((player, playerIndex, players) => {
-      const leftPlayerIndex = playerIndex === 0 ? playerIndex + 1: 0;
-      const rightPlayerIndex = playerIndex === 0 ? this.count - 1 : playerIndex - 1;
-
-      player.left = players[leftPlayerIndex];
-      player.right = players[rightPlayerIndex];
+    this.__value.forEach((player, index, players) => {
+      player.left = players[this.getLeftPlayerIndex(index)];
+      player.right = players[this.getRightPlayerIndex(index)];
     });
+  }
+
+  private getLeftPlayerIndex(index: number) {
+    const isLastPlayer = index === this.count - 1;
+    return isLastPlayer ? 0 : index + 1;
+  }
+
+  private getRightPlayerIndex(index: number) {
+    const isFirstPlayer = index === 0;
+    return isFirstPlayer ? this.count - 1 : index - 1;
   }
 }
