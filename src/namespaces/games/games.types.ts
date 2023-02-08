@@ -25,6 +25,8 @@ export namespace GamesIO {
     "notification__send": (notification: NotificationAlert) => void;
 
     "talon__distributeCards": () => void;
+    "talon__showTrumpCard": (trumpCard: Card) => void;
+
     "discard__pushCards": () => void;
 
     "role__update": (accname: string, role: CardPlayerRole) => void;
