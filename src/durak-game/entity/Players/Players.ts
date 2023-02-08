@@ -3,6 +3,8 @@ import Player from "./Player";
 import Card from "../Card";
 import Self from "../../DTO/Self.dto";
 import Enemy from "../../DTO/Enemy.dto";
+import Attacker from "./Attacker";
+import Defender from "./Defender";
 
 export default class Players {
   __value: Player[];
@@ -10,6 +12,7 @@ export default class Players {
   constructor(users: LobbyUsers) {
     this.__value = users.value.map((user) => new Player(user));
     this.defineSidePlayers();
+    this.defineIndexes();
   }
 
   get count() {
@@ -29,12 +32,8 @@ export default class Players {
 
   tryGetPlayer({ accname }: LobbyUserIdentifier): Player {
     const player = this.getPlayer({ accname });
-    this.assertPlayer(player);
+    this.assertPlayerNotUndefined(player);
     return player;
-  }
-
-  assertPlayer(player: Player | undefined): asserts player is Player {
-    if (player === undefined) throw new Error("Нет такого игрока");
   }
 
   getPlayerIndex({ accname }: LobbyUserIdentifier): number {
@@ -42,8 +41,7 @@ export default class Players {
   }
 
   getSelf({ accname }: LobbyUserIdentifier): Self {
-    const player = this.getPlayer({ accname })!;
-    return new Self(player);
+    return new Self(this.tryGetPlayer({ accname }));
   }
 
   getPlayerEnemies({ accname }: LobbyUserIdentifier): Player[] {
@@ -51,8 +49,37 @@ export default class Players {
   }
 
   getEnemies({ accname }: LobbyUserIdentifier): Enemy[] {
-    const players = this.getPlayerEnemies({ accname });
-    return players.map(player => new Enemy(player));
+    return this.getPlayerEnemies({ accname }).map((player) => new Enemy(player));
+  }
+
+  makePlayer({ accname }: LobbyUserIdentifier): Player {
+    const playerIndex = this.getPlayerIndex({ accname });
+    const player = new Player(this.__value[playerIndex]);
+    this.__value[playerIndex] = player;
+    return player;
+  }
+
+  makeAttacker({ accname }: LobbyUserIdentifier): Attacker {
+    const playerIndex = this.getPlayerIndex({ accname });
+    const attacker = new Attacker(this.__value[playerIndex]);
+    this.__value[playerIndex] = attacker;
+    return attacker;
+    // return { attacker, index: playerIndex };
+  }
+
+  makeDefender({ accname }: LobbyUserIdentifier): Defender {
+    const playerIndex = this.getPlayerIndex({ accname });
+    const defender = new Defender(this.__value[playerIndex]);
+    this.__value[playerIndex] = defender;
+    return defender;
+  }
+
+  isAttacker(player: Player): player is Attacker {
+    return player instanceof Attacker;
+  }
+
+  isDefender(player: Player): player is Defender {
+    return player instanceof Defender;
   }
 
   private defineSidePlayers(): void {
@@ -62,13 +89,21 @@ export default class Players {
     });
   }
 
-  private getLeftPlayerIndex(index: number) {
+  private getLeftPlayerIndex(index: number): number {
     const isLastPlayer = index === this.count - 1;
     return isLastPlayer ? 0 : index + 1;
   }
 
-  private getRightPlayerIndex(index: number) {
+  private getRightPlayerIndex(index: number): number {
     const isFirstPlayer = index === 0;
     return isFirstPlayer ? this.count - 1 : index - 1;
+  }
+
+  private defineIndexes(): void {
+    this.__value.forEach((player, index) => player.index = index);
+  }
+
+  private assertPlayerNotUndefined(player: Player | undefined): asserts player is Player {
+    if (player === undefined) throw new Error("Нет такого игрока");
   }
 }
