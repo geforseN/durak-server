@@ -1,9 +1,19 @@
 import { LobbyUser } from "../../../namespaces/lobbies/entity/lobby-users";
 import Hand from "../Deck/Hand";
 import Card from "../Card";
+import { PlaceCardData } from "../../../namespaces/games/methods/handle-insert-card-on-desk";
+import { GameSocket } from "../../../namespaces/games/games.service";
 
 export type CardPlayerRole = "DEFENDER" | "ATTACKER" | "NONE"
 export type CardPlayerStatus = "WAITING OPPONENT" | "WAITING ANOTHER ATTACKER" | "ATTACKING" | "DEFENDING" | "NONE";
+
+export interface CardInsert {
+  handleCardInsert({ game, card, slot, slotIndex, socket }: PlaceCardData & GameSocket): void | never;
+}
+
+export interface CardRemove {
+  removeCard(card: Card): void;
+}
 
 export default class Player {
   info!: LobbyUser;
@@ -36,4 +46,3 @@ export default class Player {
     this.status = "NONE";
   }
 }
-
