@@ -6,7 +6,7 @@ import Talon from "./entity/Deck/Talon";
 import Desk from "./entity/Desk";
 import { LobbyUserIdentifier } from "../namespaces/lobbies/entity/lobby-users";
 import { GameSocket, GamesService } from "../namespaces/games/games.service";
-import { GameState } from "../namespaces/games/games.types";
+import { GamesIO, GameState } from "../namespaces/games/games.types";
 import Card from "./entity/Card";
 import Attacker from "./entity/Players/Attacker";
 import Defender from "./entity/Players/Defender";
@@ -23,7 +23,7 @@ export default class DurakGame {
   talon: Talon;
   discard: Discard;
   desk: Desk;
-  gameService: GamesService;
+  gameService!: GamesService;
 
   constructor({ id, settings, users, adminAccname }: Lobby) {
     this.info = { id, adminAccname };
@@ -33,15 +33,15 @@ export default class DurakGame {
     this.talon = new Talon(settings.cardCount);
     this.discard = new Discard();
     this.desk = new Desk();
-    this.gameService = new GamesService(id);
   }
 
-  start() {
+  start(namespace: GamesIO.NamespaceIO) {
+    this.gameService = new GamesService(namespace);
     this.makeFirstDistributionByOne();
     this.stat.roundNumber++;
-    const {attacker, defender} = this.findInitialDefenderAndAttacker();
-    this.gameService.revealAttackUI({accname: attacker.info.accname});
-    this.gameService.revealDefendUI({accname: defender.info.accname});
+    const { attacker, defender } = this.findInitialDefenderAndAttacker();
+    this.gameService.revealAttackUI({ accname: attacker.info.accname });
+    this.gameService.revealDefendUI({ accname: defender.info.accname });
   }
 
   insertAttackCardOnDesk({ card, index, socket }: { card: Card, index: number } & GameSocket): void {
@@ -80,7 +80,7 @@ export default class DurakGame {
 
   restoreState({ accname }: LobbyUserIdentifier): GameState {
     // return new GameState({ accname });
-    const self = this.players.getSelf({ accname })!;
+    const self = this.players.getSelf({ accname });
     const enemies = this.players.getEnemies({ accname });
     const desk = this.desk.slots;
     return { self, enemies, desk };
@@ -96,11 +96,10 @@ export default class DurakGame {
     const attackerIndex = this.players.getPlayerIndex({ accname: this.info.adminAccname! });
     makeAttacker({ playerIndex: attackerIndex, players: this.players.__value });
     const attacker = this.players.__value[attackerIndex] as Attacker;
-    console.log("att", attacker.info.accname);
+
     const defenderIndex = this.players.getPlayerIndex({ accname: attacker.left.info.accname });
     makeDefender({ playerIndex: defenderIndex, players: this.players.__value });
     const defender = attacker.left as Defender;
-    console.log("def", defender.info.accname);
 
     return { attacker, defender };
   }
