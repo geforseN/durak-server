@@ -21,12 +21,9 @@ export default function handleInsertCardOnDesk(
 
   const slot = game.desk.getSlot({ index: slotIndex });
 
-  if (game.players.isDefender(player)) {
+  if (game.players.isDefender(player) || game.players.isAttacker(player)) {
     player.handleCardInsert({ game, slot, slotIndex, card, socket });
-    callback({ status: "DEF" });
-  } else if (game.players.isAttacker(player)) {
-    player.handleCardInsert({ game, slot, slotIndex, card, socket });
-    callback({ status: "ATT" });
+    callback({ status: game.players.isAttacker(player) ? "ATT" : "DEF" });
   } else {
     callback({ status: "NOK" });
   }
