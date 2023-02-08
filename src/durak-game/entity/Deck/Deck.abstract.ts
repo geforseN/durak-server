@@ -16,7 +16,7 @@ export default abstract class Deck {
 
   private buildDeck(size: CardCount): Card[] {
     const rankCount = Math.floor(size / this.suitCount);
-    const avalableRanks = ranks.filter((rank, index) => index < rankCount);
+    const avalableRanks = [...ranks].reverse().filter((rank, index) => index < rankCount);
 
     return suits.flatMap((suit) =>
       avalableRanks.map((rank) =>
