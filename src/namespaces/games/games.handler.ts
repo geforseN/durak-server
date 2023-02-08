@@ -1,7 +1,7 @@
 import { GamesIO } from "./games.types";
 import assertGuestSocket from "../lobbies/helpers/assert-guest-socket";
 import { durakGames, gamesNamespace } from "../../index";
-import DurakGame, { isAttacker, isDefender, makePlayer } from "../../durak-game/durak-game";
+import DurakGame, { isAttacker, isDefender, } from "../../durak-game/durak-game";
 import handleInsertCardOnDesk from "./methods/handle-insert-card-on-desk";
 import NotificationAlert from "../../module/notification-alert";
 
@@ -22,7 +22,16 @@ export default function gamesHandler(
   const player = game.players.getPlayer({ accname });
   if (!player) return socket.disconnect();
 
-  if (game.stat.roundNumber === 0) game.start();
+  if (game.stat.roundNumber === 0) game.start(this.namespace);
+
+  if (isDefender(player)) {
+    game.gameService.revealDefendUI({ accname: player.info.accname });
+  }
+  if (isAttacker(player)) {
+    game.gameService.revealAttackUI({ accname: player.info.accname });
+  }
+
+  socket.emit("talon__showTrumpCard", game.talon.trumpCard);
 
   socket.on("state__restore", () => socket.emit("state__restore", game.restoreState({ accname })));
 
@@ -33,24 +42,46 @@ export default function gamesHandler(
       console.log("ERROR", error);
       const notification = new NotificationAlert().fromError(error as Error);
       this.namespace.to(accname).emit("notification__send", notification);
-      callback({ status: "NOK", message: (error as Error).message});
+      callback({ status: "NOK", message: (error as Error).message });
     }
   });
 
-  socket.on("player__placeCard", handleInsertCardOnDesk.bind({socket, game, accname}));
+  socket.on("defend__takeCards", () => {
+    let player = game.players.tryGetPlayer({ accname });
+    if (!game.players.isDefender(player)) throw new Error("Вы не защищаетесь");
 
-  socket.on("attack__stopAttack", () => {
-    //assertSelfIsAttacker({ game , accname});
-    game.gameService.hideAttackUI({ accname });
-    // allowDefenderToDefend
-    //game.desk.stopAttack({ accname });
+    game.gameService
+      .hideDefendUI({ accname })
+      .hideAttackUI({ accname: player.right.info.accname });
+
+    player = game.players.makePlayer({ accname });
+
+    player.hand.receiveCards(...game.desk.cards);
+    game.desk.clear();
+
+    let { missingNumberOfCards } = player.right;
+    let talonCards = game.talon.popCards(missingNumberOfCards);
+    if (missingNumberOfCards > talonCards.length) {
+      console.log("No more cards in talon");
+    }
+
+    player.right.receiveCards(...talonCards);
+
+    game.players.makeAttacker({ accname: player.left.info.accname });
+    game.players.makeDefender({ accname: player.left.left.info.accname });
+
+    gamesNamespace.emit("discard__pushCards");
   });
 
-  socket.on("defend__takeCards", () => {
-    //assertSelfIsDefender(game, socket.data.accname);
-    game.gameService.hideDefenderUI({ accname });
+  socket.on("attack__stopAttack", () => {
+    const player = game.players.tryGetPlayer({ accname });
+    if (!isAttacker(player)) throw new Error("Вы не атакуете");
+
     game.gameService.hideAttackUI({ accname });
-    gamesNamespace.emit("discard__pushCards");
+
+    // make new turn
+    // allowDefenderToDefend
+    //game.desk.stopAttack({ accname });
   });
 
   console.log("МОЯ ИГРА", gameId, ":", game.talon.count);
