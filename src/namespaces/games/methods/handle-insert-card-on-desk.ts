@@ -1,17 +1,13 @@
-import { GamesIO } from "../games.types";
 import Card from "../../../durak-game/entity/Card";
 import DurakGame, { isAttacker, isDefender } from "../../../durak-game/durak-game";
 import DeskSlot from "../../../durak-game/entity/DeskSlot";
+import { GameSocket } from "../games.service";
 
 export type SlotInfo = { slot: DeskSlot, slotIndex: number };
 export type PlaceCardData = { game: DurakGame, card: Card } & SlotInfo;
 
-export interface CardInsert {
-  handleCardInsert({ game, card, slot, slotIndex }: PlaceCardData): void | never;
-}
-
 export default function handleInsertCardOnDesk(
-  this: { socket: GamesIO.SocketIO, game: DurakGame, accname: GamesIO.SocketIO["data"]["accname"] },
+  this: { game: DurakGame, accname: string } & GameSocket,
   card: Card,
   slotIndex: number,
   callback: any,
