@@ -5,12 +5,12 @@ import Discard from "./entity/Deck/Discard";
 import Talon from "./entity/Deck/Talon";
 import Desk from "./entity/Desk";
 import { LobbyUserIdentifier } from "../namespaces/lobbies/entity/lobby-users";
-import { GamesService } from "../namespaces/games/games.service";
-import { GamesIO, GameState } from "../namespaces/games/games.types";
+import { GameSocket, GamesService } from "../namespaces/games/games.service";
+import { GameState } from "../namespaces/games/games.types";
 import Card from "./entity/Card";
 import Attacker from "./entity/Players/Attacker";
 import Defender from "./entity/Players/Defender";
-import Player from "./entity/Players/Player";
+import Player, { CardRemove } from "./entity/Players/Player";
 
 export type GameStat = { roundNumber: number };
 export type GameInfo = { id: string, adminAccname: string | null };
@@ -42,14 +42,21 @@ export default class DurakGame {
     this.findInitialDefenderAndAttacker();
   }
 
-  insertAttackCardOnDesk({ card, index, socket }: { card: Card, index: number, socket: GamesIO.SocketIO }): void {
+  insertAttackCardOnDesk({ card, index, socket }: { card: Card, index: number } & GameSocket): void {
     this.desk.insertAttackerCard({ index, card });
     this.gameService.insertAttackCard({ index, card, socket });
   }
 
-  insertDefendCardOnDesk({ card, index, socket }: { card: Card, index: number, socket: GamesIO.SocketIO }): void {
+  insertDefendCardOnDesk({ card, index, socket }: { card: Card, index: number } & GameSocket): void {
     this.desk.insertDefenderCard({ index, card });
     this.gameService.insertDefendCard({ index, card, socket });
+  }
+
+  removeCard({ player, socket, card }: { player: Player & CardRemove, card: Card } & GameSocket) {
+    const { info: { accname }, hand: { count: cardCount } } = player;
+    player.removeCard(card);
+    this.gameService.removeCard({ accname, card, socket });
+    this.gameService.changeCardCount({ accname, cardCount, socket });
   }
 
   // делаем интервал
