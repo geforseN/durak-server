@@ -1,24 +1,21 @@
-import Player from "./Player";
-import { CardInsert, PlaceCardData } from "../../../namespaces/games/methods/handle-insert-card-on-desk";
-import { GamesIO } from "../../../namespaces/games/games.types";
+import Player, { CardInsert, CardRemove } from "./Player";
+import { PlaceCardData } from "../../../namespaces/games/methods/handle-insert-card-on-desk";
 import Card from "../Card";
+import { GameSocket } from "../../../namespaces/games/games.service";
 
-export default class Attacker extends Player implements CardInsert {
+export default class Attacker extends Player implements CardInsert, CardRemove {
   constructor(player: Player) {
     super(player);
   }
 
   handleCardInsert(
-    { game, card, slot, slotIndex, socket }: PlaceCardData & { socket: GamesIO.SocketIO },
+    { game, card, slot, slotIndex, socket }: PlaceCardData & GameSocket,
   ): void | never {
-    const { desk } = game;
-    if (!desk.isEmpty) {
+    if (!game.desk.isEmpty) {
       if (slot.attackCard) throw new Error("Занято");
-      if (!desk.hasCardWithRank(card.rank)) throw new Error("Нет схожего ранга на доске");
+      if (!game.desk.hasCardWithRank(card.rank)) throw new Error("Нет схожего ранга на доске");
     }
-    this.removeCard(card);
-    socket.to(socket.data.accname as string).emit("self__removeCard", card);
-    game.gameService.changeCardCount({ accname: socket.data.accname as string, cardCount: this.hand.count, socket });
+    game.removeCard({ player: this, card, socket });
     game.insertAttackCardOnDesk({ index: slotIndex, card, socket });
   }
 
