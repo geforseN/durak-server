@@ -105,15 +105,6 @@ export default class DurakGame {
   }
 }
 
-
-export function isDefender(player: Player): player is Defender {
-  return player instanceof Defender;
-}
-
-export function isAttacker(player: Player): player is Attacker {
-  return player instanceof Attacker;
-}
-
 export function makeDefender({ playerIndex, players }: { playerIndex: number, players: Player[] }) {
   const player = players[playerIndex];
   players[playerIndex] = new Defender(player);

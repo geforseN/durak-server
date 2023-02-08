@@ -1,7 +1,7 @@
 import { GamesIO } from "./games.types";
 import assertGuestSocket from "../lobbies/helpers/assert-guest-socket";
 import { durakGames, gamesNamespace } from "../../index";
-import DurakGame, { isAttacker, isDefender, } from "../../durak-game/durak-game";
+import DurakGame from "../../durak-game/durak-game";
 import handleInsertCardOnDesk from "./methods/handle-insert-card-on-desk";
 import NotificationAlert from "../../module/notification-alert";
 
@@ -24,10 +24,10 @@ export default function gamesHandler(
 
   if (game.stat.roundNumber === 0) game.start(this.namespace);
 
-  if (isDefender(player)) {
+  if (game.players.isDefender(player)) {
     game.gameService.revealDefendUI({ accname: player.info.accname });
   }
-  if (isAttacker(player)) {
+  if (game.players.isAttacker(player)) {
     game.gameService.revealAttackUI({ accname: player.info.accname });
   }
 
@@ -75,7 +75,7 @@ export default function gamesHandler(
 
   socket.on("attack__stopAttack", () => {
     const player = game.players.tryGetPlayer({ accname });
-    if (!isAttacker(player)) throw new Error("Вы не атакуете");
+    if (!game.players.isAttacker(player)) throw new Error("Вы не атакуете");
 
     game.gameService.hideAttackUI({ accname });
 

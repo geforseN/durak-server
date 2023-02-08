@@ -1,5 +1,5 @@
 import Card from "../../../durak-game/entity/Card";
-import DurakGame, { isAttacker, isDefender } from "../../../durak-game/durak-game";
+import DurakGame from "../../../durak-game/durak-game";
 import DeskSlot from "../../../durak-game/entity/DeskSlot";
 import { GameSocket } from "../games.service";
 
@@ -21,10 +21,10 @@ export default function handleInsertCardOnDesk(
 
   const slot = game.desk.getSlot({ index: slotIndex });
 
-  if (isDefender(player)) {
+  if (game.players.isDefender(player)) {
     player.handleCardInsert({ game, slot, slotIndex, card, socket });
     callback({ status: "DEF" });
-  } else if (isAttacker(player)) {
+  } else if (game.players.isAttacker(player)) {
     player.handleCardInsert({ game, slot, slotIndex, card, socket });
     callback({ status: "ATT" });
   } else {
