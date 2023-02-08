@@ -3,6 +3,8 @@ import { GameId, io } from "../../index";
 import { LobbyUserIdentifier } from "../lobbies/entity/lobby-users";
 import Card from "../../durak-game/entity/Card";
 
+export type GameSocket = { socket: GamesIO.SocketIO };
+
 export class GamesService {
   private namespace: GamesIO.NamespaceIO;
 
@@ -10,16 +12,20 @@ export class GamesService {
     this.namespace = io.of(gameId);
   }
 
-  insertAttackCard({ card, index, socket }: { card: Card, index: number, socket: GamesIO.SocketIO }) {
+  insertAttackCard({ card, index, socket }: { card: Card, index: number } & GameSocket) {
     socket.broadcast.emit("desk__insertAttackCard", card, index);
   }
 
-  insertDefendCard({ card, index, socket }: { card: Card, index: number, socket: GamesIO.SocketIO }) {
+  insertDefendCard({ card, index, socket }: { card: Card, index: number } & GameSocket) {
     socket.broadcast.emit("desk__insertDefendCard", card, index);
   }
 
-  changeCardCount({ accname, cardCount, socket }: { accname: string, cardCount: number, socket: GamesIO.SocketIO }) {
+  changeCardCount({ accname, cardCount, socket }: { accname: string, cardCount: number } & GameSocket) {
     socket.except(accname).emit("enemies__changeCardCount", accname, cardCount);
+  }
+
+  removeCard({ accname, card, socket }: { accname: string, card: Card } & GameSocket) {
+    socket.to(accname).emit("self__removeCard", card);
   }
 
   hideAttackUI({ accname }: LobbyUserIdentifier) {
