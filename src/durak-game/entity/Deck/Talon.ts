@@ -25,14 +25,6 @@ export default class Talon extends Deck {
     return this;
   }
 
-  ensureCanDraw(cardCount: number): this | never {
-    if (cardCount <= 0 || !Number.isInteger(cardCount)) {
-      throw Error("This method received as an argument not positive integer.")
-    }
-    // else if (cardCount > this.cardCount) {}
-    return this;
-  }
-
   popCards(cardCount = 1): Card[] {
     const index = this.count - 1 - cardCount;
     return this._value.splice(index, cardCount);
