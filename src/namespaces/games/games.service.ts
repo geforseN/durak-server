@@ -36,11 +36,11 @@ export class GamesService {
     this.namespace.to(accname).emit("attackUI__shouldShow", true);
   }
 
-  hideDefenderUI({ accname }: LobbyUserIdentifier) {
+  hideDefendUI({ accname }: LobbyUserIdentifier) {
     this.namespace.to(accname).emit("defendUI__shouldShow", false);
   }
 
-  revealDefenderUI({ accname }: LobbyUserIdentifier) {
+  revealDefendUI({ accname }: LobbyUserIdentifier) {
     this.namespace.to(accname).emit("defendUI__shouldShow", true);
   }
 }

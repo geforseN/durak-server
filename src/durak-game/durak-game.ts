@@ -39,7 +39,9 @@ export default class DurakGame {
   start() {
     this.makeFirstDistributionByOne();
     this.stat.roundNumber++;
-    this.findInitialDefenderAndAttacker();
+    const {attacker, defender} = this.findInitialDefenderAndAttacker();
+    this.gameService.revealAttackUI({accname: attacker.info.accname});
+    this.gameService.revealDefendUI({accname: defender.info.accname});
   }
 
   insertAttackCardOnDesk({ card, index, socket }: { card: Card, index: number } & GameSocket): void {
