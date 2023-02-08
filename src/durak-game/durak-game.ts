@@ -39,7 +39,7 @@ export default class DurakGame {
     this.gameService = new GamesService(namespace);
     this.makeFirstDistributionByOne();
     this.stat.roundNumber++;
-    const { attacker, defender } = this.findInitialDefenderAndAttacker();
+    const { attacker, defender } = this.makeInitialDefenderAndAttacker();
     this.gameService.revealAttackUI({ accname: attacker.info.accname });
     this.gameService.revealDefendUI({ accname: defender.info.accname });
   }
@@ -92,30 +92,9 @@ export default class DurakGame {
     this.players.receiveCardsByOne(cards);
   }
 
-  private findInitialDefenderAndAttacker(): { attacker: Attacker, defender: Defender } {
-    const attackerIndex = this.players.getPlayerIndex({ accname: this.info.adminAccname! });
-    makeAttacker({ playerIndex: attackerIndex, players: this.players.__value });
-    const attacker = this.players.__value[attackerIndex] as Attacker;
-
-    const defenderIndex = this.players.getPlayerIndex({ accname: attacker.left.info.accname });
-    makeDefender({ playerIndex: defenderIndex, players: this.players.__value });
-    const defender = attacker.left as Defender;
-
+  private makeInitialDefenderAndAttacker(): { attacker: Attacker, defender: Defender } {
+    const attacker = this.players.makeAttacker({ accname: this.info.adminAccname! });
+    const defender = this.players.makeDefender({ accname: attacker.left.info.accname });
     return { attacker, defender };
   }
-}
-
-export function makeDefender({ playerIndex, players }: { playerIndex: number, players: Player[] }) {
-  const player = players[playerIndex];
-  players[playerIndex] = new Defender(player);
-}
-
-export function makeAttacker({ playerIndex, players }: { playerIndex: number, players: Player[] }) {
-  const player = players[playerIndex];
-  players[playerIndex] = new Attacker(player);
-}
-
-export function makePlayer({ playerIndex, players }: { playerIndex: number, players: Player[] }) {
-  const player = players[playerIndex];
-  players[playerIndex] = new Player(player);
 }
