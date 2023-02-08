@@ -27,5 +27,7 @@ export default function handleInsertCardOnDesk(
   } else if (isAttacker(player)) {
     player.handleCardInsert({ game, slot, slotIndex, card, socket });
     callback({ status: "ATT" });
-  } else socket.disconnect();
+  } else {
+    callback({ status: "NOK" });
+  }
 }
