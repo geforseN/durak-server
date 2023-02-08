@@ -55,10 +55,10 @@ export default class DurakGame {
   }
 
   removeCard({ player, socket, card }: { player: Player & CardRemove, card: Card } & GameSocket) {
-    const { info: { accname }, hand: { count: cardCount } } = player;
+    const { info: { accname } } = player;
     player.removeCard(card);
     this.gameService.removeCard({ accname, card, socket });
-    this.gameService.changeCardCount({ accname, cardCount, socket });
+    this.gameService.changeCardCount({ accname, socket, cardCount: player.hand.count });
   }
 
   // делаем интервал
