@@ -16,8 +16,7 @@ export namespace GamesIO {
     "attack__stopAttack": () => void
     "player__placeCard": (card: Card, slotIndex: number, cb?: any) => void
 
-    "defend__takeCards": () => void
-    "defend__beatCard": (card: Card, slotIndex: number) => void
+    "defend__stopDefend": () => void;
   }
 
   export type ServerToClientEvents = {
@@ -27,7 +26,7 @@ export namespace GamesIO {
     "talon__distributeCards": () => void;
     "talon__showTrumpCard": (trumpCard: Card) => void;
 
-    "discard__pushCards": () => void;
+    "desk__pushCardsInDiscard": () => void;
 
     "role__update": (accname: string, role: CardPlayerRole) => void;
     "status__update": (accname: string, status: CardPlayerStatus) => void;
