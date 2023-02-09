@@ -1,6 +1,7 @@
 import { GamesIO } from "./games.types";
 import { LobbyUserIdentifier } from "../lobbies/entity/lobby-users";
 import Card from "../../durak-game/entity/Card";
+import NotificationAlert from "../../module/notification-alert";
 
 export type GameSocket = { socket: GamesIO.SocketIO };
 
@@ -42,5 +43,11 @@ export class GamesService {
   revealDefendUI({ accname }: LobbyUserIdentifier): this {
     this.namespace.to(accname).emit("defendUI__shouldShow", true);
     return this;
+  }
+
+  handleError({ accname, error }: LobbyUserIdentifier & { error: unknown }) {
+    console.log("ERROR: ", error);
+    const notification = new NotificationAlert().fromError(error as Error);
+    this.namespace.to(accname).emit("notification__send", notification);
   }
 }
