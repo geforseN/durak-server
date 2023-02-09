@@ -39,9 +39,7 @@ export default function gamesHandler(
     try {
       handleInsertCardOnDesk.call({ socket, game, accname }, card, slotIndex, callback);
     } catch (error) {
-      console.log("ERROR", error);
-      const notification = new NotificationAlert().fromError(error as Error);
-      this.namespace.to(accname).emit("notification__send", notification);
+      game.gameService.handleError({ accname, error });
       callback({ status: "NOK", message: (error as Error).message });
     }
   });
