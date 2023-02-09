@@ -1,5 +1,5 @@
 import DurakGame from "../../../durak-game/durak-game";
-import { GameSocket } from "../games.service";
+import { GameSocket } from "../game.service";
 
 export default function handleStopAttack(
   this: { game: DurakGame, accname: string } & GameSocket

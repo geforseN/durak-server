@@ -1,7 +1,7 @@
 import Player, { CardInsert, CardRemove } from "./Player";
 import { PlaceCardData } from "../../../namespaces/games/methods/handle-insert-card-on-desk";
 import Card from "../Card";
-import { GameSocket } from "../../../namespaces/games/games.service";
+import { GameSocket } from "../../../namespaces/games/game.service";
 
 export default class Defender extends Player implements CardInsert, CardRemove {
   constructor(player: Player) {

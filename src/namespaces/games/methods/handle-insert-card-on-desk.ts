@@ -1,7 +1,7 @@
 import Card from "../../../durak-game/entity/Card";
 import DurakGame from "../../../durak-game/durak-game";
 import DeskSlot from "../../../durak-game/entity/DeskSlot";
-import { GameSocket } from "../games.service";
+import { GameSocket } from "../game.service";
 
 export type SlotInfo = { slot: DeskSlot, slotIndex: number };
 export type PlaceCardData = { game: DurakGame, card: Card } & SlotInfo;

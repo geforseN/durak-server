@@ -5,7 +5,7 @@ import Discard from "./entity/Deck/Discard";
 import Talon from "./entity/Deck/Talon";
 import Desk from "./entity/Desk";
 import { LobbyUserIdentifier } from "../namespaces/lobbies/entity/lobby-users";
-import { GameSocket, GamesService } from "../namespaces/games/games.service";
+import { GameSocket, GameService } from "../namespaces/games/game.service";
 import { GamesIO, GameState } from "../namespaces/games/games.types";
 import Card from "./entity/Card";
 import Attacker from "./entity/Players/Attacker";
@@ -23,7 +23,7 @@ export default class DurakGame {
   talon: Talon;
   discard: Discard;
   desk: Desk;
-  gameService!: GamesService;
+  service!: GameService;
 
   constructor({ id, settings, users, adminAccname }: Lobby) {
     this.info = { id, adminAccname };
@@ -36,29 +36,29 @@ export default class DurakGame {
   }
 
   start(namespace: GamesIO.NamespaceIO) {
-    this.gameService = new GamesService(namespace);
+    this.service = new GameService(namespace);
     this.makeFirstDistributionByOne();
     this.stat.roundNumber++;
     const { attacker, defender } = this.makeInitialDefenderAndAttacker();
-    this.gameService.revealAttackUI({ accname: attacker.info.accname });
-    this.gameService.revealDefendUI({ accname: defender.info.accname });
+    this.service.revealAttackUI({ accname: attacker.info.accname });
+    this.service.revealDefendUI({ accname: defender.info.accname });
   }
 
   insertAttackCardOnDesk({ card, index, socket }: { card: Card, index: number } & GameSocket): void {
     this.desk.insertAttackerCard({ index, card });
-    this.gameService.insertAttackCard({ index, card, socket });
+    this.service.insertAttackCard({ index, card, socket });
   }
 
   insertDefendCardOnDesk({ card, index, socket }: { card: Card, index: number } & GameSocket): void {
     this.desk.insertDefenderCard({ index, card });
-    this.gameService.insertDefendCard({ index, card, socket });
+    this.service.insertDefendCard({ index, card, socket });
   }
 
   removeCard({ player, socket, card }: { player: Player & CardRemove, card: Card } & GameSocket) {
     const { info: { accname } } = player;
     player.removeCard(card);
-    this.gameService.removeCard({ accname, card, socket });
-    this.gameService.changeCardCount({ accname, socket, cardCount: player.hand.count });
+    this.service.removeCard({ accname, card, socket });
+    this.service.changeCardCount({ accname, socket, cardCount: player.hand.count });
   }
 
   // делаем интервал

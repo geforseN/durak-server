@@ -23,8 +23,8 @@ export default function gamesHandler(
   if (!player) return socket.disconnect();
 
   if (game.stat.roundNumber === 0) game.start(this.namespace);
-  if (game.players.isDefender(player)) game.gameService.revealDefendUI({ accname: player.info.accname });
-  if (game.players.isAttacker(player)) game.gameService.revealAttackUI({ accname: player.info.accname });
+  if (game.players.isDefender(player)) game.service.revealDefendUI({ accname: player.info.accname });
+  if (game.players.isAttacker(player)) game.service.revealAttackUI({ accname: player.info.accname });
 
   socket.emit("talon__showTrumpCard", game.talon.trumpCard);
 
@@ -34,7 +34,7 @@ export default function gamesHandler(
     try {
       handleInsertCardOnDesk.call({ socket, game, accname }, card, slotIndex, callback);
     } catch (error) {
-      game.gameService.handleError({ accname, error });
+      game.service.handleError({ accname, error });
       callback({ status: "NOK", message: (error as Error).message });
     }
   });
@@ -43,7 +43,7 @@ export default function gamesHandler(
     try {
       handleStopAttack.call({ socket, game, accname });
     } catch (error) {
-      game.gameService.handleError({ accname, error });
+      game.service.handleError({ accname, error });
     }
   });
 
@@ -51,7 +51,7 @@ export default function gamesHandler(
     const player = game.players.tryGetPlayer({ accname });
     if (!game.players.isAttacker(player)) throw new Error("Вы не атакуете");
 
-    game.gameService.hideAttackUI({ accname });
+    game.service.hideAttackUI({ accname });
 
     // make new turn
     // allowDefenderToDefend

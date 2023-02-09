@@ -2,7 +2,7 @@ import { LobbyUser } from "../../../namespaces/lobbies/entity/lobby-users";
 import Hand from "../Deck/Hand";
 import Card from "../Card";
 import { PlaceCardData } from "../../../namespaces/games/methods/handle-insert-card-on-desk";
-import { GameSocket } from "../../../namespaces/games/games.service";
+import { GameSocket } from "../../../namespaces/games/game.service";
 
 export type CardPlayerRole = "DEFENDER" | "ATTACKER" | "NONE"
 export type CardPlayerStatus = "WAITING OPPONENT" | "WAITING ANOTHER ATTACKER" | "ATTACKING" | "DEFENDING" | "NONE";

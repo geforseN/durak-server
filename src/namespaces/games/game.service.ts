@@ -5,7 +5,7 @@ import NotificationAlert from "../../module/notification-alert";
 
 export type GameSocket = { socket: GamesIO.SocketIO };
 
-export class GamesService {
+export class GameService {
   constructor(private namespace: GamesIO.NamespaceIO) {
   }
 
