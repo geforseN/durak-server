@@ -35,6 +35,10 @@ export default class Desk {
     return this.slots.every((slot) => slot.isFull);
   }
 
+  get isNonEmptySlotsDefended(): boolean {
+    return this.slots.every((slot) => !slot.attackCard || (slot.attackCard && slot.defendCard));
+  }
+
   insertAttackerCard({ index, card }: { index: number, card: Card }) {
     this.getSlot({ index }).insertAttackCard(card);
   }
@@ -45,16 +49,5 @@ export default class Desk {
 
   clear(): void {
     this.slots.forEach((slot) => slot.clear());
-  }
-
-  ensureCorrectIndex(index: number): this | never {
-    const isInt = Number.isInteger(index);
-    const isInRange = index >= 0 && index <= this.maxSlotCount;
-    if (!isInt || !isInRange) throw new Error("Некорректный индекс");
-    return this;
-  }
-
-  ensureCanPut() {
-
   }
 }
