@@ -13,7 +13,7 @@ export default function handleInsertCardOnDesk(
   callback: any,
 ) {
   const { game, socket, accname } = this;
-  if (!accname) return socket.disconnect();
+  if (!accname) throw new Error("Вы вне игры");
 
   const player = game.players.tryGetPlayer({ accname });
 
@@ -25,6 +25,6 @@ export default function handleInsertCardOnDesk(
     player.handleCardInsert({ game, slot, slotIndex, card, socket });
     callback({ status: game.players.isAttacker(player) ? "ATT" : "DEF" });
   } else {
-    callback({ status: "NOK" });
+    callback({ status: "NOK", message: "Пока не можете ложить карту на стол" });
   }
 }
