@@ -23,8 +23,8 @@ export default function gamesHandler(
   if (!player) return socket.disconnect();
 
   if (game.stat.roundNumber === 0) game.start(this.namespace);
-  if (game.players.isDefender(player)) game.service.revealDefendUI({ accname: player.info.accname });
-  if (game.players.isAttacker(player)) game.service.revealAttackUI({ accname: player.info.accname });
+  if (game.players.isDefender(player)) game.service.revealDefendUI({ accname });
+  if (game.players.isAttacker(player)) game.service.revealAttackUI({ accname });
 
   socket.emit("talon__showTrumpCard", game.talon.trumpCard);
 
