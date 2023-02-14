@@ -52,25 +52,16 @@ export default class Players {
     return this.getPlayerEnemies({ accname }).map((player) => new Enemy(player));
   }
 
-  makePlayer({ accname }: LobbyUserIdentifier): Player {
-    const playerIndex = this.getPlayerIndex({ accname });
-    const player = new Player(this.__value[playerIndex]);
-    this.__value[playerIndex] = player;
-    return player;
+  makePlayer(playerOrIdentifier: Player | LobbyUserIdentifier): Player {
+    return this.make(playerOrIdentifier, Player) as Player;
   }
 
-  makeAttacker({ accname }: LobbyUserIdentifier): Attacker {
-    const playerIndex = this.getPlayerIndex({ accname });
-    const attacker = new Attacker(this.__value[playerIndex]);
-    this.__value[playerIndex] = attacker;
-    return attacker;
+  makeAttacker(playerOrIdentifier: Player | LobbyUserIdentifier): Attacker {
+    return this.make(playerOrIdentifier, Attacker) as Attacker;
   }
 
-  makeDefender({ accname }: LobbyUserIdentifier): Defender {
-    const playerIndex = this.getPlayerIndex({ accname });
-    const defender = new Defender(this.__value[playerIndex]);
-    this.__value[playerIndex] = defender;
-    return defender;
+  makeDefender(playerOrIdentifier: Player | LobbyUserIdentifier): Defender {
+    return this.make(playerOrIdentifier, Defender) as Defender;
   }
 
   isAttacker(player: Player): player is Attacker {
@@ -79,6 +70,21 @@ export default class Players {
 
   isDefender(player: Player): player is Defender {
     return player instanceof Defender;
+  }
+
+  private make<P>(playerOrIdentifier: Player | LobbyUserIdentifier, PlayerConstructor: P) {
+    const accname = this.getAccname(playerOrIdentifier);
+    const playerIndex = this.getPlayerIndex({ accname });
+    // @ts-ignore
+    const instance = new PlayerConstructor(this.__value[playerIndex]);
+    this.__value[playerIndex] = instance;
+    return instance;
+  }
+
+  private getAccname(playerOrIdentifier: Player | LobbyUserIdentifier): string {
+    return playerOrIdentifier instanceof Player
+      ? playerOrIdentifier.info.accname
+      : playerOrIdentifier.accname;
   }
 
   private defineSidePlayers(): void {
