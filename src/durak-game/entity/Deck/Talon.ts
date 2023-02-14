@@ -16,6 +16,10 @@ export default class Talon extends Deck {
     return this.trumpCard.suit;
   }
 
+  get isEmpty(): boolean {
+    return this.count === 0;
+  }
+
   shuffle(): this {
     for (let i = 0; i < this.count; i++) {
       let k = randomInt(this.count);
@@ -25,9 +29,18 @@ export default class Talon extends Deck {
     return this;
   }
 
+  /**
+   * @param {number} cardCount Positive number
+   * @todo add test
+   * */
   popCards(cardCount = 1): Card[] {
-    const index = this.count - 1 - cardCount;
+    const index = this.count - cardCount;
+    if (index < 0) return this.lastCards;
     return this._value.splice(index, cardCount);
+  }
+
+  private get lastCards() {
+    return this._value.splice(0, this.count);
   }
 
   private swapCards(i: number, k: number) {
