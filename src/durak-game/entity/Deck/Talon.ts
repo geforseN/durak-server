@@ -18,9 +18,9 @@ export default class Talon extends Deck {
 
   shuffle(): this {
     for (let i = 0; i < this.count; i++) {
-      let j = randomInt(this.count);
-      while (i === j) j = randomInt(this.count);
-      [this._value[j], this._value[i]] = [this._value[i], this._value[j]]
+      let k = randomInt(this.count);
+      while (i === k) k = randomInt(this.count);
+      this.swapCards(i, k);
     }
     return this;
   }
@@ -28,5 +28,9 @@ export default class Talon extends Deck {
   popCards(cardCount = 1): Card[] {
     const index = this.count - 1 - cardCount;
     return this._value.splice(index, cardCount);
+  }
+
+  private swapCards(i: number, k: number) {
+    [this._value[k], this._value[i]] = [this._value[i], this._value[k]];
   }
 }
