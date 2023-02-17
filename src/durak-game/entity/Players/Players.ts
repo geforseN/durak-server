@@ -1,8 +1,6 @@
 import LobbyUsers, { LobbyUserIdentifier } from "../../../namespaces/lobbies/entity/lobby-users";
 import Player from "./Player";
 import Card from "../Card";
-import Self from "../../DTO/Self.dto";
-import Enemy from "../../DTO/Enemy.dto";
 import Attacker from "./Attacker";
 import Defender from "./Defender";
 
