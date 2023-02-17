@@ -39,9 +39,9 @@ export default function gamesHandler(
     }
   });
 
-  socket.on("defend__stopDefend", () => {
+  socket.on("superPlayer__stopMove", () => {
     try {
-      handleStopAttack.call({ socket, game, accname });
+      handleStopMove.call({ socket, game, accname });
     } catch (error) {
       game.service.handleError({ accname, error });
     }

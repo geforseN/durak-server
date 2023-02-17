@@ -13,10 +13,8 @@ export namespace GamesIO {
   export type ClientToServerEvents = {
     "state__restore": () => void
 
-    "attack__stopAttack": () => void
-    "player__placeCard": (card: Card, slotIndex: number, cb?: any) => void
-
-    "defend__stopDefend": () => void;
+    "superPlayer__stopMove": () => void
+    "superPlayer__putCardOnDesk": (card: Card, slotIndex: number, cb: ResponseCallback) => void
   }
 
   export type ServerToClientEvents = {
