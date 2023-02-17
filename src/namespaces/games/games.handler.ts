@@ -1,23 +1,16 @@
 import { GamesIO } from "./games.types";
-import assertGuestSocket from "../lobbies/helpers/assert-guest-socket";
 import { durakGames } from "../../index";
-import DurakGame from "../../durak-game/durak-game";
-import handleInsertCardOnDesk from "./methods/handle-insert-card-on-desk";
-import handleStopAttack from "./methods/handle-stop-attack";
+import handlePutCardOnDesk from "./methods/handle-put-card-on-desk";
+import handleStopMove from "./methods/handle-stop-move";
 
 export default function gamesHandler(
   this: { namespace: GamesIO.NamespaceIO },
   socket: GamesIO.SocketIO,
 ) {
-  try {
-    assertGuestSocket(socket);
-  } catch (e) {
-    socket.disconnect();
-  }
   const { data: { accname }, nsp: { name: gameId } } = socket;
-
-  const game: DurakGame | undefined = durakGames.get(gameId);
-  if (!game || !accname) return socket.disconnect();
+  const game = durakGames.get(gameId);
+  if (!game) return handleNoSuchGameOnline(socket);
+  if (!accname) return handleNotAuthorized(socket);
 
   const player = game.players.getPlayer({ accname });
   if (!player) return socket.disconnect();
@@ -26,7 +19,9 @@ export default function gamesHandler(
   if (game.players.isDefender(player)) game.service.revealDefendUI({ accname });
   if (game.players.isAttacker(player)) game.service.revealAttackUI({ accname });
 
-  socket.emit("talon__showTrumpCard", game.talon.trumpCard);
+  socket.on("state__restore", () => {
+    game.restoreState({ accname, socket })
+  });
 
   socket.on("state__restore", () => socket.emit("state__restore", game.restoreState({ accname })));
 
@@ -46,17 +41,12 @@ export default function gamesHandler(
       game.service.handleError({ accname, error });
     }
   });
+}
 
-  socket.on("attack__stopAttack", () => {
-    const player = game.players.tryGetPlayer({ accname });
-    if (!game.players.isAttacker(player)) throw new Error("Вы не атакуете");
+function handleNoSuchGameOnline(socket: GamesIO.SocketIO) {
+  socket.disconnect();
+}
 
-    game.service.hideAttackUI({ accname });
-
-    // make new turn
-    // allowDefenderToDefend
-    //game.desk.stopAttack({ accname });
-  });
-
-  console.log("МОЯ ИГРА", gameId, ":", game.talon.count);
+function handleNotAuthorized(socket: GamesIO.SocketIO) {
+  socket.disconnect();
 }
