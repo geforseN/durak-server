@@ -36,7 +36,7 @@ export default class Player {
   }
 
   receiveCards(...cardsToReceive: Card[]): void {
-    this.hand.receiveCards(...cardsToReceive);
+    this.hand.receive(...cardsToReceive);
   }
 
   get missingNumberOfCards(): number {

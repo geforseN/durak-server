@@ -1,5 +1,5 @@
 import Deck, { CardCount } from "./Deck.abstract";
-import Card from "../Card";
+import Card, { CardObject } from "../Card";
 
 export default class Hand extends Deck {
   constructor(size?: CardCount) {
@@ -10,19 +10,15 @@ export default class Hand extends Deck {
     return this._value;
   }
 
-  has({ card: { suit, rank } }: { card: Card }) {
+  has({ card: { suit, rank } }: CardObject): boolean {
     return this._value.some((card) => card.suit === suit && card.rank === rank);
   }
 
-  receiveCards(...cards: Card[]): void {
+  receive(...cards: Card[]): void {
     this._value.push(...cards);
   }
 
-  find({ card: { suit, rank } }: { card: Card }): Card | undefined {
-    return this._value.find((card) => card.suit === suit && card.rank === rank);
-  }
-
-  findIndex({ card: { suit, rank } }: { card: Card }): number {
+  findIndex({ card: { suit, rank } }: CardObject): number {
     return this._value.findIndex((card) => card.suit === suit && card.rank === rank);
   }
 }
