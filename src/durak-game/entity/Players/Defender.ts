@@ -1,9 +1,10 @@
-import Player, { CardInsert, CardRemove } from "./Player";
-import { PlaceCardData } from "../../../namespaces/games/methods/handle-insert-card-on-desk";
+import Player, { CardPut, CardRemove, MoveStop } from "./Player";
+import { PlaceCardData } from "../../../namespaces/games/methods/handle-put-card-on-desk";
 import Card from "../Card";
 import { GameSocket } from "../../../namespaces/games/game.service";
+import DurakGame from "../../durak-game";
 
-export default class Defender extends Player implements CardInsert, CardRemove {
+export default class Defender extends Player implements CardPut, CardRemove, MoveStop {
   constructor(player: Player) {
     super(player);
   }
@@ -11,20 +12,23 @@ export default class Defender extends Player implements CardInsert, CardRemove {
   putCardOnDesk(
     { game, slotIndex, card, socket }: PlaceCardData & GameSocket,
   ): void | never {
-    if (slot.defendCard) throw new Error("Карта уже побита");
-    if (!slot.attackCard) throw new Error("Нет от чего защищаться");
-
+    const slot = game.desk.getSlot({ index: slotIndex });
     const { trumpSuit } = game.talon;
-
-    if (slot.attackCard.suit === trumpSuit) {
-      if (card.suit !== trumpSuit) throw new Error("Козырную карту можно побить только козырной");
-      if (card.power < slot.attackCard.power) throw new Error("Вы кинули слабую карту");
-    } else if (card.suit !== trumpSuit) {
-      if (card.suit !== slot.attackCard.suit) throw new Error("Вы кинули неверню масть");
-      if (card.power < slot.attackCard.power) throw new Error("Вы кинули слабую карту");
-    }
+    slot.assertAvalableForDefense(card, trumpSuit);
     game.removeCard({ player: this, card, socket });
     game.insertDefendCardOnDesk({ card, index: slotIndex, socket });
+  }
+
+  stopMove({ game }: { game: DurakGame }) {
+    const defender = this;
+    if (game.desk.isFull) return game.handleSuccesfullDefense({ defender });
+    if (!game.desk.isDefended) return game.handleBadDefense({ defender });
+
+    const { cardCount } = game.desk;
+    const cardCountIncreased = cardCount > (game.round.lastCardCount ?? 0);
+    if (cardCountIncreased) return game.round.letMoveToInitialAttacker({ cardCount });
+
+    return game.handleSuccesfullDefense({ defender });
   }
 
   removeCard(card: Card): void {

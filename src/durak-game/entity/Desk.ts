@@ -15,6 +15,14 @@ export default class Desk {
     return this.slots.flatMap((slot) => slot.values);
   }
 
+  get cardCount(): number {
+    return this.cards.length;
+  }
+
+  hasSameCardCount(cardCount: number): boolean {
+    return this.cardCount === cardCount;
+  }
+
   getSlot({ index }: { index: number }): DeskSlot {
     return this.slots[index];
   }
@@ -35,8 +43,8 @@ export default class Desk {
     return this.slots.every((slot) => slot.isFull);
   }
 
-  get isNonEmptySlotsDefended(): boolean {
-    return this.slots.every((slot) => !slot.attackCard || (slot.attackCard && slot.defendCard));
+  get isDefended(): boolean {
+    return this.slots.every((slot) => slot.isDefended);
   }
 
   insertAttackerCard({ index, card }: { index: number, card: Card }) {
@@ -49,5 +57,14 @@ export default class Desk {
 
   clear(): void {
     this.slots.forEach((slot) => slot.clear());
+  }
+
+  assertCanPut({ attackCard, slotIndex }: {attackCard: Card, slotIndex: number}) {
+    const slot = this.getSlot({ index: slotIndex });
+    if (this.isEmpty) return;
+    if (slot.attackCard) throw new Error("Слот занят");
+    if (!this.hasCardWithRank(attackCard.rank)) {
+      throw new Error("Нет схожего ранга на доске");
+    }
   }
 }

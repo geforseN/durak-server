@@ -16,6 +16,10 @@ export default class DeskSlot {
     return !this.attackCard && !this.defendCard;
   }
 
+  get isDefended(): boolean {
+    return !this.attackCard || !!(this.attackCard && this.defendCard);
+  }
+
   get values(): Card[] {
     const values = [];
     if (this.attackCard) values.push(this.attackCard);
@@ -50,5 +54,18 @@ export default class DeskSlot {
   clear() {
     this.removeAttackCard();
     this.removeDefendCard();
+  }
+
+  assertAvalableForDefense(card: Card, trumpSuit: Suit) {
+    if (this.defendCard) throw new Error("Карта уже побита");
+    if (!this.attackCard) throw new Error("Нет от чего защищаться");
+
+    if (this.attackCard.suit === trumpSuit) {
+      if (card.suit !== trumpSuit) throw new Error("Козырную карту можно побить только козырной");
+      if (card.power < this.attackCard.power) throw new Error("Вы кинули слабую карту");
+    } else if (card.suit !== trumpSuit) {
+      if (card.suit !== this.attackCard.suit) throw new Error("Вы кинули неверню масть");
+      if (card.power < this.attackCard.power) throw new Error("Вы кинули слабую карту");
+    }
   }
 }
