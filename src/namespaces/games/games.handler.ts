@@ -12,12 +12,8 @@ export default function gamesHandler(
   if (!game) return handleNoSuchGameOnline(socket);
   if (!accname) return handleNotAuthorized(socket);
 
-  const player = game.players.getPlayer({ accname });
-  if (!player) return socket.disconnect();
-
-  if (game.stat.roundNumber === 0) game.start(this.namespace);
-  if (game.players.isDefender(player)) game.service.revealDefendUI({ accname });
-  if (game.players.isAttacker(player)) game.service.revealAttackUI({ accname });
+  if (!game.round?.number) game.start(this.namespace);
+  console.log("МОЯ ИГРА", gameId, ":", game.talon.count);
 
   socket.on("state__restore", () => {
     game.restoreState({ accname, socket })
