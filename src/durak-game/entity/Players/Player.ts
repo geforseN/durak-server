@@ -24,15 +24,10 @@ export default class Player {
   right!: Player;
   index!: number;
 
-  constructor(lobbyUser: LobbyUser | Player) {
-    if (lobbyUser instanceof Player) {
-      const player = lobbyUser;
-      this.hand = player.hand;
-      this.info = player.info;
-      this.left = player.left;
-      this.right = player.right;
-      this.index = player.index;
-    } else this.initialize(lobbyUser);
+  constructor(param: LobbyUser | Player) {
+    if (param instanceof Player) {
+      this.initializeFromPlayer(param)
+    } else this.initializeFromLobbyUser(param);
   }
 
   receiveCards(...cardsToReceive: Card[]): void {
@@ -43,8 +38,16 @@ export default class Player {
     return 6 - this.hand.count;
   }
 
-  private initialize(lobbyUser: LobbyUser) {
+  private initializeFromLobbyUser(lobbyUser: LobbyUser) {
     this.info = lobbyUser;
     this.hand = new Hand();
+  }
+
+  private initializeFromPlayer(player: Player) {
+    this.hand = player.hand;
+    this.info = player.info;
+    this.left = player.left;
+    this.right = player.right;
+    this.index = player.index;
   }
 }
