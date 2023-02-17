@@ -6,7 +6,7 @@ import { GameSocket } from "../game.service";
 export type SlotInfo = { slot: DeskSlot, slotIndex: number };
 export type PlaceCardData = { game: DurakGame, card: Card } & SlotInfo;
 
-export default function handleInsertCardOnDesk(
+export default function handlePutCardOnDesk(
   this: { game: DurakGame, accname: string } & GameSocket,
   card: Card,
   slotIndex: number,
@@ -22,7 +22,7 @@ export default function handleInsertCardOnDesk(
   const slot = game.desk.getSlot({ index: slotIndex });
 
   if (game.players.isDefender(player) || game.players.isAttacker(player)) {
-    player.handleCardInsert({ game, slot, slotIndex, card, socket });
-    callback({ status: game.players.isAttacker(player) ? "ATT" : "DEF" });
+    player.putCardOnDesk({ game, slotIndex, card, socket });
+    /* return */callback({ status: game.players.isAttacker(player) ? "ATT" : "DEF" });
   } else throw new Error("У вас нет прав ложить карту на стол");
 }

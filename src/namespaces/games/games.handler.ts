@@ -23,11 +23,9 @@ export default function gamesHandler(
     game.restoreState({ accname, socket })
   });
 
-  socket.on("state__restore", () => socket.emit("state__restore", game.restoreState({ accname })));
-
-  socket.on("player__placeCard", (card, slotIndex, callback) => {
+  socket.on("superPlayer__putCardOnDesk", (card, slotIndex, callback) => {
     try {
-      handleInsertCardOnDesk.call({ socket, game, accname }, card, slotIndex, callback);
+      handlePutCardOnDesk.call({ socket, game, accname }, card, slotIndex, callback);
     } catch (error) {
       game.service.handleError({ accname, error });
       callback({ status: "NOK", message: (error as Error).message });

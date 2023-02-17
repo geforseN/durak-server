@@ -8,8 +8,8 @@ export default class Defender extends Player implements CardInsert, CardRemove {
     super(player);
   }
 
-  handleCardInsert(
-    { game, slot, slotIndex, card, socket }: PlaceCardData & GameSocket,
+  putCardOnDesk(
+    { game, slotIndex, card, socket }: PlaceCardData & GameSocket,
   ): void | never {
     if (slot.defendCard) throw new Error("Карта уже побита");
     if (!slot.attackCard) throw new Error("Нет от чего защищаться");
