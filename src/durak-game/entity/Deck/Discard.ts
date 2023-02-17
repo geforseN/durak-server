@@ -6,7 +6,7 @@ export default class Discard extends Deck {
     super();
   }
 
-  push(...cards: Card[]): number {
-    return this._value.push(...cards);
+  push(...cards: Card[]): void {
+    this._value.push(...cards);
   }
 }
