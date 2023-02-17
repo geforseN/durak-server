@@ -17,11 +17,13 @@ export default class Players {
     return this.__value.length;
   }
 
-  receiveCardsByOne(cards: Card[]) {
-    cards.forEach((card, index) => {
-      const playerIndex = index % this.count;
-      this.__value[playerIndex].receiveCards(card);
-    });
+  receiveCards({ talonCards, howMany }: { talonCards: Card[], howMany: number }) {
+    for (let i = 0, playerI = 0; talonCards.length !== 0; i++, playerI = i % this.count) {
+      const player = this.__value[playerI];
+      const startIndex = talonCards.length - howMany;
+      const cards = talonCards.splice(startIndex, howMany);
+      player.receiveCards(...cards);
+    }
   }
 
   getPlayer({ accname }: LobbyUserIdentifier): Player | undefined {
