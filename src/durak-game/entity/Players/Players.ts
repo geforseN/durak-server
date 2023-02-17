@@ -40,28 +40,20 @@ export default class Players {
     return this.__value.findIndex((player) => player.info.accname === accname);
   }
 
-  getSelf({ accname }: LobbyUserIdentifier): Self {
-    return new Self(this.tryGetPlayer({ accname }));
-  }
-
   getPlayerEnemies({ accname }: LobbyUserIdentifier): Player[] {
     return this.__value.filter((player) => player.info.accname !== accname);
   }
 
-  getEnemies({ accname }: LobbyUserIdentifier): Enemy[] {
-    return this.getPlayerEnemies({ accname }).map((player) => new Enemy(player));
-  }
-
   makePlayer(playerOrIdentifier: Player | LobbyUserIdentifier): Player {
-    return this.make(playerOrIdentifier, Player) as Player;
+    return this.make(playerOrIdentifier, Player);
   }
 
   makeAttacker(playerOrIdentifier: Player | LobbyUserIdentifier): Attacker {
-    return this.make(playerOrIdentifier, Attacker) as Attacker;
+    return this.make(playerOrIdentifier, Attacker);
   }
 
   makeDefender(playerOrIdentifier: Player | LobbyUserIdentifier): Defender {
-    return this.make(playerOrIdentifier, Defender) as Defender;
+    return this.make(playerOrIdentifier, Defender);
   }
 
   isAttacker(player: Player): player is Attacker {
@@ -72,11 +64,12 @@ export default class Players {
     return player instanceof Defender;
   }
 
-  private make<P>(playerOrIdentifier: Player | LobbyUserIdentifier, PlayerConstructor: P) {
+  private make<P extends Player>(
+    playerOrIdentifier: Player | LobbyUserIdentifier, PlayerP: { new(player: Player): P },
+  ): P {
     const accname = this.getAccname(playerOrIdentifier);
     const playerIndex = this.getPlayerIndex({ accname });
-    // @ts-ignore
-    const instance = new PlayerConstructor(this.__value[playerIndex]);
+    const instance = new PlayerP(this.__value[playerIndex]);
     this.__value[playerIndex] = instance;
     return instance;
   }
