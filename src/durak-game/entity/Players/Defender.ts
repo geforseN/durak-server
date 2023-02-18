@@ -24,10 +24,12 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     if (game.desk.isFull) return game.handleSuccesfullDefense({ defender });
     if (!game.desk.isDefended) return game.handleBadDefense({ defender });
 
-    const { cardCount } = game.desk;
-    const cardCountIncreased = cardCount > (game.round.lastCardCount ?? 0);
-    if (cardCountIncreased) return game.round.letMoveToInitialAttacker({ cardCount });
-
+    // will be true when desk is defended and for EXAMPLE:
+    //  lastCardCount === 4, cardCount === 6
+    if (game.cardCountIncreasedFromLastDefense) {
+      game.round.__lastDefenseCardCount = game.desk.cardCount;
+      return game.round.__letMoveTo(game.players.tryGetAttacker());
+    }
     return game.handleSuccesfullDefense({ defender });
   }
 

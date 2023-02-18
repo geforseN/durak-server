@@ -39,8 +39,17 @@ export default class DurakGame {
     this.makeFirstDistribution({ howMany: 1 });
     const attacker = this.makeInitialAttacker();
     const defender = this.makeDefender(attacker.left);
-    this.round = new GameRound({ attacker, defender });
+    this.round = new GameRound(1, { attacker, defender });
     this.service.setAttackUI("revealed", attacker);
+  }
+
+  get cardCountIncreasedFromLastDefense(): boolean {
+    const lastCardCount = this.round.__lastDefenseCardCount ?? Number.NEGATIVE_INFINITY;
+    return this.desk.cardCount > lastCardCount;
+  }
+
+  get cardCountSameFromLastDefense(): boolean {
+    return this.desk.cardCount === this.round.__lastDefenseCardCount;
   }
 
   insertAttackCardOnDesk({ card, index, socket }: { card: Card, index: number } & GameSocket): void {
@@ -67,25 +76,23 @@ export default class DurakGame {
   }
 
   handleBadDefense({ defender }: { defender: Defender }): void {
-    this.lostRound({ defender });
-    return this.handleNewTurn({ nextAttacker: defender.left });
+    return this.lostRound({ defender }).handleNewRound({ nextAttacker: defender.left });
   }
 
   handleSuccesfullDefense({ defender }: { defender: Defender }): void {
-    this.wonRound({ defender });
-    return this.handleNewTurn({ nextAttacker: defender });
+    return this.wonRound({ defender }).handleNewRound({ nextAttacker: defender });
   }
 
-  handleNewTurn({ nextAttacker }: { nextAttacker: Player }) {
+  handleNewRound({ nextAttacker }: { nextAttacker: Player }) {
     this.makeCardDistribution();
     const attacker = this.makeAttacker(nextAttacker);
     const defender = this.makeDefender(attacker.left);
-    this.round.nextRound({ attacker, defender });
+    this.round = new GameRound(this.round.number, { attacker, defender });
     this.service.setAttackUI("revealed", attacker);
   }
 
   makeCardDistribution() {
-    for (const accname of this.round.distributionAccnameQueue) {
+    for (const accname of this.round.distributionQueue.accnames) {
       if (this.talon.isEmpty) break;
       const player = this.players.tryGetPlayer({ accname });
       this.pushCardsFromTalon({ player });
@@ -99,16 +106,18 @@ export default class DurakGame {
     if (this.talon.isEmpty) this.service.moveTrumpCard({ receiver: player });
   }
 
-  private lostRound({ defender }: { defender: Defender }) {
+  private lostRound({ defender }: { defender: Defender }): this {
     defender.receiveCards(...this.desk.cards);
     this.service.lostRound({ defender });
     this.clearDesk();
+    return this;
   }
 
-  private wonRound({ defender }: { defender: Defender }) {
+  private wonRound({ defender }: { defender: Defender }): this {
     this.discard.push(...this.desk.cards);
     this.service.wonRound({ defender });
     this.clearDesk();
+    return this;
   }
 
   restoreState({ accname, socket }: LobbyUserIdentifier & GameSocket): void {
@@ -137,7 +146,23 @@ export default class DurakGame {
     return defender;
   }
 
+  makePlayer(playerOrIdentifier: Player | LobbyUserIdentifier): Player {
+    const player = this.players.makePlayer(playerOrIdentifier);
+    this.service.changeRoleTo("player", player);
+    return player;
+  }
+
   get isOver() {
     return this.players.__value.filter((player) => player.hand.count !== 0).length === 1;
+  }
+
+  letMoveTo(playerOrAccname: Player | string) {
+    const accname = this.getAccname(playerOrAccname);
+    this.round.__letMoveTo(accname);
+    this.service.letMoveTo(accname);
+  }
+
+  private getAccname(playerOrAccname: Player | string): string {
+    return playerOrAccname instanceof Player ? playerOrAccname.info.accname : playerOrAccname;
   }
 }

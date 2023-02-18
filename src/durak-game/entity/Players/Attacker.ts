@@ -23,26 +23,45 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
   }
 
   stopMove({ game }: { game: DurakGame }) {
-    const attacker = this;
-    const _defender = game.players.tryGetPlayer({ accname: game.round.originalDefenderAccname });
-    const sameCardCount = game.desk.hasSameCardCount(game.round.lastCardCount ?? 0);
-    if (attacker.hand.count === 0) letNextPlayerTurn(); // or let defender won
-    if (attacker.hand.count && (game.desk.isEmpty || sameCardCount)) throw new Error("Киньте хотя-бы одну карту");
+    const isOriginalAttacker = game.round.__isOriginalAttacker(this);
+    const sameCardCount = game.cardCountSameFromLastDefense;
+    const defender = game.round.__originalDefender;
+
+    if (this.hand.count === 0) {
+      if (isOriginalAttacker) return FIXME_LetMoveToNextPlayer(this)
+      return FIXME_LetMoveToNextPlayer(this);
+    }
+    // game.cardCountIncreasedFromLastDefense;
+
+    // ORIGINAL ATTACKER
+    // cardCount 4, lastDefenseCardCount 2      letMoveToDefender
+    // cardCount 2, lastDefenseCardCount 2      LOOP HERE :(
+    // cardCount 2, lastDefenseCardCount null   letMoveToDefender
+
+    // NOT ORIGINAL ATTACKER
+    // cardCount 4, lastDefenseCardCount 2      letMoveToDefender  IF DEFENDER SUCCEEDED MAKE MOVE TO THIS ???
+    // cardCount 2, lastDefenseCardCount 2      letMoveTo(this.left) LOOP HERE :(( IF this.left === original DEFENDER WON
+    // cardCount 2, lastDefenseCardCount null   letMoveTo(this.left) LOOP HERE :(((
+
+
+    if (isOriginalAttacker) {
+      if (sameCardCount) {
+        return FIXME_LetMoveToNextPlayer(this);
+      } else return game.round.__letMoveTo(defender);
+    }
+    if (sameCardCount) {
+      game.makePlayer(this);
+      const newAttacker = game.makeAttacker(defender.left);
+      if (game.round.__isOriginalAttacker(newAttacker)) {
+        return game.handleSuccesfullDefense({ defender });
+      }
+      return game.letMoveTo(newAttacker);
+    } else return game.round.__letMoveTo(defender);
+
+    function FIXME_LetMoveToNextPlayer(p: Attacker) {
+      game.makePlayer(p);
+      const newAttacker = game.makeAttacker(defender.left);
+      return game.letMoveTo(newAttacker);
+    }
   }
-}
-
-function _cantMove({ game, attacker }: { game: DurakGame, attacker: Attacker }) {
-  const isOriginalAttacker = game.round.originalAttackerAccname === attacker.info.accname;
-  const sameCardCount = game.round.lastCardCount === game.desk.cardCount;
-
-  if (isOriginalAttacker && sameCardCount) {
-    const defender = attacker.right;
-    if (game.players.isDefender(defender))
-      game.handleSuccesfullDefense({ defender });
-    else throw new Error("HOW");
-  }
-}
-
-function letNextPlayerTurn() {
-
 }
