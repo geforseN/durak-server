@@ -19,7 +19,7 @@ export default class Desk {
     return this.cards.length;
   }
 
-  hasSameCardCount(cardCount: number): boolean {
+  hasSameCardCount(cardCount: number | null): boolean {
     return this.cardCount === cardCount;
   }
 
@@ -59,7 +59,7 @@ export default class Desk {
     this.slots.forEach((slot) => slot.clear());
   }
 
-  assertCanPut({ attackCard, slotIndex }: {attackCard: Card, slotIndex: number}) {
+  assertCanPut({ attackCard, slotIndex }: { attackCard: Card, slotIndex: number }) {
     const slot = this.getSlot({ index: slotIndex });
     if (this.isEmpty) return;
     if (slot.attackCard) throw new Error("Слот занят");
