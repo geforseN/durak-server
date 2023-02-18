@@ -26,13 +26,25 @@ export default class Players {
     }
   }
 
+  getAttacker(): Attacker | undefined {
+    for (const player of this.__value) {
+      if (player instanceof Attacker) return player;
+    }
+  }
+
+  tryGetAttacker(): Attacker {
+    const attacker = this.getAttacker();
+    this.assertPlayer(attacker, "Атакующий не найден");
+    return attacker;
+  }
+
   getPlayer({ accname }: LobbyUserIdentifier): Player | undefined {
     return this.__value.find((player) => player.info.accname === accname);
   }
 
   tryGetPlayer({ accname }: LobbyUserIdentifier): Player {
     const player = this.getPlayer({ accname });
-    this.assertPlayerNotUndefined(player);
+    this.assertPlayer(player);
     return player;
   }
 
@@ -101,7 +113,7 @@ export default class Players {
     this.__value.forEach((player, index) => player.index = index);
   }
 
-  private assertPlayerNotUndefined(player: Player | undefined): asserts player is Player {
-    if (player === undefined) throw new Error("Нет такого игрока");
+  private assertPlayer(player: Player | undefined, message?: string): asserts player is Player {
+    if (player === undefined) throw new Error(message ?? "Игрок не найден");
   }
 }
