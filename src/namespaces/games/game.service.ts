@@ -92,4 +92,8 @@ export class GameService {
     socket.emit("talon__showTrumpCard", game.talon.trumpCard);
     return this;
   }
+
+  letMoveTo(accname: string) {
+    this.namespace.emit("player__allowedToMove", accname);
+  }
 }
