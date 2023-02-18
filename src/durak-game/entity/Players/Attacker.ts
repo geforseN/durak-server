@@ -3,6 +3,7 @@ import { PlaceCardData } from "../../../namespaces/games/methods/handle-put-card
 import Card from "../Card";
 import { GameSocket } from "../../../namespaces/games/game.service";
 import DurakGame from "../../durak-game";
+import { CurrentMove } from "../../GameRound";
 
 export default class Attacker extends Player implements CardPut, CardRemove, MoveStop {
   constructor(player: Player) {
@@ -23,13 +24,15 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
   }
 
   stopMove({ game }: { game: DurakGame }) {
-    const isOriginalAttacker = game.round.__isOriginalAttacker(this);
-    const sameCardCount = game.cardCountSameFromLastDefense;
-    const defender = game.round.__originalDefender;
+    const isOriginalAttacker = game.round.isOriginalAttacker(this);
+    const { cardCountSameFromLastDefense } = game;
+    const { defender } = game.round.firstMove;
 
     if (this.hand.count === 0) {
-      if (isOriginalAttacker) return FIXME_LetMoveToNextPlayer(this)
-      return FIXME_LetMoveToNextPlayer(this);
+      return game.round.currentMove = new CurrentMove({
+        moveNumber: game.round.currentMove.number,
+        allowedPlayer: isOriginalAttacker ? defender.left : this.left,
+      });
     }
     // game.cardCountIncreasedFromLastDefense;
 
@@ -43,7 +46,6 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
     // cardCount 2, lastDefenseCardCount 2      letMoveTo(this.left) LOOP HERE :(( IF this.left === original DEFENDER WON
     // cardCount 2, lastDefenseCardCount null   letMoveTo(this.left) LOOP HERE :(((
 
-
     if (isOriginalAttacker) {
       if (sameCardCount) {
         return FIXME_LetMoveToNextPlayer(this);
@@ -52,11 +54,14 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
     if (sameCardCount) {
       game.makePlayer(this);
       const newAttacker = game.makeAttacker(defender.left);
-      if (game.round.__isOriginalAttacker(newAttacker)) {
+      if (game.round.firstMove.attackerAccname === newAttacker.info.accname) {
         return game.handleSuccesfullDefense({ defender });
       }
-      return game.letMoveTo(newAttacker);
-    } else return game.round.__letMoveTo(defender);
+      game.letMoveTo(newAttacker);
+    } else game.round.currentMove = new CurrentMove({
+      moveNumber: game.round.currentMove.number + 1,
+      allowedPlayer: defender,
+    });
 
     function FIXME_LetMoveToNextPlayer(p: Attacker) {
       game.makePlayer(p);

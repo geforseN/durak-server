@@ -6,7 +6,7 @@ export default function handleStopMove(
 ) {
   const { game, accname } = this;
   const player = game.players.tryGetPlayer({ accname });
-  if (!game.round.__canMakeMove(player)) throw new Error("Нет права ходить");
+  if (!(game.round.currentMove.allowedPlayer === player)) throw new Error("Нет права ходить");
   if (game.desk.isEmpty) throw new Error("Нельзя закончить раунд с пустым столом");
   if (game.players.isDefender(player) || game.players.isAttacker(player)) {
     player.stopMove({ game });

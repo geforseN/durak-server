@@ -17,6 +17,10 @@ export default class Players {
     return this.__value.length;
   }
 
+  get withCards() {
+    return this.__value.filter((player) => player.hand.count !== 0);
+  }
+
   receiveCards({ talonCards, howMany }: { talonCards: Card[], howMany: number }) {
     for (let i = 0, playerI = 0; talonCards.length !== 0; i++, playerI = i % this.count) {
       const player = this.__value[playerI];
@@ -36,6 +40,18 @@ export default class Players {
     const attacker = this.getAttacker();
     this.assertPlayer(attacker, "Атакующий не найден");
     return attacker;
+  }
+
+  getDefender(): Attacker | undefined {
+    for (const player of this.__value) {
+      if (player instanceof Defender) return player;
+    }
+  }
+
+  tryGetDefender(): Attacker {
+    const defender = this.getDefender();
+    this.assertPlayer(defender, "Защищающийся не найден");
+    return defender;
   }
 
   getPlayer({ accname }: LobbyUserIdentifier): Player | undefined {

@@ -19,6 +19,6 @@ export default function handlePutCardOnDesk(
 
   if (game.players.isDefender(player) || game.players.isAttacker(player)) {
     player.putCardOnDesk({ game, slotIndex, card, socket });
-    /* return */callback({ status: game.players.isAttacker(player) ? "ATT" : "DEF" });
+    return callback({ status: game.players.isAttacker(player) ? "ATT" : "DEF" });
   } else throw new Error("У вас нет прав ложить карту на стол");
 }

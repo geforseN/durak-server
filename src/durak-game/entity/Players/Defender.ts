@@ -3,6 +3,7 @@ import { PlaceCardData } from "../../../namespaces/games/methods/handle-put-card
 import Card from "../Card";
 import { GameSocket } from "../../../namespaces/games/game.service";
 import DurakGame from "../../durak-game";
+import { SuccesfullDefenseMove } from "../../GameRound";
 
 export default class Defender extends Player implements CardPut, CardRemove, MoveStop {
   constructor(player: Player) {
@@ -17,6 +18,9 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     slot.assertAvalableForDefense(card, trumpSuit);
     game.removeCard({ player: this, card, socket });
     game.insertDefendCardOnDesk({ card, index: slotIndex, socket });
+    if (game.desk.isDefended) {
+      // MOVE TO ATTACKER
+    }
   }
 
   stopMove({ game }: { game: DurakGame }) {
@@ -27,8 +31,10 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     // will be true when desk is defended and for EXAMPLE:
     //  lastCardCount === 4, cardCount === 6
     if (game.cardCountIncreasedFromLastDefense) {
-      game.round.__lastDefenseCardCount = game.desk.cardCount;
-      return game.round.__letMoveTo(game.players.tryGetAttacker());
+      const c = { moveNumber: game.round.currentMove.number, cardCount: game.desk.cardCount };
+      game.round.lastSuccesfullDefense = new SuccesfullDefenseMove(c);
+      game.round.currentMove.allowedPlayer = game.players.tryGetAttacker();
+      return;
     }
     return game.handleSuccesfullDefense({ defender });
   }

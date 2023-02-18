@@ -44,12 +44,12 @@ export default class DurakGame {
   }
 
   get cardCountIncreasedFromLastDefense(): boolean {
-    const lastCardCount = this.round.__lastDefenseCardCount ?? Number.NEGATIVE_INFINITY;
-    return this.desk.cardCount > lastCardCount;
+    const lastCardCount = this.round.lastSuccesfullDefense?.cardCount;
+    return this.desk.cardCount > (lastCardCount ?? Number.NEGATIVE_INFINITY);
   }
 
   get cardCountSameFromLastDefense(): boolean {
-    return this.desk.cardCount === this.round.__lastDefenseCardCount;
+    return this.desk.cardCount === this.round.lastSuccesfullDefense?.cardCount;
   }
 
   insertAttackCardOnDesk({ card, index, socket }: { card: Card, index: number } & GameSocket): void {
@@ -84,17 +84,15 @@ export default class DurakGame {
   }
 
   handleNewRound({ nextAttacker }: { nextAttacker: Player }) {
-    this.makeCardDistribution();
-    const attacker = this.makeAttacker(nextAttacker);
-    const defender = this.makeDefender(attacker.left);
-    this.round = new GameRound(this.round.number, { attacker, defender });
+    if (!this.talon.isEmpty) this.makeCardDistribution();
+    const { attacker, defender } = this.makeNewPlayers({ nextAttacker });
+    this.round = new GameRound(this.round.number + 1, { attacker, defender });
     this.service.setAttackUI("revealed", attacker);
   }
 
   makeCardDistribution() {
-    for (const accname of this.round.distributionQueue.accnames) {
+    for (const player of this.round.distributionQueue.value) {
       if (this.talon.isEmpty) break;
-      const player = this.players.tryGetPlayer({ accname });
       this.pushCardsFromTalon({ player });
     }
   }
@@ -153,7 +151,7 @@ export default class DurakGame {
   }
 
   get isOver() {
-    return this.players.__value.filter((player) => player.hand.count !== 0).length === 1;
+    return this.players.withCards.length === 1;
   }
 
   letMoveTo(playerOrAccname: Player | string) {
@@ -164,5 +162,13 @@ export default class DurakGame {
 
   private getAccname(playerOrAccname: Player | string): string {
     return playerOrAccname instanceof Player ? playerOrAccname.info.accname : playerOrAccname;
+  }
+
+  private makeNewPlayers({ nextAttacker }: { nextAttacker: Player }) {
+    this.makePlayer(this.players.tryGetAttacker());
+    this.makePlayer(this.players.tryGetDefender());
+    const attacker = this.makeAttacker(nextAttacker);
+    const defender = this.makeDefender(attacker.left);
+    return { attacker, defender };
   }
 }

@@ -5,153 +5,84 @@ import Defender from "./entity/Players/Defender";
 type DefenderObject = { defender: Defender };
 type AttackerObject = { attacker: Attacker };
 
-export default class GameRound {
-  __allowedToMovePlayerAccname: string;
-  __originalAttackerAccname: string;
-  __originalDefender: Defender;
-  __originalDefenderAccname: string;
+export class CurrentMove {
   number: number;
-  __distributionAccnameQueue: string[];
-  __lastDefenseCardCount: number | null;
-  currentMove: {
-    number: number,
-    allowedPlayer: Player,
-    get allowedPlayerAccname(): string
-  };
-  lastSuccesfullDefense?: {
-    cardCount: number | null,
-    moveNumber: number | null,
-  };
-  firstMove: {
-    attacker: Attacker,
-    defender: Defender,
-    get attackerAccname(): string,
-    get defenderAccname(): string,
-  };
-  distributionQueue: Player[];
+  allowedPlayer: Player;
 
-  constructor(round: number, { attacker, defender }: AttackerObject & DefenderObject) {
-    this.number = round;
-    this.__allowedToMovePlayerAccname = attacker.info.accname;
-    this.__lastDefenseCardCount = null; //
-    this.__originalDefender = defender;
-    this.__originalAttackerAccname = attacker.info.accname;
-    this.__originalDefenderAccname = defender.info.accname;
-    this.__distributionAccnameQueue = []; //
-    this.currentMove = {
-      number: 1,
-      allowedPlayer: attacker,
-      allowedPlayerAccname: attacker.info.accname,
-    };
-    this.firstMove = {
-      defender,
-      attacker,
-      defenderAccname: defender.info.accname,
-      attackerAccname: attacker.info.accname,
-    };
-    this.distributionQueue = [];
+  constructor({ moveNumber, allowedPlayer }: { moveNumber: number, allowedPlayer: Player }) {
+    this.number = moveNumber;
+    this.allowedPlayer = allowedPlayer;
   }
 
-  __canMakeMove(player: Player): boolean {
-    return player.info.accname === this.__allowedToMovePlayerAccname;
+  get allowedPlayerAccname() {
+    return this.allowedPlayer.info.accname;
+  }
+}
+
+export class FirstMove {
+  attacker: Attacker;
+  defender: Defender;
+
+  constructor({ attacker, defender }: { attacker: Attacker, defender: Defender }) {
+    this.attacker = attacker;
+    this.defender = defender;
   }
 
-  canMakeMove({ info: { accname } }: Player): boolean {
-    return this.currentMove.allowedPlayerAccname === accname;
+  get attackerAccname(): string {
+    return this.attacker.info.accname;
   }
 
-  __next________________({ attacker, defender }: AttackerObject & DefenderObject): void {
-    this.number++;
-    this.__originalDefenderAccname = defender.info.accname;
-    this.__originalAttackerAccname = attacker.info.accname;
-    this.__setDistributionQueue({ defender, attacker });
+  get defenderAccname(): string {
+    return this.defender.info.accname;
   }
+}
 
-  nextCurrentMove(
-    { allowedPlayer }: { allowedPlayer: Player },
-  ): void {
-    this.currentMove.number++;
-    this.currentMove.allowedPlayer = allowedPlayer;
+export class SuccesfullDefenseMove {
+  cardCount: number;
+  moveNumber: number;
+
+  constructor({ moveNumber, cardCount }: { cardCount: number, moveNumber: number }) {
+    this.cardCount = cardCount;
+    this.moveNumber = moveNumber;
   }
+}
 
-  next(
-    { attacker, defender, allowedPlayer }: AttackerObject & DefenderObject & { allowedPlayer: Player },
-  ): void {
-    this.currentMove.number++;
-    this.currentMove.allowedPlayer = allowedPlayer;
-    this.currentMove.allowedPlayerAccname = allowedPlayer.info.accname;
-    this.firstMoveInit({ defender, attacker });
-    this.setDistributionQueue({ defender, attacker });
-  }
+export class DistributionQueue {
+  value: Player[];
 
-  __letMoveTo(playerOrAccname: string | Player) {
-    this.__allowedToMovePlayerAccname = this.__getAccname(playerOrAccname);
-  }
-
-  __letMoveToOriginalAttacker() {
-    this.__allowedToMovePlayerAccname = this.__originalAttackerAccname;
-  }
-
-  __letMoveToDefender() {
-    this.__allowedToMovePlayerAccname = this.__originalDefenderAccname;
-  }
-
-  private __setDistributionQueue({ defender, attacker }: DefenderObject & AttackerObject) {
-    this.__distributionAccnameQueue = [attacker.info.accname];
-    this.__pushPlayersInDistributionQueue({ initialPlayer: defender.left });
-    this.__distributionAccnameQueue.push(defender.info.accname);
-  }
-
-  private setDistributionQueue({ defender, attacker }: DefenderObject & AttackerObject) {
-    this.distributionQueue = [attacker];
-    this.pushPlayersInDistributionQueue({ initialPlayer: defender.left });
-    this.distributionQueue.push(defender);
-  }
-
-  private __pushPlayersInDistributionQueue({ initialPlayer }: { initialPlayer: Player }) {
-    let player = initialPlayer;
-    while (this.__notOriginalDefender(player) || this.__notOriginalAttacker(player)) {
-      this.__distributionAccnameQueue.push(player.info.accname);
-      player = player.left;
+  constructor({ attacker, defender }: { attacker: Attacker, defender: Defender }) {
+    this.value = [attacker];
+    for (let player = defender.left; player !== attacker; player = player.left) {
+      this.value.push(player);
     }
+    this.value.push(defender);
+  }
+}
+
+export default class GameRound {
+  number: number;
+  currentMove: CurrentMove;
+  lastSuccesfullDefense?: SuccesfullDefenseMove;
+  firstMove: FirstMove;
+  distributionQueue: DistributionQueue;
+
+  constructor(roundNumber: number, { attacker, defender }: AttackerObject & DefenderObject) {
+    this.number = roundNumber;
+    this.currentMove = new CurrentMove({ moveNumber: 1, allowedPlayer: attacker });
+    this.firstMove = new FirstMove({ attacker, defender });
+    this.distributionQueue = new DistributionQueue({ attacker, defender });
   }
 
-  private pushPlayersInDistributionQueue({ initialPlayer }: { initialPlayer: Player }) {
-    let player = initialPlayer;
-    while (!this.isOriginalDefender(player) || !this.isOriginalAttacker(player)) {
-      this.distributionQueue.push(player);
-      player = player.left;
-    }
-  }
+  // get distributionQueue(): Player[] {
+  //   const players: Player[] = [this.firstMove.attacker];
+  //   const { defender, attacker } = this.firstMove;
+  //   for (let player = defender.left; player.info.accname !== attacker.info.accname; player = player.left) {
+  //     players.push(player);
+  //   }
+  //   return players.concat(defender);
+  // }
 
-  __isOriginalAttacker(player: Player): boolean {
-    return player.info.accname === this.__originalAttackerAccname;
-  }
-
-  isOriginalAttacker(player: Player): boolean {
-    return player.info.accname === this.firstMove.attackerAccname;
-  }
-
-  private __notOriginalDefender(player: Player): boolean {
-    return player.info.accname !== this.__originalDefenderAccname;
-  }
-
-  private __notOriginalAttacker(player: Player): boolean {
-    return player.info.accname !== this.__originalAttackerAccname;
-  }
-
-  private isOriginalDefender(player: Player) {
-    return player.info.accname === this.firstMove.defenderAccname;
-  }
-
-  private __getAccname(playerOrAccname: Player | string): string {
-    return playerOrAccname instanceof Player ? playerOrAccname.info.accname : playerOrAccname;
-  }
-
-  private firstMoveInit({ attacker, defender }: { attacker: Attacker; defender: Defender }) {
-    this.firstMove.defenderAccname = defender.info.accname;
-    this.firstMove.defender = defender;
-    this.firstMove.attackerAccname = attacker.info.accname;
-    this.firstMove.attacker = attacker;
+  isOriginalAttacker({ info: { accname } }: Attacker): boolean {
+    return this.firstMove.attackerAccname === accname;
   }
 }
