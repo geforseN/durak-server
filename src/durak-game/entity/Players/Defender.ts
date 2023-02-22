@@ -4,7 +4,6 @@ import Card from "../Card";
 import { GameSocket } from "../../../namespaces/games/game.service";
 import DurakGame from "../../durak-game";
 import { AttackerMove, DefenderMove, InsertDefendCardMove, TransferMove } from "../../GameRound";
-import DeskSlot from "../DeskSlot";
 import { GamesIO } from "../../../namespaces/games/games.types";
 
 export type DefenderO = { defender: Defender };
@@ -19,7 +18,7 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
   ): void | never {
     const slot = game.desk.getSlot({ index });
     const { trumpSuit } = game.talon;
-    if (this.canMakeTransferMove({ slot, game, card })) {
+    if (game.desk.allowTransferMove(index, card.rank)) {
       return this.makeTransferMove({ game, socket, index, card });
     }
     slot.assertAvalableForDefense(card, trumpSuit);
@@ -65,10 +64,6 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
   removeCard(card: Card): void {
     const index = this.hand.findIndex({ card });
     this.hand.value.splice(index, 1);
-  }
-
-  private canMakeTransferMove({ slot, game, card }: { slot: DeskSlot, game: DurakGame, card: Card }) {
-    return slot.isEmpty && game.desk.allCardsHasSameRank(card.rank);
   }
 
   private makeTransferMove({ game, index, card, socket }: t) {

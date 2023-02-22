@@ -23,6 +23,11 @@ export default class Desk {
     return this.slots.filter((slot) => !slot.attackCard && slot.defendCard).length;
   };
 
+  allowTransferMove(slotIndex: number, rank: Rank) {
+    const { isEmpty: slotIsEmpty } = this.getSlot({ index: slotIndex });
+    return slotIsEmpty && this.allCardsHasSameRank(rank);
+  }
+
   hasSameCardCount(cardCount: number | null): boolean {
     return this.cardCount === cardCount;
   }
