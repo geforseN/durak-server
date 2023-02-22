@@ -62,7 +62,14 @@ export default class DurakGame {
     this.service.insertDefendCard({ index, card, socket });
   }
 
-  removeCard({ player, socket, card }: { player: Player & CardRemove, card: Card } & GameSocket) {
+  insertCardOnDesk({ card, index, socket }: CardInfo & GameSocket) {
+    this.desk.insertCard({ card, index });
+    if (this.desk.getSlot({ index }).defendCard) {
+      this.service.insertDefendCard({ card, index, socket });
+    } else this.service.insertAttackCard({ card, index, socket });
+  }
+
+  removeFromHand({ player, socket, card }: { player: Player & CardRemove, card: Card } & GameSocket) {
     const { info: { accname } } = player;
     player.removeCard(card);
     this.service

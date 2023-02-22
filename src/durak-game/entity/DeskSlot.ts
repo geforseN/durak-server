@@ -68,4 +68,9 @@ export default class DeskSlot {
       if (card.power < this.attackCard.power) throw new Error("Вы кинули слабую карту");
     }
   }
+
+  insert({ card }: {card: Card}) {
+    if (this.isEmpty) this.attackCard = card;
+    else this.defendCard = card;
+  }
 }

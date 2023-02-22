@@ -55,6 +55,10 @@ export default class Desk {
     this.getSlot({ index }).insertDefendCard(card);
   }
 
+  insertCard({ index, card }: { index: number, card: Card }) {
+    this.getSlot({ index }).insert({ card });
+  }
+
   clear(): void {
     this.slots.forEach((slot) => slot.clear());
   }
