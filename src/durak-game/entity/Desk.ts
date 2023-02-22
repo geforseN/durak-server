@@ -19,6 +19,10 @@ export default class Desk {
     return this.cards.length;
   }
 
+  get unbeatenCardCount(): number {
+    return this.slots.filter((slot) => !slot.attackCard && slot.defendCard).length;
+  };
+
   hasSameCardCount(cardCount: number | null): boolean {
     return this.cardCount === cardCount;
   }
@@ -70,5 +74,13 @@ export default class Desk {
     if (!this.hasCardWithRank(attackCard.rank)) {
       throw new Error("Нет схожего ранга на доске");
     }
+  }
+
+  canAllowTransferMove({ card }: { card: Card }) {
+    return this.slots.every((slot) => !slot.defendCard && (!slot.attackCard || slot.hasRank(card.rank)));
+  }
+
+  allCardsHasSameRank(rank: Rank) {
+    return this.slots.every((slot) => slot.isEmpty || (!slot.defendCard && slot.attackCard?.rank === rank));
   }
 }

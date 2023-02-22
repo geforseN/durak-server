@@ -1,16 +1,19 @@
 import Player from "./entity/Players/Player";
 import Attacker from "./entity/Players/Attacker";
 import Defender from "./entity/Players/Defender";
+import Card from "./entity/Card";
 
-type DefenderObject = { defender: Defender };
-type AttackerObject = { attacker: Attacker };
+type DefendMoveStatus = "DEFENDED" | "LOST" | "TRANSFER";
+type AttackMoveStatus = "INSERT" | "SKIP";
 
-export class CurrentMove {
+type GameMoveArgs<P extends Player> = { number: number, allowedPlayer: P }
+
+export class GameMove {
   number: number;
   allowedPlayer: Player;
 
-  constructor({ moveNumber, allowedPlayer }: { moveNumber: number, allowedPlayer: Player }) {
-    this.number = moveNumber;
+  constructor({ number, allowedPlayer }: GameMoveArgs<Player>) {
+    this.number = number;
     this.allowedPlayer = allowedPlayer;
   }
 
@@ -19,70 +22,109 @@ export class CurrentMove {
   }
 }
 
-export class FirstMove {
-  attacker: Attacker;
-  defender: Defender;
-
-  constructor({ attacker, defender }: { attacker: Attacker, defender: Defender }) {
-    this.attacker = attacker;
-    this.defender = defender;
-  }
-
-  get attackerAccname(): string {
-    return this.attacker.info.accname;
-  }
-
-  get defenderAccname(): string {
-    return this.defender.info.accname;
+export class AttackerMove extends GameMove {
+  constructor({ number, allowedPlayer }: GameMoveArgs<Attacker>) {
+    super({ number, allowedPlayer });
   }
 }
 
-export class SuccesfullDefenseMove {
-  cardCount: number;
-  moveNumber: number;
+export class DefenderMove extends GameMove {
+  deskCardCount: number;
 
-  constructor({ moveNumber, cardCount }: { cardCount: number, moveNumber: number }) {
-    this.cardCount = cardCount;
-    this.moveNumber = moveNumber;
+  constructor({ number, allowedPlayer, deskCardCount }: GameMoveArgs<Defender> & { deskCardCount: number }) {
+    super({ number, allowedPlayer });
+    this.deskCardCount = deskCardCount;
   }
 }
 
-export class DistributionQueue {
-  value: Player[];
+export class TransferMove extends DefenderMove {
+  card: Card;
+  slotIndex: number;
+  from?: Player;
+  to?: Player;
 
-  constructor({ attacker, defender }: { attacker: Attacker, defender: Defender }) {
-    this.value = [attacker];
-    for (let player = defender.left; player !== attacker; player = player.left) {
-      this.value.push(player);
-    }
-    this.value.push(defender);
+  constructor({
+                card,
+                deskIndex,
+                ...superProps
+              }: GameMoveArgs<Defender> & { card: Card, deskIndex: number, deskCardCount: number }) {
+    super(superProps);
+    this.card = card;
+    this.slotIndex = deskIndex;
   }
+}
+
+export class StopAttackMove extends AttackerMove {
+  deskCardCount: number;
+
+  constructor({ number, allowedPlayer, deskCardCount }: GameMoveArgs<Attacker> & { deskCardCount: number }) {
+    super({ number, allowedPlayer });
+    this.deskCardCount = deskCardCount;
+  }
+}
+
+export class InsertAttackCardMove extends AttackerMove {
+  card: Card;
+  slotIndex: number;
+
+  constructor({ slotIndex, card, number, allowedPlayer }: { slotIndex: number, card: Card } & GameMoveArgs<Attacker>) {
+    super({ number, allowedPlayer });
+    this.slotIndex = slotIndex;
+    this.card = card;
+  }
+}
+
+export class InsertDefendCardMove extends DefenderMove {
+}
+
+export class StopDefenseMove extends DefenderMove {
 }
 
 export default class GameRound {
   number: number;
-  currentMove: CurrentMove;
-  lastSuccesfullDefense?: SuccesfullDefenseMove;
-  firstMove: FirstMove;
-  distributionQueue: DistributionQueue;
+  moves: GameMove[];
+  principalAttacker: Attacker | Player | null;
 
-  constructor(roundNumber: number, { attacker, defender }: AttackerObject & DefenderObject) {
-    this.number = roundNumber;
-    this.currentMove = new CurrentMove({ moveNumber: 1, allowedPlayer: attacker });
-    this.firstMove = new FirstMove({ attacker, defender });
-    this.distributionQueue = new DistributionQueue({ attacker, defender });
+  constructor({ attacker, number }: { attacker: Attacker, number: number }) {
+    this.number = number;
+    this.moves = [new AttackerMove({ number: 1, allowedPlayer: attacker })];
+    this.principalAttacker = null;
   }
 
-  // get distributionQueue(): Player[] {
-  //   const players: Player[] = [this.firstMove.attacker];
-  //   const { defender, attacker } = this.firstMove;
-  //   for (let player = defender.left; player.info.accname !== attacker.info.accname; player = player.left) {
-  //     players.push(player);
-  //   }
-  //   return players.concat(defender);
-  // }
+  get currentMoveIndex(): number {
+    return this.moves.length - 1;
+  }
 
-  isOriginalAttacker({ info: { accname } }: Attacker): boolean {
-    return this.firstMove.attackerAccname === accname;
+  get currentMove(): GameMove {
+    return this.moves[this.currentMoveIndex];
+  }
+
+  set currentMove(move: GameMove) {
+    this.moves[this.currentMoveIndex] = move;
+  }
+
+  pushNextMove<M extends GameMove>(MoveConstructor: { new(...args: any): M }, moveConstructorArgs: Partial<InstanceType<{ new(...args: any): M }>>) {
+    this.moves.push(new MoveConstructor({ ...moveConstructorArgs, number: this.currentMove.number + 1 }));
+  }
+
+  get lastSuccesfullDefense(): DefenderMove | undefined {
+    return [...this.moves].reverse().find(
+      (move) => move instanceof DefenderMove,
+    ) as DefenderMove;
+  }
+
+  updateCurrentMoveTo<M extends GameMove>(MoveConstructor: { new(...args: any): M }, args: Partial<InstanceType<{ new(...args: any): M }>>) {
+    const { currentMove: { number } } = this;
+    this.currentMove = new MoveConstructor({ ...args, number });
+  }
+
+  get _firstDefenderMove_(): DefenderMove | undefined {
+    return this.moves.find((move) => move instanceof InsertDefendCardMove) as DefenderMove;
+  }
+
+  get _originalAttacker_(): Attacker | undefined {
+    return this._firstDefenderMove_?.allowedPlayer.right as Attacker;
   }
 }
+
+type Construct<O> = { new(...args: any): O }
