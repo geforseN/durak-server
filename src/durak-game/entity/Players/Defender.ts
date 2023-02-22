@@ -18,7 +18,7 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
   ): void | never {
     const slot = game.desk.getSlot({ index });
     const { trumpSuit } = game.talon;
-    if (game.desk.allowTransferMove(index, card.rank)) {
+    if (game.desk.allowsTransferMove(index, card.rank)) {
       return this.makeTransferMove({ game, socket, index, card });
     }
     slot.assertAvalableForDefense(card, trumpSuit);

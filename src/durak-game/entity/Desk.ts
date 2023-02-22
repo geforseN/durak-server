@@ -23,7 +23,7 @@ export default class Desk {
     return this.slots.filter((slot) => !slot.attackCard && slot.defendCard).length;
   };
 
-  allowTransferMove(slotIndex: number, rank: Rank) {
+  allowsTransferMove(slotIndex: number, rank: Rank) {
     const { isEmpty: slotIsEmpty } = this.getSlot({ index: slotIndex });
     return slotIsEmpty && this.allCardsHasSameRank(rank);
   }
