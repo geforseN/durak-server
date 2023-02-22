@@ -21,7 +21,7 @@ export default class Players {
     return this.__value.filter((player) => player.hand.count !== 0);
   }
 
-  receiveCards({ talonCards, howMany }: { talonCards: Card[], howMany: number }) {
+  receiveFirstCards({ talonCards, howMany }: { talonCards: Card[], howMany: number }) {
     for (let i = 0, playerI = 0; talonCards.length !== 0; i++, playerI = i % this.count) {
       const player = this.__value[playerI];
       const startIndex = talonCards.length - howMany;
@@ -42,13 +42,13 @@ export default class Players {
     return attacker;
   }
 
-  getDefender(): Attacker | undefined {
+  getDefender(): Defender | undefined {
     for (const player of this.__value) {
       if (player instanceof Defender) return player;
     }
   }
 
-  tryGetDefender(): Attacker {
+  tryGetDefender(): Defender {
     const defender = this.getDefender();
     this.assertPlayer(defender, "Защищающийся не найден");
     return defender;
@@ -92,7 +92,7 @@ export default class Players {
     return player instanceof Defender;
   }
 
-  private make<P extends Player>(
+  make<P extends Player>(
     playerOrIdentifier: Player | LobbyUserIdentifier, PlayerP: { new(player: Player): P },
   ): P {
     const accname = this.getAccname(playerOrIdentifier);
