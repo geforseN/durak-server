@@ -14,8 +14,12 @@ export default function handlePutCardOnDesk(
   const { game, socket, accname } = this;
   if (!accname) throw new Error("Вы вне игры");
 
+  if (game.round.currentMove.allowedPlayerAccname !== accname) {
+    throw new Error("У вас нет права ходить");
+  }
+
   const player = game.players.tryGetPlayer({ accname });
-  if (!player.hand.has({ card })) throw new Error("Нет такой карты");
+  if (!player.hand.has({ card })) throw new Error("У вас нет такой карты");
 
   if (game.players.isDefender(player) || game.players.isAttacker(player)) {
     player.putCardOnDesk({ game, slotIndex, card, socket });
