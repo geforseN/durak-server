@@ -166,7 +166,7 @@ export default class DurakGame {
     this.make(playerOrIdentifier, Player);
   }
 
-  private makeNewPlayers({ nextAttacker }: { nextAttacker: Player }) {
+  makeNewPlayers({ nextAttacker }: { nextAttacker: Player }) {
     this.makePlayer(this.players.tryGetAttacker());
     this.makePlayer(this.players.tryGetDefender());
     const attacker = this.makeAttacker(nextAttacker);

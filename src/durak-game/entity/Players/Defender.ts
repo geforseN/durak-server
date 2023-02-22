@@ -76,16 +76,8 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     game.round.updateCurrentMoveTo(TransferMove, { allowedPlayer: this, deskCardCount, card, slotIndex: index });
     game.removeFromHand({ player: this, card, socket });
     game.insertCardOnDesk({ index, card, socket });
-    this.makeNewAttacker({ game });
+    game.makeNewPlayers({ nextAttacker: this });
     game.round.pushNextMove(AttackerMove, { allowedPlayer: this });
-  }
-
-  // not supposed to be in this class
-  private makeNewAttacker({ game }: { game: DurakGame }) {
-    game.makePlayer(game.players.tryGetDefender());
-    game.makePlayer(game.players.tryGetAttacker());
-    const attacker = game.makeAttacker(this);
-    game.makeDefender(attacker.left);
   }
 }
 
