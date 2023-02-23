@@ -23,7 +23,7 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     }
     slot.assertAvalableForDefense(card, trumpSuit);
     game.removeFromHand({ player: this, card, socket });
-    game.insertDefendCardOnDesk({ defender: this, card, index, socket });
+    game.insertCardOnDesk({ card, index, socket });
     this.postPutCardOnDesk({ game });
   }
 

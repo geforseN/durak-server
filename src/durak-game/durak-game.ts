@@ -8,10 +8,10 @@ import { LobbyUserIdentifier } from "../namespaces/lobbies/entity/lobby-users";
 import { GameSocket, GameService } from "../namespaces/games/game.service";
 import { GamesIO, PlayerRole } from "../namespaces/games/games.types";
 import Card from "./entity/Card";
-import Attacker, { AttackerO } from "./entity/Players/Attacker";
-import Defender, { DefenderO } from "./entity/Players/Defender";
+import Attacker from "./entity/Players/Attacker";
+import Defender from "./entity/Players/Defender";
 import Player, { CardRemove } from "./entity/Players/Player";
-import GameRound from "./GameRound";
+import GameRound from "./entity/GameRound";
 
 export type GameInfo = { id: string, adminAccname: string };
 export type CardInfo = { card: Card, index: number };
@@ -51,16 +51,6 @@ export default class DurakGame {
 
   get cardCountSameFromLastDefense(): boolean {
     return this.desk.cardCount === this.round.lastSuccesfullDefense?.deskCardCount;
-  }
-
-  insertAttackCardOnDesk({ attacker, card, index, socket }: AttackerO & CardInfo & GameSocket): void {
-    this.desk.insertAttackerCard({ index, card });
-    this.service.insertAttackCard({ index, card, socket });
-  }
-
-  insertDefendCardOnDesk({ defender, card, index, socket }: DefenderO & CardInfo & GameSocket): void {
-    this.desk.insertDefenderCard({ index, card });
-    this.service.insertDefendCard({ index, card, socket });
   }
 
   insertCardOnDesk({ card, index, socket }: CardInfo & GameSocket) {
@@ -172,6 +162,11 @@ export default class DurakGame {
     const attacker = this.makeAttacker(nextAttacker);
     const defender = this.makeDefender(attacker.left);
     return { attacker, defender };
+  }
+
+  makeNewAttacker({ nextAttacker }: { nextAttacker: Player | LobbyUserIdentifier }) {
+    this.makePlayer(this.players.tryGetAttacker());
+    return this.makeAttacker(nextAttacker);
   }
 
   private getAccname(playerOrAccname: Player | string): string {

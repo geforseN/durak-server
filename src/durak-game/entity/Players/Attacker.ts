@@ -23,7 +23,7 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
       }
     }
     game.removeFromHand({ player: this, card, socket });
-    game.insertAttackCardOnDesk({ attacker: this, index, card, socket });
+    game.insertCardOnDesk({ index, card, socket });
     this.postPutCardOnDesk({ game, card, index });
   }
 
