@@ -40,7 +40,7 @@ export default class DurakGame {
     this.makeFirstDistribution({ howMany: 1 });
     const attacker = this.makeInitialAttacker();
     this.makeDefender(attacker.left);
-    this.round = new GameRound({ number: 1, attacker });
+    this.round = new GameRound({ number: 1, attacker, desk: this.desk });
     this.service.setAttackUI("revealed", attacker);
   }
 
@@ -90,7 +90,7 @@ export default class DurakGame {
   handleNewRound({ nextAttacker }: { nextAttacker: Player }) {
     if (!this.talon.isEmpty) this.makeCardDistribution();
     const { attacker } = this.makeNewPlayers({ nextAttacker });
-    this.round = new GameRound({ number: this.round.number + 1, attacker });
+    this.round = new GameRound({ number: this.round.number + 1, attacker, desk: this.desk });
     this.service.setAttackUI("revealed", attacker);
   }
 
