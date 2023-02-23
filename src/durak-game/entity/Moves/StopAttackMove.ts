@@ -5,10 +5,7 @@ import { GameMoveConstructorArgs } from "./GameMove";
 type StopAttackMoveConstructorArgs = GameMoveConstructorArgs<Attacker> & { deskCardCount: number }
 
 export class StopAttackMove extends AttackerMove {
-  deskCardCount: number;
-
-  constructor({ number, allowedPlayer, ...args }: StopAttackMoveConstructorArgs) {
-    super({ number, allowedPlayer });
-    this.deskCardCount = args.deskCardCount;
+  constructor({ number, allowedPlayer, deskCardCount }: StopAttackMoveConstructorArgs) {
+    super({ number, allowedPlayer, deskCardCount });
   }
 }
