@@ -3,7 +3,7 @@ import Attacker from "./Players/Attacker";
 import { AttackerMove } from "./Moves/AttackerMove";
 import { DefenderMove } from "./Moves/DefenderMove";
 import { InsertDefendCardMove } from "./Moves/InsertDefendCardMove";
-import { GameMove } from "./Moves/GameMove";
+import { GameMove, GameMoveConstructorArgs } from "./Moves/GameMove";
 import Desk from "./Desk";
 
 type GameRoundConstructorArgs = { attacker: Attacker, number: number, desk: Desk };
@@ -33,8 +33,12 @@ export default class GameRound {
     this.moves[this.currentMoveIndex] = move;
   }
 
-  pushNextMove<M extends GameMove>(MoveConstructor: { new(...args: any): M }, moveConstructorArgs: Partial<InstanceType<{ new(...args: any): M }>>) {
-    this.moves.push(new MoveConstructor({ ...moveConstructorArgs, number: this.currentMove.number + 1 }));
+  pushNextMove<M extends GameMove>(
+    MoveConstructor: { new(arg: any): M },
+    moveConstructorArgs: Partial<InstanceType<{ new(arg: GameMoveConstructorArgs<Player>): M }>> & { allowedPlayer: Player }
+  ) {
+    const { currentMove: { number }, desk: { cardCount: deskCardCount } } = this;
+    this.moves.push(new MoveConstructor({ number: number + 1, deskCardCount, ...moveConstructorArgs }));
   }
 
   get lastSuccesfullDefense(): DefenderMove | undefined {
@@ -43,9 +47,12 @@ export default class GameRound {
     ) as DefenderMove;
   }
 
-  updateCurrentMoveTo<M extends GameMove>(MoveConstructor: { new(...args: any): M }, args: Partial<InstanceType<{ new(...args: any): M }>>) {
-    const { currentMove: { number } } = this;
-    this.currentMove = new MoveConstructor({ ...args, number });
+  updateCurrentMoveTo<M extends GameMove>(
+    MoveConstructor: { new(arg: any): M },
+    args: Partial<InstanceType<{ new(...args: any): M }>>
+  ) {
+    const { currentMove: { number, allowedPlayer }, desk: { cardCount: deskCardCount } } = this;
+    this.currentMove = new MoveConstructor({ allowedPlayer, number, deskCardCount, ...args });
   }
 
   get _firstDefenderMove_(): DefenderMove | undefined {
