@@ -31,49 +31,32 @@ export default class DeskSlot {
     return values;
   }
 
-  hasSuit(suit: Suit): boolean {
-    return this.attackCard?.suit === suit || this.defendCard?.suit === suit;
-  }
-
-  hasRank(rank: Rank): boolean {
-    return this.attackCard?.rank === rank || this.defendCard?.rank === rank;
-  }
-
-  insertAttackCard(card: Card) {
-    this.attackCard = card;
-  }
-
-  insertDefendCard(card: Card) {
-    this.defendCard = card;
-  }
-
-  removeAttackCard() {
-    this.attackCard = null;
-  }
-
-  removeDefendCard() {
-    this.defendCard = null;
+  has({ rank }: { rank: Rank }): boolean {
+    return this.attackCard?.hasSame({ rank }) || this.defendCard?.rank === rank;
   }
 
   clear() {
-    this.removeAttackCard();
-    this.removeDefendCard();
+    this.attackCard = null;
+    this.defendCard = null;
   }
 
-  assertAvalableForDefense(card: Card, trumpSuit: Suit) {
+  assertAvalableForDefense({ card, trumpSuit }: { card: Card, trumpSuit: Suit }) {
     if (this.defendCard) throw new Error("Карта уже побита");
     if (!this.attackCard) throw new Error("Нет от чего защищаться");
 
-    if (this.attackCard.suit === trumpSuit) {
-      if (card.suit !== trumpSuit) throw new Error("Козырную карту можно побить только козырной");
-      if (card.power < this.attackCard.power) throw new Error("Вы кинули слабую карту");
-    } else if (card.suit !== trumpSuit) {
-      if (card.suit !== this.attackCard.suit) throw new Error("Вы кинули неверню масть");
-      if (card.power < this.attackCard.power) throw new Error("Вы кинули слабую карту");
-    }
+    const cardsHasSameSuit = this.attackCard.hasSame({ suit: card.suit });
+    const attackCardIsTrump = this.attackCard.hasSame({ suit: trumpSuit });
+    const cardIsTrump = card.hasSame({ suit: trumpSuit });
+    const cardWeaker = card.power < this.attackCard.power;
+
+    if (!attackCardIsTrump && cardIsTrump) return console.log("assertAvalableForDef", this.attackCard, "__", this.defendCard);
+    if (attackCardIsTrump && !cardIsTrump) throw new Error("Козырную карту можно побить только козырной");
+    if (!attackCardIsTrump && !cardsHasSameSuit) throw new Error("Вы кинули неверню масть");
+    if (cardsHasSameSuit && cardWeaker) throw new Error("Вы кинули слабую карту");
+    console.log("assertAvalableForDef", this.attackCard, "__", this.defendCard);
   }
 
-  insert({ card }: {card: Card}) {
+  insert({ card }: { card: Card }) {
     if (this.isEmpty) this.attackCard = card;
     else this.defendCard = card;
   }
