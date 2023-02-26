@@ -56,14 +56,6 @@ export default class Desk {
     return this.slots.every((slot) => slot.isDefended);
   }
 
-  insertAttackerCard({ index, card }: { index: number, card: Card }) {
-    this.getSlot({ index }).insertAttackCard(card);
-  }
-
-  insertDefenderCard({ index, card }: { index: number, card: Card }) {
-    this.getSlot({ index }).insertDefendCard(card);
-  }
-
   insertCard({ index, card }: { index: number, card: Card }) {
     this.getSlot({ index }).insert({ card });
   }
@@ -72,20 +64,16 @@ export default class Desk {
     this.slots.forEach((slot) => slot.clear());
   }
 
-  assertCanPut({ attackCard, slotIndex }: { attackCard: Card, slotIndex: number }) {
+  assertCanPut({ attackCard: { rank }, slotIndex }: { attackCard: Card, slotIndex: number }) {
     const slot = this.getSlot({ index: slotIndex });
     if (this.isEmpty) return;
     if (slot.attackCard) throw new Error("Слот занят");
-    if (!this.hasCardWithRank(attackCard.rank)) {
+    if (!this.hasCardWith({ rank })) {
       throw new Error("Нет схожего ранга на доске");
     }
   }
 
-  canAllowTransferMove({ card }: { card: Card }) {
-    return this.slots.every((slot) => !slot.defendCard && (!slot.attackCard || slot.hasRank(card.rank)));
-  }
-
-  allCardsHasSameRank(rank: Rank) {
-    return this.slots.every((slot) => slot.isEmpty || (!slot.defendCard && slot.attackCard?.rank === rank));
+  toString(): string {
+    return this.slots.map((slot) => slot.toString()).join(" ");
   }
 }
