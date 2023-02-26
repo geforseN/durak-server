@@ -17,7 +17,11 @@ export default class DeskSlot {
   }
 
   get isDefended(): boolean {
-    return !this.attackCard || !!(this.attackCard && this.defendCard);
+    return this.isEmpty || this.isFull;
+  }
+
+  get isUnbeaten(): boolean {
+    return !!(this.attackCard && !this.defendCard);
   }
 
   get values(): Card[] {
