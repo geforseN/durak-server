@@ -1,6 +1,6 @@
 import Card from "./Card";
 import DeskSlot from "./DeskSlot";
-import { Rank, Suit } from "../utility.durak";
+import { Rank } from "../utility.durak";
 
 export default class Desk {
   slots: DeskSlot[];
@@ -31,12 +31,8 @@ export default class Desk {
     return this.slots[index];
   }
 
-  hasCardWithSuit(suit: Suit): boolean {
-    return this.slots.some((slot) => slot.hasSuit(suit));
-  }
-
-  hasCardWithRank(rank: Rank): boolean {
-    return this.slots.some((slot) => slot.hasRank(rank));
+  hasCardWith({ rank }: { rank: Rank }): boolean {
+    return this.slots.some((slot) => slot.has({ rank }));
   }
 
   get isEmpty(): boolean {
