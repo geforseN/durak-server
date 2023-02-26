@@ -20,16 +20,11 @@ export default class Desk {
   }
 
   get unbeatenCardCount(): number {
-    return this.slots.filter((slot) => !slot.attackCard && slot.defendCard).length;
+    return this.slots.filter((slot) => slot.isUnbeaten).length;
   };
 
-  allowsTransferMove(slotIndex: number, rank: Rank) {
-    const { isEmpty: slotIsEmpty } = this.getSlot({ index: slotIndex });
-    return slotIsEmpty && this.allCardsHasSameRank(rank);
-  }
-
-  hasSameCardCount(cardCount: number | null): boolean {
-    return this.cardCount === cardCount;
+  allowsTransferMove({ card: { rank } }: { card: Card }) {
+    return this.slots.every((slot) => slot.isEmpty || slot.hasOnlyAttackCardWith({ rank }));
   }
 
   getSlot({ index }: { index: number }): DeskSlot {
