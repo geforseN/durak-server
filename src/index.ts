@@ -45,11 +45,10 @@ export const lobbiesService = new LobbiesService(lobbies, lobbiesNamespace);
 lobbiesNamespace.use(onConnectMiddleware);
 lobbiesNamespace.on("connect", lobbiesHandler);
 
-export type GameId = string;
-const uuidGameIdRegExp = /^\/game\/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/;
-export const durakGames = new Map<GameId, DurakGame>();
+const uuidRegExp = /^\/game\/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/;
+export const durakGames = new Map<string, DurakGame>();
 
-export const gamesNamespace: GamesIO.NamespaceIO = io.of(uuidGameIdRegExp);
+export const gamesNamespace: GamesIO.NamespaceIO = io.of(uuidRegExp);
 gamesNamespace.use(onConnectMiddleware);
 gamesNamespace.on("connect", gamesHandler.bind({namespace: gamesNamespace}));
 
