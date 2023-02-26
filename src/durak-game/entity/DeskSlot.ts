@@ -60,4 +60,12 @@ export default class DeskSlot {
     if (this.isEmpty) this.attackCard = card;
     else this.defendCard = card;
   }
+
+  hasOnlyAttackCardWith({ rank }: { rank: Rank }) {
+    return !this.defendCard && this.attackCard?.hasSame({ rank: rank });
+  }
+
+  toString(): string {
+    return `[${this.attackCard ?? ""}_${this.defendCard ?? ""}]`;
+  }
 }
