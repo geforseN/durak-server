@@ -17,10 +17,6 @@ export default class Players {
     return this.__value.length;
   }
 
-  get withCards() {
-    return this.__value.filter((player) => player.hand.count !== 0);
-  }
-
   receiveFirstCards({ talonCards, howMany }: { talonCards: Card[], howMany: number }) {
     for (let i = 0, playerI = 0; talonCards.length !== 0; i++, playerI = i % this.count) {
       const player = this.__value[playerI];
@@ -70,18 +66,6 @@ export default class Players {
 
   getPlayerEnemies({ accname }: LobbyUserIdentifier): Player[] {
     return this.__value.filter((player) => player.info.accname !== accname);
-  }
-
-  makePlayer(playerOrIdentifier: Player | LobbyUserIdentifier): Player {
-    return this.make(playerOrIdentifier, Player);
-  }
-
-  makeAttacker(playerOrIdentifier: Player | LobbyUserIdentifier): Attacker {
-    return this.make(playerOrIdentifier, Attacker);
-  }
-
-  makeDefender(playerOrIdentifier: Player | LobbyUserIdentifier): Defender {
-    return this.make(playerOrIdentifier, Defender);
   }
 
   isAttacker(player: Player): player is Attacker {
