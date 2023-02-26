@@ -43,8 +43,4 @@ export default class LobbyUsers {
   remove({accname}: LobbyUserIdentifier) {
     this.__value = this.__value.filter((user) => user.accname !== accname)
   }
-
-  removeByIndex(index: number) {
-    this.__value.splice(index, 1);
-  }
 }
