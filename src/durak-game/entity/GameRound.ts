@@ -29,6 +29,10 @@ export default class GameRound {
     return this.moves[this.currentMoveIndex];
   }
 
+  currentMoveAllowedTo({ info: { accname } }: Player): boolean {
+    return this.currentMove.allowedPlayerAccname === accname;
+  }
+
   set currentMove(move: GameMove) {
     this.moves[this.currentMoveIndex] = move;
   }
