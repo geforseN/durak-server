@@ -3,10 +3,12 @@ import { PlaceCardData } from "../../../namespaces/games/methods/handle-put-card
 import Card from "../Card";
 import { GameSocket } from "../../../namespaces/games/game.service";
 import DurakGame from "../../durak-game";
-import { AttackerMove, DefenderMove, InsertDefendCardMove, TransferMove } from "../../GameRound";
-import { GamesIO } from "../../../namespaces/games/games.types";
+import { AttackerMove } from "../Moves/AttackerMove";
+import { TransferMove } from "../Moves/TransferMove.Defender";
+import { DefenderMove } from "../Moves/DefenderMove";
+import { InsertDefendCardMove } from "../Moves/InsertDefendCardMove";
+import { StopDefenseMove } from "../Moves/StopDefenseMove";
 
-export type DefenderO = { defender: Defender };
 
 export default class Defender extends Player implements CardPut, CardRemove, MoveStop {
   constructor(player: Player) {
@@ -18,62 +20,62 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
   ): void | never {
     const slot = game.desk.getSlot({ index });
     const { trumpSuit } = game.talon;
-    if (game.desk.allowsTransferMove(index, card.rank)) {
-      return this.makeTransferMove({ game, socket, index, card });
+    const leftCanTakeCards = this.left.hand.count <= game.desk.cardCount + 1;
+
+    if (slot.isEmpty && leftCanTakeCards && game.desk.allowsTransferMove({ card })) {
+      return this.makeTransferMove({ game, socket, slotIndex: index, card });
     }
-    slot.assertAvalableForDefense(card, trumpSuit);
-    game.removeFromHand({ player: this, card, socket });
-    game.insertCardOnDesk({ card, index, socket });
+    slot.assertAvalableForDefense({ card, trumpSuit });
+    this.handlePutCardOnDesk({ game, card, slotIndex: index, socket });
     this.postPutCardOnDesk({ game });
   }
 
+  private handlePutCardOnDesk({ game, card, slotIndex: index, socket }: PlaceCardData & GameSocket) {
+    game.removeFromHand({ player: this, card, socket });
+    game.insertCardOnDesk({ card, index, socket });
+  }
+
+  private makeTransferMove({ game, slotIndex, card, socket }: PlaceCardData & GameSocket) {
+    game.round.updateCurrentMoveTo(TransferMove, { allowedPlayer: this, card, slotIndex });
+    this.handlePutCardOnDesk({ game, card, socket, slotIndex });
+    game.makeNewPlayers({ nextAttacker: this });
+    game.round.pushNextMove(AttackerMove, { allowedPlayer: this });
+  }
+
   private postPutCardOnDesk({ game }: { game: DurakGame }) {
-    const { cardCount: deskCardCount } = game.desk;
-    game.round.updateCurrentMoveTo(InsertDefendCardMove, { allowedPlayer: this, deskCardCount });
-    // TODO if (game.talon.isEmpty && !this.hand.count) return game.PLAYER_QUIT_GAME();
+    game.round.updateCurrentMoveTo(InsertDefendCardMove, { allowedPlayer: this });
     if (game.desk.isFull || !this.hand.count) return game.handleSuccesfullDefense();
 
-    if (!game.round.principalAttacker) {
-      console.log(game.round._originalAttacker_, game.round.principalAttacker);
-      game.round.principalAttacker = game.players.tryGetAttacker();
-    }
+    if (!game.round.originalAttacker) this.makeOriginalAttacker({ game });
 
-    if (game.desk.isDefended) {
-      // TODO: LET MOVE TO ATTACKER & SAVE CURRENT DESK CARD COUNT
-      // let move to ...principalAttacker OR attacker ...
-    } else /* let defender def next card */ {
-      game.round.pushNextMove(DefenderMove, { allowedPlayer: this, deskCardCount });
-    }
+    if (game.desk.isDefended) this.giveNextMoveToOriginalAttacker({ game });
+    else game.round.pushNextMove(DefenderMove, { allowedPlayer: this });
   }
 
   stopMove({ game }: { game: DurakGame }) {
+    game.round.updateCurrentMoveTo(StopDefenseMove, { allowedPlayer: this });
     if (!game.desk.isDefended) return game.handleBadDefense();
-
-    // will be true when desk is defended and for EXAMPLE:
-    //  lastCardCount === 4, cardCount === 6
     if (game.cardCountIncreasedFromLastDefense) {
-      // TODO: LET MOVE TO ATTACKER & SAVE CURRENT DESK CARD COUNT
-      const c = { moveNumber: game.round.currentMove.number, cardCount: game.desk.cardCount };
-      game.round.lastSuccesfullDefense = new SuccesfullDefenseMove(c);
-      game.round.currentMove.allowedPlayer = game.players.tryGetAttacker();
-      return;
+      const allowedPlayer = game.round.originalAttacker!;
+      return game.round.pushNextMove(AttackerMove, { allowedPlayer });
     }
     return game.handleSuccesfullDefense();
   }
 
   removeCard(card: Card): void {
     const index = this.hand.findIndex({ card });
+    if (index === -1) throw new Error("Неверный индекс");
     this.hand.value.splice(index, 1);
   }
 
-  private makeTransferMove({ game, index, card, socket }: t) {
-    const deskCardCount = game.desk.cardCount;
-    game.round.updateCurrentMoveTo(TransferMove, { allowedPlayer: this, deskCardCount, card, slotIndex: index });
-    game.removeFromHand({ player: this, card, socket });
-    game.insertCardOnDesk({ index, card, socket });
-    game.makeNewPlayers({ nextAttacker: this });
-    game.round.pushNextMove(AttackerMove, { allowedPlayer: this });
+  private makeOriginalAttacker({ game }: { game: DurakGame }) {
+    console.log(game.round._tryOriginalAttacker_, game.round.originalAttacker); // TODO: DELETE AFTER TEST
+    game.round.originalAttacker = game.players.tryGetAttacker();
+  }
+
+  private giveNextMoveToOriginalAttacker({ game }: { game: DurakGame }) {
+    const originalAttacker = game.round.originalAttacker!;
+    game.makeNewAttacker({ nextAttacker: originalAttacker });
+    game.round.pushNextMove(AttackerMove, { allowedPlayer: originalAttacker });
   }
 }
-
-type t = { game: DurakGame, card: Card, socket: GamesIO.SocketIO, index: number };

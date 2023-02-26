@@ -5,24 +5,38 @@ import { DefenderMove } from "./Moves/DefenderMove";
 import { InsertDefendCardMove } from "./Moves/InsertDefendCardMove";
 import { GameMove, GameMoveConstructorArgs } from "./Moves/GameMove";
 import Desk from "./Desk";
+import { TransferMove } from "./Moves/TransferMove.Defender";
+import { StopDefenseMove } from "./Moves/StopDefenseMove";
+import { GameService } from "../../namespaces/games/game.service";
 
-type GameRoundConstructorArgs = { attacker: Attacker, number: number, desk: Desk };
+type GameRoundConstructorArgs = { attacker: Attacker, number: number, desk: Desk, service: GameService };
 
 export default class GameRound {
   number: number;
-  private moves: GameMove[];
-  principalAttacker: Attacker | Player | null;
+  private readonly moves: GameMove[];
+  originalAttacker: Attacker | null;
   desk: Desk;
+  service: GameService;
 
-  constructor({ number, desk, attacker: allowedPlayer }: GameRoundConstructorArgs) {
+  constructor({ number, desk, attacker: allowedPlayer, service }: GameRoundConstructorArgs) {
     this.number = number;
-    this.moves = [new AttackerMove({ number: 1, allowedPlayer })];
-    this.principalAttacker = null;
+    this.originalAttacker = null;
     this.desk = desk;
+    this.moves = [new AttackerMove({ number: 1, allowedPlayer, deskCardCount: desk.cardCount })];
+    this.service = service;
+    this.service.setAttackUI("revealed", allowedPlayer);
   }
 
   get currentMoveIndex(): number {
     return this.moves.length - 1;
+  }
+
+  get previousMove(): GameMove {
+    return this.moves[this.currentMoveIndex - 1];
+  }
+
+  get defenderGaveUpAtPreviousMove(): boolean {
+    return this.previousMove instanceof StopDefenseMove;
   }
 
   get currentMove(): GameMove {
@@ -39,35 +53,59 @@ export default class GameRound {
 
   pushNextMove<M extends GameMove>(
     MoveConstructor: { new(arg: any): M },
-    moveConstructorArgs: Partial<InstanceType<{ new(arg: GameMoveConstructorArgs<Player>): M }>> & { allowedPlayer: Player }
+    moveConstructorArgs: Partial<InstanceType<{ new(arg: GameMoveConstructorArgs<Player>): M }>> & { allowedPlayer: Player },
   ) {
     const { currentMove: { number }, desk: { cardCount: deskCardCount } } = this;
     this.moves.push(new MoveConstructor({ number: number + 1, deskCardCount, ...moveConstructorArgs }));
   }
 
   get lastSuccesfullDefense(): DefenderMove | undefined {
-    return [...this.moves].reverse().find(
-      (move) => move instanceof DefenderMove,
-    ) as DefenderMove;
+    for (let i = this.moves.length - 1; i > 0; i--) {
+      const currentMove = this.moves[i];
+      const previousMove = this.moves[i - 1];
+      const previousMoveWasDefence = previousMove instanceof InsertDefendCardMove;
+      const currentMoveIsAttack = currentMove instanceof AttackerMove;
+      if (previousMoveWasDefence && currentMoveIsAttack) return previousMove;
+    }
   }
 
   updateCurrentMoveTo<M extends GameMove>(
     MoveConstructor: { new(arg: any): M },
-    args: Partial<InstanceType<{ new(...args: any): M }>>
+    args: Partial<InstanceType<{ new(...args: any): M }>>,
   ) {
     const { currentMove: { number, allowedPlayer }, desk: { cardCount: deskCardCount } } = this;
     this.currentMove = new MoveConstructor({ allowedPlayer, number, deskCardCount, ...args });
   }
 
-  get _firstDefenderMove_(): DefenderMove | undefined {
-    return this.moves.find((move) => move instanceof InsertDefendCardMove) as DefenderMove;
+  get _tryFirstDefenderMove_(): DefenderMove {
+    const a = this.moves.find((move) => move instanceof InsertDefendCardMove);
+    if (!a) throw new Error("Нет защищающегося хода");
+    return a;
   }
 
-  get _originalAttacker_(): Attacker | undefined {
-    return this._firstDefenderMove_?.allowedPlayer.right as Attacker;
+  get _tryOriginalAttacker_(): Attacker {
+    return this._tryFirstDefenderMove_.allowedPlayer.right as Attacker;
   }
 
-  isPrincipalAttacker({ info: { accname } }: Player) {
-    return this.principalAttacker?.info.accname === accname;
+  isOriginalAttacker({ info: { accname } }: Player) {
+    return this.originalAttacker?.info.accname === accname;
+  }
+
+  isRealDefenderMove(move: GameMove) {
+    return move instanceof DefenderMove && !(move instanceof TransferMove);
+  }
+
+  get distributionQueue() {
+    if (!this.originalAttacker) throw new Error("Нет оригинального атакующего");
+    const playersQueue: Player[] = [this.originalAttacker];
+    const defender = this.originalAttacker.left;
+
+    let player = defender.left;
+    while (player.left.info.accname !== defender.info.accname) {
+      playersQueue.push(player);
+      player = player.left;
+    }
+
+    return playersQueue.concat(defender);
   }
 }
