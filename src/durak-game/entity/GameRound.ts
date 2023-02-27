@@ -8,6 +8,7 @@ import Desk from "./Desk";
 import { TransferMove } from "./Moves/TransferMove.Defender";
 import { StopDefenseMove } from "./Moves/StopDefenseMove";
 import { GameService } from "../../namespaces/games/game.service";
+import Defender from "./Players/Defender";
 
 type GameRoundConstructorArgs = { attacker: Attacker, number: number, desk: Desk, service: GameService };
 
@@ -51,11 +52,17 @@ export default class GameRound {
     this.moves[this.currentMoveIndex] = move;
   }
 
+  get isDefenderGaveUp() {
+    return this.moves.some((move) => move instanceof StopDefenseMove)
+  }
+
   pushNextMove<M extends GameMove>(
     MoveConstructor: { new(arg: any): M },
     moveConstructorArgs: Partial<InstanceType<{ new(arg: GameMoveConstructorArgs<Player>): M }>> & { allowedPlayer: Player },
   ) {
     const { currentMove: { number }, desk: { cardCount: deskCardCount } } = this;
+    const { allowedPlayer } = moveConstructorArgs;
+    this.service.setSuperPlayerUI("revealed", allowedPlayer as Defender | Attacker);
     this.moves.push(new MoveConstructor({ number: number + 1, deskCardCount, ...moveConstructorArgs }));
   }
 

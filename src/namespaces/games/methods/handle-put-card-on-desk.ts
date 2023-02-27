@@ -7,12 +7,14 @@ export type PlaceCardData = { game: DurakGame, card: Card, slotIndex: number };
 
 export default function handlePutCardOnDesk(
   this: { game: DurakGame, accname: string } & GameSocket,
-  card: Card,
+  { suit, rank }: Card,
   slotIndex: number,
   callback: ResponseCallback,
 ) {
   const { game, socket, accname } = this;
   if (!accname) throw new Error("Вы вне игры");
+
+  const card = new Card({ rank, suit });
 
   const player = game.players.tryGetPlayer({ accname });
   if (!game.round.currentMoveAllowedTo(player)) throw new Error("У вас нет права ходить");
