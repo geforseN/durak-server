@@ -34,6 +34,14 @@ export class GameService {
     return this;
   }
 
+  setSuperPlayerUI(status: UIStatus, allowedPlayer: Defender | Attacker): this {
+    const eventName = allowedPlayer instanceof Defender
+      ? "defendUI__setStatus"
+      : "attackUI__setStatus";
+    this.namespace.to(allowedPlayer.info.accname).emit(eventName, status);
+    return this;
+  }
+
   setDefendUI(status: UIStatus, defender: Defender): this {
     this.namespace.to(defender.info.accname).emit("defendUI__setStatus", status);
     return this;
@@ -63,8 +71,9 @@ export class GameService {
     return this;
   }
 
-  pushToDiscard() {
-    this.namespace.emit("desk__pushToDiscard")
+  pushToDiscard(): this {
+    this.namespace.emit("desk__pushToDiscard");
+    return this;
   }
 
   lostRound({ defender }: { defender: Defender }): this {
@@ -89,7 +98,6 @@ export class GameService {
 
   restoreState({ socket, game, accname }: { game: DurakGame } & LobbyUserIdentifier & GameSocket): this {
     socket.emit("state__restore", new GameState(game, accname));
-    socket.emit("talon__showTrumpCard", game.talon.trumpCard);
     return this;
   }
 
