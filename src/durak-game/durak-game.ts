@@ -121,24 +121,32 @@ export default class DurakGame {
   }
 
   makeAttacker(playerOrIdentifier: Player | LobbyUserIdentifier): Attacker {
-    return this.make(playerOrIdentifier, Attacker);
+    const attacker = this.make(playerOrIdentifier, Attacker);
+    this.service.setAttackUI("revealed", attacker);
+    return attacker;
   }
 
   makeDefender(playerOrIdentifier: Player | LobbyUserIdentifier): Defender {
-    return this.make(playerOrIdentifier, Defender);
+    const defender = this.make(playerOrIdentifier, Defender);
+    this.service.setDefendUI("revealed", defender);
+    return defender;
   }
 
   makePlayer(playerOrIdentifier: Player | LobbyUserIdentifier): Player {
+    const accname = this.getAccname(playerOrIdentifier);
+    const superPlayer = this.players.tryGetPlayer({ accname }) as Attacker | Defender;
+    this.service.setSuperPlayerUI("hidden", superPlayer);
     return this.make(playerOrIdentifier, Player);
   }
 
   private make<P extends Player>(
     playerOrIdentifier: Player | LobbyUserIdentifier, PlayerP: { new(player: Player): P },
   ): P {
-    const p = this.players.make(playerOrIdentifier, PlayerP);
-    this.service.changeRoleTo(PlayerP.name.toLowerCase() as PlayerRole, p);
-    console.log("CHANGE ROLE", PlayerP.name.toLowerCase());
-    return p;
+    const player = this.players.make(playerOrIdentifier, PlayerP);
+    const playerRole = PlayerP.name.toLowerCase() as PlayerRole;
+    this.service.changeRoleTo(playerRole, player);
+    console.log("CHANGE ROLE: ", playerRole, player.info.accname);
+    return player;
   }
 
   makeNewPlayers({ nextAttacker }: { nextAttacker: Player | LobbyUserIdentifier }) {
@@ -175,5 +183,11 @@ export default class DurakGame {
       durakGames.delete(this.info.id);
       // TODO SAVE GAME IN DATABASE
     }, timeout);
+  }
+
+  private getAccname(playerOrIdentifier: Player | LobbyUserIdentifier) {
+    return playerOrIdentifier instanceof Player
+      ? playerOrIdentifier.info.accname
+      : playerOrIdentifier.accname;
   }
 }
