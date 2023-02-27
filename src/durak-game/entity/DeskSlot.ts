@@ -56,9 +56,9 @@ export default class DeskSlot {
     console.log("assertAvalableForDef", this.attackCard, "__", this.defendCard);
   }
 
-  insert({ card }: { card: Card }) {
-    if (this.isEmpty) this.attackCard = card;
-    else this.defendCard = card;
+  insert({ card: { suit, rank } }: { card: Card }) {
+    if (this.isEmpty) this.attackCard = new Card({ suit, rank });
+    else this.defendCard = new Card({ suit, rank });
   }
 
   hasOnlyAttackCardWith({ rank }: { rank: Rank }) {
