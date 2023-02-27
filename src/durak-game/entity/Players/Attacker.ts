@@ -26,16 +26,9 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
     game.round.updateCurrentMoveTo(InsertAttackCardMove, { allowedPlayer: this, card, slotIndex: index });
     const defender = game.players.tryGetDefender();
     const defenderCanTakeMoreCards = defender.hand.count > game.desk.unbeatenCardCount;
-
-    if (!this.hand.count) {
-      const Move = this.left instanceof Defender ? DefenderMove : AttackerMove;
-      if (Move instanceof AttackerMove) game.makeNewAttacker({ nextAttacker: this.left });
-      game.round.pushNextMove(Move, { allowedPlayer: this.left });
-    }
-
-    if (!defenderCanTakeMoreCards) {
-      game.round.pushNextMove(DefenderMove, { allowedPlayer: defender });
-    } else game.round.pushNextMove(AttackerMove, { allowedPlayer: this });
+    if (!this.hand.count) this.giveMoveToLeft({ game });
+    if (!defenderCanTakeMoreCards) this.giveMoveToDefender({ game });
+    else game.round.pushNextMove(AttackerMove, { allowedPlayer: this });
   }
 
   removeCard(card: Card): void {
@@ -43,7 +36,7 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
     this.hand.value.splice(index, 1);
   }
 
-  handlePutCardOnDesk({ game, card, socket, index }: { game: DurakGame } & CardInfo & GameSocket) {
+  private handlePutCardOnDesk({ game, card, socket, index }: { game: DurakGame } & CardInfo & GameSocket) {
     game.removeFromHand({ player: this, card, socket });
     game.insertCardOnDesk({ index, card, socket });
   }
@@ -52,7 +45,7 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
     game.round.updateCurrentMoveTo(StopAttackMove, { allowedPlayer: this });
     const defender = game.players.tryGetDefender();
 
-    if (!game.desk.isDefended) return this.handleVdogonku({ game });
+    if (!game.desk.isDefended && game.round.isDefenderGaveUp) return this.handleVdogonku({ game });
 
     const prevMoveWasInsert = game.round.previousMove instanceof InsertAttackCardMove;
 
@@ -62,7 +55,8 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
     const sameCardCountFromPrevMove = game.round.previousMove.deskCardCount === game.desk.cardCount;
     const thisIsOriginalAttacker = game.round.isOriginalAttacker(this);
 
-    if (prevMoveWasInsert || !sameCardCountFromPrevMove) { // prevMoveWasInsert insertedByCurrentAttacker
+    if (prevMoveWasInsert || !sameCardCountFromPrevMove) {
+      game.service.setAttackUI("hidden", this).setDefendUI("revealed", defender);
       return game.round.pushNextMove(DefenderMove, { allowedPlayer: defender });
     }
 
@@ -71,22 +65,45 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
     }
 
     if (thisIsOriginalAttacker || sameCardCountFromPrevMove) {
-      return game.round.pushNextMove(AttackerMove, {allowedPlayer: defender.left})
+      game.service.setAttackUI("hidden", this).setAttackUI("revealed", defender.left as Attacker);
+      return game.round.pushNextMove(AttackerMove, { allowedPlayer: defender.left });
     }
   }
 
   private handleVdogonku({ game }: { game: DurakGame }) {
     const defender = game.players.tryGetDefender();
 
-    if (!game.round.isOriginalAttacker(this)) {
-      if (!game.round.isOriginalAttacker(this.left)) {
-        return game.round.pushNextMove(AttackerMove, { allowedPlayer: this.left });
-      }
-      return game.handleNewRound({ nextAttacker: defender.left });
+    const thisIsOriginalAttacker = game.round.isOriginalAttacker(this);
+    const leftIsOriginalAttacker = game.round.isOriginalAttacker(this.left);
+    const { defenderGaveUpAtPreviousMove } = game.round;
+
+    if (thisIsOriginalAttacker) {
+      if (defenderGaveUpAtPreviousMove) {
+        const asd = game.makePlayer(this);
+        const newAttacker = game.makeAttacker(this.left || asd.left);
+        game.round.pushNextMove(AttackerMove, { allowedPlayer: newAttacker });
+      } else game.handleNewRound({ nextAttacker: defender.left });
     }
-    if (game.round.defenderGaveUpAtPreviousMove) {
-      return game.round.pushNextMove(AttackerMove, { allowedPlayer: defender.left });
+
+    if (leftIsOriginalAttacker) {
+      const asd = game.makePlayer(this);
+      const newAttacker = game.makeAttacker(this.left || asd.left);
+      game.round.pushNextMove(AttackerMove, { allowedPlayer: newAttacker });
+    } else {
+      game.handleNewRound({ nextAttacker: defender.left });
     }
-    game.handleNewRound({ nextAttacker: defender.left });
+  }
+
+  private giveMoveToLeft({ game }: { game: DurakGame }) {
+    const Move = this.left instanceof Defender ? DefenderMove : AttackerMove;
+    const asd = game.makePlayer(this);
+    if (Move instanceof AttackerMove) game.makeNewAttacker({ nextAttacker: this.left || asd.left });
+    game.round.pushNextMove(Move, { allowedPlayer: this.left });
+  }
+
+  private giveMoveToDefender({ game }: { game: DurakGame }) {
+    const defender = game.players.tryGetDefender();
+    game.service.setAttackUI("freeze", this);
+    game.round.pushNextMove(DefenderMove, { allowedPlayer: defender });
   }
 }
