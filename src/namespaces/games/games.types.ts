@@ -1,12 +1,9 @@
 import { Namespace, Socket } from "socket.io";
 import Card from "../../durak-game/entity/Card";
 import { Suit } from "../../durak-game/utility.durak";
-import DeskSlot from "../../durak-game/entity/DeskSlot";
-import Self from "../../durak-game/DTO/Self.dto";
-import Enemy from "../../durak-game/DTO/Enemy.dto";
 import NotificationAlert from "../../module/notification-alert";
+import GameState from "../../durak-game/DTO/GameState";
 
-export type GameState = { self: Self, enemies: Enemy[], deskSlots: DeskSlot[] };
 
 export type SocketResponse = { status: "ATT" | "DEF" } | { status: "NOK", message: string };
 export type ResponseCallback = (res: SocketResponse) => void;
