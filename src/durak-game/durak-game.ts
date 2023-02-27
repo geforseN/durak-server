@@ -81,17 +81,16 @@ export default class DurakGame {
   handleSuccesfullDefense(): void {
     const defender = this.players.tryGetDefender();
     this.discard.push(...this.desk.cards);
-    this.service.wonRound({ defender });
+    this.service.pushToDiscard().wonRound({ defender });
     this.clearDesk();
     return this.handleNewRound({ nextAttacker: defender });
   }
 
   handleNewRound({ nextAttacker }: { nextAttacker: Player }) {
-    const obj = { accname: nextAttacker.info.accname };
     if (this.talon.isEmpty) this.deletePlayersWithEmptyHands();
     else this.makeCardDistribution();
     if (this.players.count === 1) this.end({ timeout: 10_000 });
-    const { attacker } = this.makeNewPlayers({ nextAttacker: obj });
+    const { attacker } = this.makeNewPlayers({ nextAttacker });
     const { desk, service, round: { number } } = this;
     this.round = new GameRound({ attacker, desk, service, number: number + 1 });
   }
