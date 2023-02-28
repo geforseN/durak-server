@@ -63,7 +63,7 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
 
   removeCard(card: Card): void {
     const index = this.hand.findIndex({ card });
-    if (index === -1) throw new Error("Неверный индекс");
+    assert.notStrictEqual(index, -1, "Неверный индекс");
     this.hand.value.splice(index, 1);
   }
 
