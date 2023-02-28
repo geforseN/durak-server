@@ -87,9 +87,9 @@ export default class GameRound {
   }
 
   get _tryFirstDefenderMove_(): DefenderMove {
-    const a = this.moves.find((move) => move instanceof InsertDefendCardMove);
-    if (!a) throw new Error("Нет защищающегося хода");
-    return a;
+    const defenderMove = this.moves.find((move) => move instanceof InsertDefendCardMove);
+    if (!defenderMove) throw new Error("Нет защищающегося хода");
+    return defenderMove;
   }
 
   get _tryOriginalAttacker_(): Attacker {
@@ -100,12 +100,8 @@ export default class GameRound {
     return this.originalAttacker?.info.accname === accname;
   }
 
-  isRealDefenderMove(move: GameMove) {
-    return move instanceof DefenderMove && !(move instanceof TransferMove);
-  }
-
   get distributionQueue() {
-    if (!this.originalAttacker) throw new Error("Нет оригинального атакующего");
+    if (!this.originalAttacker) throw new Error("Нет первоночально атакующего");
     const playersQueue: Player[] = [this.originalAttacker];
     const defender = this.originalAttacker.left;
 
