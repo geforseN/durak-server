@@ -6,7 +6,6 @@ export type CardObject = { card: Card };
 export default class Card {
   rank: Rank;
   suit: Suit;
-  power: Power;
 
   constructor({ rank, suit }: CardConstructor) {
     this.rank = rank;
@@ -21,6 +20,10 @@ export default class Card {
     const value = Object.values(obj)[0] as Rank | Suit | number;
 
     return this[key] === value;
+  }
+
+  get power(): Power {
+    return powerRecord[this.rank];
   }
 
   toString(): string {
