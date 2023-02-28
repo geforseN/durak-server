@@ -16,17 +16,17 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
   }
 
   putCardOnDesk(
-    { game, slotIndex: index, card, socket }: PlaceCardData & GameSocket,
+    { game, slotIndex, card, socket }: PlaceCardData & GameSocket,
   ): void | never {
-    const slot = game.desk.getSlot({ index });
+    const slot = game.desk.getSlot({ index: slotIndex });
     const { trumpSuit } = game.talon;
     const leftCanTakeCards = this.left.hand.count >= game.desk.cardCount + 1;
 
     if (slot.isEmpty && leftCanTakeCards && game.desk.allowsTransferMove({ card })) {
-      return this.makeTransferMove({ game, socket, slotIndex: index, card });
+      return this.makeTransferMove({ game, socket, slotIndex, card });
     }
     slot.assertAvalableForDefense({ card, trumpSuit });
-    this.handlePutCardOnDesk({ game, card, slotIndex: index, socket });
+    this.handlePutCardOnDesk({ game, card, slotIndex, socket });
     this.postPutCardOnDesk({ game });
   }
 
