@@ -52,10 +52,13 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
 
   stopMove({ game }: { game: DurakGame }) {
     game.round.updateCurrentMoveTo(StopDefenseMove, { allowedPlayer: this });
-    if (!game.desk.isDefended) return game.handleBadDefense();
+    if (!game.desk.isDefended) {
+      return game.handleBadDefense();
+    }
     if (game.cardCountIncreasedFromLastDefense) {
-      this.giveNextMoveToOriginalAttacker({ game });
-    } else game.handleSuccesfullDefense();
+      return this.giveNextMoveToOriginalAttacker({ game });
+    }
+    return game.handleSuccesfullDefense();
   }
 
   removeCard(card: Card): void {
