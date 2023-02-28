@@ -5,9 +5,11 @@ import Card from "../entity/Card";
 export default class Self {
   cards: Card[];
   info: LobbyUser;
+  role: string;
 
   constructor(cardPlayer: Player) {
     this.cards = cardPlayer.hand.value;
     this.info = cardPlayer.info;
+    this.role = cardPlayer.constructor.name;
   }
 }
