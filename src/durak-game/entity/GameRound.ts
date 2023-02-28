@@ -3,9 +3,8 @@ import Attacker from "./Players/Attacker";
 import { AttackerMove } from "./Moves/AttackerMove";
 import { DefenderMove } from "./Moves/DefenderMove";
 import { InsertDefendCardMove } from "./Moves/InsertDefendCardMove";
-import { GameMove, GameMoveConstructorArgs } from "./Moves/GameMove";
+import { GameMove } from "./Moves/GameMove";
 import Desk from "./Desk";
-import { TransferMove } from "./Moves/TransferMove.Defender";
 import { StopDefenseMove } from "./Moves/StopDefenseMove";
 import { GameService } from "../../namespaces/games/game.service";
 import Defender from "./Players/Defender";
@@ -71,30 +70,20 @@ export default class GameRound {
 
   pushNextMove<M extends GameMove>(
     MoveConstructor: { new(arg: any): M },
-    moveConstructorArgs: Partial<InstanceType<{ new(arg: GameMoveConstructorArgs<Player>): M }>> & { allowedPlayer: Player },
+    moveConstructorArg: Partial<InstanceType<{ new(arg: any): M }>> & { allowedPlayer: Player },
   ) {
     const { currentMove: { number }, desk: { cardCount: deskCardCount } } = this;
-    const { allowedPlayer } = moveConstructorArgs;
+    const { allowedPlayer } = moveConstructorArg;
     this.service.setSuperPlayerUI("revealed", allowedPlayer as Defender | Attacker);
-    this.moves.push(new MoveConstructor({ number: number + 1, deskCardCount, ...moveConstructorArgs }));
-  }
-
-  get lastSuccesfullDefense(): DefenderMove | undefined {
-    for (let i = this.moves.length - 1; i > 0; i--) {
-      const currentMove = this.moves[i];
-      const previousMove = this.moves[i - 1];
-      const previousMoveWasDefence = previousMove instanceof InsertDefendCardMove;
-      const currentMoveIsAttack = currentMove instanceof AttackerMove;
-      if (previousMoveWasDefence && currentMoveIsAttack) return previousMove;
-    }
+    this.moves.push(new MoveConstructor({ number: number + 1, deskCardCount, ...moveConstructorArg }));
   }
 
   updateCurrentMoveTo<M extends GameMove>(
     MoveConstructor: { new(arg: any): M },
-    args: Partial<InstanceType<{ new(...args: any): M }>>,
+    moveConstructorArg: Partial<InstanceType<{ new(arg: any): M }>>,
   ) {
     const { currentMove: { number, allowedPlayer }, desk: { cardCount: deskCardCount } } = this;
-    this.currentMove = new MoveConstructor({ allowedPlayer, number, deskCardCount, ...args });
+    this.currentMove = new MoveConstructor({ allowedPlayer, number, deskCardCount, ...moveConstructorArg });
   }
 
   get _tryFirstDefenderMove_(): DefenderMove {
