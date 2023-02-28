@@ -50,4 +50,8 @@ export default class Player {
     this.right = player.right;
     this.index = player.index;
   }
+
+  canTakeMore({ cardCount }: { cardCount: number }) {
+    return this.hand.count > cardCount;
+  }
 }
