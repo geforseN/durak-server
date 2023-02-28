@@ -44,10 +44,16 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
   stopMove({ game }: { game: DurakGame }) {
     game.round.updateCurrentMoveTo(StopAttackMove, { allowedPlayer: this });
     const defender = game.players.tryGetDefender();
+    console.log("STOP MOVE", this.info.accname);
 
-    if (!game.desk.isDefended && game.round.isDefenderGaveUp) return this.handleVdogonku({ game });
+    if (!game.desk.isDefended && game.round.isDefenderGaveUp) {
+      console.log("!-1: deskIsNotDefended", !game.desk.isDefended,
+        "AND ", "isDefenderGaveUp: ", game.round.isDefenderGaveUp);
+      console.log("!-2: handleVdogonku");
+      return this.handleVdogonku({ game });
+    }
 
-    const prevMoveWasInsert = game.round.previousMove instanceof InsertAttackCardMove;
+    const previousMoveWasInsert = game.round.previousMove instanceof InsertAttackCardMove;
 
     const leftIsOriginalAttacker = game.round.isOriginalAttacker(this.left);
     const sameCardCountFromLastDef = game.round.lastSuccesfullDefense?.deskCardCount === game.desk.cardCount;
@@ -55,18 +61,29 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
     const sameCardCountFromPrevMove = game.round.previousMove.deskCardCount === game.desk.cardCount;
     const thisIsOriginalAttacker = game.round.isOriginalAttacker(this);
 
-    if (prevMoveWasInsert || !sameCardCountFromPrevMove) {
+    if (previousMoveWasInsert || !sameCardCountFromPrevMove) {
+      console.log("!-1: prevMoveWasInsert", previousMoveWasInsert, "OR",
+        "notSameCardCountFromPrevMove", !sameCardCountFromPrevMove);
       game.service.setAttackUI("hidden", this).setDefendUI("revealed", defender);
+      console.log("!-2: next DefenderMove WHERE allowedPlayer IS defender", defender.info.accname);
       return game.round.pushNextMove(DefenderMove, { allowedPlayer: defender });
     }
 
     if (leftIsOriginalAttacker && sameCardCountFromLastDef) {
-      return game.handleNewRound({ nextAttacker: defender });
+      console.log("!-1: leftIsOriginalAttacker AND sameCardCountFromLastDef",
+        leftIsOriginalAttacker, sameCardCountFromLastDef);
+      console.log("!-2: handleSuccesfullDefense WHERE defender", defender.info.accname);
+      return game.handleSuccesfullDefense();
     }
 
     if (thisIsOriginalAttacker || sameCardCountFromPrevMove) {
-      game.service.setAttackUI("hidden", this).setAttackUI("revealed", defender.left as Attacker);
-      return game.round.pushNextMove(AttackerMove, { allowedPlayer: defender.left });
+      console.log("!-1: thisIsOriginalAttacker OR sameCardCountFromPrevMove",
+        thisIsOriginalAttacker, sameCardCountFromPrevMove);
+      const allowedPlayer = game.makeAttacker(defender.left);
+      game.service.setAttackUI("hidden", this).setAttackUI("revealed", allowedPlayer);
+      console.log("!-2: pushNextAttackerMove WHERE allowedPlayer IS",
+        defender.left.info.accname, "(defender.left)");
+      return game.round.pushNextMove(AttackerMove, { allowedPlayer });
     }
   }
 
