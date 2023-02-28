@@ -25,10 +25,14 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
   private postPutCardOnDesk({ game, card, index }: { game: DurakGame } & CardInfo) {
     game.round.updateCurrentMoveTo(InsertAttackCardMove, { allowedPlayer: this, card, slotIndex: index });
     const defender = game.players.tryGetDefender();
-    const defenderCanTakeMoreCards = defender.hand.count > game.desk.unbeatenCardCount;
-    if (!this.hand.count) this.giveMoveToLeft({ game });
-    if (!defenderCanTakeMoreCards) this.giveMoveToDefender({ game });
-    else game.round.pushNextMove(AttackerMove, { allowedPlayer: this });
+    const cardCount = game.desk.unbeatenCardCount;
+    if (!this.hand.count) {
+      return this.giveMoveToLeft({ game });
+    }
+    if (!defender.canTakeMore({ cardCount })) {
+      return this.giveMoveToDefender({ game });
+    }
+    return game.round.pushNextMove(AttackerMove, { allowedPlayer: this });
   }
 
   removeCard(card: Card): void {
