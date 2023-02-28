@@ -7,7 +7,6 @@ import { AttackerMove } from "../Moves/AttackerMove";
 import { DefenderMove } from "../Moves/DefenderMove";
 import { InsertAttackCardMove } from "../Moves/InsertAttackCardMove";
 import { StopAttackMove } from "../Moves/StopAttackMove";
-import Defender from "./Defender";
 
 export default class Attacker extends Player implements CardPut, CardRemove, MoveStop {
   constructor(player: Player) {
@@ -108,10 +107,12 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
   }
 
   private giveMoveToLeft({ game }: { game: DurakGame }) {
-    const Move = this.left instanceof Defender ? DefenderMove : AttackerMove;
-    const asd = game.makePlayer(this);
-    if (Move instanceof AttackerMove) game.makeNewAttacker({ nextAttacker: this.left || asd.left });
-    game.round.pushNextMove(Move, { allowedPlayer: this.left });
+    game.makePlayer(this);
+    if (game.players.isDefender(this.left)) {
+      return game.round.pushNextMove(DefenderMove, { allowedPlayer: this.left });
+    }
+    const allowedPlayer = game.makeNewAttacker({ nextAttacker: this.left });
+    return game.round.pushNextMove(DefenderMove, { allowedPlayer });
   }
 
   private giveMoveToDefender({ game }: { game: DurakGame }) {
