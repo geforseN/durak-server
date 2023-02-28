@@ -189,4 +189,13 @@ export default class DurakGame {
       ? playerOrIdentifier.info.accname
       : playerOrIdentifier.accname;
   }
+
+  allowsTransferMove({ card, slot, possibleDefender }: { possibleDefender: Player; slot: DeskSlot; card: Card }) {
+    const { cardCount } = this.desk;
+    return (
+      slot.isEmpty
+      && possibleDefender.canTakeMore({ cardCount })
+      && this.desk.allowsTransferMove({ card })
+    );
+  }
 }
