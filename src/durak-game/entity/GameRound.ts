@@ -56,6 +56,19 @@ export default class GameRound {
     return this.previousMove instanceof StopDefenseMove;
   }
 
+  get lastSuccesfullDefense(): DefenderMove | undefined {
+    for (let i = this.moves.length - 1; i > 0; i--) {
+      const move = this.moves[i];
+      const prevMove = this.moves[i - 1];
+      if (
+        prevMove instanceof InsertDefendCardMove
+        && move instanceof AttackerMove
+      ) {
+        return prevMove;
+      }
+    }
+  }
+
   pushNextMove<M extends GameMove>(
     MoveConstructor: { new(arg: any): M },
     moveConstructorArgs: Partial<InstanceType<{ new(arg: GameMoveConstructorArgs<Player>): M }>> & { allowedPlayer: Player },
