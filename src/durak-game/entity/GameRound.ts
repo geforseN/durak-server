@@ -36,24 +36,24 @@ export default class GameRound {
     return this.moves[this.currentMoveIndex - 1];
   }
 
-  get defenderGaveUpAtPreviousMove(): boolean {
-    return this.previousMove instanceof StopDefenseMove;
-  }
-
   get currentMove(): GameMove {
     return this.moves[this.currentMoveIndex];
-  }
-
-  currentMoveAllowedTo({ info: { accname } }: Player): boolean {
-    return this.currentMove.allowedPlayerAccname === accname;
   }
 
   set currentMove(move: GameMove) {
     this.moves[this.currentMoveIndex] = move;
   }
 
+  currentMoveAllowedTo({ info: { accname } }: Player): boolean {
+    return this.currentMove.allowedPlayerAccname === accname;
+  }
+
   get isDefenderGaveUp() {
-    return this.moves.some((move) => move instanceof StopDefenseMove)
+    return this.moves.some((move) => move instanceof StopDefenseMove);
+  }
+
+  get defenderGaveUpAtPreviousMove(): boolean {
+    return this.previousMove instanceof StopDefenseMove;
   }
 
   pushNextMove<M extends GameMove>(
