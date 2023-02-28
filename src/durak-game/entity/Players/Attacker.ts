@@ -55,49 +55,41 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
       console.log("!-2: handleVdogonku");
       return this.handleVdogonku({ game });
     }
+    const previousMoveWasAttackCardInsert = game.round.previousMove instanceof InsertAttackCardMove;
+    const sameCardCountFromLastSuccesfullDefence = game.round.lastSuccesfullDefense?.deskCardCount === game.desk.cardCount;
+    const sameCardCountFromPreviousMove = game.round.previousMove.deskCardCount === game.desk.cardCount;
 
-    const previousMoveWasInsert = game.round.previousMove instanceof InsertAttackCardMove;
-
-    const leftIsOriginalAttacker = game.round.isOriginalAttacker(this.left);
-    const sameCardCountFromLastDef = game.round.lastSuccesfullDefense?.deskCardCount === game.desk.cardCount;
-
-    const sameCardCountFromPrevMove = game.round.previousMove.deskCardCount === game.desk.cardCount;
-    const thisIsOriginalAttacker = game.round.isOriginalAttacker(this);
-
-    if (previousMoveWasInsert || !sameCardCountFromPrevMove) {
-      console.log("!-1: prevMoveWasInsert", previousMoveWasInsert, "OR",
-        "notSameCardCountFromPrevMove", !sameCardCountFromPrevMove);
-      game.service.setAttackUI("hidden", this).setDefendUI("revealed", defender);
+    if (previousMoveWasAttackCardInsert
+      || !sameCardCountFromPreviousMove) {
+      console.log("!-1: prevMoveWasInsert", previousMoveWasAttackCardInsert, "OR",
+        "notSameCardCountFromPrevMove", !sameCardCountFromPreviousMove);
       console.log("!-2: next DefenderMove WHERE allowedPlayer IS defender", defender.info.accname);
-      return game.round.pushNextMove(DefenderMove, { allowedPlayer: defender });
+      return this.giveMoveToDefender({ game });
     }
 
-    if (leftIsOriginalAttacker && sameCardCountFromLastDef) {
-      console.log("!-1: leftIsOriginalAttacker AND sameCardCountFromLastDef",
-        leftIsOriginalAttacker, sameCardCountFromLastDef);
+    if (this.left.isOriginalAttacker({ game })
+      && sameCardCountFromLastSuccesfullDefence) {
+      console.log("!-1: leftIsOriginalAttacker", this.left.isOriginalAttacker({ game }), "AND",
+        "sameCardCountFromLastDef", sameCardCountFromLastSuccesfullDefence);
       console.log("!-2: handleSuccesfullDefense WHERE defender", defender.info.accname);
       return game.handleSuccesfullDefense();
     }
 
-    if (thisIsOriginalAttacker || sameCardCountFromPrevMove) {
-      console.log("!-1: thisIsOriginalAttacker OR sameCardCountFromPrevMove",
-        thisIsOriginalAttacker, sameCardCountFromPrevMove);
-      const allowedPlayer = game.makeAttacker(defender.left);
-      game.service.setAttackUI("hidden", this).setAttackUI("revealed", allowedPlayer);
+    if (this.isOriginalAttacker({ game })
+      || sameCardCountFromPreviousMove) {
+      console.log("!-1: thisIsOriginalAttacker", this.isOriginalAttacker({ game }), "OR",
+        "sameCardCountFromPrevMove", sameCardCountFromPreviousMove);
       console.log("!-2: pushNextAttackerMove WHERE allowedPlayer IS",
         defender.left.info.accname, "(defender.left)");
-      return game.round.pushNextMove(AttackerMove, { allowedPlayer });
+      return this.giveMoveToLeft({ game });
     }
   }
 
   private handleVdogonku({ game }: { game: DurakGame }) {
     const defender = game.players.tryGetDefender();
-    const thisIsOriginalAttacker = game.round.isOriginalAttacker(this);
-    const leftIsOriginalAttacker = game.round.isOriginalAttacker(this.left);
-    const { defenderGaveUpAtPreviousMove } = game.round;
 
-    if (leftIsOriginalAttacker
-      || thisIsOriginalAttacker && defenderGaveUpAtPreviousMove
+    if (this.left.isOriginalAttacker({ game })
+      || this.isOriginalAttacker({ game }) && game.round.defenderGaveUpAtPreviousMove
     ) {
       game.makePlayer(this);
       const allowedPlayer = game.makeAttacker(this.left);
