@@ -1,9 +1,7 @@
-import { AttackerMove } from "./AttackerMove";
+import { AttackerMove, AttackerMoveConstructorArgs } from "./AttackerMove";
 import Card from "../Card";
-import Attacker from "../Players/Attacker";
-import { GameMoveConstructorArgs } from "./GameMove";
 
-type InsertAttackCardMoveConstructorArgs = { slotIndex: number, card: Card } & GameMoveConstructorArgs<Attacker>
+type InsertAttackCardMoveConstructorArgs = { card: Card, slotIndex: number } & AttackerMoveConstructorArgs;
 
 export class InsertAttackCardMove extends AttackerMove {
   card: Card;
