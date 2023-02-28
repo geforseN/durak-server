@@ -28,9 +28,11 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     this.postPutCardOnDesk({ game });
   }
 
-  private handlePutCardOnDesk({ game, card, slotIndex: index, socket }: PlaceCardData & GameSocket) {
+  private handlePutCardOnDesk({ game, card, slotIndex, socket }: PlaceCardData & GameSocket) {
     game.removeFromHand({ player: this, card, socket });
-    game.insertCardOnDesk({ card, index, socket });
+    const InsertCardMove = this.getInsertCardMove({ game, slotIndex });
+    game.round.updateCurrentMoveTo(InsertCardMove, { allowedPlayer: this, slotIndex, card });
+    game.insertCardOnDesk({ card, index: slotIndex, socket });
   }
 
   private makeTransferMove({ game, slotIndex, card, socket }: PlaceCardData & GameSocket) {
@@ -41,13 +43,15 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
   }
 
   private postPutCardOnDesk({ game }: { game: DurakGame }) {
-    game.round.updateCurrentMoveTo(InsertDefendCardMove, { allowedPlayer: this });
-    if (game.desk.isFull || !this.hand.count) return game.handleSuccesfullDefense();
-
-    if (!game.round.originalAttacker) this.makeOriginalAttacker({ game });
-
-    if (game.desk.isDefended) this.giveNextMoveToOriginalAttacker({ game });
-    else game.round.pushNextMove(DefenderMove, { allowedPlayer: this });
+    if (!game.round.originalAttacker)
+      this.makeOriginalAttacker({ game });
+    if (game.desk.isFull || !this.hand.count) {
+      return game.handleSuccesfullDefense();
+    }
+    if (game.desk.isDefended) {
+      return this.giveNextMoveToOriginalAttacker({ game });
+    }
+    return game.round.pushNextMove(DefenderMove, { allowedPlayer: this });
   }
 
   stopMove({ game }: { game: DurakGame }) {
@@ -76,5 +80,9 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     const originalAttacker = game.round.originalAttacker!;
     const allowedPlayer = game.makeNewAttacker({ nextAttacker: originalAttacker });
     game.round.pushNextMove(AttackerMove, { allowedPlayer });
+  }
+
+  private getInsertCardMove({ game, slotIndex: index }: { game: DurakGame, slotIndex: number }) {
+    return game.desk.getSlot({ index }).isEmpty ? InsertAttackCardMove : InsertDefendCardMove;
   }
 }
