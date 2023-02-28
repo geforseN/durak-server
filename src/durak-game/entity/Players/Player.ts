@@ -26,7 +26,7 @@ export default class Player {
 
   constructor(param: LobbyUser | Player) {
     if (param instanceof Player) {
-      this.initializeFromPlayer(param)
+      this.initializeFromPlayer(param);
     } else this.initializeFromLobbyUser(param);
   }
 

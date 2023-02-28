@@ -1,11 +1,7 @@
-import Attacker from "../Players/Attacker";
-import { AttackerMove } from "./AttackerMove";
-import { GameMoveConstructorArgs } from "./GameMove";
-
-type StopAttackMoveConstructorArgs = GameMoveConstructorArgs<Attacker> & { deskCardCount: number }
+import { AttackerMove, AttackerMoveConstructorArgs } from "./AttackerMove";
 
 export class StopAttackMove extends AttackerMove {
-  constructor({ number, allowedPlayer, deskCardCount }: StopAttackMoveConstructorArgs) {
+  constructor({ number, allowedPlayer, deskCardCount }: AttackerMoveConstructorArgs) {
     super({ number, allowedPlayer, deskCardCount });
   }
 }

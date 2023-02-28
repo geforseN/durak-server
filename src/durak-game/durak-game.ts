@@ -13,6 +13,7 @@ import Defender from "./entity/Players/Defender";
 import Player, { CardRemove } from "./entity/Players/Player";
 import GameRound from "./entity/GameRound";
 import { durakGames } from "../index";
+import DeskSlot from "./entity/DeskSlot";
 
 export type GameInfo = { id: string, adminAccname: string };
 export type CardInfo = { card: Card, index: number };
@@ -80,6 +81,7 @@ export default class DurakGame {
 
   handleSuccesfullDefense(): void {
     const defender = this.players.tryGetDefender();
+    console.log("SUCCESFULL DEF", defender, this);
     this.discard.push(...this.desk.cards);
     this.service.pushToDiscard().wonRound({ defender });
     this.clearDesk();
@@ -89,7 +91,7 @@ export default class DurakGame {
   handleNewRound({ nextAttacker }: { nextAttacker: Player }) {
     if (this.talon.isEmpty) this.deletePlayersWithEmptyHands();
     else this.makeCardDistribution();
-    if (this.players.count === 1) this.end({ timeout: 10_000 });
+    if (this.players.count === 1) this.end();
     const { attacker } = this.makeNewPlayers({ nextAttacker });
     const { desk, service, round: { number } } = this;
     this.round = new GameRound({ attacker, desk, service, number: number + 1 });
@@ -177,11 +179,11 @@ export default class DurakGame {
     this.players.__value = newPlayers;
   }
 
-  private end({ timeout }: { timeout: number }) {
+  private end() {
     setTimeout(() => {
       durakGames.delete(this.info.id);
       // TODO SAVE GAME IN DATABASE
-    }, timeout);
+    }, 10_000);
   }
 
   private getAccname(playerOrIdentifier: Player | LobbyUserIdentifier) {

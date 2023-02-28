@@ -1,3 +1,4 @@
+import assert from "node:assert";
 import Player, { CardPut, CardRemove, MoveStop } from "./Player";
 import { PlaceCardData } from "../../../namespaces/games/methods/handle-put-card-on-desk";
 import Card from "../Card";
@@ -8,7 +9,7 @@ import { TransferMove } from "../Moves/TransferMove.Defender";
 import { DefenderMove } from "../Moves/DefenderMove";
 import { InsertDefendCardMove } from "../Moves/InsertDefendCardMove";
 import { StopDefenseMove } from "../Moves/StopDefenseMove";
-
+import { InsertAttackCardMove } from "../Moves/InsertAttackCardMove";
 
 export default class Defender extends Player implements CardPut, CardRemove, MoveStop {
   constructor(player: Player) {
@@ -38,8 +39,8 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
   private makeTransferMove({ game, slotIndex, card, socket }: PlaceCardData & GameSocket) {
     game.round.updateCurrentMoveTo(TransferMove, { allowedPlayer: this, card, slotIndex });
     this.handlePutCardOnDesk({ game, card, socket, slotIndex });
-    game.makeNewPlayers({ nextAttacker: this });
-    game.round.pushNextMove(AttackerMove, { allowedPlayer: this });
+    const { attacker } = game.makeNewPlayers({ nextAttacker: this });
+    game.round.pushNextMove(AttackerMove, { allowedPlayer: attacker });
   }
 
   private postPutCardOnDesk({ game }: { game: DurakGame }) {
@@ -77,9 +78,10 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
   }
 
   private giveNextMoveToOriginalAttacker({ game }: { game: DurakGame }) {
-    const originalAttacker = game.round.originalAttacker!;
-    const allowedPlayer = game.makeNewAttacker({ nextAttacker: originalAttacker });
-    game.round.pushNextMove(AttackerMove, { allowedPlayer });
+    assert.ok(game.round.originalAttacker);
+    const originalAttacker = game.makeAttacker(game.round.originalAttacker);
+    console.log("GIVE MOVE TO ORIG ATT", originalAttacker.info.accname);
+    return game.round.pushNextMove(AttackerMove, { allowedPlayer: originalAttacker });
   }
 
   private getInsertCardMove({ game, slotIndex: index }: { game: DurakGame, slotIndex: number }) {
