@@ -93,26 +93,18 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
 
   private handleVdogonku({ game }: { game: DurakGame }) {
     const defender = game.players.tryGetDefender();
-
     const thisIsOriginalAttacker = game.round.isOriginalAttacker(this);
     const leftIsOriginalAttacker = game.round.isOriginalAttacker(this.left);
     const { defenderGaveUpAtPreviousMove } = game.round;
 
-    if (thisIsOriginalAttacker) {
-      if (defenderGaveUpAtPreviousMove) {
-        const asd = game.makePlayer(this);
-        const newAttacker = game.makeAttacker(this.left || asd.left);
-        game.round.pushNextMove(AttackerMove, { allowedPlayer: newAttacker });
-      } else game.handleNewRound({ nextAttacker: defender.left });
+    if (leftIsOriginalAttacker
+      || thisIsOriginalAttacker && defenderGaveUpAtPreviousMove
+    ) {
+      game.makePlayer(this);
+      const allowedPlayer = game.makeAttacker(this.left);
+      return game.round.pushNextMove(AttackerMove, { allowedPlayer });
     }
-
-    if (leftIsOriginalAttacker) {
-      const asd = game.makePlayer(this);
-      const newAttacker = game.makeAttacker(this.left || asd.left);
-      game.round.pushNextMove(AttackerMove, { allowedPlayer: newAttacker });
-    } else {
-      game.handleNewRound({ nextAttacker: defender.left });
-    }
+    return game.handleNewRound({ nextAttacker: defender.left });
   }
 
   private giveMoveToLeft({ game }: { game: DurakGame }) {
