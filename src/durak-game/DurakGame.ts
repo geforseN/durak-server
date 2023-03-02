@@ -81,7 +81,6 @@ export default class DurakGame {
 
   handleSuccesfullDefense(): void {
     const defender = this.players.tryGetDefender();
-    console.log("SUCCESFULL DEF", defender, this);
     this.discard.push(...this.desk.cards);
     this.service.pushToDiscard().wonRound({ defender });
     this.clearDesk();
@@ -122,13 +121,13 @@ export default class DurakGame {
   }
 
   makeAttacker(playerOrIdentifier: Player | LobbyUserIdentifier): Attacker {
-    const attacker = this.make(playerOrIdentifier, Attacker);
+    const attacker = this.make(Attacker, playerOrIdentifier);
     this.service.setAttackUI("revealed", attacker);
     return attacker;
   }
 
   makeDefender(playerOrIdentifier: Player | LobbyUserIdentifier): Defender {
-    const defender = this.make(playerOrIdentifier, Defender);
+    const defender = this.make(Defender, playerOrIdentifier);
     this.service.setDefendUI("revealed", defender);
     return defender;
   }
@@ -137,16 +136,16 @@ export default class DurakGame {
     const accname = this.getAccname(playerOrIdentifier);
     const superPlayer = this.players.tryGetPlayer({ accname }) as Attacker | Defender;
     this.service.setSuperPlayerUI("hidden", superPlayer);
-    return this.make(playerOrIdentifier, Player);
+    return this.make(Player, playerOrIdentifier);
   }
 
   private make<P extends Player>(
-    playerOrIdentifier: Player | LobbyUserIdentifier, PlayerP: { new(player: Player): P },
+    PlayerLike: { new(player: Player): P },
+    playerOrIdentifier: Player | LobbyUserIdentifier,
   ): P {
-    const player = this.players.make(playerOrIdentifier, PlayerP);
-    const playerRole = PlayerP.name.toLowerCase() as PlayerRole;
-    this.service.changeRoleTo(playerRole, player);
-    console.log("CHANGE ROLE: ", playerRole, player.info.accname);
+    const player = this.players.make(PlayerLike, playerOrIdentifier);
+    const role = PlayerLike.name as PlayerRole;
+    this.service.changeRoleTo(role, player);
     return player;
   }
 
@@ -174,7 +173,9 @@ export default class DurakGame {
         const { left, right } = player;
         left.right = player.right;
         right.left = player.left;
-      } else newPlayers.push(player);
+      } else {
+        newPlayers.push(player);
+      }
     }
     this.players.__value = newPlayers;
   }
