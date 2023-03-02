@@ -4,10 +4,8 @@ import { Rank } from "../utility";
 
 export default class Desk {
   slots: DeskSlot[];
-  maxSlotCount: number;
 
   constructor(slotCount = 6) {
-    this.maxSlotCount = slotCount;
     this.slots = [...Array(slotCount)].map(() => new DeskSlot());
   }
 
