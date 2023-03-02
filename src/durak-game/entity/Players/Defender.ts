@@ -49,7 +49,7 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
       return game.handleSuccesfullDefense();
     }
     if (game.desk.isDefended) {
-      return this.giveNextMoveToOriginalAttacker({ game });
+      return this.letMoveToPrimalAttacker({ game });
     }
     return game.round.pushNextMove(DefenderMove, { allowedPlayer: this });
   }
@@ -60,7 +60,7 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
       return game.handleBadDefense();
     }
     if (game.cardCountIncreasedFromLastDefense) {
-      return this.giveNextMoveToOriginalAttacker({ game });
+      return this.letMoveToPrimalAttacker({ game });
     }
     return game.handleSuccesfullDefense();
   }
@@ -71,16 +71,9 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     this.hand.value.splice(index, 1);
   }
 
-  private makeOriginalAttacker({ game }: { game: DurakGame }) {
-    console.log(game.round._tryOriginalAttacker_, game.round.originalAttacker); // TODO: DELETE AFTER TEST
-    game.round.originalAttacker = game.players.tryGetAttacker();
-  }
-
-  private giveNextMoveToOriginalAttacker({ game }: { game: DurakGame }) {
-    assert.ok(game.round.originalAttacker);
-    const originalAttacker = game.makeAttacker(game.round.originalAttacker);
-    console.log("GIVE MOVE TO ORIG ATT", originalAttacker.info.accname);
-    return game.round.pushNextMove(AttackerMove, { allowedPlayer: originalAttacker });
+  private letMoveToPrimalAttacker({ game }: { game: DurakGame }): void {
+    const allowedPlayer = game.makeNewAttacker({nextAttacker: game.round.primalAttacker});
+    return game.round.pushNextMove(AttackerMove, { allowedPlayer });
   }
 
   private getInsertCardMove({ game, slotIndex: index }: { game: DurakGame, slotIndex: number }) {
