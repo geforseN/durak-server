@@ -2,11 +2,8 @@ import Player, { CardPut, CardRemove, MoveStop } from "./Player";
 import { PlaceCardData } from "../../../namespaces/games/methods/handle-put-card-on-desk";
 import Card from "../Card";
 import { GameSocket } from "../../../namespaces/games/game.service";
-import DurakGame, { CardInfo } from "../../durak-game";
-import { AttackerMove } from "../Moves/AttackerMove";
-import { DefenderMove } from "../Moves/DefenderMove";
-import { InsertAttackCardMove } from "../Moves/InsertAttackCardMove";
-import { StopAttackMove } from "../Moves/StopAttackMove";
+import DurakGame, { CardInfo } from "../../DurakGame";
+import { AttackerMove, DefenderMove, InsertAttackCardMove, StopAttackMove } from "../GameMove";
 
 export default class Attacker extends Player implements CardPut, CardRemove, MoveStop {
   constructor(player: Player) {
@@ -29,7 +26,7 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
       return this.giveMoveToLeft({ game });
     }
     if (!defender.canTakeMore({ cardCount })) {
-      return this.giveMoveToDefender({ game });
+      return game.round.pushNextMove(DefenderMove, { allowedPlayer: defender });
     }
     return game.round.pushNextMove(AttackerMove, { allowedPlayer: this });
   }
@@ -64,32 +61,31 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
       console.log("!-1: prevMoveWasInsert", previousMoveWasAttackCardInsert, "OR",
         "notSameCardCountFromPrevMove", !sameCardCountFromPreviousMove);
       console.log("!-2: next DefenderMove WHERE allowedPlayer IS defender", defender.info.accname);
-      return this.giveMoveToDefender({ game });
+      return game.round.pushNextMove(DefenderMove, { allowedPlayer: defender });
     }
 
-    if (this.left.isOriginalAttacker({ game })
-      && sameCardCountFromLastSuccesfullDefence) {
-      console.log("!-1: leftIsOriginalAttacker", this.left.isOriginalAttacker({ game }), "AND",
-        "sameCardCountFromLastDef", sameCardCountFromLastSuccesfullDefence);
-      console.log("!-2: handleSuccesfullDefense WHERE defender", defender.info.accname);
-      return game.handleSuccesfullDefense();
-    }
-
-    if (this.isOriginalAttacker({ game })
+    if (this.isPrimalAttacker({ game })
       || sameCardCountFromPreviousMove) {
-      console.log("!-1: thisIsOriginalAttacker", this.isOriginalAttacker({ game }), "OR",
+      console.log("!-1: thisIsOriginalAttacker", this.isPrimalAttacker({ game }), "OR",
         "sameCardCountFromPrevMove", sameCardCountFromPreviousMove);
       console.log("!-2: pushNextAttackerMove WHERE allowedPlayer IS",
         defender.left.info.accname, "(defender.left)");
       return this.giveMoveToLeft({ game });
     }
+
+    if (this.left.isPrimalAttacker({ game })
+      && sameCardCountFromLastSuccesfullDefence) {
+      console.log("!-1: leftIsOriginalAttacker", this.left.isPrimalAttacker({ game }), "AND",
+        "sameCardCountFromLastDef", sameCardCountFromLastSuccesfullDefence);
+      console.log("!-2: handleSuccesfullDefense WHERE defender", defender.info.accname);
+      return game.handleSuccesfullDefense();
+    }
   }
 
   private handleVdogonku({ game }: { game: DurakGame }) {
     const defender = game.players.tryGetDefender();
-
-    if (this.left.isOriginalAttacker({ game })
-      || this.isOriginalAttacker({ game }) && game.round.defenderGaveUpAtPreviousMove
+    if (this.left.isPrimalAttacker({ game })
+      || this.isPrimalAttacker({ game }) && game.round.defenderGaveUpAtPreviousMove
     ) {
       game.makePlayer(this);
       const allowedPlayer = game.makeAttacker(this.left);
@@ -105,11 +101,5 @@ export default class Attacker extends Player implements CardPut, CardRemove, Mov
     }
     const allowedPlayer = game.makeNewAttacker({ nextAttacker: this.left });
     return game.round.pushNextMove(DefenderMove, { allowedPlayer });
-  }
-
-  private giveMoveToDefender({ game }: { game: DurakGame }) {
-    const defender = game.players.tryGetDefender();
-    game.service.setAttackUI("freeze", this);
-    game.round.pushNextMove(DefenderMove, { allowedPlayer: defender });
   }
 }
