@@ -17,7 +17,6 @@ export default class GameRound {
     this.desk = desk;
     this.moves = [new AttackerMove({ number: 1, allowedPlayer, deskCardCount: desk.cardCount })];
     this.service = service;
-    this.service.setAttackUI("revealed", allowedPlayer);
   }
 
   get currentMoveIndex(): number {
@@ -50,14 +49,10 @@ export default class GameRound {
 
   get lastSuccesfullDefense(): DefenderMove | undefined {
     for (let i = this.moves.length - 1; i > 0; i--) {
-      const move = this.moves[i];
-      const prevMove = this.moves[i - 1];
-      if (
-        prevMove instanceof InsertDefendCardMove
-        && move instanceof AttackerMove
-      ) {
-        return prevMove;
-      }
+      const [currentMove, previousMove] = [this.moves[i], this.moves[i - 1]];
+      if (previousMove instanceof InsertDefendCardMove
+        && currentMove instanceof AttackerMove
+      ) return previousMove;
     }
   }
 
@@ -68,6 +63,7 @@ export default class GameRound {
     const { currentMove: { number }, desk: { cardCount: deskCardCount } } = this;
     const { allowedPlayer } = moveConstructorArg;
     this.service.setSuperPlayerUI("revealed", allowedPlayer as Defender | Attacker);
+    this.service.letMoveTo(allowedPlayer.info.accname);
     this.moves.push(new MoveConstructor({ number: number + 1, deskCardCount, ...moveConstructorArg }));
   }
 
@@ -79,9 +75,9 @@ export default class GameRound {
     this.currentMove = new MoveConstructor({ allowedPlayer, number, deskCardCount, ...moveConstructorArg });
   }
 
-  get _tryFirstDefenderMove_(): DefenderMove {
+  get firstDefenderMove(): DefenderMove {
     const defenderMove = this.moves.find((move) => move instanceof InsertDefendCardMove);
-    if (!defenderMove) throw new Error("Нет защищающегося хода");
+    assert.ok(defenderMove, "Нет защищающегося хода");
     return defenderMove;
   }
 
