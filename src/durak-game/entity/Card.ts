@@ -1,4 +1,4 @@
-import { Power, powerRecord, Rank, Suit } from "../utility.durak";
+import { Power, powerRecord, Rank, Suit } from "../utility";
 
 export type CardConstructor = { suit: Suit, rank: Rank };
 export type CardObject = { card: Card };
@@ -10,20 +10,23 @@ export default class Card {
   constructor({ rank, suit }: CardConstructor) {
     this.rank = rank;
     this.suit = suit;
-    this.power = powerRecord[rank];
-  }
-
-  hasSame(obj: { suit: Suit } | { rank: Rank } | { power: Power }): boolean {
-    const keys = Object.keys(obj);
-    const key = keys[0] as "suit" | "rank" | "power";
-    if (keys.length !== 1 || !obj.hasOwnProperty(key)) throw new Error();
-    const value = Object.values(obj)[0] as Rank | Suit | number;
-
-    return this[key] === value;
   }
 
   get power(): Power {
     return powerRecord[this.rank];
+  }
+
+
+  hasSame(cardEntries: { suit?: Suit, rank?: Rank, power?: Power }): boolean {
+    for (const [key, value] of Object.entries(cardEntries)) {
+      if (!Object.hasOwn(this, key)) throw new Error("Нет такого поля");
+      if (this[key as keyof this] !== value) return false;
+    }
+    return true;
+  }
+
+  weakerThan(card: Card) {
+    return this.power < card.power;
   }
 
   toString(): string {

@@ -47,13 +47,11 @@ export default class DeskSlot {
     const cardsHasSameSuit = this.attackCard.hasSame({ suit: card.suit });
     const attackCardIsTrump = this.attackCard.hasSame({ suit: trumpSuit });
     const cardIsTrump = card.hasSame({ suit: trumpSuit });
-    const cardWeaker = card.power < this.attackCard.power;
 
-    if (!attackCardIsTrump && cardIsTrump) return console.log("assertAvalableForDef", this.attackCard, "__", this.defendCard);
+    if (!attackCardIsTrump && cardIsTrump) return;
     if (attackCardIsTrump && !cardIsTrump) throw new Error("Козырную карту можно побить только козырной");
     if (!attackCardIsTrump && !cardsHasSameSuit) throw new Error("Вы кинули неверню масть");
-    if (cardsHasSameSuit && cardWeaker) throw new Error("Вы кинули слабую карту");
-    console.log("assertAvalableForDef", this.attackCard, "__", this.defendCard);
+    if (cardsHasSameSuit && card.weakerThan(this.attackCard)) throw new Error("Вы кинули слабую карту");
   }
 
   insert({ card: { suit, rank } }: { card: Card }) {
@@ -62,7 +60,7 @@ export default class DeskSlot {
   }
 
   hasOnlyAttackCardWith({ rank }: { rank: Rank }) {
-    return !this.defendCard && this.attackCard?.hasSame({ rank: rank });
+    return !this.defendCard && this.attackCard?.hasSame({ rank });
   }
 
   toString(): string {
