@@ -2,7 +2,7 @@ import Card from "../entity/Card";
 import Self from "./Self.dto";
 import Enemy from "./Enemy.dto";
 import DeskSlot from "../entity/DeskSlot";
-import DurakGame from "../durak-game";
+import DurakGame from "../DurakGame";
 import { LobbyUserIdentifier } from "../../namespaces/lobbies/entity/lobby-users";
 
 export default class GameState {
