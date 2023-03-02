@@ -1,8 +1,7 @@
+import assert from "node:assert";
 import LobbyUsers, { LobbyUserIdentifier } from "../../../namespaces/lobbies/entity/lobby-users";
-import Player from "./Player";
+import { Attacker, Defender, Player } from "../Players";
 import Card from "../Card";
-import Attacker from "./Attacker";
-import Defender from "./Defender";
 
 export default class Players {
   __value: Player[];
