@@ -3,7 +3,7 @@ import Hand from "../Deck/Hand";
 import Card from "../Card";
 import { PlaceCardData } from "../../../namespaces/games/methods/handle-put-card-on-desk";
 import { GameSocket } from "../../../namespaces/games/game.service";
-import DurakGame from "../../durak-game";
+import DurakGame from "../../DurakGame";
 
 export interface CardPut {
   putCardOnDesk({ game, card, slotIndex, socket }: PlaceCardData & GameSocket): void | never;
@@ -34,8 +34,9 @@ export default class Player {
     this.hand.receive(...cardsToReceive);
   }
 
+  /** @return integer from 0 to 6 */
   get missingNumberOfCards(): number {
-    return 6 - this.hand.count;
+    return Math.max(6 - this.hand.count, 0);
   }
 
   private initializeFromLobbyUser(lobbyUser: LobbyUser) {
@@ -53,5 +54,9 @@ export default class Player {
 
   canTakeMore({ cardCount }: { cardCount: number }) {
     return this.hand.count > cardCount;
+  }
+
+  isPrimalAttacker({ game: { round: { primalAttacker } } }: { game: DurakGame }) {
+    return this.info.accname === primalAttacker?.info.accname;
   }
 }
