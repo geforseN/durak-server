@@ -11,7 +11,7 @@ export default class Hand extends Deck {
   }
 
   has({ card: { suit, rank } }: CardObject): boolean {
-    return this._value.some((card) => card.suit === suit && card.rank === rank);
+    return this._value.some((card) => card.hasSame({ suit, rank }));
   }
 
   receive(...cards: Card[]): void {
@@ -19,6 +19,6 @@ export default class Hand extends Deck {
   }
 
   findIndex({ card: { suit, rank } }: CardObject): number {
-    return this._value.findIndex((card) => card.suit === suit && card.rank === rank);
+    return this._value.findIndex((card) => card.hasSame({ suit, rank }));
   }
 }
