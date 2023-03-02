@@ -9,13 +9,11 @@ type GameRoundConstructorArgs = { attacker: Attacker, number: number, desk: Desk
 export default class GameRound {
   number: number;
   private readonly moves: GameMove[];
-  originalAttacker: Attacker | null;
   desk: Desk;
   service: GameService;
 
   constructor({ number, desk, attacker: allowedPlayer, service }: GameRoundConstructorArgs) {
     this.number = number;
-    this.originalAttacker = null;
     this.desk = desk;
     this.moves = [new AttackerMove({ number: 1, allowedPlayer, deskCardCount: desk.cardCount })];
     this.service = service;
@@ -87,18 +85,13 @@ export default class GameRound {
     return defenderMove;
   }
 
-  get _tryOriginalAttacker_(): Attacker {
-    return this._tryFirstDefenderMove_.allowedPlayer.right as Attacker;
-  }
-
-  isOriginalAttacker({ info: { accname } }: Player) {
-    return this.originalAttacker?.info.accname === accname;
+  get primalAttacker(): Attacker {
+    return this.firstDefenderMove.allowedPlayer.right as Attacker;
   }
 
   get distributionQueue() {
-    if (!this.originalAttacker) throw new Error("Нет первоночально атакующего");
-    const playersQueue: Player[] = [this.originalAttacker];
-    const defender = this.originalAttacker.left;
+    const playersQueue: Player[] = [this.primalAttacker];
+    const defender = this.primalAttacker.left;
 
     let player = defender.left;
     while (player.left.info.accname !== defender.info.accname) {
