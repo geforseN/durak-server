@@ -18,9 +18,7 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     super(player);
   }
 
-  putCardOnDesk(
-    { game, slotIndex, card, socket }: PlaceCardData & GameSocket,
-  ): void | never {
+  putCardOnDesk({ game, slotIndex, card, socket }: PlaceCardData & GameSocket): void | never {
     const slot = game.desk.getSlot({ index: slotIndex });
     const { trumpSuit } = game.talon;
     if (game.allowsTransferMove({ slot, card, possibleDefender: this.left })) {
@@ -31,7 +29,7 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     this.postPutCardOnDesk({ game });
   }
 
-  private handlePutCardOnDesk({ game, card, slotIndex, socket }: PlaceCardData & GameSocket) {
+  private handlePutCardOnDesk({ game, card, slotIndex, socket }: PlaceCardData & GameSocket): void {
     game.removeFromHand({ player: this, card, socket });
     const InsertCardMove = this.getInsertCardMove({ game, slotIndex });
     game.round.updateCurrentMoveTo(InsertCardMove, { allowedPlayer: this, slotIndex, card });
@@ -46,9 +44,7 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     game.round.pushNextMove(AttackerMove, { allowedPlayer });
   }
 
-  private postPutCardOnDesk({ game }: { game: DurakGame }) {
-    if (!game.round.originalAttacker)
-      this.makeOriginalAttacker({ game });
+  private postPutCardOnDesk({ game }: { game: DurakGame }): void {
     if (game.desk.isFull || !this.hand.count) {
       return game.handleSuccesfullDefense();
     }
@@ -58,7 +54,7 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     return game.round.pushNextMove(DefenderMove, { allowedPlayer: this });
   }
 
-  stopMove({ game }: { game: DurakGame }) {
+  stopMove({ game }: { game: DurakGame }): void {
     game.round.updateCurrentMoveTo(StopDefenseMove, { allowedPlayer: this });
     if (!game.desk.isDefended) {
       return game.handleBadDefense();
