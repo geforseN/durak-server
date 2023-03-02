@@ -1,4 +1,4 @@
-import DurakGame from "../../../durak-game/durak-game";
+import DurakGame from "../../../durak-game/DurakGame";
 import { GameSocket } from "../game.service";
 
 export default function handleStopMove(

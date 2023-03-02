@@ -1,13 +1,8 @@
-import Player from "./Players/Player";
-import Attacker from "./Players/Attacker";
-import { AttackerMove } from "./Moves/AttackerMove";
-import { DefenderMove } from "./Moves/DefenderMove";
-import { InsertDefendCardMove } from "./Moves/InsertDefendCardMove";
-import { GameMove } from "./Moves/GameMove";
+import assert from "node:assert";
 import Desk from "./Desk";
-import { StopDefenseMove } from "./Moves/StopDefenseMove";
+import { Attacker, Defender, Player } from "./Players";
+import { AttackerMove, DefenderMove, GameMove, InsertDefendCardMove, StopDefenseMove } from "./GameMove";
 import { GameService } from "../../namespaces/games/game.service";
-import Defender from "./Players/Defender";
 
 type GameRoundConstructorArgs = { attacker: Attacker, number: number, desk: Desk, service: GameService };
 

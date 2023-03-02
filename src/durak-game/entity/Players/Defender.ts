@@ -1,15 +1,17 @@
 import assert from "node:assert";
 import Player, { CardPut, CardRemove, MoveStop } from "./Player";
-import { PlaceCardData } from "../../../namespaces/games/methods/handle-put-card-on-desk";
 import Card from "../Card";
+import { PlaceCardData } from "../../../namespaces/games/methods/handle-put-card-on-desk";
 import { GameSocket } from "../../../namespaces/games/game.service";
-import DurakGame from "../../durak-game";
-import { AttackerMove } from "../Moves/AttackerMove";
-import { TransferMove } from "../Moves/TransferMove.Defender";
-import { DefenderMove } from "../Moves/DefenderMove";
-import { InsertDefendCardMove } from "../Moves/InsertDefendCardMove";
-import { StopDefenseMove } from "../Moves/StopDefenseMove";
-import { InsertAttackCardMove } from "../Moves/InsertAttackCardMove";
+import DurakGame from "../../DurakGame";
+import {
+  AttackerMove,
+  DefenderMove,
+  InsertAttackCardMove,
+  InsertDefendCardMove,
+  StopDefenseMove,
+  TransferMove,
+} from "../GameMove";
 
 export default class Defender extends Player implements CardPut, CardRemove, MoveStop {
   constructor(player: Player) {

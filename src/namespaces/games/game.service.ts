@@ -6,7 +6,7 @@ import Player from "../../durak-game/entity/Players/Player";
 import Defender from "../../durak-game/entity/Players/Defender";
 import Attacker from "../../durak-game/entity/Players/Attacker";
 import GameState from "../../durak-game/DTO/GameState";
-import DurakGame from "../../durak-game/durak-game";
+import DurakGame from "../../durak-game/DurakGame";
 
 export type GameSocket = { socket: GamesIO.SocketIO };
 

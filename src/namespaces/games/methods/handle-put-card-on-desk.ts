@@ -1,5 +1,5 @@
 import Card from "../../../durak-game/entity/Card";
-import DurakGame from "../../../durak-game/durak-game";
+import DurakGame from "../../../durak-game/DurakGame";
 import { GameSocket } from "../game.service";
 import { ResponseCallback } from "../games.types";
 

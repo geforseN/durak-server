@@ -1,6 +1,6 @@
 import { lobbiesNamespace, lobbiesService, lobbies, durakGames } from "../../../index";
 import { LobbiesIO } from "../lobbies.types";
-import DurakGame from "../../../durak-game/durak-game";
+import DurakGame from "../../../durak-game/DurakGame";
 
 export default function createGame(
   this: { socket: LobbiesIO.SocketIO },

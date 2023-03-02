@@ -1,6 +1,6 @@
 import Card from "./Card";
 import DeskSlot from "./DeskSlot";
-import { Rank } from "../utility.durak";
+import { Rank } from "../utility";
 
 export default class Desk {
   slots: DeskSlot[];
