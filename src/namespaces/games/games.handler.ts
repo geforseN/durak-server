@@ -12,8 +12,7 @@ export default function gamesHandler(
   if (!game) return handleNoSuchGameOnline(socket);
   if (!accname) return handleNotAuthorized(socket);
 
-  if (!game.round?.number) game.start(this.namespace);
-  console.log("МОЯ ИГРА", gameId, ":", game.talon.count);
+  if (!game.round) game.start(this.namespace);
 
   socket.on("state__restore", () => {
     game.restoreState({ accname, socket })
