@@ -1,6 +1,7 @@
 import Card from "./Card";
 import DeskSlot from "./DeskSlot";
 import { Rank } from "../utility";
+import Player from "./Players/Player";
 
 export default class Desk {
   slots: DeskSlot[];
@@ -21,8 +22,12 @@ export default class Desk {
     return this.slots.filter((slot) => slot.isUnbeaten).length;
   };
 
-  allowsTransferMove({ card: { rank } }: { card: Card }) {
-    return this.slots.every((slot) => slot.isEmpty || slot.hasOnlyAttackCardWith({ rank }));
+  allowsTransferMove({ card, slot, nextDefender }: { nextDefender: Player; slot: DeskSlot; card: Card }) {
+    return (
+      slot.isEmpty
+      && nextDefender.canTakeMore({ cardCount: this.cardCount })
+      && this.slots.every((slot) => slot.allowsTransferMove({ card }))
+    );
   }
 
   getSlot({ index }: { index: number }): DeskSlot {
