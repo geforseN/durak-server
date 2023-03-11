@@ -13,7 +13,6 @@ import Defender from "./entity/Players/Defender";
 import Player, { CardRemove } from "./entity/Players/Player";
 import GameRound from "./entity/GameRound";
 import { durakGames } from "../index";
-import DeskSlot from "./entity/DeskSlot";
 
 export type GameInfo = { id: string, adminAccname: string };
 export type CardInfo = { card: Card, index: number };
@@ -191,14 +190,5 @@ export default class DurakGame {
     return playerOrIdentifier instanceof Player
       ? playerOrIdentifier.info.accname
       : playerOrIdentifier.accname;
-  }
-
-  allowsTransferMove({ card, slot, possibleDefender }: { possibleDefender: Player; slot: DeskSlot; card: Card }) {
-    const { cardCount } = this.desk;
-    return (
-      slot.isEmpty
-      && possibleDefender.canTakeMore({ cardCount })
-      && this.desk.allowsTransferMove({ card })
-    );
   }
 }
