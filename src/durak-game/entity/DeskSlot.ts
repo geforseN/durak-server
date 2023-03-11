@@ -63,6 +63,10 @@ export default class DeskSlot {
     return !this.defendCard && this.attackCard?.hasSame({ rank });
   }
 
+  allowsTransferMove({ card: { rank } }: { card: Card }) {
+    return this.isEmpty || this.hasOnlyAttackCardWith({ rank });
+  }
+
   toString(): string {
     return `[${this.attackCard ?? ""}_${this.defendCard ?? ""}]`;
   }
