@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import Desk from "./Desk";
-import { Attacker, Defender, Player } from "./Players";
+import { Attacker, Player } from "./Players";
 import { AttackerMove, DefenderMove, GameMove, InsertDefendCardMove, StopDefenseMove } from "./GameMove";
 import { GameService } from "../../namespaces/games/game.service";
 
