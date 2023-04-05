@@ -82,18 +82,20 @@ export default class GameRound {
   }
 
   get primalAttacker(): Attacker {
-    return this.firstDefenderMove.allowedPlayer.right as Attacker;
+    return this.firstDefenderMove.player.right as Attacker;
   }
 
   get distributionQueue() {
     const playersQueue: Player[] = [this.primalAttacker];
     const defender = this.primalAttacker.left;
-
     let player = defender.left;
-    while (player.left.info.accname !== defender.info.accname) {
+    while (player.left.id !== defender.id) {
       playersQueue.push(player);
       player = player.left;
     }
+    playersQueue.push(defender);
+    return playersQueue;
+  }
 
     return playersQueue.concat(defender);
   }
