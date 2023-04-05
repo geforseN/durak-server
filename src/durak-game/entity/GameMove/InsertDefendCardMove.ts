@@ -7,8 +7,8 @@ export class InsertDefendCardMove extends DefenderMove {
   card: Card;
   slotIndex: number;
 
-  constructor({ number, allowedPlayer, deskCardCount, ...args }: InsertDefendCardMoveConstructorArgs) {
-    super({ number, allowedPlayer, deskCardCount });
+  constructor({ player, deskCardCount, ...args }: InsertDefendCardMoveConstructorArgs) {
+    super({ player, deskCardCount });
     this.slotIndex = args.slotIndex;
     this.card = args.card;
   }

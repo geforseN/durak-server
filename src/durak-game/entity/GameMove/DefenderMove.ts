@@ -4,7 +4,7 @@ import { GameMove, GameMoveConstructorArgs } from "./GameMove";
 export type DefenderMoveConstructorArgs = GameMoveConstructorArgs<Defender>;
 
 export class DefenderMove extends GameMove {
-  constructor({ number, allowedPlayer, deskCardCount }: DefenderMoveConstructorArgs) {
-    super({ number, allowedPlayer, deskCardCount });
+  constructor({ player, deskCardCount }: DefenderMoveConstructorArgs) {
+    super({ player, deskCardCount });
   }
 }

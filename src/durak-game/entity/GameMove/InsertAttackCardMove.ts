@@ -7,8 +7,8 @@ export class InsertAttackCardMove extends AttackerMove {
   card: Card;
   slotIndex: number;
 
-  constructor({ number, allowedPlayer, deskCardCount, ...args }: InsertAttackCardMoveConstructorArgs) {
-    super({ number, allowedPlayer, deskCardCount });
+  constructor({ player, deskCardCount, ...args }: InsertAttackCardMoveConstructorArgs) {
+    super({ player, deskCardCount });
     this.slotIndex = args.slotIndex;
     this.card = args.card;
   }
