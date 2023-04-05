@@ -7,10 +7,10 @@ import { GameService } from "../../namespaces/games/game.service";
 type GameRoundConstructorArgs = { attacker: Attacker, number: number, desk: Desk, service: GameService };
 
 export default class GameRound {
-  number: number;
+  private readonly number: number;
   private readonly moves: GameMove[];
-  desk: Desk;
-  service: GameService;
+  private readonly desk: Desk;
+  private readonly service: GameService;
 
   constructor({ number, desk, attacker: allowedPlayer, service }: GameRoundConstructorArgs) {
     this.number = number;
