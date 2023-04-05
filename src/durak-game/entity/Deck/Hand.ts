@@ -21,4 +21,8 @@ export default class Hand extends Deck {
   findIndex({ card: { suit, rank } }: CardObject): number {
     return this._value.findIndex((card) => card.hasSame({ suit, rank }));
   }
+
+  get isEmpty(): boolean {
+    return this.count === 0;
+  }
 }
