@@ -8,7 +8,7 @@ import GameState from "../../durak-game/DTO/GameState";
 export type SocketResponse = { status: "ATT" | "DEF" } | { status: "NOK", message: string };
 export type ResponseCallback = (res: SocketResponse) => void;
 
-export type PlayerRole = "defender" | "attacker" | "player";
+export type PlayerRole = "Defender" | "Attacker" | "Player";
 export type UIStatus = "revealed" | "hidden" | "freeze";
 
 export namespace GamesIO {
