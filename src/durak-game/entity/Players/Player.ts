@@ -1,21 +1,7 @@
 import { LobbyUser } from "../../../namespaces/lobbies/entity/lobby-users";
 import Hand from "../Deck/Hand";
 import Card from "../Card";
-import { PlaceCardData } from "../../../namespaces/games/methods/handle-put-card-on-desk";
-import { GameSocket } from "../../../namespaces/games/game.service";
 import DurakGame from "../../DurakGame";
-
-export interface CardPut {
-  putCardOnDesk({ game, card, slotIndex, socket }: PlaceCardData & GameSocket): void | never;
-}
-
-export interface CardRemove {
-  removeCard(card: Card): void | never;
-}
-
-export interface MoveStop {
-  stopMove({ game }: { game: DurakGame }): void | never;
-}
 
 export default class Player {
   info!: LobbyUser;
