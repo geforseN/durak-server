@@ -72,11 +72,11 @@ export default class GameRound {
   }
 
   updateCurrentMoveTo<M extends GameMove>(
-    MoveConstructor: { new(arg: any): M },
-    moveConstructorArg: Partial<InstanceType<{ new(arg: any): M }>>,
+    Move: { new(arg: any): M },
+    moveContext: Partial<InstanceType<{ new(arg: any): M }>>,
   ) {
-    const { currentMove: { number, allowedPlayer }, desk: { cardCount: deskCardCount } } = this;
-    this.currentMove = new MoveConstructor({ allowedPlayer, number, deskCardCount, ...moveConstructorArg });
+    const { currentMove: { player }, desk: { cardCount: deskCardCount } } = this;
+    this.currentMove = new Move({ player, deskCardCount, ...moveContext });
   }
 
   get firstDefenderMove(): DefenderMove {
