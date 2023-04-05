@@ -35,8 +35,8 @@ export default class GameRound {
     this.moves[this.currentMoveIndex] = move;
   }
 
-  currentMoveAllowedTo({ info: { accname } }: Player): boolean {
-    return this.currentMove.allowedPlayerAccname === accname;
+  currentMoveAllowedTo(player: Player): boolean {
+    return this.currentMove.player.id === player.id;
   }
 
   get isDefenderGaveUp() {
