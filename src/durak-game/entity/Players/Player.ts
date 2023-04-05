@@ -34,6 +34,10 @@ export default class Player {
     this.hand.receive(...cardsToReceive);
   }
 
+  get id(): string {
+    return this.info.accname;
+  }
+
   /** @return integer from 0 to 6 */
   get missingNumberOfCards(): number {
     return Math.max(6 - this.hand.count, 0);
