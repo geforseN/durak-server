@@ -24,6 +24,10 @@ export default class GameRound {
     return this.moves.length - 1;
   }
 
+  get hasOneMove() {
+    return this.moves.length === 1;
+  }
+
   get previousMove(): GameMove {
     return this.moves[this.currentMoveIndex - 1];
   }
