@@ -12,11 +12,12 @@ export default class GameRound {
   private readonly desk: Desk;
   private readonly service: GameService;
 
-  constructor({ number, desk, attacker: allowedPlayer, service }: GameRoundConstructorArgs) {
+  constructor({ number, desk, attacker: player, service }: GameRoundConstructorArgs) {
     this.number = number;
     this.desk = desk;
-    this.moves = [new AttackerMove({ number: 1, allowedPlayer, deskCardCount: desk.cardCount })];
+    this.moves = [];
     this.service = service;
+    this.pushNextMove(AttackerMove, ({ player, deskCardCount: desk.cardCount }));
   }
 
   get currentMoveIndex(): number {
