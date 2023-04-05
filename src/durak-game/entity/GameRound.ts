@@ -62,14 +62,13 @@ export default class GameRound {
   }
 
   pushNextMove<M extends GameMove>(
-    MoveConstructor: { new(arg: any): M },
-    moveConstructorArg: Partial<InstanceType<{ new(arg: any): M }>> & { allowedPlayer: Player },
+    Move: { new(arg: any): M },
+    moveContext: Partial<InstanceType<{ new(arg: any): M }>> & { player: Player },
   ) {
-    const { currentMove: { number }, desk: { cardCount: deskCardCount } } = this;
-    const { allowedPlayer } = moveConstructorArg;
-    this.service.setSuperPlayerUI("revealed", allowedPlayer as Defender | Attacker);
-    this.service.letMoveTo(allowedPlayer.info.accname);
-    this.moves.push(new MoveConstructor({ number: number + 1, deskCardCount, ...moveConstructorArg }));
+    const { desk: { cardCount: deskCardCount } } = this;
+    const { player } = moveContext;
+    this.moves.push(new Move({ deskCardCount, ...moveContext }));
+    this.makeNextMoveEmits({ player });
   }
 
   updateCurrentMoveTo<M extends GameMove>(
