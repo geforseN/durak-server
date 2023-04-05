@@ -1,15 +1,13 @@
 import Player from "../Players/Player";
 
-export type GameMoveConstructorArgs<P extends Player> = { number: number, allowedPlayer: P, deskCardCount: number };
+export type GameMoveConstructorArgs<P extends Player> = { player: P, deskCardCount: number };
 
 export abstract class GameMove {
-  number: number;
-  allowedPlayer: Player;
+  player: Player;
   deskCardCount: number;
 
-  protected constructor({ number, allowedPlayer, deskCardCount }: GameMoveConstructorArgs<Player>) {
-    this.number = number;
-    this.allowedPlayer = allowedPlayer;
+  protected constructor({ player, deskCardCount }: GameMoveConstructorArgs<Player>) {
+    this.player = player;
     this.deskCardCount = deskCardCount;
   }
 
