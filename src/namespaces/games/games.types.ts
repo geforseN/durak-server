@@ -39,8 +39,7 @@ export namespace GamesIO {
     "defender__wonRound": (accname: string) => void;
 
     "desk__clear": () => void;
-    "desk__insertAttackCard": (card: Card, slotIndex: number) => void;
-    "desk__insertDefendCard": (card: Card, slotIndex: number) => void;
+    "player__insertCard": (card: Card, slotIndex: number) => void;
     "desk__pushToDiscard": () => void;
   }
 
