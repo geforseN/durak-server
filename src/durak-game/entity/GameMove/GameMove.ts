@@ -11,7 +11,7 @@ export abstract class GameMove {
     this.deskCardCount = deskCardCount;
   }
 
-  get allowedPlayerAccname() {
-    return this.allowedPlayer.info.accname;
+  get playerId() {
+    return this.player.info.accname;
   }
 }
