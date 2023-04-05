@@ -1,6 +1,6 @@
 import { Namespace, Socket } from "socket.io";
 import Card from "../../durak-game/entity/Card";
-import { Suit } from "../../durak-game/utility.durak";
+import { Suit } from "../../durak-game/utility";
 import NotificationAlert from "../../module/notification-alert";
 import GameState from "../../durak-game/DTO/GameState";
 
