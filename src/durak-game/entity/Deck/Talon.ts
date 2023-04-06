@@ -1,6 +1,6 @@
 import Deck, { CardCount } from "./Deck.abstract";
 import Card from "../Card";
-import { randomInt } from "crypto";
+import { randomInt } from "node:crypto";
 import { Suit } from "../../utility";
 
 export default class Talon extends Deck {
