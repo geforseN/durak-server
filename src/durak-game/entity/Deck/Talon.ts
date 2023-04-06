@@ -6,6 +6,8 @@ import { Suit } from "../../utility";
 export default class Talon extends Deck {
   constructor(size: CardCount) {
     super(size);
+    this.injectCardIsTrump();
+    this.shuffle().shuffle();
   }
 
   get trumpCard(): Card {
