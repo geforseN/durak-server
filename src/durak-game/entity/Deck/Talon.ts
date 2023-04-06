@@ -20,23 +20,22 @@ export default class Talon extends Deck {
     return this.count === 0;
   }
 
-  shuffle(): this {
+  /**
+   * @param {number} cardCount Positive number
+   * */
+  popCards(cardCount = 1): Card[] {
+    const index = this.count - cardCount;
+    if (index <= 0) return this.lastCards;
+    return this._value.splice(index, cardCount);
+  }
+
+  private shuffle(): this {
     for (let i = 0; i < this.count; i++) {
       let k = randomInt(this.count);
       while (i === k) k = randomInt(this.count);
       this.swapCards(i, k);
     }
     return this;
-  }
-
-  /**
-   * @param {number} cardCount Positive number
-   * @todo add test
-   * */
-  popCards(cardCount = 1): Card[] {
-    const index = this.count - cardCount;
-    if (index < 0) return this.lastCards;
-    return this._value.splice(index, cardCount);
   }
 
   private get lastCards() {
