@@ -53,6 +53,13 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     return game.round.pushNextMove(DefenderMove, { allowedPlayer: this });
   }
 
+  private putTransferCard({ game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number }) {
+    this.remove({ card });
+    const moveContext = { player: this, card, slotIndex };
+    game.round.updateCurrentMoveTo(TransferMove, moveContext);
+    game.desk.insertCard({ card, index: slotIndex });
+  }
+
   stopMove({ game }: { game: DurakGame }): void {
     if (!game.desk.isDefended) {
       game.round.updateCurrentMoveTo(DefenderGaveUpMove, { player: this });
