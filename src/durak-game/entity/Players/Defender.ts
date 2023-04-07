@@ -46,10 +46,7 @@ export default class Defender extends SuperPlayer {
   }
 
   private putDefendCard({ game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number }) {
-    this.remove({ card });
-    const moveContext = { player: this, slotIndex, card };
-    game.round.updateCurrentMoveTo(InsertDefendCardMove, moveContext);
-    game.desk.insertCard({ card, index: slotIndex });
+    this.putCard({game, card, slotIndex}, InsertDefendCardMove);
   }
 
   private handleAfterCardPut({ game }: { game: DurakGame }): void {
@@ -63,14 +60,22 @@ export default class Defender extends SuperPlayer {
   }
 
   private putTransferCard({ game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number }) {
-    this.remove({ card });
-    const moveContext = { player: this, card, slotIndex };
-    game.round.updateCurrentMoveTo(TransferMove, moveContext);
-    game.desk.insertCard({ card, index: slotIndex });
+    this.putCard({game, card, slotIndex}, TransferMove);
   }
 
   private letPrimalAttackerMove({ game }: { game: DurakGame }) {
     const primalAttacker = game.players.manager.makeNewAttacker(game.round.primalAttacker);
     return game.round.pushNextMove(AttackerMove, { player: primalAttacker });
+  }
+
+  private putCard<M extends TransferMove | InsertDefendCardMove>(
+    { game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number },
+    Move: { new(arg: any): M }
+  ) {
+    this.remove({ card });
+    const moveContext = { player: this, card, slotIndex };
+    // @ts-ignore
+    game.round.updateCurrentMoveTo(Move, moveContext);
+    game.desk.insertCard({ card, index: slotIndex });
   }
 }
