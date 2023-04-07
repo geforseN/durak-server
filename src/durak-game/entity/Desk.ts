@@ -5,9 +5,11 @@ import Player from "./Players/Player";
 
 export default class Desk {
   slots: DeskSlot[];
+  maxFilledSlotCount: number;
 
-  constructor(slotCount = 6) {
-    this.slots = [...Array(slotCount)].map(() => new DeskSlot());
+  constructor({ maxFilledSlotCount = 6, slotCount = 6 } = { maxFilledSlotCount: 6, slotCount: 6 }) {
+    this.maxFilledSlotCount = maxFilledSlotCount;
+    this.slots = [...Array(slotCount)].map(() => new EmptySlot());
   }
 
   get cards(): Card[] {
