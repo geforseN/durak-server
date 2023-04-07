@@ -13,7 +13,7 @@ import {
   TransferMove,
 } from "../GameMove";
 
-export default class Defender extends Player implements CardPut, CardRemove, MoveStop {
+export default class Defender extends SuperPlayer {
   constructor(player: Player) {
     super(player);
   }
