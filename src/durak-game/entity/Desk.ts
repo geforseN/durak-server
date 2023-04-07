@@ -32,6 +32,10 @@ export default class Desk {
     );
   }
 
+  get allowsMoves() {
+    return this.maxFilledSlotCount > this.filledSlotsCount;
+  }
+
   getSlot({ index }: { index: number }): DeskSlot {
     return this.slots[index];
   }
