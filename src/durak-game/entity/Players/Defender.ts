@@ -65,10 +65,8 @@ export default class Defender extends SuperPlayer {
     return game.handleWonDefence(this);
   }
 
-  removeCard(card: Card): void {
-    const index = this.hand.findIndex({ card });
-    assert.notStrictEqual(index, -1, "Неверный индекс");
-    this.hand.value.splice(index, 1);
+  canDefend(cardCount: number) {
+    return this.canTakeMore({ cardCount });
   }
 
   private letPrimalAttackerMove({ game }: { game: DurakGame }) {
