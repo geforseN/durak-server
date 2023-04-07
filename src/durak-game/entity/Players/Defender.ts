@@ -29,19 +29,18 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     this.postPutCardOnDesk({ game });
   }
 
-  private handlePutCardOnDesk({ game, card, slotIndex, socket }: PlaceCardData & GameSocket): void {
-    game.removeFromHand({ player: this, card, socket });
-    const InsertCardMove = this.getInsertCardMove({ game, slotIndex });
-    game.round.updateCurrentMoveTo(InsertCardMove, { allowedPlayer: this, slotIndex, card });
-    game.insertCardOnDesk({ card, index: slotIndex, socket });
+  private putCard({ game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number }) {
+    this.remove({ card });
+    const moveContext = { player: this, slotIndex, card };
+    game.round.updateCurrentMoveTo(InsertDefendCardMove, moveContext);
+    game.desk.insertCard({ card, index: slotIndex });
   }
 
-  private makeTransferMove({ game, slotIndex, card, socket }: PlaceCardData & GameSocket): void {
-    game.round.updateCurrentMoveTo(TransferMove, { allowedPlayer: this, card, slotIndex });
-    this.handlePutCardOnDesk({ game, card, socket, slotIndex });
-    game.makeDefender(this.right);
-    const allowedPlayer = game.makeAttacker(this);
-    game.round.pushNextMove(AttackerMove, { allowedPlayer });
+  makeTransferMove({ game, index, card }: { game: DurakGame, card: Card, index: number }): void {
+    this.putTransferCard({ game, card, slotIndex: index });
+    game.players.manager.makeNewDefender(this.right);
+    const player = game.players.manager.makeNewAttacker(this);
+    game.round.pushNextMove(AttackerMove, { player });
   }
 
   private postPutCardOnDesk({ game }: { game: DurakGame }): void {
@@ -75,9 +74,5 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
   private letPrimalAttackerMove({ game }: { game: DurakGame }) {
     const primalAttacker = game.players.manager.makeNewAttacker(game.round.primalAttacker);
     return game.round.pushNextMove(AttackerMove, { player: primalAttacker });
-  }
-
-  private getInsertCardMove({ game, slotIndex: index }: { game: DurakGame, slotIndex: number }) {
-    return game.desk.getSlot({ index }).isEmpty ? InsertAttackCardMove : InsertDefendCardMove;
   }
 }
