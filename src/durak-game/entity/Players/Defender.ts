@@ -36,14 +36,14 @@ export default class Defender extends SuperPlayer {
     game.round.pushNextMove(AttackerMove, { player });
   }
 
-  private postPutCardOnDesk({ game }: { game: DurakGame }): void {
-    if (game.desk.isFull || !this.hand.count) {
-      return game.handleSuccesfullDefense();
+  private handleAfterCardPut({ game }: { game: DurakGame }): void {
+    if (!game.desk.isDefended) {
+      return game.round.pushNextMove(DefenderMove, { player: this });
     }
-    if (game.desk.isDefended) {
-      return this.letMoveToPrimalAttacker({ game });
+    if (game.desk.allowsMoves && this.hand.count) {
+      this.letPrimalAttackerMove({ game });
     }
-    return game.round.pushNextMove(DefenderMove, { allowedPlayer: this });
+    return game.handleWonDefence(this);
   }
 
   private putTransferCard({ game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number }) {
