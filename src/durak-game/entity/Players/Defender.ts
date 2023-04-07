@@ -22,18 +22,30 @@ export default class Defender extends SuperPlayer {
     this.handleAfterCardPut({ game });
   }
 
-  private putCard({ game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number }) {
-    this.remove({ card });
-    const moveContext = { player: this, slotIndex, card };
-    game.round.updateCurrentMoveTo(InsertDefendCardMove, moveContext);
-    game.desk.insertCard({ card, index: slotIndex });
-  }
-
   makeTransferMove({ game, index, card }: { game: DurakGame, card: Card, index: number }): void {
     this.putTransferCard({ game, card, slotIndex: index });
     game.players.manager.makeNewDefender(this.right);
     const player = game.players.manager.makeNewAttacker(this);
     game.round.pushNextMove(AttackerMove, { player });
+  }
+
+  stopMove({ game }: { game: DurakGame }): void {
+    if (!game.desk.isDefended) {
+      game.round.updateCurrentMoveTo(DefenderGaveUpMove, { player: this });
+      return this.letPrimalAttackerMove({ game }); // PUT MORE CARDS IN PURSUIT (VDOGONKU)
+    }
+    game.round.updateCurrentMoveTo(StopDefenseMove, { player: this });
+    if (game.desk.allowsMoves) {
+      return this.letPrimalAttackerMove({ game });
+    }
+    return game.handleWonDefence(this);
+  }
+
+  private putCard({ game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number }) {
+    this.remove({ card });
+    const moveContext = { player: this, slotIndex, card };
+    game.round.updateCurrentMoveTo(InsertDefendCardMove, moveContext);
+    game.desk.insertCard({ card, index: slotIndex });
   }
 
   private handleAfterCardPut({ game }: { game: DurakGame }): void {
@@ -51,18 +63,6 @@ export default class Defender extends SuperPlayer {
     const moveContext = { player: this, card, slotIndex };
     game.round.updateCurrentMoveTo(TransferMove, moveContext);
     game.desk.insertCard({ card, index: slotIndex });
-  }
-
-  stopMove({ game }: { game: DurakGame }): void {
-    if (!game.desk.isDefended) {
-      game.round.updateCurrentMoveTo(DefenderGaveUpMove, { player: this });
-      return this.letPrimalAttackerMove({ game }); // PUT MORE CARDS IN PURSUIT (VDOGONKU)
-    }
-    game.round.updateCurrentMoveTo(StopDefenseMove, { player: this });
-    if (game.desk.allowsMoves) {
-      return this.letPrimalAttackerMove({ game });
-    }
-    return game.handleWonDefence(this);
   }
 
   canDefend(cardCount: number) {
