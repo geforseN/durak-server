@@ -71,9 +71,9 @@ export default class Defender extends Player implements CardPut, CardRemove, Mov
     this.hand.value.splice(index, 1);
   }
 
-  private letMoveToPrimalAttacker({ game }: { game: DurakGame }): void {
-    const allowedPlayer = game.makeNewAttacker({nextAttacker: game.round.primalAttacker});
-    return game.round.pushNextMove(AttackerMove, { allowedPlayer });
+  private letPrimalAttackerMove({ game }: { game: DurakGame }) {
+    const primalAttacker = game.players.manager.makeNewAttacker(game.round.primalAttacker);
+    return game.round.pushNextMove(AttackerMove, { player: primalAttacker });
   }
 
   private getInsertCardMove({ game, slotIndex: index }: { game: DurakGame, slotIndex: number }) {
