@@ -18,7 +18,7 @@ export default class Defender extends SuperPlayer {
   async putCardOnDesk({ game, index, card }: { game: DurakGame, card: Card, index: number }): Promise<void | never> {
     const slot = game.desk.getSlot({ index });
     await slot.assertDefense({ card });
-    this.putCard({ game, card, slotIndex: index });
+    this.putDefendCard({ game, card, slotIndex: index });
     this.handleAfterCardPut({ game });
   }
 
@@ -41,7 +41,7 @@ export default class Defender extends SuperPlayer {
     return game.handleWonDefence(this);
   }
 
-  private putCard({ game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number }) {
+  private putDefendCard({ game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number }) {
     this.remove({ card });
     const moveContext = { player: this, slotIndex, card };
     game.round.updateCurrentMoveTo(InsertDefendCardMove, moveContext);
