@@ -1,6 +1,6 @@
+import { randomInt } from "node:crypto";
 import Deck, { CardCount } from "./Deck.abstract";
 import Card from "../Card";
-import { randomInt } from "node:crypto";
 import { Suit } from "../../utility";
 
 export default class Talon extends Deck {
@@ -32,10 +32,8 @@ export default class Talon extends Deck {
   }
 
   private shuffle(): this {
-    for (let i = 0; i < this.count; i++) {
-      let k = randomInt(this.count);
-      while (i === k) k = randomInt(this.count);
-      this.swapCards(i, k);
+    for (let currentIndex = 0; currentIndex < this.count; currentIndex++) {
+      this.swapCards(currentIndex, randomInt(this.count));
     }
     return this;
   }
