@@ -6,7 +6,7 @@ export default class GameDeskService {
   constructor(private namespace: GamesIO.NamespaceIO) {
   }
 
-  clearDesk() {
+  clear() {
     this.namespace.emit("desk__clear");
   }
 

@@ -78,7 +78,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
 
   private clear() {
     this.slots.forEach((_, index) => (this.slots[index] = new EmptySlot()));
-    this.service?.clearDesk();
+    this.service?.clear();
   }
 
   checkCanAttack({ card, index }: { card: Card, index: number }): Promise<Card> {
