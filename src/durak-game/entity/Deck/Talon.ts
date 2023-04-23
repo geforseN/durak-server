@@ -2,8 +2,13 @@ import { randomInt } from "node:crypto";
 import Deck, { CardCount } from "./Deck.abstract";
 import Card from "../Card";
 import { Suit } from "../../utility";
+import { Player } from "../Players";
+import GameTalonService from "../Services/Talon.service";
+import { CanProvideCards } from "../../DurakGame";
 
-export default class Talon extends Deck {
+export default class Talon extends Deck implements CanProvideCards<Player> {
+  private service?: GameTalonService;
+
   constructor(size: CardCount) {
     super(size);
     this.injectCardIsTrump();
@@ -53,5 +58,19 @@ export default class Talon extends Deck {
       const card = this._value[i];
       card.isTrump = card.suit === this.trumpSuit;
     }
+  }
+
+  provideCards<Target extends Player>(player: Target, cardCount = player.missingNumberOfCards) {
+    if (cardCount === 0) return;
+    const cards = this.pop(cardCount);
+    player.receiveCards(...cards);
+    this.service?.provideCards({ player, cards });
+    if (this.isEmpty) {
+      this.service?.moveTrumpCard({ player });
+    }
+  }
+
+  injectService(talonService: GameTalonService) {
+    this.service = talonService;
   }
 }
