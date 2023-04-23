@@ -1,5 +1,5 @@
 import Deck from "./Deck.abstract";
-import Card, { CardObject } from "../Card";
+import Card from "../Card";
 
 export default class Hand extends Deck {
   constructor() {
@@ -10,7 +10,7 @@ export default class Hand extends Deck {
     return this._value;
   }
 
-  has({ card: { suit, rank } }: CardObject): boolean {
+  has({ card: { suit, rank } }: { card: Card }): boolean {
     return this._value.some((card) => card.hasSame({ suit, rank }));
   }
 
@@ -18,7 +18,7 @@ export default class Hand extends Deck {
     this._value.push(...cards);
   }
 
-  findIndex({ card: { suit, rank } }: CardObject): number {
+  findIndex({ card: { suit, rank } }: { card: Card }): number {
     return this._value.findIndex((card) => card.hasSame({ suit, rank }));
   }
 
