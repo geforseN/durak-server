@@ -1,7 +1,9 @@
 import assert from "node:assert";
-import LobbyUsers, { LobbyUserIdentifier } from "../../../namespaces/lobbies/entity/lobby-users";
-import { Attacker, Defender, Player } from "../Players";
-import Card from "../Card";
+import PlayersManager from "./PlayersManager";
+import LobbyUsers from "../../../namespaces/lobbies/entity/lobby-users";
+import { Attacker, Defender, Player, SuperPlayer } from "../Players";
+import Talon from "../Deck/Talon";
+import { AllowedMissingCardCount } from "./Player";
 
 export default class Players {
   __value: Player[];
