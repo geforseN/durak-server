@@ -92,20 +92,9 @@ export default class Players {
       : playerOrIdentifier.accname;
   }
 
-  private defineSidePlayers(): void {
-    this.__value.forEach((player, index, players) => {
-      player.left = players[this.getLeftPlayerIndex(index)];
-      player.right = players[this.getRightPlayerIndex(index)];
-    });
-  }
-
-  private getLeftPlayerIndex(index: number): number {
-    const isLastPlayer = index === this.count - 1;
-    return isLastPlayer ? 0 : index + 1;
-  }
-
-  private getRightPlayerIndex(index: number): number {
-    const isFirstPlayer = index === 0;
-    return isFirstPlayer ? this.count - 1 : index - 1;
+  private get<P extends Player>(PlayerClass: { new(...arg: any): P }): P | undefined {
+    for (const player of this.__value) {
+      if (player instanceof PlayerClass) return player;
+    }
   }
 }
