@@ -16,12 +16,15 @@ export default class Players {
     return this.__value.length;
   }
 
-  receiveFirstCards({ talonCards, howMany }: { talonCards: Card[], howMany: number }) {
-    for (let i = 0, playerIndex = 0; talonCards.length !== 0; i++, playerIndex = i % this.count) {
+  receiveFirstCards({ talon, cardCount, pushCount }: {
+    pushCount: AllowedMissingCardCount;
+    cardCount: AllowedMissingCardCount;
+    talon: Talon;
+  }) {
+    for (let i = 0; i < this.count * cardCount; i += pushCount) {
+      const playerIndex = i % this.count;
       const player = this.__value[playerIndex];
-      const startIndex = talonCards.length - howMany;
-      const cards = talonCards.splice(startIndex, howMany);
-      player.receiveCards(...cards);
+      talon.provideCards(player, pushCount);
     }
   }
 
