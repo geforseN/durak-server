@@ -4,19 +4,14 @@ import { Suit } from "../../durak-game/utility";
 import NotificationAlert from "../../module/notification-alert";
 import GameState from "../../durak-game/DTO/GameState";
 
-
-export type SocketResponse = { status: "ATT" | "DEF" } | { status: "NOK", message: string };
-export type ResponseCallback = (res: SocketResponse) => void;
-
 export type PlayerRole = "Defender" | "Attacker" | "Player";
 export type UIStatus = "revealed" | "hidden" | "freeze";
 
 export namespace GamesIO {
   export type ClientToServerEvents = {
     "state__restore": () => void
-
     "superPlayer__stopMove": () => void
-    "superPlayer__putCardOnDesk": (card: Card, slotIndex: number, cb: ResponseCallback) => void
+    "superPlayer__putCardOnDesk": (card: Card, slotIndex: number) => void
   }
 
   export type ServerToClientEvents = {
