@@ -30,8 +30,8 @@ export namespace GamesIO {
     "player__allowedToMove": (accname: string) => void;
     "self__removeCard": (card: Card) => void;
     "enemy__changeCardCount": (accname: string, cardCount: number) => void;
-    "defender__lostRound": (accname: string) => void;
-    "defender__wonRound": (accname: string) => void;
+    "defender__lostRound": (accname: string, roundNumber: number) => void;
+    "defender__wonRound": (accname: string, roundNumber: number) => void;
 
     "desk__clear": () => void;
     "player__insertCard": (card: Card, slotIndex: number) => void;
