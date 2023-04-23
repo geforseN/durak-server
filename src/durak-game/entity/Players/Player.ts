@@ -49,7 +49,7 @@ export default class Player {
     return this.hand.count > cardCount;
   }
 
-  isPrimalAttacker({ round: { primalAttacker } }: { round: GameRound }) {
-    return this.id === primalAttacker?.id;
+  isPrimalAttacker({ round }: { round: GameRound }): boolean | never {
+    return this.id === round.primalAttacker.id;
   }
 }
