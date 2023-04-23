@@ -2,7 +2,7 @@ import DurakGame from "../DurakGame";
 import SelfDTO from "./Self.dto";
 import EnemyDTO from "./Enemy.dto";
 
-export default class GameState {
+export default class DurakGameStateDto {
   self: SelfDTO;
   enemies: EnemyDTO[];
   deskSlots: DurakGame["desk"]["slots"]
