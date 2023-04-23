@@ -23,7 +23,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return this.slots[index];
   }
 
-  get cards(): Card[] {
+  private get cards(): Card[] {
     return this.slots.flatMap((slot) => slot.value);
   }
 
@@ -51,7 +51,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return this.defendedSlotsCount === this.filledSlotsCount;
   }
 
-  get defendedSlotsCount(): number {
+  private get defendedSlotsCount(): number {
     return this.slots.filter((slot) => slot instanceof DefendedSlot).length;
   }
 
@@ -76,7 +76,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     this.clear();
   }
 
-  clear() {
+  private clear() {
     this.slots.forEach((_, index) => (this.slots[index] = new EmptySlot()));
     this.service?.clearDesk();
   }
