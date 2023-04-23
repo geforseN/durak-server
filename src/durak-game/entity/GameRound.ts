@@ -1,27 +1,33 @@
 import assert from "node:assert";
 import Desk from "./Desk";
-import { Attacker, Player } from "./Players";
-import { AttackerMove, DefenderMove, GameMove, InsertDefendCardMove, StopDefenseMove } from "./GameMove";
-import { GameService } from "../../namespaces/games/game.service";
+import { Attacker, Defender, Player, SuperPlayer } from "./Players";
+import {
+  AttackerMove,
+  DefenderGaveUpMove,
+  DefenderMove,
+  GameMove,
+  InsertDefendCardMove,
+} from "./GameMove";
+import GameRoundService from "./Services/Round.service";
+import { GamesIO } from "../../namespaces/games/games.types";
 
-type GameRoundConstructorArgs = { attacker: Attacker, number: number, desk: Desk, service: GameService };
+type GameRoundConstructorArgs = { attacker: Attacker, number: number, desk: Desk, namespace: GamesIO.NamespaceIO };
 
 export default class GameRound {
-  private readonly number: number;
+  public readonly number: number;
   private readonly moves: GameMove[];
   private readonly desk: Desk;
-  private readonly service: GameService;
+  private readonly service?: GameRoundService;
 
-  constructor({ number, desk, attacker: player, service }: GameRoundConstructorArgs) {
+  constructor({ number, desk, attacker, namespace }: GameRoundConstructorArgs) {
     this.number = number;
     this.desk = desk;
     this.moves = [];
-    this.service = service;
-    this.pushNextMove(AttackerMove, ({ player, deskCardCount: desk.cardCount }));
-  }
-
-  get currentMoveIndex(): number {
-    return this.moves.length - 1;
+    this.service = new GameRoundService(namespace);
+    this.pushNextMove(AttackerMove, {
+      player: attacker,
+      deskCardCount: desk.cardCount,
+    });
   }
 
   get hasOneMove() {
@@ -40,25 +46,16 @@ export default class GameRound {
     this.moves[this.currentMoveIndex] = move;
   }
 
+  private get currentMoveIndex(): number {
+    return this.moves.length - 1;
+  }
+
   currentMoveAllowedTo(player: Player): boolean {
     return this.currentMove.player.id === player.id;
   }
 
   get isDefenderGaveUp() {
-    return this.moves.some((move) => move instanceof StopDefenseMove);
-  }
-
-  get defenderGaveUpAtPreviousMove(): boolean {
-    return this.previousMove instanceof StopDefenseMove;
-  }
-
-  get lastSuccesfullDefense(): DefenderMove | undefined {
-    for (let i = this.moves.length - 1; i > 0; i--) {
-      const [currentMove, previousMove] = [this.moves[i], this.moves[i - 1]];
-      if (previousMove instanceof InsertDefendCardMove
-        && currentMove instanceof AttackerMove
-      ) return previousMove;
-    }
+    return this.moves.some((move) => move instanceof DefenderGaveUpMove);
   }
 
   pushNextMove<M extends GameMove>(
@@ -89,18 +86,38 @@ export default class GameRound {
     return this.firstDefenderMove.player.right as Attacker;
   }
 
+  get hasPrimalAttacker(): boolean {
+    try {
+      return !!this.primalAttacker;
+    } catch {
+      return false;
+    }
+  };
+
+  get defender(): Defender {
+    return this.primalAttacker.left as Defender;
+  }
+
   get distributionQueue() {
     const playersQueue: Player[] = [this.primalAttacker];
-    const defender = this.primalAttacker.left;
-    let player = defender.left;
-    while (player.left.id !== defender.id) {
+    let player = this.defender.left;
+    while (!player.isPrimalAttacker({ round: this })) {
       playersQueue.push(player);
       player = player.left;
     }
-    playersQueue.push(defender);
+    playersQueue.push(this.defender);
     return playersQueue;
   }
 
-    return playersQueue.concat(defender);
+  private makeNextMoveEmits({ player }: { player: Player }) {
+    if (this.hasOneMove) {
+      this.service?.ui?.setAttackUI("revealed", player as Attacker);
+      this.service?.letMoveTo(player);
+    } else if (this.previousMove.player.id !== player.id) {
+      this.service?.ui?.setSuperPlayerUI("revealed", this.previousMove.player as SuperPlayer);
+      this.service?.ui?.setSuperPlayerUI("revealed", player as SuperPlayer);
+      this.service?.letMoveTo(player);
+    }
   }
+
 }
