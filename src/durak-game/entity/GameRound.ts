@@ -30,10 +30,6 @@ export default class GameRound {
     });
   }
 
-  get hasOneMove() {
-    return this.moves.length === 1;
-  }
-
   get previousMove(): GameMove {
     return this.moves[this.currentMoveIndex - 1];
   }
@@ -63,9 +59,8 @@ export default class GameRound {
     moveContext: Partial<InstanceType<{ new(arg: any): M }>> & { player: Player },
   ) {
     const { desk: { cardCount: deskCardCount } } = this;
-    const { player } = moveContext;
     this.moves.push(new Move({ deskCardCount, ...moveContext }));
-    this.makeNextMoveEmits({ player });
+    this.service?.letMoveTo(moveContext.player);
   }
 
   updateCurrentMoveTo<M extends GameMove>(
@@ -108,16 +103,4 @@ export default class GameRound {
     playersQueue.push(this.defender);
     return playersQueue;
   }
-
-  private makeNextMoveEmits({ player }: { player: Player }) {
-    if (this.hasOneMove) {
-      this.service?.ui?.setAttackUI("revealed", player as Attacker);
-      this.service?.letMoveTo(player);
-    } else if (this.previousMove.player.id !== player.id) {
-      this.service?.ui?.setSuperPlayerUI("revealed", this.previousMove.player as SuperPlayer);
-      this.service?.ui?.setSuperPlayerUI("revealed", player as SuperPlayer);
-      this.service?.letMoveTo(player);
-    }
-  }
-
 }
