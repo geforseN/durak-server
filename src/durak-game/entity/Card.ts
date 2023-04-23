@@ -1,7 +1,6 @@
 import { Power, powerRecord, Rank, Suit } from "../utility";
 
 export type CardConstructor = { suit: Suit, rank: Rank, isTrump?: boolean };
-export type CardObject = { card: Card };
 
 export default class Card {
   rank: Rank;
