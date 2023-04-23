@@ -10,8 +10,4 @@ export abstract class GameMove {
     this.player = player;
     this.deskCardCount = deskCardCount;
   }
-
-  get playerId() {
-    return this.player.info.accname;
-  }
 }
