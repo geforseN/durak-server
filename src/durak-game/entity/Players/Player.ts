@@ -16,8 +16,8 @@ export default class Player {
     } else this.initializeFromLobbyUser(param);
   }
 
-  receiveCards(...cardsToReceive: Card[]): void {
-    this.hand.receive(...cardsToReceive);
+  receiveCards(...cards: Card[]): void {
+    this.hand.receive(...cards);
   }
 
   get id(): string {
