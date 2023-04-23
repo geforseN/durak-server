@@ -11,7 +11,8 @@ export default class GameState {
   trumpCard: Card;
   allowedPlayerAccname: string;
 
-  constructor(game: DurakGame, id: string) {
+  constructor(game: DurakGame, playerId: string) {
+    const id = playerId;
     this.self = new Self(game.players.getPlayer({ id }));
     this.enemies = game.players.manager.getPlayerEnemies({ id }).map(((enemy) => new Enemy(enemy)));
     this.deskSlots = game.desk.slots;
