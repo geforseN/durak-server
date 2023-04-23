@@ -6,10 +6,12 @@ import { InsertDefendCardMove } from "./InsertDefendCardMove";
 import { StopAttackMove } from "./StopAttackMove";
 import { StopDefenseMove } from "./StopDefenseMove";
 import { TransferMove } from "./TransferMove.Defender";
+import { DefenderGaveUpMove } from "./DefenderGaveUpMove";
 
 export {
   AttackerMove,
   DefenderMove,
+  DefenderGaveUpMove,
   GameMove,
   InsertAttackCardMove,
   InsertDefendCardMove,
