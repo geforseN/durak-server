@@ -40,12 +40,8 @@ export default class Players {
     return defender;
   }
 
-  getPlayer({ accname }: LobbyUserIdentifier): Player | undefined {
-    return this.__value.find((player) => player.info.accname === accname);
-  }
-
-  tryGetPlayer({ accname }: LobbyUserIdentifier): Player {
-    const player = this.getPlayer({ accname });
+  getPlayer({ id }: { id: string }): Player {
+    const player = this.__value.find((player) => player.id === id);
     assert.ok(player, "Игрок не найден");
     return player;
   }
