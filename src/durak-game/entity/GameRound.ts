@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import Desk from "./Desk";
-import { Attacker, Defender, Player, SuperPlayer } from "./Players";
+import { Attacker, Defender, Player } from "./Players";
 import {
   AttackerMove,
   DefenderGaveUpMove,
@@ -14,7 +14,7 @@ import { GamesIO } from "../../namespaces/games/games.types";
 type GameRoundConstructorArgs = { attacker: Attacker, number: number, desk: Desk, namespace: GamesIO.NamespaceIO };
 
 export default class GameRound {
-  public readonly number: number;
+  readonly number: number;
   private readonly moves: GameMove[];
   private readonly desk: Desk;
   private readonly service?: GameRoundService;
@@ -71,13 +71,13 @@ export default class GameRound {
     this.currentMove = new Move({ player, deskCardCount, ...moveContext });
   }
 
-  get firstDefenderMove(): DefenderMove {
+  get firstDefenderMove(): DefenderMove | never {
     const defenderMove = this.moves.find((move) => move instanceof InsertDefendCardMove);
     assert.ok(defenderMove, "Нет защищающегося хода");
     return defenderMove;
   }
 
-  get primalAttacker(): Attacker {
+  get primalAttacker(): Attacker | never {
     return this.firstDefenderMove.player.right as Attacker;
   }
 
@@ -89,10 +89,6 @@ export default class GameRound {
     }
   };
 
-  get defender(): Defender {
-    return this.primalAttacker.left as Defender;
-  }
-
   get distributionQueue() {
     const playersQueue: Player[] = [this.primalAttacker];
     let player = this.defender.left;
@@ -102,5 +98,9 @@ export default class GameRound {
     }
     playersQueue.push(this.defender);
     return playersQueue;
+  }
+
+  private get defender(): Defender | never {
+    return this.primalAttacker.left as Defender;
   }
 }
