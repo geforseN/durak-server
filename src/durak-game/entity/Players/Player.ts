@@ -1,7 +1,7 @@
 import { LobbyUser } from "../../../namespaces/lobbies/entity/lobby-users";
 import Hand from "../Deck/Hand";
 import Card from "../Card";
-import DurakGame from "../../DurakGame";
+import GameRound from "../GameRound";
 
 export default class Player {
   info!: LobbyUser;
@@ -46,7 +46,7 @@ export default class Player {
     return this.hand.count > cardCount;
   }
 
-  isPrimalAttacker({ game: { round: { primalAttacker } } }: { game: DurakGame }) {
-    return this.info.accname === primalAttacker?.info.accname;
+  isPrimalAttacker({ round: { primalAttacker } }: { round: GameRound }) {
+    return this.id === primalAttacker?.id;
   }
 }
