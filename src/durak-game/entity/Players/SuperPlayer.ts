@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { Player } from "./index";
+import Player from "./Player";
 import Card from "../Card";
 import DurakGame from "../../DurakGame";
 
