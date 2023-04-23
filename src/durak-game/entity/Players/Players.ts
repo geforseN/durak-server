@@ -46,37 +46,12 @@ export default class Players {
     return player;
   }
 
-  getPlayerIndex({ accname }: LobbyUserIdentifier): number {
-    return this.__value.findIndex((player) => player.info.accname === accname);
-  }
-
-  getPlayerEnemies({ accname }: LobbyUserIdentifier): Player[] {
-    return this.__value.filter((player) => player.info.accname !== accname);
-  }
-
-  isAttacker(player: Player): player is Attacker {
-    return player instanceof Attacker;
-  }
-
   isDefender(player: Player): player is Defender {
     return player instanceof Defender;
   }
 
-  make<P extends Player>(
-    PlayerLike: { new(player: Player): P },
-    playerOrIdentifier: Player | LobbyUserIdentifier,
-  ): P {
-    const accname = this.getAccname(playerOrIdentifier);
-    const playerIndex = this.getPlayerIndex({ accname });
-    const instance = new PlayerLike(this.__value[playerIndex]);
-    this.__value[playerIndex] = instance;
-    return instance;
-  }
-
-  private getAccname(playerOrIdentifier: Player | LobbyUserIdentifier): string {
-    return playerOrIdentifier instanceof Player
-      ? playerOrIdentifier.info.accname
-      : playerOrIdentifier.accname;
+  isSuperPlayer(player: Player): player is SuperPlayer {
+    return player instanceof SuperPlayer;
   }
 
   private get<P extends Player>(PlayerClass: { new(...arg: any): P }): P | undefined {
