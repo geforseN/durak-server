@@ -10,11 +10,11 @@ export default class DefendedSlot extends DeskSlot {
     return [this.attackCard, this.defendCard];
   }
 
-  assertAttack({ card: _card }: { card: Card }) {
+  assertCanBeAttacked({ card: _card }: { card: Card }) {
     return Promise.reject("Слот полностью занят");
   }
 
-  assertDefense({ card: _card }: { card: Card }) {
+  assertCanBeDefended({ card: _card }: { card: Card }) {
     return Promise.reject("Карта уже побита");
   }
 

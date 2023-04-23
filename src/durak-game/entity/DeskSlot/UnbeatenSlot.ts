@@ -10,11 +10,11 @@ export default class UnbeatenSlot extends DeskSlot {
     return [this.attackCard];
   }
 
-  assertAttack({ card: _card }: { card: Card }) {
+  assertCanBeAttacked({ card: _card }: { card: Card }) {
     return Promise.reject("Слот занят");
   }
 
-  assertDefense({ card }: { card: Card }) {
+  assertCanBeDefended({ card }: { card: Card }) {
     return new Promise<Card>((resolve, reject) => {
       if (card.isTrump) resolve(card);
       if (this.attackCard.suit !== card.suit) reject("Вы кинули неверню масть");

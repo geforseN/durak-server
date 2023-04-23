@@ -10,11 +10,11 @@ export default class EmptySlot extends DeskSlot {
     return [];
   }
 
-  assertAttack({ card }: { card: Card }) {
+  assertCanBeAttacked({ card }: { card: Card }) {
     return Promise.resolve(card);
   }
 
-  assertDefense({ card: _card }: { card: Card }) {
+  assertCanBeDefended({ card: _card }: { card: Card }) {
     return Promise.reject("Нет от чего защищаться");
   }
 
