@@ -26,10 +26,8 @@ export default class Talon extends Deck {
     return this.count === 0;
   }
 
-  /**
-   * @param {number} cardCount Positive number
-   * */
-  popCards(cardCount = 1): Card[] {
+  /** @param {number} cardCount Positive number */
+  pop(cardCount = 1): Card[] {
     const index = this.count - cardCount;
     if (index <= 0) return this.lastCards;
     return this._value.splice(index, cardCount);
