@@ -25,26 +25,14 @@ export default class Players {
     }
   }
 
-  getAttacker(): Attacker | undefined {
-    for (const player of this.__value) {
-      if (player instanceof Attacker) return player;
-    }
-  }
-
-  tryGetAttacker(): Attacker {
-    const attacker = this.getAttacker();
+  get attacker(): Attacker {
+    const attacker = this.get(Attacker);
     assert.ok(attacker, "Атакующий не найден");
     return attacker;
   }
 
-  getDefender(): Defender | undefined {
-    for (const player of this.__value) {
-      if (player instanceof Defender) return player;
-    }
-  }
-
-  tryGetDefender(): Defender {
-    const defender = this.getDefender();
+  get defender(): Defender {
+    const defender = this.get(Defender);
     assert.ok(defender, "Защищающийся не найден");
     return defender;
   }
