@@ -34,8 +34,9 @@ export namespace GamesIO {
     "defender__wonRound": (id: string, roundNumber: number) => void;
 
     "desk__clear": () => void;
-    "player__insertCard": (card: Card, slotIndex: number) => void;
-    "desk__pushToDiscard": () => void;
+    "player__insertCard": (card: Card, slotIndex: number, whoId: string) => void;
+    "discard__receiveCards": (cardCount: number) => void;
+    "game__over": () => void
   }
 
   export type InterServerEvents = {}
