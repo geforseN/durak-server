@@ -3,6 +3,10 @@ import Hand from "../Deck/Hand";
 import Card from "../Card";
 import GameRound from "../GameRound";
 
+const GOOD_CARD_AMOUNT = 6;
+const allowedMissingCardCount = [0, 1, 2, 3, 4, 5, 6] as const;
+export type AllowedMissingCardCount = typeof allowedMissingCardCount[number];
+
 export default class Player {
   info!: LobbyUser;
   hand!: Hand;
@@ -24,9 +28,8 @@ export default class Player {
     return this.info.accname;
   }
 
-  /** @return integer from 0 to 6 */
-  get missingNumberOfCards(): number {
-    return Math.max(6 - this.hand.count, 0);
+  get missingNumberOfCards(): AllowedMissingCardCount {
+    return Math.max(GOOD_CARD_AMOUNT - this.hand.count, 0) as AllowedMissingCardCount;
   }
 
   private initializeFromLobbyUser(lobbyUser: LobbyUser) {
