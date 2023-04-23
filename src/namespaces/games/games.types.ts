@@ -18,20 +18,20 @@ export namespace GamesIO {
     "state__restore": (state: GameState) => void;
     "notification__send": (notification: NotificationAlert) => void;
 
-    "talon__distributeCards": (accname: string, cardCountToDistribute: number) => void;
+    "talon__distributeCards": (id: string, cardCount: number) => void;
     "talon__showTrumpCard": (trumpCard: Card) => void;
-    "talon__moveTrumpCardTo": (accname: string) => void;
+    "talon__moveTrumpCardTo": (id: string) => void;
 
     "defendUI__setStatus": (status: UIStatus) => void;
     "attackUI__setStatus": (status: UIStatus) => void;
 
-    "player__changeRole": (role: PlayerRole, accname: string) => void;
+    "player__changeRole": (role: PlayerRole, id: string) => void;
     "player__receiveCards": (cards: Card[]) => void;
-    "player__allowedToMove": (accname: string) => void;
+    "player__allowedToMove": (id: string) => void;
     "self__removeCard": (card: Card) => void;
-    "enemy__changeCardCount": (accname: string, cardCount: number) => void;
-    "defender__lostRound": (accname: string, roundNumber: number) => void;
-    "defender__wonRound": (accname: string, roundNumber: number) => void;
+    "enemy__changeCardCount": (id: string, cardCount: number) => void;
+    "defender__lostRound": (id: string, roundNumber: number) => void;
+    "defender__wonRound": (id: string, roundNumber: number) => void;
 
     "desk__clear": () => void;
     "player__insertCard": (card: Card, slotIndex: number) => void;
