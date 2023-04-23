@@ -1,102 +1,93 @@
-import Player, { CardPut, CardRemove, MoveStop } from "./Player";
-import { PlaceCardData } from "../../../namespaces/games/methods/handle-put-card-on-desk";
-import Card from "../Card";
-import { GameSocket } from "../../../namespaces/games/game.service";
-import DurakGame, { CardInfo } from "../../DurakGame";
+import DurakGame from "../../DurakGame";
+import { Player } from "./index";
 import { AttackerMove, DefenderMove, InsertAttackCardMove, StopAttackMove } from "../GameMove";
+import Card from "../Card";
+import SuperPlayer from "./SuperPlayer";
 
-export default class Attacker extends Player implements CardPut, CardRemove, MoveStop {
+export default class Attacker extends SuperPlayer {
   constructor(player: Player) {
     super(player);
   }
 
-  putCardOnDesk(
-    { game, card, slotIndex: index, socket }: PlaceCardData & GameSocket,
-  ): void | never {
-    game.desk.assertCanPut({ attackCard: card, slotIndex: index });
-    this.handlePutCardOnDesk({ game, card, index, socket });
-    this.postPutCardOnDesk({ game, card, index });
+  async putCardOnDesk({ game, card, index }: { game: DurakGame, card: Card, index: number }): Promise<void | never> {
+    await game.desk.checkCanAttack({ card, index });
+    this.putAttackCard({ game, card, slotIndex: index });
+    this.handleAfterCardPut({ game });
   }
 
-  private postPutCardOnDesk({ game, card, index }: { game: DurakGame } & CardInfo) {
-    game.round.updateCurrentMoveTo(InsertAttackCardMove, { allowedPlayer: this, card, slotIndex: index });
-    const defender = game.players.tryGetDefender();
-    const cardCount = game.desk.unbeatenCardCount;
-    if (!this.hand.count) {
-      return this.giveMoveToLeft({ game });
+  private handleAfterCardPut({ game }: { game: DurakGame }) {
+    const { desk, players: { defender } } = game;
+    if (this.hand.isEmpty
+      || !defender.canDefend(desk.unbeatenCardCount)
+      || !game.desk.allowsMoves
+    ) {
+      // NOTE: IF moved into this block
+      // THAN defender will have last chance to win round
+      return game.round.pushNextMove(DefenderMove, { player: defender });
     }
-    if (!defender.canTakeMore({ cardCount })) {
-      return game.round.pushNextMove(DefenderMove, { allowedPlayer: defender });
-    }
-    return game.round.pushNextMove(AttackerMove, { allowedPlayer: this });
-  }
-
-  removeCard(card: Card): void {
-    const index = this.hand.findIndex({ card });
-    this.hand.value.splice(index, 1);
-  }
-
-  private handlePutCardOnDesk({ game, card, socket, index }: { game: DurakGame } & CardInfo & GameSocket) {
-    game.removeFromHand({ player: this, card, socket });
-    game.insertCardOnDesk({ index, card, socket });
+    return game.round.pushNextMove(AttackerMove, { player: this });
   }
 
   stopMove({ game }: { game: DurakGame }) {
     game.round.updateCurrentMoveTo(StopAttackMove, { player: this });
-    const { players: { defender }, round: { previousMove, lastSuccesfullDefense, isDefenderGaveUp }, desk } = game;
 
-    debugger
-    // if LostRoundDefenderMove exist
-    // and this.left is defender
-    // THEN new round
-
-
-    if (!desk.isDefended && isDefenderGaveUp) {
-      console.log("!-1: deskIsNotDefended", !game.desk.isDefended, "AND ", "isDefenderGaveUp: ", game.round.isDefenderGaveUp);
-      console.log("!-2: handleVdogonku");
-      return this.handleVdogonku({ game });
+    if (game.round.isDefenderGaveUp) {
+      return this.handleInPursuit({ game });
     }
-
-    if (previousMove instanceof InsertAttackCardMove
-      || previousMove.deskCardCount !== desk.cardCount) {
-      console.log("!-1: prevMoveWasInsert", previousMove instanceof InsertAttackCardMove, "OR", "notSameCardCountFromPrevMove", previousMove.deskCardCount !== game.desk.cardCount);
-      console.log("!-2: next DefenderMove WHERE allowedPlayer IS defender", defender.id);
-      return game.round.pushNextMove(DefenderMove, { player: defender });
+    if (this.hasPutLastCard({ round: game.round })) {
+      return game.round.pushNextMove(DefenderMove, { player: game.players.defender });
     }
-
-    if (this.isPrimalAttacker({ game })
-      || previousMove.deskCardCount !== desk.cardCount) {
-      console.log("!-1: thisIsOriginalAttacker", this.isPrimalAttacker({ game }), "OR", "sameCardCountFromPrevMove", previousMove.deskCardCount !== desk.cardCount);
-      console.log("!-2: pushNextAttackerMove WHERE allowedPlayer IS", defender.left.id, "(defender.left)");
-      return this.giveMoveToLeftPlayer({ game });
+    if (this.defenderCanWin({ game })) {
+      return game.handleWonDefence(game.players.defender);
     }
-
-    if (this.left.isPrimalAttacker({ game })
-      && lastSuccesfullDefense?.deskCardCount === game.desk.cardCount) {
-      console.log("!-1: leftIsOriginalAttacker", this.left.isPrimalAttacker({ game }), "AND", "sameCardCountFromLastDef", lastSuccesfullDefense?.deskCardCount === game.desk.cardCount);
-      console.log("!-2: handleSuccesfullDefense WHERE defender", defender.id);
-      return game.handleWonDefence(defender);
-    }
+    return this.letMoveToNextAttacker({ game });
   }
 
-  private handleVdogonku({ game }: { game: DurakGame }) {
-    const defender = game.players.tryGetDefender();
-    if (this.left.isPrimalAttacker({ game })
-      || this.isPrimalAttacker({ game }) && game.round.defenderGaveUpAtPreviousMove
+  private handleInPursuit({ game }: { game: DurakGame }) {
+    if (this.left.isPrimalAttacker({ round: game.round })
+      || game.players.defender.left.isPrimalAttacker({ round: game.round })
     ) {
-      game.makePlayer(this);
-      const allowedPlayer = game.makeAttacker(this.left);
-      return game.round.pushNextMove(AttackerMove, { allowedPlayer });
+      return game.handleLostDefence(game.players.defender);
     }
-    return game.handleNewRound({ nextAttacker: defender.left });
+    // let other try insert cards in pursuit (vdogonku)
+    return this.letMoveToNextAttacker({ game });
   }
 
-  private giveMoveToLeft({ game }: { game: DurakGame }) {
-    game.makePlayer(this);
-    if (game.players.isDefender(this.left)) {
-      return game.round.pushNextMove(DefenderMove, { allowedPlayer: this.left });
-    }
-    const allowedPlayer = game.makeNewAttacker({ nextAttacker: this.left });
-    return game.round.pushNextMove(DefenderMove, { allowedPlayer });
+  hasPutLastCard({ round }: { round: DurakGame["round"] }): boolean {
+    return (
+      round.previousMove instanceof InsertAttackCardMove
+      && round.previousMove.player.id === this.id
+    );
+  }
+
+  private putAttackCard({ game, card, slotIndex: index }: { game: DurakGame; card: Card; slotIndex: number }) {
+    this.remove({ card });
+    game.service?.removeCard({ player: this, card });
+    const moveContext = { player: this, card, slotIndex: index };
+    game.round.updateCurrentMoveTo(InsertAttackCardMove, moveContext);
+    game.desk.receiveCard({ card, index, who: this });
+  }
+
+  defenderCanWin({ game }: { game: DurakGame }) {
+    return (
+      game.desk.isDefended
+      && game.round.hasPrimalAttacker
+      && (
+        //  below statement is for 2 players game:
+        //  in 2 players game can be only one attacker
+        //  IF attacker stop move THAN defender won
+        game.players.defender.left.isPrimalAttacker({ round: game.round })
+        // below statement is for more than 2 players game
+        || this.left.isPrimalAttacker({ round: game.round })
+      )
+    );
+  }
+
+  private letMoveToNextAttacker({ game }: { game: DurakGame }) {
+    const nextAttacker = this.isPrimalAttacker({ round: game.round })
+      ? game.players.defender.left
+      : this.left;
+    const newAttacker = game.players.manager.makeNewAttacker(nextAttacker);
+    game.round.pushNextMove(AttackerMove, { player: newAttacker });
   }
 }
