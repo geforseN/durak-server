@@ -5,10 +5,11 @@ import Card from "../Card";
 
 export default class Players {
   __value: Player[];
+  manager: PlayersManager;
 
   constructor(users: LobbyUsers) {
     this.__value = users.value.map((user) => new Player(user));
-    this.defineSidePlayers();
+    this.manager = new PlayersManager(this);
   }
 
   get count() {
