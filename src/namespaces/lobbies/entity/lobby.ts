@@ -8,7 +8,7 @@ export default class Lobby {
   id: string;
   settings: GameSettings;
   users: LobbyUsers;
-  adminAccname: string | null;
+  adminAccname?: string;
 
   constructor({ adminAccname, settings }: LobbyConstructor) {
     this.id = randomUUID();
