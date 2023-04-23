@@ -18,6 +18,10 @@ export default class Talon extends Deck {
     return this.trumpCard.suit;
   }
 
+  get hasCards(): boolean {
+    return !this.isEmpty;
+  }
+
   get isEmpty(): boolean {
     return this.count === 0;
   }
