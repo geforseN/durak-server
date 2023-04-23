@@ -2,7 +2,7 @@ import { GamesIO } from "./games.types";
 import Card from "../../durak-game/entity/Card";
 import NotificationAlert from "../../module/notification-alert";
 import Player from "../../durak-game/entity/Players/Player";
-import GameState from "../../durak-game/DTO/GameState";
+import DurakGameStateDto from "../../durak-game/DTO/DurakGameState.dto";
 import DurakGame from "../../durak-game/DurakGame";
 
 export type GameSocket = { socket: GamesIO.SocketIO };
@@ -34,7 +34,7 @@ export class GameService {
   }
 
   restoreState({ socket, game, playerId }: { game: DurakGame, playerId: string } & GameSocket) {
-    socket.emit("state__restore", new GameState(game, playerId));
+    socket.emit("state__restore", new DurakGameStateDto(game, playerId));
   }
 
   end(game: DurakGame) {

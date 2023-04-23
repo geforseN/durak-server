@@ -2,7 +2,7 @@ import { Namespace, Socket } from "socket.io";
 import Card from "../../durak-game/entity/Card";
 import { Suit } from "../../durak-game/utility";
 import NotificationAlert from "../../module/notification-alert";
-import GameState from "../../durak-game/DTO/GameState";
+import DurakGameStateDto from "../../durak-game/DTO/DurakGameState.dto";
 
 export type PlayerRole = "Defender" | "Attacker" | "Player";
 export type UIStatus = "revealed" | "hidden" | "freeze";
@@ -15,7 +15,7 @@ export namespace GamesIO {
   }
 
   export type ServerToClientEvents = {
-    "state__restore": (state: GameState) => void;
+    "state__restore": (state: DurakGameStateDto) => void;
     "notification__send": (notification: NotificationAlert) => void;
 
     "talon__distributeCards": (id: string, cardCount: number) => void;
