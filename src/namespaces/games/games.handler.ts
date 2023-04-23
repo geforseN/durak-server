@@ -9,21 +9,18 @@ export default function gamesHandler(
 ) {
   const { data: { accname }, nsp: { name: gameId } } = socket;
   const game = durakGames.get(gameId);
+  socket.onAny((eventName: string, ...args) => console.log(eventName, args))
   if (!game) return handleNoSuchGameOnline(socket);
   if (!accname) return handleNotAuthorized(socket);
-
   if (!game.round) game.start(this.namespace);
+  game.service?.restoreState({ accname, socket, game });
 
-  socket.on("state__restore", () => {
-    game.restoreState({ accname, socket })
-  });
-
-  socket.on("superPlayer__putCardOnDesk", (card, slotIndex, callback) => {
+  socket.on("superPlayer__putCardOnDesk", async (card, slotIndex) => {
     try {
-      handlePutCardOnDesk.call({ socket, game, accname }, card, slotIndex, callback);
+      await handlePutCardOnDesk.call({ socket, game, accname }, card, slotIndex);
     } catch (error) {
-      game.service.handleError({ accname, error });
-      callback({ status: "NOK", message: (error as Error).message });
+      console.trace(error)
+      game.service?.handleError({ accname, error });
     }
   });
 
@@ -31,7 +28,8 @@ export default function gamesHandler(
     try {
       handleStopMove.call({ socket, game, accname });
     } catch (error) {
-      game.service.handleError({ accname, error });
+      console.trace(error)
+      game.service?.handleError({ accname, error });
     }
   });
 }
