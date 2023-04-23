@@ -4,12 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "nodemon": "nodemon dist/index.js",
-    "ts": "tsc",
-    "node": "node dist/src/index.js",
-    "tsw": "tsc -w",
-    "old": "tsc -w & node --watch dist/index.js",
+    "start": "tsnd --respawn --transpile-only src/index.ts",
+    "dev": "node --loader ts-node/esm --inspect src/index.ts",
+    "dev:respawn": "tsnd --transpile-only --inspect -- src/index.ts",
     "prisma": "ts-node prisma/seed.ts"
   },
   "keywords": [],
@@ -28,6 +25,7 @@
     "@types/node": "^18.11.18",
     "nodemon": "^2.0.20",
     "prisma": "^4.8.1",
+    "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.0.0-beta"
   },
