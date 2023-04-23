@@ -1,27 +1,26 @@
 import Card from "../../../durak-game/entity/Card";
 import DurakGame from "../../../durak-game/DurakGame";
-import { GameSocket } from "../game.service";
-import { ResponseCallback } from "../games.types";
 
-export type PlaceCardData = { game: DurakGame, card: Card, slotIndex: number };
-
-export default function handlePutCardOnDesk(
-  this: { game: DurakGame, accname: string } & GameSocket,
+export default async function handlePutCardOnDesk(
+  this: { game: DurakGame, accname: string },
   { suit, rank }: Card,
-  slotIndex: number,
-  callback: ResponseCallback,
+  index: number,
 ) {
-  const { game, socket, accname } = this;
-  if (!accname) throw new Error("Вы вне игры");
-
-  const card = new Card({ rank, suit });
-
-  const player = game.players.tryGetPlayer({ accname });
-  if (!game.round.currentMoveAllowedTo(player)) throw new Error("У вас нет права ходить");
-  if (!player.hand.has({ card })) throw new Error("У вас нет такой карты");
-
-  if (game.players.isDefender(player) || game.players.isAttacker(player)) {
-    player.putCardOnDesk({ game, slotIndex, card, socket });
-    return callback({ status: game.players.isAttacker(player) ? "ATT" : "DEF" });
+  const { game, accname: id } = this;
+  const player = game.players.getPlayer({ id });
+  if (!game.round.currentMoveAllowedTo(player)) {
+    throw new Error("У вас нет права ходить");
+  }
+  const card = new Card({ rank, suit, isTrump: game.talon.trumpSuit === suit });
+  if (!player.hand.has({ card })) {
+    throw new Error("У вас нет такой карты");
+  }
+  if (game.players.isDefender(player)
+    && game.desk.allowsTransferMove({ index, card, nextDefender: player.left })
+  ) {
+    return player.makeTransferMove({ game, index, card });
+  }
+  if (game.players.isSuperPlayer(player)) {
+    return await player.putCardOnDesk({ game, index, card });
   } else throw new Error("У вас нет прав ложить карту на стол");
 }
