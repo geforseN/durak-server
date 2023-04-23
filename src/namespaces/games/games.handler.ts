@@ -13,7 +13,7 @@ export default function gamesHandler(
   if (!game) return handleNoSuchGameOnline(socket);
   if (!accname) return handleNotAuthorized(socket);
   if (!game.round) game.start(this.namespace);
-  game.service?.restoreState({ accname, socket, game });
+  game.service?.restoreState({ game, socket, playerId: accname });
 
   socket.on("superPlayer__putCardOnDesk", async (card, slotIndex) => {
     try {
