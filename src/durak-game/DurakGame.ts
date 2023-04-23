@@ -192,3 +192,11 @@ export default class DurakGame {
       : playerOrIdentifier.accname;
   }
 }
+
+export interface CanReceiveCards {
+  receiveCards: (...cards: Card[]) => void;
+}
+
+export interface CanProvideCards<Target> {
+  provideCards: (target: Target) => void;
+}
