@@ -10,7 +10,7 @@ export default class Attacker extends SuperPlayer {
   }
 
   async putCardOnDesk({ game, card, index }: { game: DurakGame, card: Card, index: number }): Promise<void | never> {
-    await game.desk.checkCanAttack({ card, index });
+    await game.desk.ensureCanAttack({ card, index });
     this.putAttackCard({ game, card, slotIndex: index });
     this.handleAfterCardPut({ game });
   }
