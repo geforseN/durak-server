@@ -17,12 +17,13 @@ export default class Card {
     return powerRecord[this.rank];
   }
 
-  hasSame(cardEntries: { suit?: Suit, rank?: Rank, power?: Power }): boolean {
-    for (const [key, value] of Object.entries(cardEntries)) {
-      if (!Object.hasOwn(this, key)) throw new Error("Нет такого поля");
-      if (this[key as keyof this] !== value) return false;
-    }
-    return true;
+  hasSame(cardProperties: Partial<CardConstructor>): boolean {
+    return Object.entries(cardProperties).every(([key, value]) => {
+      if (!Object.hasOwn(this, key)) {
+        throw new Error("Нет такого поля");
+      }
+      return this[key as keyof this] === value;
+    });
   }
 
   toString(): string {
