@@ -21,8 +21,10 @@ export default class DefendedSlot extends DeskSlot {
   allowsTransfer({ card }: { card: Card }) {
     const { rank } = card;
     return new Promise<Card>((resolve, reject) => {
-      if (this.attackCard.hasSame({ rank })) resolve(card);
-      reject("Нельзя перевести: нет схожего ранга");
+      if (!this.attackCard.hasSame({ rank })) {
+        reject("Нельзя перевести: нет схожего ранга");
+      }
+      resolve(card);
     });
   }
 }
