@@ -8,15 +8,13 @@ import { CanProvideCards } from "../../DurakGame";
 
 export default class Talon extends Deck implements CanProvideCards<Player> {
   private service?: GameTalonService;
+  trumpCard: Card;
 
   constructor(size: CardCount) {
     super(size);
-    this.injectCardIsTrump();
     this.shuffle().shuffle();
-  }
-
-  get trumpCard(): Card {
-    return this._value[0];
+    this.trumpCard = new Card(this._value[0]);
+    this.injectIsCardTrump();
   }
 
   get trumpSuit(): Suit {
