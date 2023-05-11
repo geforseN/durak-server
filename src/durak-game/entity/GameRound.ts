@@ -69,6 +69,9 @@ export default class GameRound {
   ) {
     const { currentMove: { player }, desk: { cardCount: deskCardCount } } = this;
     this.currentMove = new Move({ player, deskCardCount, ...moveContext });
+    if (Move === DefenderGaveUpMove) {
+      this.service?.emitDefenderGaveUp();
+    }
   }
 
   get firstDefenderMove(): DefenderMove | never {
