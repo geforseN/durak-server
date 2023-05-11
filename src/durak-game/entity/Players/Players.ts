@@ -2,8 +2,6 @@ import assert from "node:assert";
 import PlayersManager from "./PlayersManager";
 import LobbyUsers from "../../../namespaces/lobbies/entity/lobby-users";
 import { Attacker, Defender, Player, SuperPlayer } from "../Players";
-import Talon from "../Deck/Talon";
-import { AllowedMissingCardCount } from "./Player";
 
 export default class Players {
   __value: Player[];
@@ -16,18 +14,6 @@ export default class Players {
 
   get count() {
     return this.__value.length;
-  }
-
-  receiveFirstCards({ talon, cardCount, pushCount }: {
-    pushCount: AllowedMissingCardCount;
-    cardCount: AllowedMissingCardCount;
-    talon: Talon;
-  }) {
-    for (let i = 0; i < this.count * cardCount; i += pushCount) {
-      const playerIndex = i % this.count;
-      const player = this.__value[playerIndex];
-      talon.provideCards(player, pushCount);
-    }
   }
 
   get attacker(): Attacker {
