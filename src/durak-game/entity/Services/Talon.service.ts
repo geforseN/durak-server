@@ -11,9 +11,22 @@ export default class GameTalonService {
     this.namespace.to(player.id).emit("player__receiveCards", cards);
     this.namespace.except(player.id).emit("talon__distributeCards", player.id, cards.length);
     this.namespace.except(player.id).emit("enemy__changeCardCount", player.id, player.hand.count);
+    this.emitCardsRepresentation({ possibleTrumpCardReceiver: player, talon });
   }
 
-  moveTrumpCard({ player }: { player: Player }) {
+  private emitCardsRepresentation(ctx: { possibleTrumpCardReceiver: Player, talon: Talon }) {
+    if (ctx.talon.isEmpty) {
+      this.moveTrumpCard({ player: ctx.possibleTrumpCardReceiver });
+    } else if (ctx.talon.hasOneCard) {
+      this.keepOnlyTrumpCard();
+    }
+  }
+
+  private moveTrumpCard({ player }: { player: Player }) {
     this.namespace.emit("talon__moveTrumpCardTo", player.id);
+  }
+
+  private keepOnlyTrumpCard() {
+    this.namespace.emit("talon__keepOnlyTrumpCard");
   }
 }
