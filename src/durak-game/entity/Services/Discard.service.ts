@@ -5,7 +5,11 @@ export default class GameDiscardService {
   constructor(private namespace: GamesIO.NamespaceIO) {
   }
 
-  receiveCards(cards: Card[]) {
+  emitReceivedCards(cards: Card[]) {
     this.namespace.emit("discard__receiveCards", cards.length);
+  }
+
+  emitReceivedFirstCards() {
+    this.namespace.emit("discard__setIsNotEmpty")
   }
 }

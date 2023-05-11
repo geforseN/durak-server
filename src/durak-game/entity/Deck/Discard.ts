@@ -11,8 +11,13 @@ export default class Discard extends Deck implements CanReceiveCards {
   }
 
   receiveCards(...cards: Card[]): void {
+    const currentCardCount = this._value.length;
     this._value.push(...cards);
-    this.service?.receiveCards(cards);
+    const newCardCount = this._value.length;
+    if (!currentCardCount && newCardCount) {
+      this.service?.emitReceivedFirstCards();
+    }
+    this.service?.emitReceivedCards(cards);
   }
 
   injectService(gameDeskService: GameDiscardService) {
