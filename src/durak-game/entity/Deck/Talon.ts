@@ -12,7 +12,7 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
 
   constructor(size: CardCount) {
     super(size);
-    this.shuffle().shuffle();
+    this.shuffle().shuffle().shuffle().shuffle().shuffle();
     this.trumpCard = new Card(this._value[0]);
     this.injectIsCardTrump();
   }
