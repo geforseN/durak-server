@@ -1,12 +1,13 @@
 import { GamesIO } from "../../../namespaces/games/games.types";
 import { Player } from "../Players";
 import Card from "../Card";
+import Talon from "../Deck/Talon";
 
 export default class GameTalonService {
   constructor(private namespace: GamesIO.NamespaceIO) {
   }
 
-  provideCards({ player, cards }: { player: Player, cards: Card[] }) {
+  provideCards({ player, cards, talon }: { player: Player, cards: Card[], talon: Talon }) {
     this.namespace.to(player.id).emit("player__receiveCards", cards);
     this.namespace.except(player.id).emit("talon__distributeCards", player.id, cards.length);
     this.namespace.except(player.id).emit("enemy__changeCardCount", player.id, player.hand.count);
