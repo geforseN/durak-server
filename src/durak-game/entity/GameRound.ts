@@ -72,7 +72,7 @@ export default class GameRound {
   }
 
   get firstDefenderMove(): DefenderMove | never {
-    const defenderMove = this.moves.find((move) => move instanceof InsertDefendCardMove);
+    const defenderMove = this.moves.find((move) => move instanceof InsertDefendCardMove || move instanceof DefenderGaveUpMove);
     assert.ok(defenderMove, "Нет защищающегося хода");
     return defenderMove;
   }
