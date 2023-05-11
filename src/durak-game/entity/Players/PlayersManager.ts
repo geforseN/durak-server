@@ -40,12 +40,6 @@ export default class PlayersManager {
     return this.make(Player, playerOrIdentifier);
   }
 
-  makeNewSuperPlayers({ nextAttacker }: { nextAttacker: Player | LobbyUserIdentifier }) {
-    const attacker = this.makeNewAttacker(nextAttacker);
-    const defender = this.makeNewDefender(attacker.left);
-    return { attacker, defender };
-  }
-
   makeNewAttacker(nextAttacker: Player | LobbyUserIdentifier) {
     this.makePlayer(this.players.attacker);
     return this.makeAttacker(nextAttacker);
