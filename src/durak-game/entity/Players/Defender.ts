@@ -67,7 +67,6 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
     if (game.desk.isDefended
       && (!this.hand.count || !game.desk.allowsMoves)
     ) {
-      assert.ok(game.desk.isDefended, "У защитника нет карт, а стол незащищён. Так нельзя.");
       return game.handleWonDefence(this);
     }
     if (game.desk.isDefended && game.desk.allowsMoves) {
