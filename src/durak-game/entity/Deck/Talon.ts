@@ -2,9 +2,10 @@ import { randomInt } from "node:crypto";
 import Deck, { CardCount } from "./Deck.abstract";
 import Card from "../Card";
 import { Suit } from "../../utility";
-import { Player } from "../Players";
+import { Player, Players } from "../Players";
 import GameTalonService from "../Services/Talon.service";
 import { CanProvideCards } from "../../DurakGame";
+import { AllowedMissingCardCount } from "../Players/Player";
 
 export default class Talon extends Deck implements CanProvideCards<Player> {
   private service?: GameTalonService;
@@ -27,6 +28,10 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
 
   get isEmpty(): boolean {
     return this.count === 0;
+  }
+
+  get hasOneCard(): boolean {
+    return this.count === 1;
   }
 
   /** @param {number} cardCount Positive number */
@@ -66,5 +71,17 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
 
   injectService(talonService: GameTalonService) {
     this.service = talonService;
+  }
+
+  makeInitialDistribution(players: Players, {
+    finalCardCount,
+    cardCountPerIteration: cardCount,
+  }: { finalCardCount: AllowedMissingCardCount, cardCountPerIteration: AllowedMissingCardCount }) {
+    const cardCountToDistribute = players.count * finalCardCount;
+    for (let givenCardCount = 0; givenCardCount < cardCountToDistribute; givenCardCount += cardCount) {
+      const playerIndex = givenCardCount / cardCount % players.count;
+      const player = players.__value[playerIndex];
+      this.provideCards(player, cardCount);
+    }
   }
 }
