@@ -71,7 +71,7 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
       return game.handleWonDefence(this);
     }
     if (game.desk.isDefended && game.desk.allowsMoves) {
-      this.letPrimalAttackerMove({ game });
+      return this.letPrimalAttackerMove({ game });
     }
     return this.makeAnotherDefenseMove({ game });
   }
