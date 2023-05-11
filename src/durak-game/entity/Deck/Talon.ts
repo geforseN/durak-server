@@ -53,21 +53,17 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
     [this._value[k], this._value[i]] = [this._value[i], this._value[k]];
   }
 
-  private injectCardIsTrump() {
-    for (let i = this._value.length - 1; i > 0; i--) {
-      const card = this._value[i];
-      card.isTrump = card.suit === this.trumpSuit;
-    }
+  provideCards(player: Player, count = player.missingNumberOfCards) {
+    if (count === 0) return;
+    const cards = this.pop({ count });
+    player.receiveCards(...cards);
+    this.service?.provideCards({ player, cards, talon: this });
   }
 
-  provideCards<Target extends Player>(player: Target, cardCount = player.missingNumberOfCards) {
-    if (cardCount === 0) return;
-    const cards = this.pop(cardCount);
-    player.receiveCards(...cards);
-    this.service?.provideCards({ player, cards });
-    if (this.isEmpty) {
-      this.service?.moveTrumpCard({ player });
-    }
+  private injectIsCardTrump() {
+    this._value.forEach((card) => {
+      card.isTrump = card.suit === this.trumpSuit;
+    });
   }
 
   injectService(talonService: GameTalonService) {
