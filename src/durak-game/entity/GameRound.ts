@@ -56,7 +56,7 @@ export default class GameRound {
 
   pushNextMove<M extends GameMove>(
     Move: { new(arg: any): M },
-    moveContext: Partial<InstanceType<{ new(arg: any): M }>> & { player: Player },
+    moveContext: Partial<InstanceType<{ new(arg: any): M }>> & Required<Pick<M, "player">>, // or Just M["player"] ???
   ) {
     const { desk: { cardCount: deskCardCount } } = this;
     this.moves.push(new Move({ deskCardCount, ...moveContext }));
