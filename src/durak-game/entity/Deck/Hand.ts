@@ -1,5 +1,5 @@
 import Deck from "./Deck.abstract";
-import Card from "../Card";
+import Card, { CardConstructor } from "../Card";
 
 export default class Hand extends Deck {
   constructor() {
@@ -10,7 +10,7 @@ export default class Hand extends Deck {
     return this._value;
   }
 
-  has({ card: { suit, rank } }: { card: Card }): boolean {
+  has({ card: { suit, rank } }: { card: CardConstructor }): boolean {
     return this._value.some((card) => card.hasSame({ suit, rank }));
   }
 
