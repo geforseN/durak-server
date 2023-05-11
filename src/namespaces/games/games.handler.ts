@@ -1,37 +1,20 @@
 import { GamesIO } from "./games.types";
 import { durakGames } from "../../index";
-import handlePutCardOnDesk from "./methods/handle-put-card-on-desk";
-import handleStopMove from "./methods/handle-stop-move";
+import { cardPlaceListener, stopMoveListener } from "./listener";
 
-export default function gamesHandler(
+export default function gameHandler(
   this: { namespace: GamesIO.NamespaceIO },
   socket: GamesIO.SocketIO,
 ) {
-  const { data: { accname }, nsp: { name: gameId } } = socket;
+  const { data: { id: playerId }, nsp: { name: gameId } } = socket;
   const game = durakGames.get(gameId);
   socket.onAny((eventName: string, ...args) => console.log(eventName, args))
   if (!game) return handleNoSuchGameOnline(socket);
-  if (!accname) return handleNotAuthorized(socket);
+  if (!playerId) return handleNotAuthorized(socket);
   if (!game.round) game.start(this.namespace);
-  game.service?.restoreState({ game, socket, playerId: accname });
-
-  socket.on("superPlayer__putCardOnDesk", async (card, slotIndex) => {
-    try {
-      await handlePutCardOnDesk.call({ socket, game, accname }, card, slotIndex);
-    } catch (error) {
-      console.trace(error)
-      game.service?.handleError({ accname, error });
-    }
-  });
-
-  socket.on("superPlayer__stopMove", () => {
-    try {
-      handleStopMove.call({ socket, game, accname });
-    } catch (error) {
-      console.trace(error)
-      game.service?.handleError({ accname, error });
-    }
-  });
+  game.service?.restoreState({ game, socket, playerId });
+  socket.on("superPlayer__putCardOnDesk", cardPlaceListener.bind({ game, playerId }));
+  socket.on("superPlayer__stopMove", stopMoveListener.bind({ game, playerId}));
 }
 
 function handleNoSuchGameOnline(socket: GamesIO.SocketIO) {
