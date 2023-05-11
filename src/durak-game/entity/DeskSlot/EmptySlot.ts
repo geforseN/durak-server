@@ -15,7 +15,7 @@ export default class EmptySlot extends DeskSlot {
   }
 
   assertCanBeDefended({ card: _card }: { card: Card }) {
-    return Promise.reject("Нет от чего защищаться");
+    return Promise.reject(new Error("Нет от чего защищаться"));
   }
 
   allowsTransfer({ card }: { card: Card }) {
