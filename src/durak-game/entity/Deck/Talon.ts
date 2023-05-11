@@ -32,10 +32,10 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
   }
 
   /** @param {number} cardCount Positive number */
-  pop(cardCount = 1): Card[] {
-    const index = this.count - cardCount;
-    if (index <= 0) return this.lastCards;
-    return this._value.splice(index, cardCount);
+  pop({ count = 1 }: { count?: number } = {}): Card[] {
+    const startIndex = this.count - count;
+    if (startIndex <= 0) return this.lastCards;
+    return this._value.splice(startIndex, count);
   }
 
   private shuffle(): this {
