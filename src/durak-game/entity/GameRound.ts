@@ -9,24 +9,27 @@ import {
   InsertDefendCardMove,
 } from "./GameMove";
 import GameRoundService from "./Services/Round.service";
-import { GamesIO } from "../../namespaces/games/games.types";
+import DurakGame from "../DurakGame";
 
-type GameRoundConstructorArgs = { attacker: Attacker, number: number, desk: Desk, namespace: GamesIO.NamespaceIO };
+type GameRoundConstructorArgs = { number: number, game: DurakGame };
 
 export default class GameRound {
   readonly number: number;
   private readonly moves: GameMove[];
   private readonly desk: Desk;
   private readonly service?: GameRoundService;
+  game: DurakGame;
 
-  constructor({ number, desk, attacker, namespace }: GameRoundConstructorArgs) {
+  constructor({ number, game }: GameRoundConstructorArgs) {
+    if (!game.info.namespace) throw new Error("Socket namespace not found");
     this.number = number;
-    this.desk = desk;
+    this.desk = game.desk;
     this.moves = [];
-    this.service = new GameRoundService(namespace);
+    this.game = game; // TODO add this.game usage
+    this.service = new GameRoundService(game.info.namespace);
     this.pushNextMove(AttackerMove, {
-      player: attacker,
-      deskCardCount: desk.cardCount,
+      player: game.players.attacker,
+      deskCardCount: game.desk.cardCount,
     });
   }
 
