@@ -13,13 +13,13 @@ import profile from "./api/profle";
 import ioHandler from "./namespaces/io/io.handler";
 import globalChatHandler from "./namespaces/global-chat/global-chat.handler";
 import lobbiesHandler from "./namespaces/lobbies/lobbies.handler";
-import gamesHandler from "./namespaces/games/games.handler";
+import gameHandler from "./namespaces/games/games.handler";
 import DurakGame from "./durak-game/DurakGame";
 import Lobbies from "./namespaces/lobbies/entity/lobbies";
 import LobbiesService from "./namespaces/lobbies/lobbies.service";
 import onConnectMiddleware from "./namespaces/lobbies/helpers/on-connect.middleware";
 import { GamesIO } from "./namespaces/games/games.types";
-
+import { parse } from "cookie"
 export type NextSocketIO = (err?: (ExtendedError | undefined)) => void
 
 dotenv.config();
@@ -50,7 +50,14 @@ export const durakGames = new Map<string, DurakGame>();
 
 export const gamesNamespace: GamesIO.NamespaceIO = io.of(uuidRegExp);
 gamesNamespace.use(onConnectMiddleware);
-gamesNamespace.on("connect", gamesHandler.bind({ namespace: gamesNamespace }));
+gamesNamespace.use((socket, next) => {
+  const { cookie } = socket.handshake.headers;
+  if (!cookie) return next();
+  const { accname } = parse(cookie!);
+  socket.data.id = accname;
+  next()
+})
+gamesNamespace.on("connect", gameHandler.bind({ namespace: gamesNamespace }));
 
 httpServer.listen(port);
 instrument(io, { auth: false, mode: "development" });
