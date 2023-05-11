@@ -1,22 +1,18 @@
 import Card from "../../../durak-game/entity/Card";
 import DurakGame from "../../../durak-game/DurakGame";
+import { getPlayer, getPlacedCard } from "../getter";
 
 export default async function handlePutCardOnDesk(
-  this: { game: DurakGame, accname: string },
-  { suit, rank }: Card,
+  this: { game: DurakGame, playerId: string },
+  { suit, rank }: Pick<Card, "rank" | "suit">,
   index: number,
 ) {
-  const { game, accname: id } = this;
-  const player = game.players.getPlayer({ id });
-  if (!game.round.currentMoveAllowedTo(player)) {
-    throw new Error("У вас нет права ходить");
-  }
-  const card = new Card({ rank, suit, isTrump: game.talon.trumpSuit === suit });
-  if (!player.hand.has({ card })) {
-    throw new Error("У вас нет такой карты");
-  }
-  if (game.players.isDefender(player)
-    && game.desk.allowsTransferMove({ index, card, nextDefender: player.left })
+  const { game, playerId: id } = this;
+  const player = getPlayer(game, id);
+  const card = getPlacedCard({ suit, rank }, game, player);
+  if (
+    game.players.isDefender(player)
+    && await game.desk.allowsTransferMove({ index, card, nextDefender: player.left })
   ) {
     return player.makeTransferMove({ game, index, card });
   }
