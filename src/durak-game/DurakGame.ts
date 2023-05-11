@@ -9,12 +9,12 @@ import Discard from "./entity/Deck/Discard";
 import Talon from "./entity/Deck/Talon";
 import Desk from "./entity/Desk";
 import GameRound from "./entity/GameRound";
-import Player from "./entity/Players/Player";
 import GamePlayersManagerService from "./entity/Services/PlayersManager.service";
 import GameDeskService from "./entity/Services/Desk.service";
 import GameTalonService from "./entity/Services/Talon.service";
 import Card from "./entity/Card";
 import GameDiscardService from "./entity/Services/Discard.service";
+import { AllowedMissingCardCount } from "./entity/Players/Player";
 
 
 export default class DurakGame {
@@ -37,9 +37,8 @@ export default class DurakGame {
   }
 
   start(socketsNamespace: GamesIO.NamespaceIO) {
-    const { talon } = this;
     this.injectServices(socketsNamespace);
-    this.players.receiveFirstCards({ talon, cardCount: 6, pushCount: 1 });
+    this.makeInitialDistribution({ finalCardCount: 6, cardCountPerIteration: 2 });
     this.makeInitialSuperPlayers();
     this.makeNewRound({ number: 1 });
   }
@@ -47,44 +46,47 @@ export default class DurakGame {
   handleLostDefence(defender = this.players.defender): void {
     this.desk.provideCards(defender);
     this.service?.lostRound({ game: this });
-    return this.handleNewRound({ nextAttacker: defender.left });
+    this.handleCanContinue();
+    const attacker = this.players.manager.makeNewAttacker(defender.left);
+    this.players.manager.makeNewDefender(attacker.left);
+    this.makeNewRound();
   }
 
   handleWonDefence(defender = this.players.defender): void {
     this.desk.provideCards(this.discard);
     this.service?.wonRound({ game: this });
-    return this.handleNewRound({ nextAttacker: defender });
-  }
-
-  private handleNewRound({ nextAttacker }: { nextAttacker: Player }) {
-    if (this.talon.hasCards) this.makeCardDistribution();
-    else this.players.manager.removeEmptyPlayers();
-    if (this.players.count === 1) this.end();
-    this.players.manager.makeNewSuperPlayers({ nextAttacker });
+    this.handleCanContinue();
+    const attacker = this.players.manager.makeNewAttacker(defender);
+    this.players.manager.makeDefender(attacker.left);
     this.makeNewRound();
   }
 
+  private handleCanContinue() {
+    if (this.talon.hasCards) this.makeCardDistribution();
+    else this.players.manager.removeEmptyPlayers();
+    if (this.players.count === 1) this.end();
+  }
+
   private makeCardDistribution() {
-    for (const id of this.round.distributionQueue.map((player) => player.id)) {
+    const distributionQueue = this.round.distributionQueue
+      .map((player) => this.players.getPlayer({ id: player.id }));
+    for (const player of distributionQueue) {
       if (this.talon.isEmpty) return;
-      this.talon.provideCards(
-        this.players.getPlayer({ id }),
-      );
+      this.talon.provideCards(player);
     }
   }
 
   private makeNewRound({ number } = { number: this.round.number + 1 }) {
-    const { desk, info: { namespace }, players: { attacker } } = this;
-    if (!namespace) throw new Error("Socket namespace not found");
-    this.round = new GameRound({ number, attacker, desk, namespace });
+    this.round = new GameRound({ number, game: this });
   }
 
   private end() {
-    setTimeout(() => {
-      this.service?.end(this);
-      durakGames.delete(this.info.id);
-      // TODO SAVE GAME IN DATABASE
-    }, 10_000);
+    this.service?.end(this);
+    durakGames.delete(this.info.id);
+  }
+
+  private makeInitialDistribution(distributionOptions: { finalCardCount: AllowedMissingCardCount, cardCountPerIteration: AllowedMissingCardCount }) {
+    this.talon.makeInitialDistribution(this.players, distributionOptions);
   }
 
   private makeInitialSuperPlayers() {
@@ -111,4 +113,13 @@ export interface CanReceiveCards {
 
 export interface CanProvideCards<Target> {
   provideCards: (target: Target) => void;
+}
+
+
+interface CanReceive<Values> {
+  receive: (...values: Values[]) => void;
+}
+
+interface CanProvide<Values, Target extends CanReceive<Values>> {
+  provide: (target: Target) => void;
 }
