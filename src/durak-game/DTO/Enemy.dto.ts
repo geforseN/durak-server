@@ -6,10 +6,12 @@ export default class EnemyDTO {
   cardCount: number;
   info: LobbyUser;
   role: PlayerRole;
+  id: string;
 
   constructor(cardPlayer: Player) {
     this.cardCount = cardPlayer.hand.count;
     this.info = cardPlayer.info;
     this.role = cardPlayer.constructor.name as PlayerRole;
+    this.id = cardPlayer.id;
   }
 }
