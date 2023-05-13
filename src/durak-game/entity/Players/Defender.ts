@@ -1,4 +1,3 @@
-import assert from "node:assert";
 import DurakGame, { CanReceiveCards } from "../../DurakGame";
 import { Player } from "./index";
 import {
@@ -11,18 +10,10 @@ import {
 } from "../GameMove";
 import Card from "../Card";
 import SuperPlayer from "./SuperPlayer";
-import GameDefenderService from "../Services/Defender.service";
 
 export default class Defender extends SuperPlayer implements CanReceiveCards {
-  service?: GameDefenderService;
-
   constructor(player: Player) {
     super(player);
-  }
-
-  override receiveCards(...cards: Card[]) {
-    super.receiveCards(...cards);
-    this.service?.receiveCards({ defender: this, cards });
   }
 
   canDefend(cardCount: number) {
@@ -97,9 +88,5 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
 
   private makeAnotherDefenseMove({ game }: { game: DurakGame }) {
     game.round.pushNextMove(DefenderMove, { player: this });
-  }
-
-  injectService(defenderService: GameDefenderService) {
-    this.service = defenderService;
   }
 }
