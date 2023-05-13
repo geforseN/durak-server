@@ -6,7 +6,7 @@ import GamePlayersManagerService from "../Services/PlayersManager.service";
 export default class PlayersManager {
   private players: Players;
   private service?: GamePlayersManagerService;
-  namespace!: GamesIO.NamespaceIO
+  namespace!: GamesIO.NamespaceIO;
 
   constructor(players: Players) {
     this.players = players;
@@ -51,7 +51,7 @@ export default class PlayersManager {
     Player: { new(player: Player): P },
     playerOrId: Player | LobbyUserIdentifier,
   ): P {
-    const id = this.getId(playerOrId)
+    const id = this.getId(playerOrId);
     const playerIndex = this.getPlayerIndex({ id });
     const player = new Player(this.players.__value[playerIndex]);
     const role = Player.name as PlayerRole;
@@ -78,7 +78,7 @@ export default class PlayersManager {
     this.players.__value.forEach((player, playerIndex, players) => {
       const {
         leftPlayerIndex,
-        rightPlayerIndex
+        rightPlayerIndex,
       } = this.getSideIndexes(playerIndex);
       player.left = players[leftPlayerIndex];
       player.right = players[rightPlayerIndex];
