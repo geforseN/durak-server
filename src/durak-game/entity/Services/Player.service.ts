@@ -10,4 +10,9 @@ export default class GamePlayerService {
     this.namespace.to(player.id).emit("player__receiveCards", cards);
     this.namespace.except(player.id).emit("enemy__changeCardCount", player.id, player.hand.count);
   }
+
+  removeCard({ player, card }: { player: Player, card: Card }) {
+    this.namespace.to(player.id).emit("self__removeCard", card);
+    this.namespace.except(player.id).emit("enemy__changeCardCount", player.id, player.hand.count);
+  }
 }
