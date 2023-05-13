@@ -43,6 +43,7 @@ export namespace GamesIO {
 
   export type SocketData = {
     accname: string
+    id?: string
     role?: "USER" | "GUEST"
     badTriesCount?: number
   }
