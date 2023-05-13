@@ -27,10 +27,15 @@ export class GameService {
     this.namespace.emit("defender__wonRound", defender.id, round.number);
   }
 
-  handleError({ accname, error }: { error: unknown, accname: string }) {
-    console.log("ERROR: ", error);
-    const notification = new NotificationAlert().fromError(error as Error);
-    this.namespace.to(accname).emit("notification__send", notification);
+  handleError({ playerId, error }: { error: unknown, playerId: string }) {
+    if (!(error instanceof Error)) {
+      return console.log("!ERROR: ", error);
+    }
+    console.dir(error);
+    this.namespace.to(playerId).emit(
+      "notification__send",
+      new NotificationAlert().fromError(error),
+    );
   }
 
   restoreState({ socket, game, playerId }: { game: DurakGame, playerId: string } & GameSocket) {
@@ -38,6 +43,6 @@ export class GameService {
   }
 
   end(game: DurakGame) {
-    this.namespace.emit("game__over")
+    this.namespace.emit("game__over");
   }
 }
