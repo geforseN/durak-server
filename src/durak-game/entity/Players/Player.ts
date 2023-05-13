@@ -2,6 +2,7 @@ import { LobbyUser } from "../../../namespaces/lobbies/entity/lobby-users";
 import Hand from "../Deck/Hand";
 import Card from "../Card";
 import GameRound from "../GameRound";
+import GamePlayerService from "../Services/Player.service";
 
 const GOOD_CARD_AMOUNT = 6;
 const allowedMissingCardCount = [0, 1, 2, 3, 4, 5, 6] as const;
@@ -13,6 +14,7 @@ export default class Player {
   left!: Player;
   right!: Player;
   index!: number;
+  service?: GamePlayerService
 
   constructor(param: LobbyUser | Player) {
     if (param instanceof Player) {
@@ -22,6 +24,7 @@ export default class Player {
 
   receiveCards(...cards: Card[]): void {
     this.hand.receive(...cards);
+    this.service?.receiveCards({ player: this, cards });
   }
 
   get id(): string {
@@ -43,6 +46,7 @@ export default class Player {
     this.left = player.left;
     this.right = player.right;
     this.index = player.index;
+    this.service = player.service;
   }
 
   canTakeMore({ cardCount }: { cardCount: number }) {
@@ -51,5 +55,9 @@ export default class Player {
 
   isPrimalAttacker({ round }: { round: GameRound }): boolean | never {
     return this.id === round.primalAttacker.id;
+  }
+
+  injectService(playerService: GamePlayerService) {
+    this.service = playerService;
   }
 }
