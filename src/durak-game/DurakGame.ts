@@ -15,6 +15,7 @@ import GameTalonService from "./entity/Services/Talon.service";
 import Card from "./entity/Card";
 import GameDiscardService from "./entity/Services/Discard.service";
 import { AllowedMissingCardCount } from "./entity/Players/Player";
+import GamePlayerService from "./entity/Services/Player.service";
 
 
 export default class DurakGame {
@@ -102,6 +103,7 @@ export default class DurakGame {
     this.service = new GameService(this.info.namespace);
     this.desk.injectService(new GameDeskService(this.info.namespace));
     this.talon.injectService(new GameTalonService(this.info.namespace));
+    this.players.injectService(new GamePlayerService(this.info.namespace));
     this.players.manager.injectService(new GamePlayersManagerService(this.info.namespace));
     this.discard.injectService(new GameDiscardService(this.info.namespace));
   }
