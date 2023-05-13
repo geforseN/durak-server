@@ -2,6 +2,7 @@ import assert from "node:assert";
 import PlayersManager from "./PlayersManager";
 import LobbyUsers from "../../../namespaces/lobbies/entity/lobby-users";
 import { Attacker, Defender, Player, SuperPlayer } from "../Players";
+import GamePlayerService from "../Services/Player.service";
 
 export default class Players {
   __value: Player[];
@@ -46,5 +47,9 @@ export default class Players {
     for (const player of this.__value) {
       if (player instanceof PlayerClass) return player;
     }
+  }
+
+  injectService(service: GamePlayerService) {
+    this.__value.forEach((player) => (player.service = service));
   }
 }
