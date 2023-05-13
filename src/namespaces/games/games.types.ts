@@ -61,11 +61,3 @@ export namespace GamesIO {
     GamesIO.SocketData
   >
 }
-
-export type AdditionalGameState = {
-  isDiscardEmpty: boolean;
-  isTalonEmpty: boolean;
-  turnNumber: number;
-  trumpSuit: Suit;
-  trump?: Card;
-}
