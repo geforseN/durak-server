@@ -7,9 +7,10 @@ export default abstract class SuperPlayer extends Player {
   public remove({ card }: { card: Card }): Card {
     const index = this.hand.findIndex({ card });
     assert.notStrictEqual(index, -1, "Неверный индекс");
-    const removedCards = this.hand.value.splice(index, 1);
-    assert.equal(removedCards.length, 1, "Должна быть одна карта");
-    return removedCards[0];
+    const [removedCard] = this.hand.value.splice(index, 1);
+    assert.ok(removedCard, "Не получилось убрать свою карту");
+    this.service?.removeCard({ player: this, card: removedCard });
+    return removedCard;
   }
 
   abstract putCardOnDesk(props: { game: DurakGame, card: Card, index: number }): Promise<void>;
