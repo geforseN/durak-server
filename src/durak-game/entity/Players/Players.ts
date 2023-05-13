@@ -43,7 +43,7 @@ export default class Players {
     return player instanceof SuperPlayer;
   }
 
-  private get<P extends Player>(PlayerClass: { new(...arg: any): P }): P | undefined {
+  private get<P extends SuperPlayer>(PlayerClass: { new(...arg: any): P }): P | undefined {
     for (const player of this.__value) {
       if (player instanceof PlayerClass) return player;
     }
