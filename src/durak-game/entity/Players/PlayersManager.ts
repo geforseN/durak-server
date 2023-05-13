@@ -2,7 +2,6 @@ import { LobbyUserIdentifier } from "../../../namespaces/lobbies/entity/lobby-us
 import { Player, Attacker, Defender, Players } from "./index";
 import { GamesIO, PlayerRole } from "../../../namespaces/games/games.types";
 import GamePlayersManagerService from "../Services/PlayersManager.service";
-import GameDefenderService from "../Services/Defender.service";
 
 export default class PlayersManager {
   private players: Players;
@@ -31,9 +30,7 @@ export default class PlayersManager {
   }
 
   makeDefender(playerOrIdentifier: Player | LobbyUserIdentifier): Defender {
-    const defender = this.make(Defender, playerOrIdentifier);
-    defender.injectService(new GameDefenderService(this.namespace));
-    return defender;
+    return this.make(Defender, playerOrIdentifier);
   }
 
   makePlayer(playerOrIdentifier: Player | LobbyUserIdentifier): Player {
