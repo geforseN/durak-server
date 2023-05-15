@@ -46,7 +46,7 @@ export default class GameRound {
     return this.moves.length - 1;
   }
 
-  currentMoveAllowedTo(player: Player): boolean {
+  isCurrentMoveAllowedTo(player: Player): boolean {
     return this.currentMove.player.id === player.id;
   }
 

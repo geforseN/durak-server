@@ -4,7 +4,7 @@ import { Player } from "../../../durak-game/entity/Players";
 
 
 export function ensureIsAllowedToMove(player: Player, game: DurakGame) {
-  if (!game.round.currentMoveAllowedTo(player)) {
+  if (!game.round.isCurrentMoveAllowedTo(player)) {
     throw new Error("У вас нет права ходить");
   }
 }
