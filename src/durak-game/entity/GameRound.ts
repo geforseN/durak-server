@@ -58,6 +58,7 @@ export default class GameRound {
     UncertainMove: { new(arg: any): M },
     moveContext: Required<Pick<M, "player">>,
   ) {
+    clearTimeout(this.currentMove?.defaultBehaviour)
     this.moves.push(new UncertainMove({
       game: this.game,
       player: moveContext.player,
@@ -69,6 +70,7 @@ export default class GameRound {
     CertainMove: { new(arg: any): M },
     moveContext: { player?: M["player"] } = {},
   ) {
+    clearTimeout(this.currentMove.defaultBehaviour)
     this.currentMove = new CertainMove({
       game: this.game,
       player: moveContext.player ?? this.currentMove.player,
