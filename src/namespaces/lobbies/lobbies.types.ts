@@ -67,6 +67,7 @@ export type CardCount = 24 | 36 | 52;
 export type GameSettings = {
   maxUserCount: MaxUserCount;
   gameType: GameType;
-  cardCount: CardCount
+  cardCount: CardCount;
+  moveTime: number;
 };
 
