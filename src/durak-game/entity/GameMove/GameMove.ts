@@ -1,13 +1,14 @@
 import Player from "../Players/Player";
+import DurakGame from "../../DurakGame";
 
-export type GameMoveConstructorArgs<P extends Player> = { player: P, deskCardCount: number };
+export abstract class GameMove<P extends Player> {
+  player: P;
+  game: DurakGame;
 
-export abstract class GameMove {
-  player: Player;
-  deskCardCount: number;
-
-  protected constructor({ player, deskCardCount }: GameMoveConstructorArgs<Player>) {
+  constructor({ player, game }: { player: P, game: DurakGame }) {
     this.player = player;
-    this.deskCardCount = deskCardCount;
+    this.game = game;
   }
+
+  abstract get defaultBehaviour(): NodeJS.Timeout
 }
