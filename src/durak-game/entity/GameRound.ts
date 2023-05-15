@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import Desk from "./Desk";
-import { Attacker, Defender, Player } from "./Players";
+import { Attacker, Defender, Player, SuperPlayer } from "./Players";
 import {
   AttackerMove,
   DefenderGaveUpMove,
@@ -15,7 +15,7 @@ type GameRoundConstructorArgs = { number: number, game: DurakGame };
 
 export default class GameRound {
   readonly number: number;
-  private readonly moves: GameMove[];
+  private readonly moves: GameMove<SuperPlayer>[];
   private readonly desk: Desk;
   private readonly service?: GameRoundService;
   game: DurakGame;
