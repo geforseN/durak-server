@@ -11,14 +11,17 @@ export default class Attacker extends SuperPlayer {
   }
 
   private handleAfterCardPut({ game }: { game: DurakGame }) {
-    const { desk, players: { defender } } = game;
     if (this.hand.isEmpty
-      || !defender.canDefend(desk.unbeatenCardCount)
-      || !game.desk.allowsMoves
+      || !game.players.defender.canDefend(game.desk.unbeatenCardCount)
+      || !game.desk.allowsAttackerMove
     ) {
       // NOTE: IF moved into this block
       // THAN defender will have last chance to win round
-      return game.round.pushNextMove(DefenderMove, { player: defender });
+      return this.letDefenderMove({ game });
+      // FIXME be careful when (
+      //    this.hand.isEmpty
+      //    && this.isPrimalAttacker
+      //  ) can be false work
     }
     return game.round.pushNextMove(AttackerMove, { player: this });
   }
@@ -31,12 +34,12 @@ export default class Attacker extends SuperPlayer {
       return this.handleInPursuit({ game });
     }
     if (this.hasPutLastCard({ round: game.round })) {
-      return game.round.pushNextMove(DefenderMove, { player: game.players.defender });
+      return this.letDefenderMove({ game });
     }
     if (this.defenderCanWin({ game })) {
       return game.handleWonDefence(game.players.defender);
     }
-    return this.letMoveToNextAttacker({ game });
+    return this.letNextAttackerMove({ game });
   }
 
   private handleInPursuit({ game }: { game: DurakGame }) {
@@ -45,8 +48,8 @@ export default class Attacker extends SuperPlayer {
     ) {
       return game.handleLostDefence(game.players.defender);
     }
-    // let other try insert cards in pursuit (vdogonku)
-    return this.letMoveToNextAttacker({ game });
+    // let other player try insert cards in pursuit (vdogonku)
+    return this.letNextAttackerMove({ game });
   }
 
   hasPutLastCard({ round }: { round: DurakGame["round"] }): boolean {
@@ -58,9 +61,7 @@ export default class Attacker extends SuperPlayer {
 
   private putAttackCard({ game, card, slotIndex: index }: { game: DurakGame; card: Card; slotIndex: number }) {
     this.remove({ card });
-    game.service?.removeCard({ player: this, card });
-    const moveContext = { player: this, card, slotIndex: index };
-    game.round.updateCurrentMoveTo(InsertAttackCardMove, moveContext);
+    game.round.updateCurrentMoveTo(InsertAttackCardMove);
     game.desk.receiveCard({ card, index, who: this });
   }
 
@@ -79,11 +80,15 @@ export default class Attacker extends SuperPlayer {
     );
   }
 
-  private letMoveToNextAttacker({ game }: { game: DurakGame }) {
+  private letNextAttackerMove({ game }: { game: DurakGame }) {
     const nextAttacker = this.isPrimalAttacker({ round: game.round })
       ? game.players.defender.left
       : this.left;
     const newAttacker = game.players.manager.makeNewAttacker(nextAttacker);
     game.round.pushNextMove(AttackerMove, { player: newAttacker });
+  }
+
+  private letDefenderMove({ game }: { game: DurakGame }) {
+    game.round.pushNextMove(DefenderMove, { player: game.players.defender });
   }
 }
