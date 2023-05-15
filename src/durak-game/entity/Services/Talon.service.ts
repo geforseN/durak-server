@@ -7,10 +7,8 @@ export default class GameTalonService {
   constructor(private namespace: GamesIO.NamespaceIO) {
   }
 
-  provideCards({ player, cards, talon }: { player: Player, cards: Card[], talon: Talon }) {
-    this.namespace.to(player.id).emit("player__receiveCards", cards);
-    this.namespace.except(player.id).emit("talon__distributeCards", player.id, cards.length);
-    this.namespace.except(player.id).emit("enemy__changeCardCount", player.id, player.hand.count);
+  provideCardsAnimation({ player, cards, talon }: { player: Player, cards: Card[], talon: Talon }) {
+    this.namespace.except(player.id).emit("talon__distributeCardsTo", player.id, cards.length);
     this.emitCardsRepresentation({ possibleTrumpCardReceiver: player, talon });
   }
 
