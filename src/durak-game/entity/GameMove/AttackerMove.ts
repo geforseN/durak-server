@@ -6,33 +6,29 @@ export class AttackerMove extends GameMove<Attacker> {
   // DO NOT FORGET TO CLEAR TIMEOUT WHEN
   // - pushNextMove
   // - updateNextMove
-  // - user handler
-  // TODO: add handlers for other moves
-  // NOTE: below code for first attacker move
+  // + user handler
   get defaultBehaviour() {
-    return setTimeout(() => {
-      if (this.attackerShouldStopAttack) {
+    return setTimeout(async () => {
+      if (!this.game.desk.isEmpty) {
         return this.player.stopMove({ game: this.game });
       }
-      this.insertRandomCard();
+      await this.insertRandomCard();
     }, this.game.settings.moveTime);
   }
 
-  private get attackerShouldStopAttack(): boolean {
-    if (this.game.desk.isEmpty) return false;
-    const { ranks } = this.game.desk;
-    const { value: cards } = this.player.hand;
-    return cards.every(({ rank }) => !ranks.includes(rank));
+  private async insertRandomCard() {
+    await this.player.putCardOnDesk({
+      game: this.game,
+      card: this.randomCard,
+      index: this.randomSlotIndex,
+    });
   }
 
-  private insertRandomCard() {
-    const cardIndex = this.player.randomCardIndex;
-    const card = this.player.hand.value[cardIndex];
-    this.player.remove({ card });
-    // TODO game.desk.randomEmptySlotIndex, randomDefendedSlotIndex, etc...
-    //  in inherited classes
-    const index = randomInt(0, this.game.desk.slots.length);
-    this.game.desk.receiveCard({ card, index, who: this.player });
-    // this.game.round.updateCurrentMoveTo(InsertAttackCardMove, {player: this})
+  private get randomCard() {
+    return this.player.hand.value[this.player.randomCardIndex];
+  }
+
+  private get randomSlotIndex() {
+    return randomInt(0, this.game.desk.slots.length);
   }
 }
