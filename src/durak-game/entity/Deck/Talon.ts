@@ -60,7 +60,7 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
     if (count === 0) return;
     const cards = this.pop({ count });
     player.receiveCards(...cards);
-    this.service?.provideCards({ player, cards, talon: this });
+    this.service?.provideCardsAnimation({ player, cards, talon: this });
   }
 
   private injectIsCardTrump() {
