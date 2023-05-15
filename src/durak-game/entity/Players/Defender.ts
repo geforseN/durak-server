@@ -36,17 +36,17 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
 
   stopMove({ game }: { game: DurakGame }): void {
     if (!game.desk.isDefended) {
-      game.round.updateCurrentMoveTo(DefenderGaveUpMove, { player: this });
       // here defender can not defend more
       // if desk is full THAN go to next round
       // OR THAN let put more cards in pursuit (vdogonku)
+      game.round.updateCurrentMoveTo(DefenderGaveUpMove);
       return game.desk.allowsMoves
         ? this.letPrimalAttackerMove({ game })
         : game.handleLostDefence(this);
     }
     // desk is defended
     // let primal attacker try make defender loser
-    game.round.updateCurrentMoveTo(StopDefenseMove, { player: this });
+    game.round.updateCurrentMoveTo(StopDefenseMove);
     return this.letPrimalAttackerMove({ game });
   }
 
@@ -60,7 +60,7 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
     ) {
       return game.handleWonDefence(this);
     }
-    if (game.desk.isDefended && game.desk.allowsMoves) {
+    if (game.desk.isDefended && game.desk.allowsAttackerMove) {
       return this.letPrimalAttackerMove({ game });
     }
     return this.makeAnotherDefenseMove({ game });
@@ -80,9 +80,7 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
     Move: { new(arg: any): M },
   ) {
     this.remove({ card });
-    const moveContext = { player: this, card, slotIndex };
-    // @ts-ignore
-    game.round.updateCurrentMoveTo(Move, moveContext);
+    game.round.updateCurrentMoveTo(Move);
     game.desk.receiveCard({ card, index: slotIndex, who: this });
   }
 
