@@ -31,8 +31,8 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return this.cards.length;
   }
 
-  get ranks(): Card['rank'][] {
-    return [...new Set(this.cards.map(card => card.rank))]
+  get ranks(): Card["rank"][] {
+    return [...new Set(this.cards.map(card => card.rank))];
   }
 
   get unbeatenCardCount(): number {
@@ -107,8 +107,9 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
   private assertCanPut(card: Card): Promise<Card> {
     return new Promise<Card>((resolve, reject) => {
       if (!this.hasSame({ rank: card.rank })) {
-        reject("Нет схожего ранга на доске");
-      } else resolve(card);
+        reject(new Error("Нет схожего ранга на доске"));
+      }
+      resolve(card);
     });
   }
 
