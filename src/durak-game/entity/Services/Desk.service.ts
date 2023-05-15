@@ -1,6 +1,7 @@
 import Card from "../Card";
 import { GamesIO } from "../../../namespaces/games/games.types";
 import { SuperPlayer } from "../Players";
+import CardDTO from "../../DTO/Card.dto";
 
 export default class GameDeskService {
   constructor(private namespace: GamesIO.NamespaceIO) {
@@ -11,6 +12,6 @@ export default class GameDeskService {
   }
 
   insertCard({ card, index, who }: { card: Card, index: number, who: SuperPlayer }) {
-    this.namespace.emit("player__insertCard", card, index, who.id);
+    this.namespace.emit("player__insertCard", new CardDTO(card), index, who.id);
   }
 }
