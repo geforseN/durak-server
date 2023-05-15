@@ -80,6 +80,7 @@ export default class GameRound {
   get firstDefenderMove(): DefenderMove | never {
     const defenderMove = this.moves.find((move) => move instanceof InsertDefendCardMove || move instanceof DefenderGaveUpMove);
     assert.ok(defenderMove, "Нет защищающегося хода");
+    assert.ok(defenderMove instanceof DefenderMove, "Ход не является защищающимся");
     return defenderMove;
   }
 
