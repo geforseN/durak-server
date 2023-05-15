@@ -1,7 +1,4 @@
-import { DefenderMove, DefenderMoveConstructorArgs } from "./DefenderMove";
+import { DefenderMove } from "./DefenderMove";
 
 export class StopDefenseMove extends DefenderMove {
-  constructor(args: DefenderMoveConstructorArgs) {
-    super(args);
-  }
 }
