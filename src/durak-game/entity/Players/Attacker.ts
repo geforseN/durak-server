@@ -1,15 +1,10 @@
 import DurakGame from "../../DurakGame";
-import { Player } from "./index";
 import { AttackerMove, DefenderMove, InsertAttackCardMove, StopAttackMove } from "../GameMove";
 import Card from "../Card";
 import SuperPlayer from "./SuperPlayer";
 
 export default class Attacker extends SuperPlayer {
-  constructor(player: Player) {
-    super(player);
-  }
-
-  async putCardOnDesk({ game, card, index }: { game: DurakGame, card: Card, index: number }): Promise<void | never> {
+  override async putCardOnDesk({ game, card, index }: { game: DurakGame, card: Card, index: number }): Promise<void> {
     await game.desk.ensureCanAttack({ card, index });
     this.putAttackCard({ game, card, slotIndex: index });
     this.handleAfterCardPut({ game });
@@ -28,9 +23,10 @@ export default class Attacker extends SuperPlayer {
     return game.round.pushNextMove(AttackerMove, { player: this });
   }
 
-  stopMove({ game }: { game: DurakGame }) {
-    game.round.updateCurrentMoveTo(StopAttackMove, { player: this });
-
+  override stopMove({ game }: { game: DurakGame }) {
+    //  handle game.desk.allowsMove && game.desk.isDefended
+    //  NOTE maybe game.desk.should be only in after put card handlers
+    game.round.updateCurrentMoveTo(StopAttackMove);
     if (game.round.isDefenderGaveUp) {
       return this.handleInPursuit({ game });
     }
