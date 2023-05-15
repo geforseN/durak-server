@@ -1,10 +1,10 @@
-import Card from "../../../durak-game/entity/Card";
+import CardDTO from "../../../durak-game/DTO/Card.dto";
 import DurakGame from "../../../durak-game/DurakGame";
 import { getPlayer, getPlacedCard } from "../getter";
 
 export default async function handlePutCardOnDesk(
   this: { game: DurakGame, playerId: string },
-  { suit, rank }: Pick<Card, "rank" | "suit">,
+  { suit, rank }: CardDTO,
   index: number,
 ) {
   const { game, playerId: id } = this;
