@@ -11,8 +11,6 @@ import {
 import GameRoundService from "./Services/Round.service";
 import DurakGame from "../DurakGame";
 
-type GameRoundConstructorArgs = { number: number, game: DurakGame };
-
 export default class GameRound {
   readonly number: number;
   private readonly moves: GameMove<SuperPlayer>[];
@@ -20,7 +18,7 @@ export default class GameRound {
   private readonly service?: GameRoundService;
   game: DurakGame;
 
-  constructor({ number, game }: GameRoundConstructorArgs) {
+  constructor({ number, game }: { number: number, game: DurakGame }) {
     if (!game.info.namespace) throw new Error("Socket namespace not found");
     this.number = number;
     this.desk = game.desk;
