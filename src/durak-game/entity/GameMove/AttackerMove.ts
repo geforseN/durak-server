@@ -3,11 +3,9 @@ import { GameMove } from "./GameMove";
 import { randomInt } from "node:crypto";
 
 export class AttackerMove extends GameMove<Attacker> {
-  // DO NOT FORGET TO CLEAR TIMEOUT WHEN
-  // - pushNextMove
-  // - updateNextMove
-  // + user handler
-  get defaultBehaviour() {
+  defaultBehaviour: NodeJS.Timeout = this.#defaultBehaviour();
+
+  #defaultBehaviour() {
     return setTimeout(async () => {
       if (!this.game.desk.isEmpty) {
         return this.player.stopMove({ game: this.game });
