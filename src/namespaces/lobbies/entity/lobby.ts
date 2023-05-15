@@ -63,7 +63,7 @@ export default class Lobby {
     return this.adminAccname;
   }
 
-  private assertSettings({ gameType, maxUserCount, cardCount }: GameSettings): GameSettings | never {
+  private assertSettings({ gameType, maxUserCount, cardCount, moveTime = 30_000 }: GameSettings): GameSettings | never {
     if (maxUserCount < 2 || maxUserCount > 6)
       throw new Error("Нельзя создать лобби из менее 2 или более 6 игроков");
 
@@ -73,7 +73,7 @@ export default class Lobby {
     const isCardCountCorrect = [24, 36, 52].includes(cardCount);
     if (!isCardCountCorrect) throw new Error("Неверное количество карт");
 
-    return { gameType, maxUserCount, cardCount };
+    return { gameType, maxUserCount, cardCount, moveTime };
   }
 
 }
