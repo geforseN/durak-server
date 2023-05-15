@@ -31,6 +31,10 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return this.cards.length;
   }
 
+  get ranks(): Card['rank'][] {
+    return [...new Set(this.cards.map(card => card.rank))]
+  }
+
   get unbeatenCardCount(): number {
     return this.slots.filter((slot) => slot instanceof UnbeatenSlot).length;
   };
