@@ -59,6 +59,14 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return this.slots.filter((slot) => slot instanceof DefendedSlot).length;
   }
 
+  get allowsAttackerMove(): boolean {
+    return this.allowsMoves;
+  }
+
+  get shouldDefenderMove(): boolean {
+    return this.allowsMoves;
+  }
+
   allowsTransferMove({ card, index, nextDefender }: { nextDefender: Player; index: number; card: Card }) {
     return (
       this.getSlot({ index }) instanceof EmptySlot
