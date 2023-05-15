@@ -1,5 +1,4 @@
 import assert from "node:assert";
-import Desk from "./Desk";
 import { Attacker, Defender, Player, SuperPlayer } from "./Players";
 import {
   AttackerMove,
@@ -14,20 +13,17 @@ import DurakGame from "../DurakGame";
 export default class GameRound {
   readonly number: number;
   private readonly moves: GameMove<SuperPlayer>[];
-  private readonly desk: Desk;
   private readonly service?: GameRoundService;
   game: DurakGame;
 
   constructor({ number, game }: { number: number, game: DurakGame }) {
     if (!game.info.namespace) throw new Error("Socket namespace not found");
-    this.number = number;
-    this.desk = game.desk;
-    this.moves = [];
-    this.game = game; // TODO add this.game usage
     this.service = new GameRoundService(game.info.namespace);
+    this.game = game;
+    this.number = number;
+    this.moves = [];
     this.pushNextMove(AttackerMove, {
       player: game.players.attacker,
-      deskCardCount: game.desk.cardCount,
     });
   }
 
