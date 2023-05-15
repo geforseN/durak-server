@@ -1,15 +1,3 @@
-import { DefenderMove, DefenderMoveConstructorArgs } from "./DefenderMove";
-import Card from "../Card";
+import { DefenderMove } from "./DefenderMove";
 
-type InsertDefendCardMoveConstructorArgs = { card: Card, slotIndex: number } & DefenderMoveConstructorArgs;
-
-export class InsertDefendCardMove extends DefenderMove {
-  card: Card;
-  slotIndex: number;
-
-  constructor({ player, deskCardCount, ...args }: InsertDefendCardMoveConstructorArgs) {
-    super({ player, deskCardCount });
-    this.slotIndex = args.slotIndex;
-    this.card = args.card;
-  }
-}
+export class InsertDefendCardMove extends DefenderMove {}
