@@ -1,5 +1,4 @@
 import DurakGame, { CanReceiveCards } from "../../DurakGame";
-import { Player } from "./index";
 import {
   AttackerMove,
   DefenderGaveUpMove,
@@ -12,15 +11,11 @@ import Card from "../Card";
 import SuperPlayer from "./SuperPlayer";
 
 export default class Defender extends SuperPlayer implements CanReceiveCards {
-  constructor(player: Player) {
-    super(player);
-  }
-
   canDefend(cardCount: number) {
     return this.canTakeMore({ cardCount });
   }
 
-  async putCardOnDesk({ game, index, card }: { game: DurakGame, card: Card, index: number }): Promise<void | never> {
+  override async putCardOnDesk({ game, index, card }: { game: DurakGame, card: Card, index: number }): Promise<void> {
     const slot = game.desk.getSlot({ index });
     await slot.assertCanBeDefended({ card });
     this.putDefendCard({ game, card, slotIndex: index });
