@@ -27,15 +27,15 @@ export default class GameRound {
     });
   }
 
-  get previousMove(): GameMove {
+  get previousMove(): GameMove<SuperPlayer> {
     return this.moves[this.currentMoveIndex - 1];
   }
 
-  get currentMove(): GameMove {
+  get currentMove(): GameMove<SuperPlayer> {
     return this.moves[this.currentMoveIndex];
   }
 
-  set currentMove(move: GameMove) {
+  set currentMove(move: GameMove<SuperPlayer>) {
     this.moves[this.currentMoveIndex] = move;
   }
 
@@ -51,18 +51,18 @@ export default class GameRound {
     return this.moves.some((move) => move instanceof DefenderGaveUpMove);
   }
 
-  pushNextMove<M extends GameMove>(
-    Move: { new(arg: any): M },
-    moveContext: Partial<InstanceType<{ new(arg: any): M }>> & Required<Pick<M, "player">>, // or Just M["player"] ???
+  pushNextMove<M extends GameMove<SuperPlayer>>(
+    UncertainMove: { new(arg: any): M },
+    moveContext: Required<Pick<M, "player">>,
   ) {
     const { desk: { cardCount: deskCardCount } } = this;
     this.moves.push(new Move({ deskCardCount, ...moveContext }));
     this.service?.letMoveTo(moveContext.player);
   }
 
-  updateCurrentMoveTo<M extends GameMove>(
-    Move: { new(arg: any): M },
-    moveContext: Partial<InstanceType<{ new(arg: any): M }>>,
+  updateCurrentMoveTo<M extends GameMove<SuperPlayer>>(
+    CertainMove: { new(arg: any): M },
+    moveContext: { player?: M["player"] } = {},
   ) {
     const { currentMove: { player }, desk: { cardCount: deskCardCount } } = this;
     this.currentMove = new Move({ player, deskCardCount, ...moveContext });
