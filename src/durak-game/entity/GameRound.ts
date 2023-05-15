@@ -37,6 +37,9 @@ export default class GameRound {
 
   set currentMove(move: GameMove<SuperPlayer>) {
     this.moves[this.currentMoveIndex] = move;
+    if (move instanceof DefenderGaveUpMove) {
+      this.service?.emitDefenderGaveUp();
+    }
   }
 
   private get currentMoveIndex(): number {
@@ -55,20 +58,21 @@ export default class GameRound {
     UncertainMove: { new(arg: any): M },
     moveContext: Required<Pick<M, "player">>,
   ) {
-    const { desk: { cardCount: deskCardCount } } = this;
-    this.moves.push(new Move({ deskCardCount, ...moveContext }));
-    this.service?.letMoveTo(moveContext.player);
+    this.moves.push(new UncertainMove({
+      game: this.game,
+      player: moveContext.player,
+    }));
+    this.service?.letMoveTo(moveContext.player, Date.now() + this.game.settings.moveTime);
   }
 
   updateCurrentMoveTo<M extends GameMove<SuperPlayer>>(
     CertainMove: { new(arg: any): M },
     moveContext: { player?: M["player"] } = {},
   ) {
-    const { currentMove: { player }, desk: { cardCount: deskCardCount } } = this;
-    this.currentMove = new Move({ player, deskCardCount, ...moveContext });
-    if (Move === DefenderGaveUpMove) {
-      this.service?.emitDefenderGaveUp();
-    }
+    this.currentMove = new CertainMove({
+      game: this.game,
+      player: moveContext.player ?? this.currentMove.player,
+    });
   }
 
   get firstDefenderMove(): DefenderMove | never {
