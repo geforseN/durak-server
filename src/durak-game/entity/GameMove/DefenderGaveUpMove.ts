@@ -1,7 +1,4 @@
-import { DefenderMove, DefenderMoveConstructorArgs } from "./DefenderMove";
+import { DefenderMove } from "./DefenderMove";
 
 export class DefenderGaveUpMove extends DefenderMove {
-  constructor({ player, deskCardCount }: DefenderMoveConstructorArgs) {
-    super({ player, deskCardCount });
-  }
 }
