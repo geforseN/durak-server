@@ -1,6 +1,7 @@
 import CardDTO from "../../../durak-game/DTO/Card.dto";
 import DurakGame from "../../../durak-game/DurakGame";
 import { getPlayer, getPlacedCard } from "../getter";
+import assert from "node:assert";
 
 export default async function handlePutCardOnDesk(
   this: { game: DurakGame, playerId: string },
@@ -16,7 +17,7 @@ export default async function handlePutCardOnDesk(
   ) {
     return player.makeTransferMove({ game, index, card });
   }
-  if (game.players.isSuperPlayer(player)) {
-    return await player.putCardOnDesk({ game, index, card });
-  } else throw new Error("У вас нет прав ложить карту на стол");
+  assert.ok(game.players.isSuperPlayer(player), "У вас нет прав ложить карту на стол");
+  clearTimeout(game.round.currentMove.defaultBehaviour);
+  return await game.round.currentMove.putCardOnDesk(card, index);
 }
