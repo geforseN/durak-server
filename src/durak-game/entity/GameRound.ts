@@ -66,12 +66,13 @@ export default class GameRound {
 
   updateCurrentMoveTo<M extends GameMove<Attacker | Defender>>(
     CertainMove: { new(arg: any): M },
-    moveContext: { player?: M["player"] } = {},
+    moveContext: Partial<M> = {},
   ) {
     clearTimeout(this.currentMove.defaultBehaviour)
     this.currentMove = new CertainMove({
       game: this.game,
       player: moveContext.player ?? this.currentMove.player,
+      ...moveContext,
     });
   }
 
