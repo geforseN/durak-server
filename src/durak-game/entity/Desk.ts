@@ -5,6 +5,7 @@ import { DefendedSlot, DeskSlot, EmptySlot, UnbeatenSlot, UnbeatenTrumpSlot } fr
 import { CanProvideCards } from "../DurakGame";
 import Discard from "./Deck/Discard";
 import { AllowedMissingCardCount } from "./Players/Player";
+import { randomInt } from "node:crypto";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
   slots: DeskSlot[];
@@ -137,5 +138,8 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
   toString(): string {
     return this.slots.map((slot) => slot.toString()).join(" ");
   }
-}
 
+  get randomSlotIndex() {
+    return randomInt(0, this.slots.length);
+  }
+}
