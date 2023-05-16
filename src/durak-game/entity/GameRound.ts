@@ -9,6 +9,7 @@ import {
 } from "./GameMove";
 import GameRoundService from "./Services/Round.service";
 import DurakGame from "../DurakGame";
+import Card from "./Card";
 
 export default class GameRound {
   readonly number: number;
@@ -56,7 +57,7 @@ export default class GameRound {
     UncertainMove: { new(arg: any): M },
     moveContext: Required<Pick<M, "player">>,
   ) {
-    clearTimeout(this.currentMove?.defaultBehaviour)
+    clearTimeout(this.currentMove?.defaultBehaviour);
     this.moves.push(new UncertainMove({
       game: this.game,
       player: moveContext.player,
@@ -68,7 +69,7 @@ export default class GameRound {
     CertainMove: { new(arg: any): M },
     moveContext: Partial<M> = {},
   ) {
-    clearTimeout(this.currentMove.defaultBehaviour)
+    clearTimeout(this.currentMove.defaultBehaviour);
     this.currentMove = new CertainMove({
       game: this.game,
       player: moveContext.player ?? this.currentMove.player,
@@ -77,7 +78,10 @@ export default class GameRound {
   }
 
   get firstDefenderMove(): DefenderMove | never {
-    const defenderMove = this.moves.find((move) => move instanceof InsertDefendCardMove || move instanceof DefenderGaveUpMove);
+    const defenderMove = this.moves.find((move) =>
+      move instanceof InsertDefendCardMove
+      || move instanceof DefenderGaveUpMove,
+    );
     assert.ok(defenderMove, "Нет защищающегося хода");
     assert.ok(defenderMove instanceof DefenderMove, "Ход не является защищающимся");
     return defenderMove;
