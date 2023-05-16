@@ -49,7 +49,7 @@ export default class GameRound {
   }
 
   get isDefenderGaveUp() {
-    return this.moves.some((move) => move instanceof DefenderGaveUpMove);
+    return !!this.moves.findLast((move) => move instanceof DefenderGaveUpMove);
   }
 
   pushNextMove<M extends GameMove<Defender | Attacker>>(
