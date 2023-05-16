@@ -12,10 +12,10 @@ export class AttackerMove extends GameMove<Attacker> {
 
   #defaultBehaviour() {
     return setTimeout(async () => {
-      if (!this.game.desk.isEmpty) {
-        return this.player.stopMove({ game: this.game });
+      if (this.game.desk.isEmpty) {
+        return await this.#insertRandomCard();
       }
-      await this.insertRandomCard();
+      return this.player.stopMove({ game: this.game });
     }, this.game.settings.moveTime);
   }
 
