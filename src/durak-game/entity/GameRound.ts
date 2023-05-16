@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { Attacker, Defender, Player, SuperPlayer } from "./Players";
+import { Attacker, Defender, Player } from "./Players";
 import {
   AttackerMove,
   DefenderGaveUpMove,
@@ -12,7 +12,7 @@ import DurakGame from "../DurakGame";
 
 export default class GameRound {
   readonly number: number;
-  private readonly moves: GameMove<SuperPlayer>[];
+  private readonly moves: GameMove<Defender | Attacker>[];
   private readonly service?: GameRoundService;
   game: DurakGame;
 
@@ -22,20 +22,18 @@ export default class GameRound {
     this.game = game;
     this.number = number;
     this.moves = [];
-    this.pushNextMove(AttackerMove, {
-      player: game.players.attacker,
-    });
+    this.pushNextMove(AttackerMove, { player: game.players.attacker });
   }
 
-  get previousMove(): GameMove<SuperPlayer> {
+  get previousMove(): GameMove<Defender | Attacker> {
     return this.moves[this.currentMoveIndex - 1];
   }
 
-  get currentMove(): GameMove<SuperPlayer> {
+  get currentMove(): GameMove<Defender | Attacker> {
     return this.moves[this.currentMoveIndex];
   }
 
-  set currentMove(move: GameMove<SuperPlayer>) {
+  set currentMove(move: GameMove<Defender | Attacker>) {
     this.moves[this.currentMoveIndex] = move;
     if (move instanceof DefenderGaveUpMove) {
       this.service?.emitDefenderGaveUp();
@@ -54,7 +52,7 @@ export default class GameRound {
     return this.moves.some((move) => move instanceof DefenderGaveUpMove);
   }
 
-  pushNextMove<M extends GameMove<SuperPlayer>>(
+  pushNextMove<M extends GameMove<Defender | Attacker>>(
     UncertainMove: { new(arg: any): M },
     moveContext: Required<Pick<M, "player">>,
   ) {
@@ -66,7 +64,7 @@ export default class GameRound {
     this.service?.letMoveTo(moveContext.player, Date.now() + this.game.settings.moveTime);
   }
 
-  updateCurrentMoveTo<M extends GameMove<SuperPlayer>>(
+  updateCurrentMoveTo<M extends GameMove<Attacker | Defender>>(
     CertainMove: { new(arg: any): M },
     moveContext: { player?: M["player"] } = {},
   ) {
