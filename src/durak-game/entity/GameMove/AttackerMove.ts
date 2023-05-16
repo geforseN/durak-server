@@ -19,19 +19,16 @@ export class AttackerMove extends GameMove<Attacker> {
     }, this.game.settings.moveTime);
   }
 
-  private async insertRandomCard() {
-    await this.player.putCardOnDesk({
-      game: this.game,
-      card: this.randomCard,
-      index: this.randomSlotIndex,
-    });
+  async #insertRandomCard() {
+    return await this.putCardOnDesk(
+      this.player.randomCard,
+      this.game.desk.randomSlotIndex,
+    );
   }
 
-  private get randomCard() {
-    return this.player.hand.value[this.player.randomCardIndex];
-  }
-
-  private get randomSlotIndex() {
-    return randomInt(0, this.game.desk.slots.length);
+  async putCardOnDesk(card: Card, slotIndex: number) {
+    await this.game.desk.ensureCanAttack({ card, index: slotIndex });
+    this.player.remove({ card });
+    this.game.round.makeAttackInsertMove(card, slotIndex);
   }
 }
