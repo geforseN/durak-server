@@ -3,7 +3,12 @@ import { GameMove } from "./GameMove";
 import { randomInt } from "node:crypto";
 
 export class AttackerMove extends GameMove<Attacker> {
-  defaultBehaviour: NodeJS.Timeout = this.#defaultBehaviour();
+  defaultBehaviour: NodeJS.Timeout
+
+  constructor(arg: {game: DurakGame, player: Attacker}) {
+    super(arg);
+    this.defaultBehaviour = this.#defaultBehaviour();
+  }
 
   #defaultBehaviour() {
     return setTimeout(async () => {
