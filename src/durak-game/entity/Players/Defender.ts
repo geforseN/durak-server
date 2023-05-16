@@ -15,13 +15,6 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
     return this.canTakeMore({ cardCount });
   }
 
-  override async putCardOnDesk({ game, index, card }: { game: DurakGame, card: Card, index: number }): Promise<void> {
-    const slot = game.desk.getSlot({ index });
-    await slot.assertCanBeDefended({ card });
-    this.putDefendCard({ game, card, slotIndex: index });
-    this.handleAfterCardPut({ game });
-  }
-
   makeTransferMove({ game, index, card }: { game: DurakGame, card: Card, index: number }): void {
     this.putTransferCard({ game, card, slotIndex: index });
     game.players.manager.makeNewAttacker(this);
@@ -45,22 +38,6 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
     return this.letPrimalAttackerMove({ game });
   }
 
-  private putDefendCard({ game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number }) {
-    this.putCard({ game, card, slotIndex }, InsertDefendCardMove);
-  }
-
-  private handleAfterCardPut({ game }: { game: DurakGame }): void {
-    if (game.desk.isDefended
-      && (!this.hand.count || !game.desk.allowsMoves)
-    ) {
-      return game.handleWonDefence(this);
-    }
-    if (game.desk.isDefended && game.desk.allowsAttackerMove) {
-      return this.letPrimalAttackerMove({ game });
-    }
-    return this.makeAnotherDefenseMove({ game });
-  }
-
   private putTransferCard({ game, card, slotIndex }: { game: DurakGame, card: Card, slotIndex: number }) {
     this.putCard({ game, card, slotIndex }, TransferMove);
   }
@@ -77,9 +54,5 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
     this.remove({ card });
     game.round.updateCurrentMoveTo(Move);
     game.desk.receiveCard({ card, index: slotIndex, who: this });
-  }
-
-  private makeAnotherDefenseMove({ game }: { game: DurakGame }) {
-    game.round.pushNextMove(DefenderMove, { player: this });
   }
 }

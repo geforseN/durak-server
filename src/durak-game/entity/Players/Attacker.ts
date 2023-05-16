@@ -1,31 +1,8 @@
 import DurakGame from "../../DurakGame";
 import { AttackerMove, DefenderMove, InsertAttackCardMove, StopAttackMove } from "../GameMove";
-import Card from "../Card";
 import SuperPlayer from "./SuperPlayer";
 
 export default class Attacker extends SuperPlayer {
-  override async putCardOnDesk({ game, card, index }: { game: DurakGame, card: Card, index: number }): Promise<void> {
-    await game.desk.ensureCanAttack({ card, index });
-    this.putAttackCard({ game, card, slotIndex: index });
-    this.handleAfterCardPut({ game });
-  }
-
-  private handleAfterCardPut({ game }: { game: DurakGame }) {
-    if (this.hand.isEmpty
-      || !game.players.defender.canDefend(game.desk.unbeatenCardCount)
-      || !game.desk.allowsAttackerMove
-    ) {
-      // NOTE: IF moved into this block
-      // THAN defender will have last chance to win round
-      return this.letDefenderMove({ game });
-      // FIXME be careful when (
-      //    this.hand.isEmpty
-      //    && this.isPrimalAttacker
-      //  ) can be false work
-    }
-    return game.round.pushNextMove(AttackerMove, { player: this });
-  }
-
   override stopMove({ game }: { game: DurakGame }) {
     //  handle game.desk.allowsMove && game.desk.isDefended
     //  NOTE maybe game.desk.should be only in after put card handlers
@@ -52,20 +29,14 @@ export default class Attacker extends SuperPlayer {
     return this.letNextAttackerMove({ game });
   }
 
-  hasPutLastCard({ round }: { round: DurakGame["round"] }): boolean {
+  private hasPutLastCard({ round }: { round: DurakGame["round"] }): boolean {
     return (
       round.previousMove instanceof InsertAttackCardMove
       && round.previousMove.player.id === this.id
     );
   }
 
-  private putAttackCard({ game, card, slotIndex: index }: { game: DurakGame; card: Card; slotIndex: number }) {
-    this.remove({ card });
-    game.round.updateCurrentMoveTo(InsertAttackCardMove);
-    game.desk.receiveCard({ card, index, who: this });
-  }
-
-  defenderCanWin({ game }: { game: DurakGame }) {
+  private defenderCanWin({ game }: { game: DurakGame }) {
     return (
       game.desk.isDefended
       && game.round.hasPrimalAttacker
