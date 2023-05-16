@@ -14,11 +14,13 @@ export default abstract class SuperPlayer extends Player {
     return removedCard;
   }
 
-  abstract putCardOnDesk(props: { game: DurakGame, card: Card, index: number }): Promise<void>;
-
   abstract stopMove(props: { game: DurakGame }): void | never;
 
-  get randomCardIndex() {
+  get randomCard() {
+    return this.hand.value[this.#randomCardIndex]
+  }
+
+  get #randomCardIndex() {
     return randomInt(0, this.hand.count);
   }
 };
