@@ -4,7 +4,7 @@ import {
   AttackerMove,
   DefenderGaveUpMove,
   DefenderMove,
-  GameMove,
+  GameMove, InsertAttackCardMove,
   InsertDefendCardMove,
 } from "./GameMove";
 import GameRoundService from "./Services/Round.service";
@@ -108,5 +108,35 @@ export default class GameRound {
 
   private get defender(): Defender | never {
     return this.primalAttacker.left as Defender;
+  }
+
+  giveDefenderMove() {
+    return this.pushNextMove(DefenderMove, { player: this.game.players.defender });
+  }
+
+  giveDefenderLastChance() {
+    return this.giveDefenderMove();
+  }
+
+  giveCurrentAttackerMove() {
+    return this.pushNextMove(AttackerMove, { player: this.game.players.attacker });
+  }
+
+  givePrimalAttackerMove() {
+    return this.game.round.pushNextMove(AttackerMove, {
+      player: this.game.players.manager.makeNewAttacker(this.game.round.primalAttacker),
+    });
+  }
+
+  makeDefendInsertMove(card: Card, slotIndex: number) {
+    this.updateCurrentMoveTo(InsertDefendCardMove, { card, slotIndex });
+    assert.ok(this.currentMove instanceof InsertDefendCardMove, "(-_-)");
+    return this.currentMove.handleAfterCardInsert();
+  }
+
+  makeAttackInsertMove(card: Card, slotIndex: number) {
+    this.updateCurrentMoveTo(InsertAttackCardMove, { card, slotIndex });
+    assert.ok(this.currentMove instanceof InsertAttackCardMove, "(-_-)");
+    return this.currentMove.handleAfterCardInsert();
   }
 }
