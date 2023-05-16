@@ -1,6 +1,7 @@
 import Attacker from "../Players/Attacker";
 import { GameMove } from "./GameMove";
-import { randomInt } from "node:crypto";
+import Card from "../Card";
+import DurakGame from "../../DurakGame";
 
 export class AttackerMove extends GameMove<Attacker> {
   defaultBehaviour: NodeJS.Timeout
