@@ -27,9 +27,8 @@ export class AttackerMove extends GameMove<Attacker> {
     );
   }
 
-  async putCardOnDesk(card: Card, slotIndex: number) {
-    await this.game.desk.ensureCanAttack({ card, index: slotIndex });
-    this.player.remove({ card });
+  override async putCardOnDesk(card: Card, slotIndex: number) {
+    await this.game.desk.ensureCanAttack(card, slotIndex);
     this.game.round.makeAttackInsertMove(card, slotIndex);
   }
 }
