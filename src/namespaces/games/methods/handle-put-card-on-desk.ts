@@ -15,7 +15,7 @@ export default async function handlePutCardOnDesk(
     game.players.isDefender(player)
     && await game.desk.allowsTransferMove({ index: slotIndex, card, nextDefender: player.left })
   ) {
-    return player.makeTransferMove({ game, index, card });
+    return game.round.makeTransferMove(card, slotIndex);
   }
   assert.ok(game.players.isSuperPlayer(player), "У вас нет прав ложить карту на стол");
   clearTimeout(game.round.currentMove.defaultBehaviour);
