@@ -23,7 +23,7 @@ export default class GameRound {
     this.game = game;
     this.number = number;
     this.moves = [];
-    this.pushNextMove(AttackerMove, { player: game.players.attacker });
+    this.#pushNextMove(AttackerMove, { player: game.players.attacker });
   }
 
   get previousMove(): GameMove<Defender | Attacker> {
@@ -53,7 +53,7 @@ export default class GameRound {
     return !!this.moves.findLast((move) => move instanceof DefenderGaveUpMove);
   }
 
-  pushNextMove<M extends GameMove<Defender | Attacker>>(
+  #pushNextMove<M extends GameMove<Defender | Attacker>>(
     UncertainMove: { new(arg: any): M },
     moveContext: Required<Pick<M, "player">>,
   ) {
@@ -65,7 +65,7 @@ export default class GameRound {
     this.service?.letMoveTo(moveContext.player, Date.now() + this.game.settings.moveTime);
   }
 
-  updateCurrentMoveTo<M extends GameMove<Attacker | Defender>>(
+  #updateCurrentMoveTo<M extends GameMove<Attacker | Defender>>(
     CertainMove: { new(arg: any): M },
     moveContext: Partial<M> = {},
   ) {
