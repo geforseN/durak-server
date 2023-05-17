@@ -94,10 +94,10 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     this.service?.clear();
   }
 
-  ensureCanAttack({ card, index }: { card: Card, index: number }): Promise<Card> {
+  ensureCanAttack(card: Card, slotIndex: number): Promise<Card> {
     return new Promise<Card>((resolve, reject) => {
       if (this.isEmpty) resolve(card);
-      const slot = this.getSlot({ index });
+      const slot = this.getSlot({ index: slotIndex });
       slot.assertCanBeAttacked({ card })
         .then((card) => this.assertCanPut(card))
         .then(resolve)
