@@ -5,7 +5,7 @@ import {
   DefenderGaveUpMove,
   DefenderMove,
   GameMove, InsertAttackCardMove,
-  InsertDefendCardMove,
+  InsertDefendCardMove, StopAttackMove, StopDefenseMove, TransferMove,
 } from "./GameMove";
 import GameRoundService from "./Services/Round.service";
 import DurakGame from "../DurakGame";
@@ -27,21 +27,21 @@ export default class GameRound {
   }
 
   get previousMove(): GameMove<Defender | Attacker> {
-    return this.moves[this.currentMoveIndex - 1];
+    return this.moves[this.#currentMoveIndex - 1];
   }
 
   get currentMove(): GameMove<Defender | Attacker> {
-    return this.moves[this.currentMoveIndex];
+    return this.moves[this.#currentMoveIndex];
   }
 
   set currentMove(move: GameMove<Defender | Attacker>) {
-    this.moves[this.currentMoveIndex] = move;
+    this.moves[this.#currentMoveIndex] = move;
     if (move instanceof DefenderGaveUpMove) {
       this.service?.emitDefenderGaveUp();
     }
   }
 
-  private get currentMoveIndex(): number {
+  get #currentMoveIndex(): number {
     return this.moves.length - 1;
   }
 
