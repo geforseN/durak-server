@@ -110,25 +110,33 @@ export default class GameRound {
     return playersQueue;
   }
 
-  private get defender(): Defender | never {
-    return this.primalAttacker.left as Defender;
-  }
-
-  giveDefenderMove() {
-    return this.pushNextMove(DefenderMove, { player: this.game.players.defender });
+  giveDefenderDefend() {
+    return this.#pushNextMove(DefenderMove, { player: this.game.players.defender });
   }
 
   giveDefenderLastChance() {
-    return this.giveDefenderMove();
+    return this.giveDefenderDefend();
   }
 
-  giveCurrentAttackerMove() {
-    return this.pushNextMove(AttackerMove, { player: this.game.players.attacker });
+  giveAttackerAttack() {
+    return this.#pushNextMove(AttackerMove, { player: this.game.players.attacker });
   }
 
-  givePrimalAttackerMove() {
-    return this.game.round.pushNextMove(AttackerMove, {
+  givePrimalAttackerAttack() {
+    return this.game.round.#pushNextMove(AttackerMove, {
       player: this.game.players.manager.makeNewAttacker(this.game.round.primalAttacker),
+    });
+  }
+
+  giveNextAttackerAttack() {
+    return this.#pushNextMove(AttackerMove, {
+      player: this.game.players.manager.makeNewAttacker(this.nextAttacker),
+    });
+  }
+
+  giveAttackerLeftDefend() {
+    return this.#pushNextMove(DefenderMove, {
+      player: this.game.players.manager.makeDefender(this.game.players.attacker.left),
     });
   }
 
