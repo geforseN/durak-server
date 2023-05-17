@@ -84,16 +84,18 @@ export default class GameRound {
     );
   }
 
+  get firstDefenderMove(): DefenderMove | never {
+    assert.ok(this.#firstDefenderMove, "Нет защищающегося хода");
+    assert.ok(this.#firstDefenderMove instanceof DefenderMove, "Ход не является защищающимся");
+    return this.#firstDefenderMove;
+  }
+
   get primalAttacker(): Attacker | never {
     return this.firstDefenderMove.player.right as Attacker;
   }
 
   get hasPrimalAttacker(): boolean {
-    try {
-      return !!this.primalAttacker;
-    } catch {
-      return false;
-    }
+    return !!this.#firstDefenderMove;
   };
 
   get distributionQueue() {
