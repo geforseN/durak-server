@@ -13,7 +13,7 @@ export class DefenderMove extends GameMove<Defender> {
 
   #defaultBehaviour(): NodeJS.Timeout {
     return setTimeout(() => {
-      this.player.stopMove({ game: this.game });
+      this.stopMove();
     }, this.game.settings.moveTime);
   }
 
@@ -22,5 +22,9 @@ export class DefenderMove extends GameMove<Defender> {
     await slot.assertCanBeDefended({ card });
     this.player.remove({ card });
     this.game.round.makeDefendInsertMove(card, slotIndex);
+  }
+
+  override stopMove() {
+    this.game.round.makeDefendStopMove();
   }
 }
