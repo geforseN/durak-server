@@ -141,14 +141,38 @@ export default class GameRound {
   }
 
   makeDefendInsertMove(card: Card, slotIndex: number) {
-    this.updateCurrentMoveTo(InsertDefendCardMove, { card, slotIndex });
+    this.#updateCurrentMoveTo(InsertDefendCardMove, { card, slotIndex });
     assert.ok(this.currentMove instanceof InsertDefendCardMove, "(-_-)");
     return this.currentMove.handleAfterCardInsert();
   }
 
   makeAttackInsertMove(card: Card, slotIndex: number) {
-    this.updateCurrentMoveTo(InsertAttackCardMove, { card, slotIndex });
+    this.#updateCurrentMoveTo(InsertAttackCardMove, { card, slotIndex });
     assert.ok(this.currentMove instanceof InsertAttackCardMove, "(-_-)");
     return this.currentMove.handleAfterCardInsert();
+  }
+
+  makeTransferMove(card: Card, slotIndex: number) {
+    this.#updateCurrentMoveTo(TransferMove, { card, slotIndex });
+    assert.ok(this.currentMove instanceof TransferMove, "(-_-)");
+    return this.currentMove.handleAfterTransfer();
+  }
+
+  makeAttackStopMove() {
+    this.#updateCurrentMoveTo(StopAttackMove);
+    assert.ok(this.currentMove instanceof StopAttackMove, "(-_-)");
+    return this.currentMove.handleAfterStopMove();
+  }
+
+  makeDefendStopMove() {
+    this.#updateCurrentMoveTo(StopDefenseMove);
+    assert.ok(this.currentMove instanceof StopDefenseMove, "(-_-)");
+    return this.currentMove.handleAfterStopMove();
+  }
+
+  makeDefenderLost() {
+    this.#updateCurrentMoveTo(DefenderGaveUpMove);
+    assert.ok(this.currentMove instanceof DefenderGaveUpMove, "(-_-)");
+    return this.currentMove.handleAfterGaveUp();
   }
 }
