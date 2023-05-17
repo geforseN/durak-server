@@ -94,6 +94,16 @@ export default class GameRound {
     return this.firstDefenderMove.player.right as Attacker;
   }
 
+  private get defender(): Defender | never {
+    return this.primalAttacker.left as Defender;
+  }
+
+  get nextAttacker(): Player {
+    return this.game.players.attacker.isPrimalAttacker({ round: this })
+      ? this.game.players.defender.left
+      : this.game.players.attacker.left;
+  }
+
   get hasPrimalAttacker(): boolean {
     return !!this.#firstDefenderMove;
   };
