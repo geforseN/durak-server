@@ -17,10 +17,10 @@ export class DefenderMove extends GameMove<Defender> {
     }, this.game.settings.moveTime);
   }
 
-  async putCardOnDesk(card: Card, slotIndex: number) {
-    const slot = this.game.desk.getSlot({ index: slotIndex });
-    await slot.assertCanBeDefended({ card });
-    this.player.remove({ card });
+  override async putCardOnDesk(card: Card, slotIndex: number) {
+    await this.game.desk
+      .getSlot({ index: slotIndex })
+      .assertCanBeDefended({ card });
     this.game.round.makeDefendInsertMove(card, slotIndex);
   }
 
