@@ -1,7 +1,6 @@
 import assert from "node:assert";
 import Player from "./Player";
 import Card from "../Card";
-import DurakGame from "../../DurakGame";
 import { randomInt } from "node:crypto";
 
 export default abstract class SuperPlayer extends Player {
@@ -13,8 +12,6 @@ export default abstract class SuperPlayer extends Player {
     this.service?.removeCard({ player: this, card: removedCard });
     return removedCard;
   }
-
-  abstract stopMove(props: { game: DurakGame }): void | never;
 
   get randomCard() {
     return this.hand.value[this.#randomCardIndex]
