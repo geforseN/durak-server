@@ -13,4 +13,6 @@ export abstract class GameMove<P extends Player> {
   }
 
   abstract putCardOnDesk(card: Card, index: number): Promise<void>
+
+  abstract stopMove(): void
 }
