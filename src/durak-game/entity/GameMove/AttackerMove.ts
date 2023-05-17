@@ -4,9 +4,9 @@ import Card from "../Card";
 import DurakGame from "../../DurakGame";
 
 export class AttackerMove extends GameMove<Attacker> {
-  defaultBehaviour: NodeJS.Timeout
+  defaultBehaviour: NodeJS.Timeout;
 
-  constructor(arg: {game: DurakGame, player: Attacker}) {
+  constructor(arg: { game: DurakGame, player: Attacker }) {
     super(arg);
     this.defaultBehaviour = this.#defaultBehaviour();
   }
@@ -16,7 +16,7 @@ export class AttackerMove extends GameMove<Attacker> {
       if (this.game.desk.isEmpty) {
         return await this.#insertRandomCard();
       }
-      return this.player.stopMove({ game: this.game });
+      return this.stopMove();
     }, this.game.settings.moveTime);
   }
 
@@ -30,5 +30,9 @@ export class AttackerMove extends GameMove<Attacker> {
   override async putCardOnDesk(card: Card, slotIndex: number) {
     await this.game.desk.ensureCanAttack(card, slotIndex);
     this.game.round.makeAttackInsertMove(card, slotIndex);
+  }
+
+  override stopMove() {
+    this.game.round.makeAttackStopMove();
   }
 }
