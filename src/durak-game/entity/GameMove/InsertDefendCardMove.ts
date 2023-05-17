@@ -10,14 +10,14 @@ export class InsertDefendCardMove extends DefenderMove {
   card: Card;
   slotIndex: number;
 
-  constructor(arg: ConstructorArg) {
+  constructor({ card, slotIndex, ...arg }: ConstructorArg) {
     super(arg);
-    this.card = new Card(arg.card);
-    this.slotIndex = arg.slotIndex;
-    this.#insertCard();
+    this.card = this.player.remove({ card });
+    this.slotIndex = slotIndex;
+    this.#insertDefendCardOnDesk();
   }
 
-  #insertCard() {
+  #insertDefendCardOnDesk() {
     return this.game.desk.receiveCard({
       card: this.card,
       index: this.slotIndex,
