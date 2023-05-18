@@ -1,11 +1,12 @@
 import { DefenderMove } from "./DefenderMove";
 import Card from "../Card";
+import { AfterHandler } from "../GameRound";
 
 type ConstructorArg =
   ConstructorParameters<typeof DefenderMove>[number]
   & { card: Card, slotIndex: number };
 
-export class TransferMove extends DefenderMove {
+export class TransferMove extends DefenderMove implements AfterHandler {
   card: Card;
   slotIndex: number;
 
@@ -24,7 +25,7 @@ export class TransferMove extends DefenderMove {
     });
   }
 
-  handleAfterTransfer() {
+  handleAfterInitialization() {
     this.game.players.manager.makeNewAttacker(this.player);
     return this.game.round.giveAttackerLeftDefend();
   }

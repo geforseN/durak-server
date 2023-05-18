@@ -1,7 +1,8 @@
 import { AttackerMove } from "./AttackerMove";
+import { AfterHandler } from "../GameRound";
 
-export class StopAttackMove extends AttackerMove {
-  handleAfterStopMove() {
+export class StopAttackMove extends AttackerMove implements AfterHandler {
+  handleAfterInitialization() {
     if (this.game.round.isDefenderGaveUp) {
       return this.#handleInPursuit();
     }

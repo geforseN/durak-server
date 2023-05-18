@@ -185,3 +185,7 @@ export default class GameRound {
     return this.currentMove.handleAfterGaveUp();
   }
 }
+
+export interface AfterHandler {
+  handleAfterInitialization(): void;
+}
