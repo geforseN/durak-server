@@ -1,11 +1,9 @@
 import assert from "node:assert";
 import { Attacker, Defender, Player } from "./Players";
 import {
-  AttackerMove,
-  DefenderGaveUpMove,
-  DefenderMove,
-  GameMove, InsertAttackCardMove,
-  InsertDefendCardMove, StopAttackMove, StopDefenseMove, TransferMove,
+  GameMove, TransferMove, DefenderGaveUpMove,
+  AttackerMove, StopAttackMove, InsertAttackCardMove,
+  DefenderMove, StopDefenseMove, InsertDefendCardMove,
 } from "./GameMove";
 import GameRoundService from "./Services/Round.service";
 import DurakGame from "../DurakGame";
@@ -150,39 +148,36 @@ export default class GameRound {
   }
 
   makeDefendInsertMove(card: Card, slotIndex: number) {
-    this.#updateCurrentMoveTo(InsertDefendCardMove, { card, slotIndex });
-    assert.ok(this.currentMove instanceof InsertDefendCardMove, "(-_-)");
-    return this.currentMove.handleAfterCardInsert();
+    return this.#make(InsertDefendCardMove, { card, slotIndex });
   }
 
   makeAttackInsertMove(card: Card, slotIndex: number) {
-    this.#updateCurrentMoveTo(InsertAttackCardMove, { card, slotIndex });
-    assert.ok(this.currentMove instanceof InsertAttackCardMove, "(-_-)");
-    return this.currentMove.handleAfterCardInsert();
+    return this.#make(InsertAttackCardMove, { card, slotIndex });
   }
 
   makeTransferMove(card: Card, slotIndex: number) {
-    this.#updateCurrentMoveTo(TransferMove, { card, slotIndex });
-    assert.ok(this.currentMove instanceof TransferMove, "(-_-)");
-    return this.currentMove.handleAfterTransfer();
+    return this.#make(TransferMove, { card, slotIndex });
   }
 
   makeAttackStopMove() {
-    this.#updateCurrentMoveTo(StopAttackMove);
-    assert.ok(this.currentMove instanceof StopAttackMove, "(-_-)");
-    return this.currentMove.handleAfterStopMove();
+    return this.#make(StopAttackMove);
   }
 
   makeDefendStopMove() {
-    this.#updateCurrentMoveTo(StopDefenseMove);
-    assert.ok(this.currentMove instanceof StopDefenseMove, "(-_-)");
-    return this.currentMove.handleAfterStopMove();
+    return this.#make(StopDefenseMove);
   }
 
   makeDefenderLost() {
-    this.#updateCurrentMoveTo(DefenderGaveUpMove);
-    assert.ok(this.currentMove instanceof DefenderGaveUpMove, "(-_-)");
-    return this.currentMove.handleAfterGaveUp();
+    return this.#make(DefenderGaveUpMove);
+  }
+
+  #make<M extends (DefenderMove | AttackerMove) & AfterHandler>(
+    CertainMove: new (arg: any) => M,
+    certainMoveContext?: any,
+  ) {
+    this.#updateCurrentMoveTo(CertainMove, certainMoveContext);
+    assert.ok(this.currentMove instanceof CertainMove, "(-_-)");
+    return this.currentMove.handleAfterInitialization();
   }
 }
 
