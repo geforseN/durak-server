@@ -14,11 +14,12 @@ export default class DurakGameStateDto {
   isDefenderGaveUp: boolean;
   playersCount: number;
   roundNumber: number;
+  settings: DurakGame["settings"];
 
   constructor(game: DurakGame, playerId: string) {
     const currentPlayer = game.players.getPlayer({ id: playerId });
     this.self = new SelfDTO(currentPlayer);
-    this.enemies = this.getOrderedEnemies(currentPlayer);
+    this.enemies = game.players.manager.getOrderedPlayerEnemies({ id: playerId }).map((enemy) => new EnemyDTO(enemy));
     this.deskSlots = game.desk.slots;
     this.trumpCard = game.talon.trumpCard;
     this.allowedPlayerId = game.round.currentMove.player.id;
@@ -28,15 +29,6 @@ export default class DurakGameStateDto {
     this.playersCount = game.settings.maxUserCount;
     this.roundNumber = game.round.number;
     this.isDefenderGaveUp = game.round.isDefenderGaveUp;
-  }
-
-  private getOrderedEnemies(player: ReturnType<DurakGame["players"]["getPlayer"]>) {
-    const enemies: EnemyDTO[] = [];
-    let enemy = player.left;
-    while (enemy.id !== player.id) {
-      enemies.push(new EnemyDTO(enemy));
-      enemy = enemy.left;
-    }
-    return enemies;
+    this.settings = game.settings;
   }
 }
