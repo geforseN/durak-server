@@ -1,4 +1,4 @@
-import DurakGame from "../../../durak-game/DurakGame";
+import DurakGame from "../../../module/durak-game/DurakGame";
 import { getPlayer } from "../getter";
 import assert from "node:assert";
 

@@ -1,5 +1,5 @@
-import DurakGame from "../../../durak-game/DurakGame";
-import Card from "../../../durak-game/entity/Card";
+import DurakGame from "../../../module/durak-game/DurakGame";
+import Card from "../../../module/durak-game/entity/Card";
 import handlePutCardOnDesk from "../methods/handle-put-card-on-desk";
 import handleStopMove from "../methods/handle-stop-move";
 

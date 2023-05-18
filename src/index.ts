@@ -14,7 +14,7 @@ import ioHandler from "./namespaces/io/io.handler";
 import globalChatHandler from "./namespaces/global-chat/global-chat.handler";
 import lobbiesHandler from "./namespaces/lobbies/lobbies.handler";
 import gameHandler from "./namespaces/games/games.handler";
-import DurakGame from "./durak-game/DurakGame";
+import DurakGame from "./module/durak-game/DurakGame";
 import Lobbies from "./namespaces/lobbies/entity/lobbies";
 import LobbiesService from "./namespaces/lobbies/lobbies.service";
 import onConnectMiddleware from "./namespaces/lobbies/helpers/on-connect.middleware";

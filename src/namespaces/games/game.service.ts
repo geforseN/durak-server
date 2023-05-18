@@ -1,7 +1,7 @@
 import { GamesIO } from "./games.types";
 import NotificationAlert from "../../module/notification-alert";
-import DurakGameStateDto from "../../durak-game/DTO/DurakGameState.dto";
-import DurakGame from "../../durak-game/DurakGame";
+import DurakGameStateDto from "../../module/durak-game/DTO/DurakGameState.dto";
+import DurakGame from "../../module/durak-game/DurakGame";
 
 export type GameSocket = { socket: GamesIO.SocketIO };
 

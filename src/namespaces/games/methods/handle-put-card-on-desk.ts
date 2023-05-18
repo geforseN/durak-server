@@ -1,5 +1,5 @@
-import CardDTO from "../../../durak-game/DTO/Card.dto";
-import DurakGame from "../../../durak-game/DurakGame";
+import CardDTO from "../../../module/durak-game/DTO/Card.dto";
+import DurakGame from "../../../module/durak-game/DurakGame";
 import { getPlayer, getPlacedCard } from "../getter";
 import assert from "node:assert";
 

@@ -1,7 +1,7 @@
 import { Namespace, Socket } from "socket.io";
 import NotificationAlert from "../../module/notification-alert";
-import DurakGameStateDto from "../../durak-game/DTO/DurakGameState.dto";
-import CardDTO from "../../durak-game/DTO/Card.dto";
+import DurakGameStateDto from "../../module/durak-game/DTO/DurakGameState.dto";
+import CardDTO from "../../module/durak-game/DTO/Card.dto";
 
 export type PlayerRole = "Defender" | "Attacker" | "Player";
 
