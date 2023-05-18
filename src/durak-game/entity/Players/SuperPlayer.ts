@@ -13,11 +13,25 @@ export default abstract class SuperPlayer extends Player {
     return removedCard;
   }
 
+  @logResult()
   get randomCard() {
-    return this.hand.value[this.#randomCardIndex]
+    return this.hand.value[this.#randomCardIndex];
   }
 
   get #randomCardIndex() {
     return randomInt(0, this.hand.count);
   }
 };
+
+function logResult(headMessage: string = "LOG:") {
+  return function <This, Return>(
+    target: (this: This) => Return,
+    context: ClassGetterDecoratorContext<This, Return>,
+  ) {
+    return function(this: This): Return {
+      const result = target.call(this);
+      console.log(`${headMessage}: ${String(context.name)} => ${result}'.`);
+      return result;
+    };
+  };
+}
