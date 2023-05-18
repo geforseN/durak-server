@@ -20,7 +20,7 @@ export class DefenderMove extends GameMove<Defender> {
   override async putCardOnDesk(card: Card, slotIndex: number) {
     await this.game.desk
       .getSlot({ index: slotIndex })
-      .assertCanBeDefended({ card });
+      .ensureCanBeDefended({ card });
     this.game.round.makeDefendInsertMove(card, slotIndex);
   }
 

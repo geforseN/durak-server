@@ -10,15 +10,15 @@ export default class DefendedSlot extends DeskSlot {
     return [this.attackCard, this.defendCard];
   }
 
-  assertCanBeAttacked({ card: _card }: { card: Card }) {
+  ensureCanBeAttacked({ card: _card }: { card: Card }) {
     return Promise.reject(new Error("Слот полностью занят"));
   }
 
-  assertCanBeDefended({ card: _card }: { card: Card }) {
+  ensureCanBeDefended({ card: _card }: { card: Card }) {
     return Promise.reject(new Error("Карта уже побита"));
   }
 
-  allowsTransfer({ card }: { card: Card }) {
+  ensureAllowsTransfer({ card }: { card: Card }) {
     const { rank } = card;
     return new Promise<Card>((resolve, reject) => {
       if (!this.attackCard.hasSame({ rank })) {

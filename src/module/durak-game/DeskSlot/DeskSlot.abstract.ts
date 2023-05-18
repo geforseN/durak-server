@@ -11,11 +11,9 @@ export default abstract class DeskSlot {
     return this.value.some((card) => card.hasSame({ rank }));
   }
 
-  abstract assertCanBeDefended({ card }: { card: Card }): Promise<Card>
-  abstract assertCanBeAttacked({ card }: { card: Card }): Promise<Card>
-  abstract allowsTransfer({ card }: { card: Card }): Promise<Card>
+  abstract ensureCanBeDefended({ card }: { card: Card }): Promise<Card>
 
-  toString(): string {
-    return `[${this.attackCard ?? ""}_${this.defendCard ?? ""}]`;
-  }
+  abstract ensureCanBeAttacked({ card }: { card: Card }): Promise<Card>
+
+  abstract ensureAllowsTransfer({ card }: { card: Card }): Promise<Card>
 }

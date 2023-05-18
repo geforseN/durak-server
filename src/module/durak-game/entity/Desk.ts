@@ -73,7 +73,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
       this.getSlot({ index }) instanceof EmptySlot
       && nextDefender.canTakeMore({ cardCount: this.cardCount })
       && Promise.all(
-        this.slots.map((slot) => slot.allowsTransfer({ card })),
+        this.slots.map((slot) => slot.ensureAllowsTransfer({ card })),
       ).then(() => true, () => false)
     );
   }
@@ -98,7 +98,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return new Promise<Card>((resolve, reject) => {
       if (this.isEmpty) resolve(card);
       const slot = this.getSlot({ index: slotIndex });
-      slot.assertCanBeAttacked({ card })
+      slot.ensureCanBeAttacked({ card })
         .then((card) => this.assertCanPut(card))
         .then(resolve)
         .catch(reject);

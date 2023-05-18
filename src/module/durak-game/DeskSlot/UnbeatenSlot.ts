@@ -10,11 +10,11 @@ export default class UnbeatenSlot extends DeskSlot {
     return [this.attackCard];
   }
 
-  assertCanBeAttacked({ card: _card }: { card: Card }) {
+  ensureCanBeAttacked({ card: _card }: { card: Card }) {
     return Promise.reject(new Error("Слот занят"));
   }
 
-  assertCanBeDefended({ card }: { card: Card }) {
+  ensureCanBeDefended({ card }: { card: Card }) {
     return new Promise<Card>((resolve, reject) => {
       if (card.isTrump) resolve(card);
       if (this.attackCard.suit !== card.suit) {
@@ -27,7 +27,7 @@ export default class UnbeatenSlot extends DeskSlot {
     });
   }
 
-  allowsTransfer({ card }: { card: Card }) {
+  ensureAllowsTransfer({ card }: { card: Card }) {
     return new Promise<Card>((resolve, reject) => {
       if (this.attackCard.hasSame({ rank: card.rank })) {
         resolve(card);

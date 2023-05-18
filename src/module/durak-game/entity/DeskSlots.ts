@@ -25,7 +25,7 @@ export default class DeskSlots {
   }
 
   allowsTransferMove({ card }: { card: Card }): Promise<Card[]> {
-    return Promise.all(this.value.map((slot) => slot.allowsTransfer({ card })));
+    return Promise.all(this.value.map((slot) => slot.ensureAllowsTransfer({ card })));
   }
 
   at(index: number) {
