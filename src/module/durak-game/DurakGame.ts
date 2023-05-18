@@ -1,8 +1,8 @@
 import assert from "node:assert";
 import { durakGames } from "../../index";
 import { GameSettings } from "../../namespaces/lobbies/lobbies.types";
-import { GamesIO } from "../../namespaces/games/games.types";
-import { GameService } from "../../namespaces/games/game.service";
+import { GamesIO } from "../../namespaces/durak-game/games.types";
+import { GameService } from "../../namespaces/durak-game/game.service";
 import Lobby from "../../namespaces/lobbies/entity/lobby";
 import Players from "./Players/Players";
 import Discard from "./Deck/Discard";
