@@ -60,7 +60,11 @@ export default class GameRound {
       game: this.game,
       player: moveContext.player,
     }));
-    this.service?.letMoveTo(moveContext.player, Date.now() + this.game.settings.moveTime);
+    this.service?.letMoveTo(
+      moveContext.player,
+      Date.now() + this.game.settings.moveTime,
+      this.game.settings.moveTime,
+    );
   }
 
   #updateCurrentMoveTo<M extends GameMove<Attacker | Defender>>(

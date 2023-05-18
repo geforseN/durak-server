@@ -23,7 +23,7 @@ export namespace GamesIO {
 
     "player__changeRole": (role: PlayerRole, id: string) => void;
     "player__receiveCards": (cards: CardDTO[]) => void;
-    "player__allowedToMove": (id: string, timeEnd: number) => void;
+    "player__allowedToMove": (id: string, timeEnd: number, moveTime: number) => void;
     "self__removeCard": (card: CardDTO) => void;
     "enemy__changeCardCount": (id: string, cardCount: number) => void;
     "defender__gaveUp": () => void;

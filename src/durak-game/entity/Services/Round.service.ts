@@ -7,8 +7,8 @@ export default class GameRoundService {
   ) {
   }
 
-  letMoveTo(player: Player, timeEnd: number) {
-    this.namespace.emit("player__allowedToMove", player.id, timeEnd);
+  letMoveTo(player: Player, timeEnd: number, moveTime: number) {
+    this.namespace.emit("player__allowedToMove", player.id, timeEnd, moveTime / 1000);
   }
 
   emitDefenderGaveUp() {
