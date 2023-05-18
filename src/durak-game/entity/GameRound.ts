@@ -77,8 +77,8 @@ export default class GameRound {
 
   get #firstDefenderMove(): GameMove<Defender | Attacker> | undefined {
     return this.moves.find((move) =>
-      move instanceof InsertDefendCardMove
-      || move instanceof DefenderGaveUpMove,
+      move instanceof DefenderMove
+      || !(move instanceof TransferMove),
     );
   }
 
