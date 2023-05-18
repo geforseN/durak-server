@@ -14,7 +14,7 @@ export default class Player {
   left!: Player;
   right!: Player;
   index!: number;
-  service?: GamePlayerService
+  protected service?: GamePlayerService;
 
   constructor(param: LobbyUser | Player) {
     if (param instanceof Player) {
