@@ -6,7 +6,7 @@ export default class UnbeatenTrumpSlot extends UnbeatenSlot {
     super(attackCard);
   }
 
-  ensureCanBeDefended({ card }: { card: Card }) {
+  override ensureCanBeDefended({ card }: { card: Card }) {
     return new Promise<Card>((resolve, reject) => {
       if (!card.isTrump) {
         reject(new Error("Козырную карту можно побить только козырной"));

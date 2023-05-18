@@ -10,11 +10,11 @@ export default class UnbeatenSlot extends DeskSlot {
     return [this.attackCard];
   }
 
-  ensureCanBeAttacked({ card: _card }: { card: Card }) {
+  override ensureCanBeAttacked({ card: _card }: { card: Card }) {
     return Promise.reject(new Error("Слот занят"));
   }
 
-  ensureCanBeDefended({ card }: { card: Card }) {
+  override ensureCanBeDefended({ card }: { card: Card }) {
     return new Promise<Card>((resolve, reject) => {
       if (card.isTrump) resolve(card);
       if (this.attackCard.suit !== card.suit) {
@@ -27,11 +27,12 @@ export default class UnbeatenSlot extends DeskSlot {
     });
   }
 
-  ensureAllowsTransfer({ card }: { card: Card }) {
+  override ensureAllowsTransfer({ card }: { card: Card }) {
     return new Promise<Card>((resolve, reject) => {
-      if (this.attackCard.hasSame({ rank: card.rank })) {
-        resolve(card);
-      } else reject("Нельзя перевести: нет схожего ранга");
+      if (!this.attackCard.hasSame({ rank: card.rank })) {
+        reject(new Error("Нельзя перевести: нет схожего ранга"));
+      }
+      resolve(card);
     });
   }
 }
