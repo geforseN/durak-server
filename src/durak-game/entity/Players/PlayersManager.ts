@@ -60,12 +60,19 @@ export default class PlayersManager {
     return player;
   }
 
-  getPlayerIndex({ id }: { id: string }): number {
+  private getPlayerIndex({ id }: { id: string }): number {
     return this.players.__value.findIndex((player) => player.id === id);
   }
 
-  getPlayerEnemies({ id }: { id: string }): Player[] {
-    return this.players.__value.filter((player) => player.id !== id);
+  getOrderedPlayerEnemies({ id }: { id: string }): Player[] {
+    const enemies: Player[] = [];
+    const player = this.players.getPlayer({ id });
+    let enemy = player.left;
+    while (enemy.id !== player.id) {
+      enemies.push(enemy);
+      enemy = enemy.left;
+    }
+    return enemies;
   }
 
   private getId(playerOrId: Player | LobbyUserIdentifier): string {
@@ -76,12 +83,9 @@ export default class PlayersManager {
 
   private defineSidePlayers(): void {
     this.players.__value.forEach((player, playerIndex, players) => {
-      const {
-        leftPlayerIndex,
-        rightPlayerIndex,
-      } = this.getSideIndexes(playerIndex);
-      player.left = players[leftPlayerIndex];
-      player.right = players[rightPlayerIndex];
+      const sideIndexes = this.getSideIndexes(playerIndex);
+      player.left = players[sideIndexes.leftPlayerIndex];
+      player.right = players[sideIndexes.rightPlayerIndex];
     });
   }
 
