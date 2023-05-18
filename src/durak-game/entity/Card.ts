@@ -25,8 +25,4 @@ export default class Card {
       return this[key as keyof this] === value;
     });
   }
-
-  toString(): string {
-    return `${this.suit}_${this.rank.padStart(2)}`;
-  }
 }
