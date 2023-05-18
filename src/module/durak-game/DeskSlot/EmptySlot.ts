@@ -14,7 +14,7 @@ export default class EmptySlot extends DeskSlot {
     return Promise.resolve(card);
   }
 
-  override ensureCanBeDefended({ card: _card }: { card: Card }) {
+  override ensureCanBeDefended() {
     return Promise.reject(new Error("Нет от чего защищаться"));
   }
 

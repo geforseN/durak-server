@@ -10,7 +10,7 @@ export default class UnbeatenSlot extends DeskSlot {
     return [this.attackCard];
   }
 
-  override ensureCanBeAttacked({ card: _card }: { card: Card }) {
+  override ensureCanBeAttacked() {
     return Promise.reject(new Error("Слот занят"));
   }
 
