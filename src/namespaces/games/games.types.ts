@@ -15,7 +15,8 @@ export namespace GamesIO {
   export type ServerToClientEvents = {
     "state__restore": (state: DurakGameStateDto) => void;
     "notification__send": (notification: NotificationAlert) => void;
-    "game__over": () => void
+    "game__over": () => void;
+    "game__currentId": (gameId: string) => void;
 
     "talon__distributeCardsTo": (playerId: string, cardCount: number) => void;
     "talon__keepOnlyTrumpCard": () => void;
