@@ -10,15 +10,15 @@ export default class EmptySlot extends DeskSlot {
     return [];
   }
 
-  ensureCanBeAttacked({ card }: { card: Card }) {
+  override ensureCanBeAttacked({ card }: { card: Card }) {
     return Promise.resolve(card);
   }
 
-  ensureCanBeDefended({ card: _card }: { card: Card }) {
+  override ensureCanBeDefended({ card: _card }: { card: Card }) {
     return Promise.reject(new Error("Нет от чего защищаться"));
   }
 
-  ensureAllowsTransfer({ card }: { card: Card }) {
+  override ensureAllowsTransfer({ card }: { card: Card }) {
     return Promise.resolve(card);
   }
 }
