@@ -50,6 +50,6 @@ export default class Players {
   }
 
   injectService(service: GamePlayerService) {
-    this.__value.forEach((player) => (player.service = service));
+    this.__value.forEach((player) => player.injectService(service));
   }
 }
