@@ -13,12 +13,12 @@ import profile from "./api/profle";
 import ioHandler from "./namespaces/io/io.handler";
 import globalChatHandler from "./namespaces/global-chat/global-chat.handler";
 import lobbiesHandler from "./namespaces/lobbies/lobbies.handler";
-import gameHandler from "./namespaces/games/games.handler";
-import DurakGame from "./module/durak-game/DurakGame";
+import durakGameSocketHandler from "./module/DurakGame/socket/DurakGameSocket.handler";
+import DurakGame from "./module/DurakGame/DurakGame.implimetntation";
 import Lobbies from "./namespaces/lobbies/entity/lobbies";
 import LobbiesService from "./namespaces/lobbies/lobbies.service";
 import onConnectMiddleware from "./namespaces/lobbies/helpers/on-connect.middleware";
-import { GamesIO } from "./namespaces/games/games.types";
+import { DurakGameSocket } from "./module/DurakGame/socket/DurakGameSocket.types";
 import { parse } from "cookie"
 export type NextSocketIO = (err?: (ExtendedError | undefined)) => void
 
@@ -48,7 +48,7 @@ lobbiesNamespace.on("connect", lobbiesHandler);
 const uuidRegExp = /^\/game\/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/;
 export const durakGames = new Map<string, DurakGame>();
 
-export const gamesNamespace: GamesIO.NamespaceIO = io.of(uuidRegExp);
+export const gamesNamespace: DurakGameSocket.Namespace = io.of(uuidRegExp);
 gamesNamespace.use(onConnectMiddleware);
 gamesNamespace.use((socket, next) => {
   const { cookie } = socket.handshake.headers;
@@ -57,7 +57,7 @@ gamesNamespace.use((socket, next) => {
   socket.data.id = accname;
   next()
 })
-gamesNamespace.on("connect", gameHandler.bind({ namespace: gamesNamespace }));
+gamesNamespace.on("connect", durakGameSocketHandler.bind({ namespace: gamesNamespace }));
 
 httpServer.listen(port);
 instrument(io, { auth: false, mode: "development" });

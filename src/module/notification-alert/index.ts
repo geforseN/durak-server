@@ -27,7 +27,7 @@ export default class NotificationAlert {
   fromError(
     error: Error,
   ): this {
-    this.message = error.message;
+    this.message = error.message ?? this.defaultSettings.message;
     this.type = "Error";
     return this;
   }
