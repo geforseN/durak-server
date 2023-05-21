@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["clientExtensions"]
 }
 
@@ -13,17 +10,64 @@ datasource db {
 
 model User {
   num           Int           @unique @default(autoincrement())
-  accname       String        @id @unique
+  accname       String        @unique
+  email         String?
   personalLink  String?       @unique @default(cuid())
   photoUrl      String?
   nickname      String
   connectStatus ConnectStatus @default(OFFLINE)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  id            String        @id @unique
+  player        Player[]
+  GameStat      GameStat?
+}
+
+model DurakGame {
+  number       Int        @unique @default(autoincrement())
+  status       GameStatus @default(START_WAITING)
+  uuid         String
+  playersCount Int
+  gameType     GameType
+  cardCount    Int
+  moveTime     Float
+  players      Player[]
+}
+
+model Player {
+  index           Int
+  winPlace        Int?
+  winRoundNumber  Int?
+  hasLost         Boolean   @default(false)
+  durakGameNumber Int
+  userId          String
+  DurakGame       DurakGame @relation(fields: [durakGameNumber], references: [number])
+  User            User      @relation(fields: [userId], references: [id])
+
+  @@unique([durakGameNumber, index])
 }
 
 enum ConnectStatus {
   ONLINE
   AWAY
   OFFLINE
+}
+
+enum GameStatus {
+  START_WAITING
+  STARTED
+  ENDED
+}
+
+enum GameType {
+  BASIC
+  PEREVODNOY
+}
+
+model GameStat {
+  userId             String @id @unique
+  wonGamesCount      Int    @default(0)
+  lostGamesCount     Int    @default(0)
+  unstableGamesCount Int    @default(0)
+  User               User   @relation(fields: [userId], references: [id])
 }
