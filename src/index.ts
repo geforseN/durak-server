@@ -19,7 +19,9 @@ import Lobbies from "./namespaces/lobbies/entity/lobbies";
 import LobbiesService from "./namespaces/lobbies/lobbies.service";
 import onConnectMiddleware from "./namespaces/lobbies/helpers/on-connect.middleware";
 import { DurakGameSocket } from "./module/DurakGame/socket/DurakGameSocket.types";
-import { parse } from "cookie"
+import { parse } from "cookie";
+import github from "./api/auth/github";
+
 export type NextSocketIO = (err?: (ExtendedError | undefined)) => void
 
 dotenv.config();
@@ -30,6 +32,7 @@ const port = Number(process.env.PORT);
 app.use(cors({ origin: serverOptions.cors.origin }));
 
 app.use("/api/profile", profile);
+app.use("/api/auth/github", github);
 
 export const io: IO.ServerIO = new Server(httpServer, serverOptions);
 io.on("connect", ioHandler);
@@ -55,8 +58,8 @@ gamesNamespace.use((socket, next) => {
   if (!cookie) return next();
   const { accname } = parse(cookie!);
   socket.data.id = accname;
-  next()
-})
+  next();
+});
 gamesNamespace.on("connect", durakGameSocketHandler.bind({ namespace: gamesNamespace }));
 
 httpServer.listen(port);
