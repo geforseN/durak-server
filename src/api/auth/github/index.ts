@@ -90,15 +90,61 @@ async function getGithubUser(access_token: string) {
   }).parse(await data.json());
 }
 
-
-async function __createNewUserWithoutEmail__() {
-  return prisma.user.create.bind(null);
-}
-
-async function __tryFindUserWith__({ email }: { email: string }) {
-  await prisma.user.findFirst({
-    where: {
-      email,
+async function getUser(githubUser: GithubUser, access_token: string) {
+  const githubLinkedUserInfo = await prisma.userAuthInfo.findFirst({
+    where: { githubId: githubUser.id },
+    select: { User: true },
+  });
+  if (githubLinkedUserInfo?.User) {
+    return githubLinkedUserInfo.User;
+  }
+  const { email = await getPrivatePrimalGithubUserEmail(access_token) } = githubUser;
+  if (!email) {
+    return prisma.user.create({
+      data: {
+        UserProfile: {
+          create: {
+            photoUrl: githubUser.avatar_url,
+            nickname: githubUser.login,
+          },
+        },
+        AuthInfo: {
+          create: {
+            githubId: githubUser.id,
+          },
+        },
+      },
+    });
+  }
+  const user = await prisma.user.findUnique({ where: { email }, include: { AuthInfo: true } });
+  if (user?.AuthInfo?.githubId) return user;
+  if (!user) {
+    return prisma.user.create({
+      data: {
+        email,
+        UserProfile: {
+          create: {
+            photoUrl: githubUser.avatar_url,
+            nickname: githubUser.login,
+          },
+        },
+        AuthInfo: {
+          create: {
+            githubId: githubUser.id,
+          },
+        },
+      },
+    });
+  }
+  return prisma.user.update({
+    where: { id: user.id },
+    data: {
+      AuthInfo: {
+        connectOrCreate: {
+          where: { userId: user.id },
+          create: { githubId: githubUser.id },
+        },
+      },
     },
   });
 }
