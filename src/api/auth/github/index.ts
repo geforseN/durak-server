@@ -102,18 +102,3 @@ async function __tryFindUserWith__({ email }: { email: string }) {
     },
   });
 }
-
-function __setCookies__(res: Response, access_token: string) {
-  const oneDayInMS = 1000 * 60 * 60 * 24;
-
-  res.cookie("github_access_token", access_token, {
-    sameSite: "lax",
-  });
-  res.cookie("sid", randomUUID(), {
-    sameSite: "lax",
-    expires: new Date(Date.now() + oneDayInMS),
-    httpOnly: true,
-  });
-}
-
-export default github;
