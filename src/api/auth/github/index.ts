@@ -54,24 +54,19 @@ github.get("/callback", async (req: Request<{ code: string }>, res) => {
 });
 
 async function getGithubAccessTokenData(code: string) {
-  const githubAccessTokenParams = new URLSearchParams({
-    client_id: process.env.GITHUB_CLIENT_ID ?? "",
-    client_secret: process.env.GITHUB_CLIENT_SECRET ?? "",
-    code,
-  });
   const githubAccessTokenResponse = await fetch(
-    new URL(`https://github.com/login/oauth/access_token?${githubAccessTokenParams}`), {
+    new URL(`https://github.com/login/oauth/access_token?${new URLSearchParams({
+      client_id: process.env.GITHUB_CLIENT_ID!,
+      client_secret: process.env.GITHUB_CLIENT_SECRET!,
+      code,
+    })}`), {
       headers: {
         Accept: "application/json",
       },
     },
   );
   assert.ok(githubAccessTokenResponse.ok, "Failed to log in using GitHub: Access token not received.");
-  return z.object({
-    access_token: z.string(),
-    token_type: z.string(),
-    scope: z.string(),
-  }).parse(await githubAccessTokenResponse.json());
+  return githubTokenSchema.parse(await githubAccessTokenResponse.json());
 }
 
 async function getGithubUserEmails(access_token: string) {
