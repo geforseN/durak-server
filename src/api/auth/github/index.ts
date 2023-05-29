@@ -54,40 +54,29 @@ github.get("/callback", async (req: Request<{ code: string }>, res) => {
 });
 
 
-async function getGithubUserEmails(access_token: string) {
+async function getGithubUserEmails(access_token: string): Promise<GithubUserPrivateEmails> {
   const emailsData = await fetch("https://api.github.com/user/emails", {
     headers: {
       Authorization: `Bearer ${access_token}`,
       Accept: "application/json",
     },
   });
-  return z.array(
-    z.record(z.unknown()),
-  ).parse(await emailsData.json());
+  return githubUserPrivateEmailsSchema.parse(await emailsData.json());
 }
 
 async function getPrivatePrimalGithubUserEmail(access_token: string) {
   const emails = await getGithubUserEmails(access_token);
-  return emails.find(email => email.primary)?.email as {
-    email: string,
-    primary: true,
-    verified: boolean,
-    visibility: boolean
-  };
+  return emails.find((email) => email.primary)?.email;
 }
 
-async function getGithubUser(access_token: string) {
+async function getGithubUser(access_token: string): Promise<GithubUser> {
   const data = await fetch("https://api.github.com/user", {
     headers: {
       Authorization: `Bearer ${access_token}`,
       Accept: "application/json",
     },
   });
-
-  return z.object({
-    avatar: z.string(),
-    email: z.string().email().optional(),
-  }).parse(await data.json());
+  return githubUserSchema.parse(await data.json());
 }
 
 async function getUser(githubUser: GithubUser, access_token: string) {
