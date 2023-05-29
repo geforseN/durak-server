@@ -1,12 +1,34 @@
 import { PrismaClient } from "@prisma/client";
-import { Request, Response, Router } from "express";
-import { randomUUID } from "node:crypto";
-import assert from "node:assert";
 import { z } from "zod";
 
 const prisma = new PrismaClient();
 
-const github = Router();
+const githubUserSchema = z.object({
+  email: z.string().email().nullable(),
+  login: z.string(),
+  id: z.number(),
+  avatar_url: z.string(),
+  url: z.string(),
+  html_url: z.string(),
+  name: z.string().nullish(),
+});
+type GithubUser = z.input<typeof githubUserSchema>;
+
+const githubTokenSchema = z.object({
+  access_token: z.string(),
+  token_type: z.literal("bearer"),
+  scope: z.string(),
+});
+type GithubToken = z.input<typeof githubTokenSchema>
+const githubUserPrivateEmailsSchema = z.array(
+  z.object({
+    email: z.string(),
+    primary: z.boolean(),
+    verified: z.boolean(),
+    visibility: z.string().nullable(),
+  }),
+);
+type GithubUserPrivateEmails = z.input<typeof githubUserPrivateEmailsSchema>
 
 // USE in VUE <a href="https://github.com/login/oauth/authorize?scope=user:email&client_id=ENTER_ME_PLS" />
 github.get("/callback", async (req: Request<{ code: string }>, res) => {
