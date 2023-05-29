@@ -1,3 +1,5 @@
+import { FastifyInstance } from "fastify";
+import oauthPlugin, { OAuth2Namespace, OAuth2Token } from "@fastify/oauth2";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 
@@ -30,28 +32,48 @@ const githubUserPrivateEmailsSchema = z.array(
 );
 type GithubUserPrivateEmails = z.input<typeof githubUserPrivateEmailsSchema>
 
-// USE in VUE <a href="https://github.com/login/oauth/authorize?scope=user:email&client_id=ENTER_ME_PLS" />
-github.get("/callback", async (req: Request<{ code: string }>, res) => {
-  try {
-    assert.ok(typeof req.query.code === "string", "Unable to log in using GitHub: no code was provided.");
-    const { access_token, token_type, scope } = await getGithubAccessTokenData(req.query.code);
-    const githubUser = await getGithubUser(access_token);
-    const {
-      email = (await getPrivatePrimalGithubUserEmail(access_token)).email,
-    } = githubUser;
-    if (!email) {
-      return await __createNewUserWithoutEmail__();
-    } else {
-      await __tryFindUserWith__({ email });
-    }
-    __setCookies__(res, access_token);
-  } catch (error) {
-    assert.ok(error instanceof Error);
-    res.status(404).send(error.message);
+const GITHUB_AUTH_CALLBACK_URI = "/login/github/callback";
+declare module "fastify" {
+  interface FastifyInstance {
+    githubOAuth2: OAuth2Namespace;
   }
-  return res.send("COOL");
 
-});
+  interface Session {
+    auth: {
+      provider: "github" | "twitch"
+      userId: string
+      access_token: string
+    };
+  }
+}
+
+export default async function(fastify: FastifyInstance) {
+  fastify.register(oauthPlugin, {
+    name: "githubOAuth2",
+    scope: [],
+    credentials: {
+      client: {
+        id: process.env.GITHUB_CLIENT_ID as string,
+        secret: process.env.GITHUB_CLIENT_SECRET as string,
+      },
+      auth: oauthPlugin.GITHUB_CONFIGURATION,
+    },
+    generateStateFunction: () => true,
+    checkStateFunction: (state: string, callback: Function) => callback(),
+    startRedirectPath: "/login/github",
+    callbackUri: `http://localhost:${process.env.FASTIFY_PORT}${GITHUB_AUTH_CALLBACK_URI}`,
+  });
+
+  fastify.get(GITHUB_AUTH_CALLBACK_URI, async function(request, reply) {
+    const tokenData: OAuth2Token = await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
+    console.log(tokenData);
+    const { access_token } = tokenData.token;
+    const githubUser = await getGithubUser(access_token);
+    const user = await getUser(githubUser, access_token);
+    request.session.set("auth", { userId: user.id, provider: "github", access_token });
+    reply.redirect(process.env.FRONTEND_URL!);
+  });
+}
 
 
 async function getGithubUserEmails(access_token: string): Promise<GithubUserPrivateEmails> {
