@@ -1,9 +1,11 @@
 import oauthPlugin, { OAuth2Namespace } from "@fastify/oauth2";
 
 export const GITHUB_AUTH_CALLBACK_URI = "/login/github/callback";
+const NAMESPACE_NAME = "githubOAuth2"
+
 declare module "fastify" {
   interface FastifyInstance {
-    githubOAuth2: OAuth2Namespace;
+    [NAMESPACE_NAME]: OAuth2Namespace;
   }
 
   interface Session {
@@ -17,12 +19,12 @@ declare module "fastify" {
 }
 
 export default {
-  name: "githubOAuth2",
+  name: NAMESPACE_NAME,
   scope: [],
   credentials: {
     client: {
-      id: process.env.GITHUB_CLIENT_ID as string,
-      secret: process.env.GITHUB_CLIENT_SECRET as string,
+      id: process.env.GITHUB_CLIENT_ID!,
+      secret: process.env.GITHUB_CLIENT_SECRET!,
     },
     auth: oauthPlugin.GITHUB_CONFIGURATION,
   },
