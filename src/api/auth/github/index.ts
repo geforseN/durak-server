@@ -1,7 +1,8 @@
 import { FastifyInstance } from "fastify";
-import oauthPlugin, { OAuth2Namespace, OAuth2Token } from "@fastify/oauth2";
+import oauthPlugin, { OAuth2Token } from "@fastify/oauth2";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import pluginSettings, { GITHUB_AUTH_CALLBACK_URI } from "./plugin.settings";
 
 const prisma = new PrismaClient();
 
@@ -22,6 +23,7 @@ const githubTokenSchema = z.object({
   scope: z.string(),
 });
 type GithubToken = z.input<typeof githubTokenSchema>
+
 const githubUserPrivateEmailsSchema = z.array(
   z.object({
     email: z.string(),
@@ -32,38 +34,9 @@ const githubUserPrivateEmailsSchema = z.array(
 );
 type GithubUserPrivateEmails = z.input<typeof githubUserPrivateEmailsSchema>
 
-const GITHUB_AUTH_CALLBACK_URI = "/login/github/callback";
-declare module "fastify" {
-  interface FastifyInstance {
-    githubOAuth2: OAuth2Namespace;
-  }
-
-  interface Session {
-    auth: {
-      provider: "github" | "twitch"
-      userId: string
-      access_token: string
-    };
-  }
-}
 
 export default async function(fastify: FastifyInstance) {
-  fastify.register(oauthPlugin, {
-    name: "githubOAuth2",
-    scope: [],
-    credentials: {
-      client: {
-        id: process.env.GITHUB_CLIENT_ID as string,
-        secret: process.env.GITHUB_CLIENT_SECRET as string,
-      },
-      auth: oauthPlugin.GITHUB_CONFIGURATION,
-    },
-    generateStateFunction: () => true,
-    checkStateFunction: (state: string, callback: Function) => callback(),
-    startRedirectPath: "/login/github",
-    callbackUri: `http://localhost:${process.env.FASTIFY_PORT}${GITHUB_AUTH_CALLBACK_URI}`,
-  });
-
+  fastify.register(oauthPlugin, pluginSettings);
   fastify.get(GITHUB_AUTH_CALLBACK_URI, async function(request, reply) {
     const tokenData: OAuth2Token = await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
     console.log(tokenData);
