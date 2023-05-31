@@ -7,6 +7,16 @@ import { findUserByEmail, findUserWithAuthProvider, getUpdatedUserWithNewAuthPro
 
 const prisma = new PrismaClient();
 
+type VkData = {
+  id: number,
+  nickname: string,
+  photo_200: string,
+  first_name: string,
+  last_name: string,
+  can_access_closed: boolean,
+  is_closed: boolean
+}
+
 const vkTokenSchema = z.object({
   access_token: z.string(),
   expires_in: z.number(),
@@ -65,15 +75,7 @@ async function getAdditionalVkUserInfo({ access_token, vkId }: { access_token: s
       Authorization: `Bearer ${access_token}`,
     },
   });
-  const json: {
-    id: number,
-    nickname: string,
-    photo_200: string,
-    first_name: string,
-    last_name: string,
-    can_access_closed: boolean,
-    is_closed: boolean
-  } = await res.json();
+  const json: VkData = await res.json();
   console.log(json);
   return json;
 }
