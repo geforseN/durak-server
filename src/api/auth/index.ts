@@ -35,7 +35,7 @@ export function findUserByEmail(email: string) {
   return prisma.user.findUnique({ where: { email }, include: { AuthInfo: true, UserProfile: true } });
 }
 
-export function findUserAuthInfoWithAuthProvider<
+export function findUserWithAuthProvider<
   ProviderName extends Pick<UserAuthInfoPayload["scalars"], ReleasedAuthProviderKey>
 >({
     authProviderIdValue,
@@ -44,14 +44,12 @@ export function findUserAuthInfoWithAuthProvider<
   authProviderIdValue: number | string // FIXME want to use like UserAuthInfoPayload["scalars"][ProviderName],
   authProviderKey: keyof ProviderName
 }) {
-  return prisma.userAuthInfo.findFirst({
-    where: { [authProviderKey]: authProviderIdValue },
-    include: {
-      User: {
-        include: {
-          UserProfile: true,
-        },
+  return prisma.user.findFirst({
+    where: {
+      AuthInfo: {
+        [authProviderKey]: authProviderIdValue,
       },
     },
+    include: { UserProfile: true },
   });
 }
