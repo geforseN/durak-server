@@ -48,22 +48,6 @@ export default async function(fastify: FastifyInstance) {
   });
 }
 
-
-async function getGithubUserEmails(access_token: string): Promise<GithubUserPrivateEmails> {
-  const emailsData = await fetch("https://api.github.com/user/emails", {
-    headers: {
-      Authorization: `Bearer ${access_token}`,
-      Accept: "application/json",
-    },
-  });
-  return githubUserPrivateEmailsSchema.parse(await emailsData.json());
-}
-
-async function getPrivatePrimalGithubUserEmail(access_token: string) {
-  const emails = await getGithubUserEmails(access_token);
-  return emails.find((email) => email.primary)?.email;
-}
-
 async function getGithubUser(access_token: string): Promise<GithubUser> {
   const data = await fetch("https://api.github.com/user", {
     headers: {
@@ -75,60 +59,91 @@ async function getGithubUser(access_token: string): Promise<GithubUser> {
 }
 
 async function getUser(githubUser: GithubUser, access_token: string) {
-  const githubLinkedUserInfo = await prisma.userAuthInfo.findFirst({
-    where: { githubId: githubUser.id },
-    select: { User: true },
-  });
-  if (githubLinkedUserInfo?.User) {
-    return githubLinkedUserInfo.User;
+  const githubLinkedUserAuthInfo = await findGithubLinkedUser(githubUser.id);
+  if (githubLinkedUserAuthInfo) {
+    return githubLinkedUserAuthInfo.User;
   }
   const { email = await getPrivatePrimalGithubUserEmail(access_token) } = githubUser;
   if (!email) {
-    return prisma.user.create({
-      data: {
-        UserProfile: {
-          create: {
-            photoUrl: githubUser.avatar_url,
-            nickname: githubUser.login,
-          },
-        },
-        AuthInfo: {
-          create: {
-            githubId: githubUser.id,
-          },
-        },
-      },
-    });
+    return createNewGithubLinkedUser(githubUser);
   }
-  const user = await prisma.user.findUnique({ where: { email }, include: { AuthInfo: true } });
-  if (user?.AuthInfo?.githubId) return user;
+  const user = await findUserByEmail(email);
   if (!user) {
-    return prisma.user.create({
-      data: {
-        email,
-        UserProfile: {
-          create: {
-            photoUrl: githubUser.avatar_url,
-            nickname: githubUser.login,
-          },
-        },
-        AuthInfo: {
-          create: {
-            githubId: githubUser.id,
-          },
+    return createNewGithubLinkedUser(githubUser);
+  }
+  return user.AuthInfo?.githubId
+    ? user
+    : addGithubIdToUser({ userId: user.id, githubId: githubUser.id });
+}
+
+async function getPrivatePrimalGithubUserEmail(access_token: string) {
+  const emails = await getGithubUserEmails(access_token);
+  return emails.find((email) => email.primary)?.email;
+}
+
+async function getGithubUserEmails(access_token: string): Promise<GithubUserPrivateEmails> {
+  const emailsData = await fetch("https://api.github.com/user/emails", {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+      Accept: "application/json",
+    },
+  });
+  return githubUserPrivateEmailsSchema.parse(await emailsData.json());
+}
+
+function createNewGithubLinkedUser({ avatar_url, login, id, email = null }: GithubUser) {
+  return prisma.user.create({
+    data: {
+      email,
+      UserProfile: {
+        create: {
+          photoUrl: avatar_url,
+          nickname: login,
         },
       },
-    });
-  }
+      AuthInfo: {
+        create: {
+          githubId: id,
+        },
+      },
+    },
+    include: {
+      AuthInfo: true,
+      UserProfile: true,
+    },
+  });
+}
+
+function findUserByEmail(email: string) {
+  return prisma.user.findUnique({ where: { email }, include: { AuthInfo: true, UserProfile: true } });
+}
+
+function findGithubLinkedUser(githubId: number) {
+  return prisma.userAuthInfo.findFirst({
+    where: { githubId },
+    include: {
+      User: {
+        include: {
+          UserProfile: true,
+        },
+      },
+    },
+  });
+}
+
+function addGithubIdToUser({ userId: id, githubId }: { userId: string, githubId: number }) {
   return prisma.user.update({
-    where: { id: user.id },
+    where: { id },
     data: {
       AuthInfo: {
-        connectOrCreate: {
-          where: { userId: user.id },
-          create: { githubId: githubUser.id },
+        update: {
+          githubId,
         },
       },
+    },
+    include: {
+      AuthInfo: true,
+      UserProfile: true,
     },
   });
 }
