@@ -115,3 +115,11 @@ function findVkLinkedUser(vkId: number) {
     },
   });
 }
+
+function getUpdatedUserWithVkAuth({ userId, vkId }: { userId: string, vkId: number }) {
+  return getUpdatedUserWithNewAuthProvider({
+    userId,
+    authProviderKey: "githubId",
+    authProviderIdValue: vkId,
+  });
+}
