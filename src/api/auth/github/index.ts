@@ -23,7 +23,6 @@ const githubTokenSchema = z.object({
   token_type: z.literal("bearer"),
   scope: z.string(),
 });
-type GithubToken = z.input<typeof githubTokenSchema>
 
 const githubUserPrivateEmailsSchema = z.array(
   z.object({
@@ -40,8 +39,8 @@ export default async function(fastify: FastifyInstance) {
   fastify.register(oauthPlugin, pluginSettings);
   fastify.get(GITHUB_AUTH_CALLBACK_URI, async function(request, reply) {
     const tokenData: OAuth2Token = await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
-    console.log(tokenData);
     const { access_token } = tokenData.token;
+    githubTokenSchema.parse(tokenData.token);
     const githubUser = await getGithubUser(access_token);
     const user = await getUser(githubUser, access_token);
     request.session.set("auth", { userId: user.id, provider: "github", access_token });
@@ -61,10 +60,7 @@ async function getGithubUser(access_token: string): Promise<GithubUser> {
 }
 
 async function getUser(githubUser: GithubUser, access_token: string) {
-  const githubLinkedUserAuthInfo = await findUserAuthInfoWithAuthProvider({
-    authProviderIdValue: githubUser.id,
-    authProviderKey: "githubId",
-  });
+  const githubLinkedUserAuthInfo = await findGithubLinkedUser(githubUser.id);
   if (githubLinkedUserAuthInfo) {
     return githubLinkedUserAuthInfo.User;
   }
@@ -78,11 +74,7 @@ async function getUser(githubUser: GithubUser, access_token: string) {
   }
   return user.AuthInfo?.githubId
     ? user
-    : getUpdatedUserWithNewAuthProvider({
-      userId: user.id,
-      authProviderKey: "githubId",
-      authProviderIdValue: githubUser.id,
-    });
+    : getUpdatedUserWithGithubAuth({ userId: user.id, githubUserId: githubUser.id})
 }
 
 async function getPrivatePrimalGithubUserEmail(access_token: string) {
@@ -123,36 +115,18 @@ function createNewGithubLinkedUser({ avatar_url, login, id, email = null }: Gith
   });
 }
 
-function findUserByEmail(email: string) {
-  return prisma.user.findUnique({ where: { email }, include: { AuthInfo: true, UserProfile: true } });
-}
 
-function findGithubLinkedUser(githubId: number) {
-  return prisma.userAuthInfo.findFirst({
-    where: { githubId },
-    include: {
-      User: {
-        include: {
-          UserProfile: true,
-        },
-      },
-    },
+function findGithubLinkedUser(githubUserId: number) {
+  return findUserAuthInfoWithAuthProvider({
+    authProviderIdValue: githubUserId,
+    authProviderKey: "githubId",
   });
 }
 
-function addGithubIdToUser({ userId: id, githubId }: { userId: string, githubId: number }) {
-  return prisma.user.update({
-    where: { id },
-    data: {
-      AuthInfo: {
-        update: {
-          githubId,
-        },
-      },
-    },
-    include: {
-      AuthInfo: true,
-      UserProfile: true,
-    },
+function getUpdatedUserWithGithubAuth({ userId, githubUserId }: { userId: string, githubUserId: number }) {
+  return getUpdatedUserWithNewAuthProvider({
+    userId,
+    authProviderKey: "githubId",
+    authProviderIdValue: githubUserId,
   });
 }
