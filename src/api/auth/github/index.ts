@@ -44,6 +44,7 @@ export default async function(fastify: FastifyInstance) {
     const githubUser = await getGithubUser(access_token);
     const user = await getUser(githubUser, access_token);
     request.session.set("auth", { userId: user.id, provider: "github", access_token });
+    request.session.set("userProfile", user.UserProfile);
     reply.redirect(process.env.FRONTEND_URL!);
   });
 }
