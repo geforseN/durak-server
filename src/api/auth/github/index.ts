@@ -3,6 +3,7 @@ import oauthPlugin, { OAuth2Token } from "@fastify/oauth2";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import pluginSettings, { GITHUB_AUTH_CALLBACK_URI } from "./plugin.settings";
+import { findUserAuthInfoWithAuthProvider, findUserByEmail, getUpdatedUserWithNewAuthProvider } from "../index";
 
 const prisma = new PrismaClient();
 
@@ -60,7 +61,10 @@ async function getGithubUser(access_token: string): Promise<GithubUser> {
 }
 
 async function getUser(githubUser: GithubUser, access_token: string) {
-  const githubLinkedUserAuthInfo = await findGithubLinkedUser(githubUser.id);
+  const githubLinkedUserAuthInfo = await findUserAuthInfoWithAuthProvider({
+    authProviderIdValue: githubUser.id,
+    authProviderKey: "githubId",
+  });
   if (githubLinkedUserAuthInfo) {
     return githubLinkedUserAuthInfo.User;
   }
@@ -74,7 +78,11 @@ async function getUser(githubUser: GithubUser, access_token: string) {
   }
   return user.AuthInfo?.githubId
     ? user
-    : addGithubIdToUser({ userId: user.id, githubId: githubUser.id });
+    : getUpdatedUserWithNewAuthProvider({
+      userId: user.id,
+      authProviderKey: "githubId",
+      authProviderIdValue: githubUser.id,
+    });
 }
 
 async function getPrivatePrimalGithubUserEmail(access_token: string) {
