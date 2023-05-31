@@ -104,15 +104,9 @@ async function createNewVkLinkedUser({ email = null, nickname, id, photo_200 }: 
 }
 
 function findVkLinkedUser(vkId: number) {
-  return prisma.userAuthInfo.findFirst({
-    where: { vkId },
-    include: {
-      User: {
-        include: {
-          UserProfile: true,
-        },
-      },
-    },
+  return findUserWithAuthProvider({
+    authProviderIdValue: vkId,
+    authProviderKey: "vkId",
   });
 }
 
