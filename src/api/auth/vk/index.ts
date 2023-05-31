@@ -45,14 +45,9 @@ export default async function vkAuth(fastify: FastifyInstance) {
 }
 
 async function getUser({ access_token, user_id: vkId, email }: VkToken) {
-  const vkLinkedUserInfo = await findUserAuthInfoWithAuthProvider({
-    authProviderIdValue: vkId,
-    authProviderKey: "vkId",
-  });
-  if (vkLinkedUserInfo?.User) {
-    return vkLinkedUserInfo.User;
-  }
-  const additionalVkInfo = await getAdditionalVkUserInfo({ access_token, vkId });
+  const vkLinkedUser = await findVkLinkedUser(vkId);
+  if (vkLinkedUser) return vkLinkedUser;
+  const additionalVkUserInfo = await getAdditionalVkUserInfo({ access_token, vkId });
   if (!email) {
     return createNewVkLinkedUser({ ...additionalVkUserInfo });
   }
@@ -62,7 +57,7 @@ async function getUser({ access_token, user_id: vkId, email }: VkToken) {
   }
   return user.AuthInfo?.vkId
     ? user
-    : await getUpdatedUserWithNewAuthProvider({ userId: user.id, authProviderKey: "vkId", authProviderIdValue: vkId });
+    : await getUpdatedUserWithVkAuth({ userId: user.id, vkId });
 }
 
 async function getAdditionalVkUserInfo({ access_token, vkId }: { access_token: string, vkId: number }) {
