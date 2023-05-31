@@ -3,7 +3,7 @@ import oauthPlugin, { OAuth2Token } from "@fastify/oauth2";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import pluginSettings, { GITHUB_AUTH_CALLBACK_URI } from "./plugin.settings";
-import { findUserAuthInfoWithAuthProvider, findUserByEmail, getUpdatedUserWithNewAuthProvider } from "../index";
+import { findUserWithAuthProvider, findUserByEmail, getUpdatedUserWithNewAuthProvider } from "../index";
 
 const prisma = new PrismaClient();
 
@@ -60,10 +60,8 @@ async function getGithubUser(access_token: string): Promise<GithubUser> {
 }
 
 async function getUser(githubUser: GithubUser, access_token: string) {
-  const githubLinkedUserAuthInfo = await findGithubLinkedUser(githubUser.id);
-  if (githubLinkedUserAuthInfo) {
-    return githubLinkedUserAuthInfo.User;
-  }
+  const githubLinkedUser = await findGithubLinkedUser(githubUser.id);
+  if (githubLinkedUser) return githubLinkedUser;
   const { email = await getPrivatePrimalGithubUserEmail(access_token) } = githubUser;
   if (!email) {
     return createNewGithubLinkedUser(githubUser);
@@ -74,7 +72,7 @@ async function getUser(githubUser: GithubUser, access_token: string) {
   }
   return user.AuthInfo?.githubId
     ? user
-    : getUpdatedUserWithGithubAuth({ userId: user.id, githubUserId: githubUser.id})
+    : getUpdatedUserWithGithubAuth({ userId: user.id, githubId: githubUser.id });
 }
 
 async function getPrivatePrimalGithubUserEmail(access_token: string) {
@@ -92,7 +90,7 @@ async function getGithubUserEmails(access_token: string): Promise<GithubUserPriv
   return githubUserPrivateEmailsSchema.parse(await emailsData.json());
 }
 
-function createNewGithubLinkedUser({ avatar_url, login, id, email = null }: GithubUser) {
+function createNewGithubLinkedUser({ email = null, id, login, avatar_url }: GithubUser) {
   return prisma.user.create({
     data: {
       email,
@@ -117,16 +115,16 @@ function createNewGithubLinkedUser({ avatar_url, login, id, email = null }: Gith
 
 
 function findGithubLinkedUser(githubUserId: number) {
-  return findUserAuthInfoWithAuthProvider({
+  return findUserWithAuthProvider({
     authProviderIdValue: githubUserId,
     authProviderKey: "githubId",
   });
 }
 
-function getUpdatedUserWithGithubAuth({ userId, githubUserId }: { userId: string, githubUserId: number }) {
+function getUpdatedUserWithGithubAuth({ userId, githubId }: { userId: string, githubId: number }) {
   return getUpdatedUserWithNewAuthProvider({
     userId,
     authProviderKey: "githubId",
-    authProviderIdValue: githubUserId,
+    authProviderIdValue: githubId,
   });
 }
