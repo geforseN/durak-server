@@ -3,7 +3,7 @@ import oauthPlugin from "@fastify/oauth2";
 import pluginSettings, { VK_AUTH_CALLBACK_URI } from "./plugin.settings";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { findUserByEmail, findUserAuthInfoWithAuthProvider, getUpdatedUserWithNewAuthProvider } from "../index";
+import { findUserByEmail, findUserWithAuthProvider, getUpdatedUserWithNewAuthProvider } from "../index";
 
 const prisma = new PrismaClient();
 
@@ -44,20 +44,11 @@ async function getUser({ access_token, user_id: vkId, email }: VkToken) {
   }
   const additionalVkInfo = await getAdditionalVkUserInfo({ access_token, vkId });
   if (!email) {
-    return createNewVkLinkedUser({
-      vkId,
-      photoUrl: additionalVkInfo.photo_200,
-      nickname: additionalVkInfo.nickname,
-    });
+    return createNewVkLinkedUser({ ...additionalVkUserInfo });
   }
   const user = await findUserByEmail(email);
   if (!user) {
-    return createNewVkLinkedUser({
-      email,
-      vkId,
-      photoUrl: additionalVkInfo.photo_200,
-      nickname: additionalVkInfo.nickname,
-    });
+    return createNewVkLinkedUser({ email, ...additionalVkUserInfo });
   }
   return user.AuthInfo?.vkId
     ? user
@@ -87,24 +78,21 @@ async function getAdditionalVkUserInfo({ access_token, vkId }: { access_token: s
   return json;
 }
 
-async function createNewVkLinkedUser({ email = null, photoUrl, nickname, vkId }: {
+async function createNewVkLinkedUser({ email = null, nickname, id, photo_200 }: {
   email?: string | null,
-  photoUrl: string,
-  nickname: string,
-  vkId: number
-}) {
+} & VkData) {
   return prisma.user.create({
     data: {
       email,
       UserProfile: {
         create: {
-          photoUrl,
+          photoUrl: photo_200,
           nickname,
         },
       },
       AuthInfo: {
         create: {
-          vkId,
+          vkId: id,
         },
       },
     },
