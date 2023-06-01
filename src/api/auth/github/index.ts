@@ -1,4 +1,4 @@
-import { FastifyInstance } from "fastify";
+import { FastifyInstance, FastifyRequest } from "fastify";
 import oauthPlugin, { OAuth2Token } from "@fastify/oauth2";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
@@ -38,13 +38,11 @@ type GithubUserPrivateEmails = z.input<typeof githubUserPrivateEmailsSchema>
 export default async function(fastify: FastifyInstance) {
   fastify.register(oauthPlugin, pluginSettings);
   fastify.get(GITHUB_AUTH_CALLBACK_URI, async function(request, reply) {
-    const tokenData: OAuth2Token = await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
+    const tokenData: OAuth2Token = await getTokenData(fastify, request);
     const { access_token } = tokenData.token;
-    githubTokenSchema.parse(tokenData.token);
     const githubUser = await getGithubUser(access_token);
     const user = await getUser(githubUser, access_token);
-    request.session.set("auth", { userId: user.id, provider: "github", access_token });
-    request.session.set("userProfile", user.UserProfile);
+    setSession(request, user, tokenData);
     reply.redirect(process.env.FRONTEND_URL!);
   });
 }
@@ -127,4 +125,15 @@ function getUpdatedUserWithGithubAuth({ userId, githubId }: { userId: string, gi
     authProviderKey,
     authProviderIdValue: githubId,
   });
+}
+
+async function getTokenData(fastify: FastifyInstance, request: FastifyRequest) {
+  const tokenData: OAuth2Token = await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
+  githubTokenSchema.parse(tokenData.token);
+  return tokenData;
+}
+
+function setSession(request: FastifyRequest, user: any, { token: { access_token } }: OAuth2Token) {
+  request.session.set("auth", { userId: user.id, provider: "github", access_token });
+  request.session.set("userProfile", user.UserProfile);
 }
