@@ -60,8 +60,8 @@ async function getUser({ access_token, user_id: vkId, email }: VkToken) {
     : await getUpdatedUserWithVkAuth({ userId: user.id, vkId });
 }
 
-async function getAdditionalVkUserInfo({ access_token, vkId }: { access_token: string, vkId: number }) {
-  const res = await fetch(`https://api.vk.com/method/users.get?${new URLSearchParams({
+function getAdditionalVkUserInfo({ access_token, vkId }: { access_token: string, vkId: number }) {
+  return fetch(`https://api.vk.com/method/users.get?${new URLSearchParams({
     user_ids: String(vkId),
     fields: "photo_200, nickname",
     v: String(process.env.VK_API_VERSION),
@@ -69,10 +69,7 @@ async function getAdditionalVkUserInfo({ access_token, vkId }: { access_token: s
     headers: {
       Authorization: `Bearer ${access_token}`,
     },
-  });
-  const json: VkData = await res.json();
-  console.log(json);
-  return json;
+  }).then((res) => res.json());
 }
 
 async function createNewVkLinkedUser({ email = null, nickname, id, photo_200 }: {
