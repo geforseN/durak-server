@@ -34,7 +34,7 @@ export default async function vkAuth(fastify: FastifyInstance) {
     }
     const vkToken = await getVkToken(request);
     const user = await getUser(vkToken);
-    console.log(user);
+    setSession(request, user, vkToken);
     reply.redirect(process.env.FRONTEND_URL!);
   });
 }
@@ -116,4 +116,9 @@ function getVkToken(request: FastifyRequest) {
   })}`)
     .then((res) => res.json())
     .then(json => vkTokenSchema.parse(json));
+}
+
+function setSession(request: FastifyRequest, user: any, { access_token }: VkToken) {
+  request.session.set("auth", { userId: user.id, provider: "vk", access_token });
+  request.session.set("userProfile", user.UserProfile);
 }
