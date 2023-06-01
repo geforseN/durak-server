@@ -1,4 +1,4 @@
-import { FastifyInstance } from "fastify";
+import { FastifyInstance, FastifyRequest } from "fastify";
 import oauthPlugin from "@fastify/oauth2";
 import pluginSettings, { authProviderKey, VK_AUTH_CALLBACK_URI } from "./plugin.settings";
 import { PrismaClient } from "@prisma/client";
@@ -25,20 +25,15 @@ const vkTokenSchema = z.object({
 });
 type VkToken = z.infer<typeof vkTokenSchema>
 
+
 export default async function vkAuth(fastify: FastifyInstance) {
   fastify.register(oauthPlugin, pluginSettings);
   fastify.get(VK_AUTH_CALLBACK_URI, async function(request, reply) {
     if ((request.query as { error?: string })?.error) {
       return reply.send((request.query as { error?: string }).error);
     }
-    const vkTokenResponse = await fetch(`https://oauth.vk.com/access_token?${new URLSearchParams({
-      client_id: String(process.env.VK_CLIENT_ID)!,
-      client_secret: process.env.VK_CLIENT_SECRET!,
-      redirect_uri: "http://localhost:3000/login/vk/callback",
-      code: (request.query as { code: string }).code,
-    })}`);
-    const vkTokenData = vkTokenSchema.parse(await vkTokenResponse.json());
-    const user = await getUser(vkTokenData);
+    const vkToken = await getVkToken(request);
+    const user = await getUser(vkToken);
     console.log(user);
     reply.redirect(process.env.FRONTEND_URL!);
   });
