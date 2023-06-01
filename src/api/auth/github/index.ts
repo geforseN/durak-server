@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import oauthPlugin, { OAuth2Token } from "@fastify/oauth2";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import pluginSettings, { GITHUB_AUTH_CALLBACK_URI } from "./plugin.settings";
+import pluginSettings, { authProviderKey, GITHUB_AUTH_CALLBACK_URI } from "./plugin.settings";
 import { findUserWithAuthProvider, findUserByEmail, getUpdatedUserWithNewAuthProvider } from "../index";
 
 const prisma = new PrismaClient();
@@ -117,14 +117,14 @@ function createNewGithubLinkedUser({ email = null, id, login, avatar_url }: Gith
 function findGithubLinkedUser(githubUserId: number) {
   return findUserWithAuthProvider({
     authProviderIdValue: githubUserId,
-    authProviderKey: "githubId",
+    authProviderKey,
   });
 }
 
 function getUpdatedUserWithGithubAuth({ userId, githubId }: { userId: string, githubId: number }) {
   return getUpdatedUserWithNewAuthProvider({
     userId,
-    authProviderKey: "githubId",
+    authProviderKey,
     authProviderIdValue: githubId,
   });
 }

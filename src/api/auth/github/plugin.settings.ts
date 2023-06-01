@@ -1,7 +1,8 @@
 import oauthPlugin, { OAuth2Namespace } from "@fastify/oauth2";
 
 export const GITHUB_AUTH_CALLBACK_URI = "/login/github/callback";
-const NAMESPACE_NAME = "githubOAuth2"
+export const authProviderKey = "githubId";
+const NAMESPACE_NAME = "githubOAuth2";
 
 declare module "fastify" {
   interface FastifyInstance {
