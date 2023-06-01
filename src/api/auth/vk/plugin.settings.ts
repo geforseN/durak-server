@@ -1,6 +1,7 @@
 import oauthPlugin, { OAuth2Namespace } from "@fastify/oauth2";
 
 export const VK_AUTH_CALLBACK_URI = "/login/vk/callback";
+export const authProviderKey = "vkId";
 const NAMESPACE_NAME = 'vkOAuth2';
 
 declare module "fastify" {
