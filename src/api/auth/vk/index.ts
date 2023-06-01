@@ -111,3 +111,14 @@ function getUpdatedUserWithVkAuth({ userId, vkId }: { userId: string, vkId: numb
     authProviderIdValue: vkId,
   });
 }
+
+function getVkToken(request: FastifyRequest) {
+  return fetch(`https://oauth.vk.com/access_token?${new URLSearchParams({
+    client_id: String(process.env.VK_CLIENT_ID)!,
+    client_secret: process.env.VK_CLIENT_SECRET!,
+    redirect_uri: "http://localhost:3000/login/vk/callback",
+    code: (request.query as { code: string }).code,
+  })}`)
+    .then((res) => res.json())
+    .then(json => vkTokenSchema.parse(json));
+}
