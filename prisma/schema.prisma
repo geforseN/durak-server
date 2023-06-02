@@ -8,33 +8,53 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  num           Int           @unique @default(autoincrement())
-  accname       String        @unique
-  email         String?
-  personalLink  String?       @unique @default(cuid())
-  photoUrl      String?
-  nickname      String
-  connectStatus ConnectStatus @default(OFFLINE)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  id            String        @id @unique
-  player        Player[]
-  GameStat      GameStat?
-}
-
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model DurakGame {
-  number       Int        @unique @default(autoincrement())
-  status       GameStatus @default(START_WAITING)
-  uuid         String
-  playersCount Int
-  gameType     GameType
-  cardCount    Int
-  moveTime     Float
-  players      Player[]
+  number         Int              @unique @default(autoincrement())
+  uuid           String
+  playersCount   Int
+  status         GameStatus       @default(START_WAITING)
+  cardCount      Int
+  gameType       GameType
+  moveTime       Float
+  UserGamePlayer UserGamePlayer[]
 }
 
-model Player {
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model User {
+  num            Int              @unique @default(autoincrement())
+  id             String           @id @unique
+  email          String?          @unique
+  currentGameId  String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  UserAuthInfo   UserAuthInfo?
+  UserGamePlayer UserGamePlayer[]
+  UserGameStat   UserGameStat?
+  UserProfile    UserProfile?
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UserAuthInfo {
+  userId   String  @id @unique
+  hash     String?
+  yandexId String? @unique
+  githubId Int?    @unique
+  vkId     Int?    @unique
+  twitchId String? @unique
+  User     User    @relation(fields: [userId], references: [id])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UserGamePlayer {
   index           Int
   winPlace        Int?
   winRoundNumber  Int?
@@ -45,6 +65,26 @@ model Player {
   User            User      @relation(fields: [userId], references: [id])
 
   @@unique([durakGameNumber, index])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UserGameStat {
+  userId             String @id @unique
+  wonGamesCount      Int    @default(0)
+  lostGamesCount     Int    @default(0)
+  unstableGamesCount Int    @default(0)
+  User               User   @relation(fields: [userId], references: [id])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UserProfile {
+  userId        String        @id @unique
+  personalLink  String        @unique
+  updatedAt     DateTime
+  photoUrl      String?
+  nickname      String        @default("Durak Player")
+  connectStatus ConnectStatus @default(OFFLINE)
+  User          User          @relation(fields: [userId], references: [id])
 }
 
 enum ConnectStatus {
@@ -62,12 +102,4 @@ enum GameStatus {
 enum GameType {
   BASIC
   PEREVODNOY
-}
-
-model GameStat {
-  userId             String @id @unique
-  wonGamesCount      Int    @default(0)
-  lostGamesCount     Int    @default(0)
-  unstableGamesCount Int    @default(0)
-  User               User   @relation(fields: [userId], references: [id])
 }
