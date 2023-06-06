@@ -8,14 +8,14 @@ export default class NotificationAlert {
   private id: NA.id;
 
   constructor(customSettings?: NA.NotificationAlert) {
-    const settings = { ...this.defaultSettings, ...customSettings };
+    const settings = { ...this.#defaultSettings, ...customSettings };
     this.message = settings.message;
     this.type = settings.type;
     this.durationInMS = settings.durationInMS;
     this.id = settings.id;
   }
 
-  private get defaultSettings(): Required<NA.NotificationAlert> {
+  get #defaultSettings(): Required<NA.NotificationAlert> {
     return {
       message: "Произошла ошибка",
       type: "Warning",
@@ -27,7 +27,7 @@ export default class NotificationAlert {
   fromError(
     error: Error,
   ): this {
-    this.message = error.message ?? this.defaultSettings.message;
+    this.message &&= error.message;
     this.type = "Error";
     return this;
   }
