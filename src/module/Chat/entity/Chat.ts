@@ -30,7 +30,6 @@ export default class Chat {
   }
 
   #ensureSenderCanReply({ replyMessageId }: ChatReplyMessage) {
-    if (!replyMessageId) return;
     if ([...this.#messages].reverse().every(({ id }) => replyMessageId !== id)) {
       throw new Error("Сообщение, на которое вы отправили ответ, не было найдено");
     }
