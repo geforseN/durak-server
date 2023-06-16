@@ -3,40 +3,48 @@ import { SocketStream } from "@fastify/websocket";
 import prisma from "../prisma";
 
 export default async function onConnection(fastify: FastifyInstance) {
-  fastify.get("/", { websocket: true }, async (connection: SocketStream, req: FastifyRequest) => {
-    if (req.session.userProfile?.connectStatus === "OFFLINE") {
-      req.session.userProfile.connectStatus = "ONLINE";
-      console.log("BEFORE UPDATE LINE");
-      prisma.userProfile.update({
-        where: {
-          userId: req.session.userProfile.userId,
-        }, data: {
-          connectStatus: "ONLINE",
-        },
-      }).then(() => {
-        console.log("UPDATED");
-      });
-      console.log("AFTER UPDATE LINE");
-    }
-    console.log("BEFORE send userProfile LINE");
-    connection.socket.send(JSON.stringify(req.session.userProfile), () => {
-      console.log("sent userProfile");
-    });
-    console.log("AFTER send userProfile LINE");
-    connection.socket.onclose = () => {
-      console.log("CLOSE", req.session.userProfile.connectStatus);
-      if (req.session.userProfile.connectStatus !== "ONLINE") return;
-      setTimeout(async () => {
-        console.log("BEFORE set userProfile offline LINE");
-        req.session.userProfile = await prisma.userProfile.update({
-          where: {
-            userId: req.session.userProfile.userId,
-          }, data: {
-            connectStatus: "OFFLINE",
-          },
-        });
-        console.log("AFTER set userProfile offline LINE");
-      }, 5_000);
+  fastify.get("/", { websocket: true }, async (connection, request) => {
+    handleUserConnect(request);
+    sendUserProfile(connection, request);
+    connection.socket.onclose = (_event) => {
+      handleUserDisconnect(request);
     };
+  });
+}
+
+function handleUserConnect(request: FastifyRequest) {
+  if (request.session.userProfile?.connectStatus === "OFFLINE") {
+    makeUserOnline(request);
+  }
+}
+
+function sendUserProfile(connection: SocketStream, request: FastifyRequest) {
+  connection.socket.send(JSON.stringify(request.session.userProfile));
+}
+
+function handleUserDisconnect(request: FastifyRequest) {
+  if (request.session.userProfile?.connectStatus === "ONLINE") {
+    setTimeout(makeUserOffline, 5_000, request);
+  }
+}
+
+function makeUserOnline(request: FastifyRequest) {
+  request.session.userProfile.connectStatus = "ONLINE";
+  prisma.userProfile.update({
+    where: {
+      userId: request.session.userProfile.userId,
+    }, data: {
+      connectStatus: "ONLINE",
+    },
+  });
+}
+
+async function makeUserOffline(request: FastifyRequest) {
+  request.session.userProfile = await prisma.userProfile.update({
+    where: {
+      userId: request.session.userProfile.userId,
+    }, data: {
+      connectStatus: "OFFLINE",
+    },
   });
 }
