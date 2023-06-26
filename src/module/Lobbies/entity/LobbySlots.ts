@@ -44,9 +44,9 @@ export default class LobbySlots<
     return this.#findUser((user) => user?.isAdmin === true, "Админ не найден");
   }
 
-  set admin(newAdminId: string) {
+  set admin(newAdmin: LobbyUser) {
     this.admin.isAdmin = false;
-    const user = this.#findUser((user) => user?.id === newAdminId);
+    const user = this.#findUser((user) => user.id === newAdmin.id);
     user.isAdmin = true;
     this.emitter.emit("admin::update", user);
   }
