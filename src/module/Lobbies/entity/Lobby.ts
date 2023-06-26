@@ -24,7 +24,7 @@ export default class Lobby {
   }
 
   get value() {
-    return { ...this, slots: this.slots.value };
+    return { id: this.id, settings: this.settings, slots: this.slots.value };
   }
 
   get isEmpty() {
@@ -75,10 +75,10 @@ export default class Lobby {
     return user;
   }
 
-  swapUser(cb: (user?: User) => boolean, slotIndex = -1, socket: WebSocket) {
+  moveUser(cb: (user?: User) => boolean, slotIndex = -1, socket: WebSocket) {
     assert.ok(slotIndex !== -1, "Выберете конкретный слот для перестановки.");
-    const user = this.slots.swapUser(cb, slotIndex);
-    socket.emit("everySocket", "lobby::user::swap", {
+    const user = this.slots.moveUser(cb, slotIndex);
+    socket.emit("everySocket", "lobby::user::move", {
       lobbyId: this.id,
       userId: user.id,
       slotIndex,
