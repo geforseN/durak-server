@@ -74,12 +74,7 @@ export default class LobbySlots<
     return slotIndex;
   }
 
-  swapUser(
-    cb: (
-      user?: LobbyUser,
-    ) => boolean,
-    slotIndex: number,
-  ) {
+  moveUser(cb: (user?: LobbyUser) => boolean, slotIndex: number) {
     return this.#putUser(this.removeUser(cb), slotIndex);
   }
 

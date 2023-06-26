@@ -71,7 +71,7 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
               lobbies.find(Lobby.hasSameId.bind({ id: lobbyId })),
             ]);
             if (newLobby === oldLobby) {
-              return oldLobby.swapUser(
+              return oldLobby.moveUser(
                 User.hasSameId.bind({ id: userId }),
                 slotIndex,
                 this,
@@ -97,7 +97,8 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
             const lobby = await getLobby.call({ lobbies, userId }, lobbyId);
             durakGames.set(lobby.id, new DurakGame(lobby));
           },
-        );
+        )
+        .on("lobby::user::move", () => {});
     },
   );
 }
@@ -108,6 +109,7 @@ function initializeGameLobbies() {
   const sockets = <WebSocket[]>[];
   const ee = new EventEmitter();
   ee.on("message", (...args) => {
+    // TODO implement
     console.log(...args);
   });
   const lobbies = new Lobbies(ee);
