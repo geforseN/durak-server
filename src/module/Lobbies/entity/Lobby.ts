@@ -39,8 +39,8 @@ export default class Lobby {
     return this.slots.hasUser(cb);
   }
 
-  updateAdmin(socket: WebSocket, newAdminId?: User["id"]) {
-    this.slots.admin = newAdminId ?? this.slots.mostLeftSideNonAdminUser.id;
+  updateAdmin(socket: WebSocket) {
+    this.slots.admin = this.slots.mostLeftSideNonAdminUser;
     socket.emit("everySocket", "lobby::admin::update", {
       adminId: this.slots.admin.id,
       lobbyId: this.id,
