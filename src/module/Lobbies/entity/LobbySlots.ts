@@ -41,7 +41,7 @@ export default class LobbySlots<
   }
 
   get admin(): LobbyUser {
-    return this.#findUser((user) => user?.isAdmin === true, "Админ не найден");
+    return this.#findUser((user) => user.isAdmin === true, "Админ не найден");
   }
 
   set admin(newAdmin: LobbyUser) {
@@ -53,7 +53,7 @@ export default class LobbySlots<
 
   get mostLeftSideNonAdminUser() {
     return this.#findUser(
-      (user) => user?.id !== this.admin.id,
+      (user) => user.id !== this.admin.id,
       "Не получилось обновить админа лобби: некому стать новым админом",
     );
   }
@@ -103,7 +103,7 @@ export default class LobbySlots<
   }
 
   #findUser(
-    cb: (user?: LobbyUser) => boolean,
+    cb: (user: LobbyUser) => boolean,
     notFoundMessage: string | Error = "Пользователь не был найден",
   ): LobbyUser {
     const user = this.#users.find(cb);
