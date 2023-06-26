@@ -13,7 +13,7 @@ export default abstract class SuperPlayer extends Player {
     return removedCard;
   }
 
-  @logResult()
+  @logGetter()
   get randomCard() {
     return this.hand.value[this.#randomCardIndex];
   }
@@ -23,15 +23,15 @@ export default abstract class SuperPlayer extends Player {
   }
 };
 
-function logResult(headMessage: string = "LOG:") {
+function logGetter(headMessage: string = "LOG:") {
   return function <This, Return>(
     target: (this: This) => Return,
     context: ClassGetterDecoratorContext<This, Return>,
   ) {
     return function(this: This): Return {
-      const result = target.call(this);
-      console.log(`${headMessage}: ${String(context.name)} => ${result}'.`);
-      return result;
+      const returnValue = target.call(this);
+      console.log(`${headMessage}: ${context.name.toString()} => ${returnValue}'.`);
+      return returnValue;
     };
   };
 }

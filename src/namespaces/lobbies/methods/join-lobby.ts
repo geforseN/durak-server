@@ -10,7 +10,7 @@ export default async function joinLobby(
   try {
     const accname = assertGuestSocket(this.socket);
     const lobby = lobbiesService.prepareBeforeJoin({ accname }, { id: lobbyId });
-    const user = await this.xprisma.user.findOrThrow({ accname });
+    const user = await this.prisma.user.findUniqueOrThrow({ where: {id: accname} });
     lobbiesService.addUserInLobby(lobby, user);
     this.socket.join(lobby.id);
   } catch (error) {

@@ -11,8 +11,8 @@ export default async function chatPlugin(fastify: FastifyInstance, options: { pa
   const getChatContext = initializeChat();
   return fastify.get(options.path, { websocket: true }, async function(connection, request) {
     const context = getChatContext(connection, request);
-    context.socket.emit("socketOnce", "history__restore", context.chat.cache);
-    context.socket.on("message__send", onMessageSendListener.bind(context));
+    context.socket.emit("socketOnce", "chat::restore", context.chat.cache);
+    context.socket.on("message::send", onMessageSendListener.bind(context));
   });
 }
 
@@ -22,8 +22,7 @@ async function onMessageSendListener(
     userId: string,
     chat: Chat,
   },
-  text: string,
-  replyMessageId: string | undefined,
+  { text, replyMessageId }: { text: string, replyMessageId?: string },
 ) {
   try {
     await sendMessageInChatHandler.call(this, { text, replyMessageId });
@@ -48,7 +47,7 @@ async function sendMessageInChatHandler(
 
 function handleError(error: unknown, socket: WebSocket) {
   if (error instanceof Error) {
-    socket.emit("socket", "notification__send", new NotificationAlert().fromError(error));
+    socket.emit("socket", "notification::push", new NotificationAlert().fromError(error));
   } else {
     console.log("GlobalChat Error:", error);
   }

@@ -9,11 +9,12 @@ export type LobbyUser = {
 }
 export type LobbyUserIdentifier = { accname: string }
 
+// TODO remove
 export default class LobbyUsers {
   __value: LobbyUser[];
 
-  constructor() {
-    this.__value = [];
+  constructor(len: number = 0) {
+    this.__value = new Array(len);
   }
 
   get value(): LobbyUser[] {

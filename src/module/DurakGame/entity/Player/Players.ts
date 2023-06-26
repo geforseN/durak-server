@@ -1,16 +1,20 @@
 import assert from "node:assert";
 import PlayersManager from "../PlayersManager";
-import LobbyUsers from "../../../../namespaces/lobbies/entity/lobby-users";
 import { Attacker, Defender, Player, SuperPlayer } from "./index";
 import GamePlayerService from "./Player.service";
+import { LobbyUser } from "../../../Lobbies/lobbies.namespace";
 
 export default class Players {
   __value: Player[];
   manager: PlayersManager;
 
-  constructor(users: LobbyUsers) {
-    this.__value = users.value.map((user) => new Player(user));
+  constructor(users: LobbyUser[]) {
+    this.__value = users.map((user) => new Player(user));
     this.manager = new PlayersManager(this);
+  }
+
+  *[Symbol.iterator]() {
+    yield* this.__value;
   }
 
   get count() {
@@ -30,7 +34,8 @@ export default class Players {
   }
 
   getPlayer({ id }: { id: string }): Player {
-    const player = this.__value.find((player) => player.id === id);
+    // used Symbol.iterator here
+    const player = [...this].find(Player.hasSameId, { id });
     assert.ok(player, "Игрок не найден");
     return player;
   }
@@ -43,13 +48,17 @@ export default class Players {
     return player instanceof SuperPlayer;
   }
 
-  private get<P extends SuperPlayer>(PlayerClass: { new(...arg: any): P }): P | undefined {
-    for (const player of this.__value) {
-      if (player instanceof PlayerClass) return player;
+  private get<Player extends SuperPlayer>(Player : {
+    new (...arg: any): Player;
+  }): Player | undefined {
+    // used Symbol.iterator here
+    for (const player of this) {
+      if (player instanceof Player) return player;
     }
   }
 
   injectService(service: GamePlayerService) {
-    this.__value.forEach((player) => player.injectService(service));
+    // used Symbol.iterator here
+    [...this].forEach((player) => player.injectService(service));
   }
 }

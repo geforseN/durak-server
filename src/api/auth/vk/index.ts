@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
 import oauthPlugin from "@fastify/oauth2";
 import pluginSettings, { authProviderKey, VK_AUTH_CALLBACK_URI } from "./plugin.settings";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { findUserByEmail, findUserWithAuthProvider, getUpdatedUserWithNewAuthProvider } from "../index";
 
@@ -50,7 +50,7 @@ async function getUser({ access_token, user_id: vkId, email }: VkToken) {
   if (!user) {
     return createNewVkLinkedUser({ email, ...additionalVkUserInfo });
   }
-  return user.AuthInfo?.vkId
+  return user.UserAuthInfo?.vkId
     ? user
     : await getUpdatedUserWithVkAuth({ userId: user.id, vkId });
 }
@@ -79,14 +79,14 @@ async function createNewVkLinkedUser({ email = null, nickname, id, photo_200 }: 
           nickname,
         },
       },
-      AuthInfo: {
+      UserAuthInfo: {
         create: {
           vkId: id,
         },
       },
     },
     include: {
-      AuthInfo: true,
+      UserAuthInfo: true,
       UserProfile: true,
     },
   });

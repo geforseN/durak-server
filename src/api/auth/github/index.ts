@@ -68,7 +68,7 @@ async function getUser(githubUser: GithubUser, access_token: string) {
   if (!user) {
     return createNewGithubLinkedUser(githubUser);
   }
-  return user.AuthInfo?.githubId
+  return user.UserAuthInfo?.githubId
     ? user
     : getUpdatedUserWithGithubAuth({ userId: user.id, githubId: githubUser.id });
 }
@@ -98,14 +98,14 @@ function createNewGithubLinkedUser({ email = null, id, login, avatar_url }: Gith
           nickname: login,
         },
       },
-      AuthInfo: {
+      UserAuthInfo: {
         create: {
           githubId: id,
         },
       },
     },
     include: {
-      AuthInfo: true,
+      UserAuthInfo: true,
       UserProfile: true,
     },
   });

@@ -10,14 +10,15 @@ datasource db {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model DurakGame {
-  number         Int              @unique @default(autoincrement())
-  uuid           String
-  playersCount   Int
-  status         GameStatus       @default(START_WAITING)
-  cardCount      Int
-  gameType       GameType
-  moveTime       Float
-  UserGamePlayer UserGamePlayer[]
+  number       Int              @unique @default(autoincrement())
+  uuid         String
+  playersCount Int
+  status       GameStatus       @default(START_WAITING)
+  cardCount    Int
+  gameType     GameType
+  moveTime     Float
+  players      UserGamePlayer[]
+  createdAt    DateTime         @default(now())
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -31,11 +32,11 @@ model Session {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model User {
   num            Int              @unique @default(autoincrement())
-  id             String           @id @unique
+  id             String           @id @unique @default(uuid())
   email          String?          @unique
   currentGameId  String?
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime         @updatedAt
   UserAuthInfo   UserAuthInfo?
   UserGamePlayer UserGamePlayer[]
   UserGameStat   UserGameStat?
@@ -69,18 +70,19 @@ model UserGamePlayer {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserGameStat {
-  userId             String @id @unique
-  wonGamesCount      Int    @default(0)
-  lostGamesCount     Int    @default(0)
-  unstableGamesCount Int    @default(0)
-  User               User   @relation(fields: [userId], references: [id])
+  userId             String   @id @unique
+  wonGamesCount      Int      @default(0)
+  lostGamesCount     Int      @default(0)
+  unstableGamesCount Int      @default(0)
+  createdAt          DateTime @default(now())
+  User               User     @relation(fields: [userId], references: [id])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserProfile {
   userId        String        @id @unique
-  personalLink  String        @unique
-  updatedAt     DateTime
+  personalLink  String        @unique @default(cuid())
+  updatedAt     DateTime      @updatedAt
   photoUrl      String?
   nickname      String        @default("Durak Player")
   connectStatus ConnectStatus @default(OFFLINE)

@@ -6,6 +6,7 @@ export class StopAttackMove extends AttackerMove implements AfterHandler {
     if (this.game.round.isDefenderGaveUp) {
       return this.#handleInPursuit();
     }
+    debugger
     if (this.player.hasPutLastCard({ round: this.game.round })) {
       return this.game.round.giveDefenderDefend();
     }

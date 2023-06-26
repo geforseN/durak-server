@@ -1,7 +1,18 @@
 import { randomInt } from "node:crypto";
-import { Defender, Player, SuperPlayer, AllowedMissingCardCount } from "../Player";
+import {
+  Defender,
+  Player,
+  SuperPlayer,
+  AllowedMissingCardCount,
+} from "../Player";
 import Card, { Rank } from "../Card";
-import { DefendedSlot, DeskSlot, EmptySlot, UnbeatenSlot, UnbeatenTrumpSlot } from "../DeskSlot";
+import {
+  DefendedSlot,
+  DeskSlot,
+  EmptySlot,
+  UnbeatenSlot,
+  UnbeatenTrumpSlot,
+} from "../DeskSlot";
 import { CanProvideCards } from "../../DurakGame.implimetntation";
 import { Discard } from "../Deck";
 import GameDeskService from "./Desk.service";
@@ -11,16 +22,15 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
   allowedFilledSlotCount: number;
   private service?: GameDeskService;
 
-  constructor({ allowedFilledSlotCount = 6, slotCount = 6 }: Partial<{
-    allowedFilledSlotCount: AllowedMissingCardCount,
-    slotCount: AllowedMissingCardCount
+  constructor({
+    allowedFilledSlotCount = 6,
+    slotCount: length = 6,
+  }: Partial<{
+    allowedFilledSlotCount: AllowedMissingCardCount;
+    slotCount: AllowedMissingCardCount;
   }> = {}) {
     this.allowedFilledSlotCount = allowedFilledSlotCount;
-    this.slots = [...Array(slotCount)].map(() => new EmptySlot());
-  }
-
-  getSlot({ index }: { index: number }): DeskSlot {
-    return this.slots[index];
+    this.slots = Array.from({ length }, () => new EmptySlot());
   }
 
   private get cards(): Card[] {
@@ -37,7 +47,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
 
   get unbeatenCardCount(): number {
     return this.slots.filter((slot) => slot instanceof UnbeatenSlot).length;
-  };
+  }
 
   get allowsMoves() {
     return this.allowedFilledSlotCount > this.filledSlotsCount;
@@ -67,17 +77,28 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return this.allowsMoves;
   }
 
-  allowsTransferMove({ card, index, nextDefender }: { nextDefender: Player; index: number; card: Card }) {
+  async allowsTransferMove(card: Card, slotIndex: number) {
     return (
-      this.getSlot({ index }) instanceof EmptySlot
-      && nextDefender.canTakeMore({ cardCount: this.cardCount })
-      && Promise.all(this.slots.map((slot) => slot.ensureAllowsTransfer({ card })))
+      this.slots[slotIndex] instanceof EmptySlot &&
+      Promise.all(
+        this.slots.map((slot) => slot.ensureAllowsTransfer({ card })),
+      ).then(
+        () => true,
+        () => false,
+      )
     );
   }
 
-  receiveCard({ card, index, who }: { card: Card, index: number, who: SuperPlayer }) {
-    const slot = this.getSlot({ index });
-    this.slots[index] = this.nextDeskSlot({ card, slot });
+  receiveCard({
+    card,
+    index,
+    who,
+  }: {
+    card: Card;
+    index: number;
+    who: SuperPlayer;
+  }) {
+    this.slots[index] = this.nextDeskSlot({ card, slot: this.slots[index] });
     this.service?.receiveCard({ card, index, who });
   }
 
@@ -93,8 +114,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
 
   async ensureCanAttack(card: Card, slotIndex: number): Promise<Card> {
     if (this.isEmpty) return card;
-    const slot = this.getSlot({ index: slotIndex });
-    await slot.ensureCanBeAttacked({ card });
+    await this.slots[slotIndex].ensureCanBeAttacked({ card });
     await this.assertCanPut(card);
     return card;
   }
@@ -110,7 +130,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return this.slots.some((slot) => slot.has({ rank }));
   }
 
-  private nextDeskSlot({ card, slot }: { card: Card, slot: DeskSlot }) {
+  private nextDeskSlot({ card, slot }: { card: Card; slot: DeskSlot }) {
     if (slot instanceof EmptySlot) {
       return card.isTrump
         ? new UnbeatenTrumpSlot(card)

@@ -18,21 +18,18 @@ export function getUpdatedUserWithNewAuthProvider<
   return prisma.user.update({
     where: { id: userId },
     data: {
-      AuthInfo: {
+      UserAuthInfo: {
         update: {
           [authProviderKey]: authProviderIdValue,
         },
       },
     },
-    include: {
-      AuthInfo: true,
-      UserProfile: true,
-    },
+    include: { UserAuthInfo: true, UserProfile: true },
   });
 }
 
 export function findUserByEmail(email: string) {
-  return prisma.user.findUnique({ where: { email }, include: { AuthInfo: true, UserProfile: true } });
+  return prisma.user.findUnique({ where: { email }, include: { UserAuthInfo: true, UserProfile: true } });
 }
 
 export function findUserWithAuthProvider<
@@ -46,7 +43,7 @@ export function findUserWithAuthProvider<
 }) {
   return prisma.user.findFirst({
     where: {
-      AuthInfo: {
+      UserAuthInfo: {
         [authProviderKey]: authProviderIdValue,
       },
     },

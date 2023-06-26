@@ -1,14 +1,59 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
 import { SocketStream } from "@fastify/websocket";
 import prisma from "../prisma";
+import assert from "node:assert";
 
 export default async function onConnection(fastify: FastifyInstance) {
-  fastify.get("/", { websocket: true }, async (connection, request) => {
-    handleUserConnect(request);
-    sendUserProfile(connection, request);
-    connection.socket.onclose = (_event) => {
-      handleUserDisconnect(request);
-    };
+  fastify.route({
+    method: "GET",
+    url: "/",
+    handler: async function(request, reply) {
+      this.log.info("start GET /");
+      if (request.session.auth) {
+        return this.log.info("fast end GET /");
+      }
+      this.log.info("Start anonymous user creation");
+      // TODO сделать мало живущую сессию: по её окончанию если
+      // чел не сделал логин через OAuth то удаляем его
+      const user = await prisma.user.create({
+        data: {
+          UserProfile: {
+            create: {
+              photoUrl: null,
+              nickname: "next TODO",
+            },
+          },
+        },
+        select: {
+          UserProfile: true,
+        },
+      });
+      assert.ok(user.UserProfile);
+      request.session.set("userProfile", user.UserProfile);
+      // @ts-ignore
+      request.session.set("isAnonymous", true);
+      await request.session.save();
+      // @ts-ignore
+      reply.setCookie("sessionId", request.session.sessionId, request.session.cookie);
+      this.log.info("End anonymous user creation");
+      this.log.info("end GET /");
+      reply.redirect(process.env.FRONTEND_URL!);
+    },
+    wsHandler: async function(connection, request) {
+      // IF NO request.session.userProfile
+      // THEN {
+      //   prisma.user.create with useProfile
+      //     which should have:
+      //     - anonymous photoUrl
+      //     - random nickname
+      // }
+      this.log.info("handler");
+      handleUserConnect(request);
+      sendUserProfile(connection, request);
+      connection.socket.onclose = (_event) => {
+        handleUserDisconnect(request);
+      };
+    },
   });
 }
 

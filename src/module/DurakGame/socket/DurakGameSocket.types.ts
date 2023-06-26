@@ -36,10 +36,7 @@ export namespace DurakGameSocket {
   export type InterServerEvents = {}
 
   export type SocketData = {
-    accname: string
-    id?: string
-    role?: "USER" | "GUEST"
-    badTriesCount?: number
+    sid: string
   }
 
   export type Socket = SocketIOSocket<

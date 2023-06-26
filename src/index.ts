@@ -1,66 +1,84 @@
-import { createServer } from "http";
-import express from "express";
-import { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
-import { type ExtendedError } from "socket.io/dist/namespace";
-import cors from "cors";
 import dotenv from "dotenv";
 import serverOptions from "./server.options";
-import { IO } from "./namespaces/io/io.types";
-import { GlobalChatIO } from "./namespaces/global-chat/global-chat.types";
-import { LobbiesIO } from "./namespaces/lobbies/lobbies.types";
-import profile from "./api/profle";
-import ioHandler from "./namespaces/io/io.handler";
-import globalChatHandler from "./namespaces/global-chat/global-chat.handler";
-import lobbiesHandler from "./namespaces/lobbies/lobbies.handler";
 import durakGameSocketHandler from "./module/DurakGame/socket/DurakGameSocket.handler";
 import DurakGame from "./module/DurakGame/DurakGame.implimetntation";
-import Lobbies from "./namespaces/lobbies/entity/lobbies";
-import LobbiesService from "./namespaces/lobbies/lobbies.service";
-import onConnectMiddleware from "./namespaces/lobbies/helpers/on-connect.middleware";
+import beforeConnectMiddleware from "./namespaces/on-connect.middleware";
 import { DurakGameSocket } from "./module/DurakGame/socket/DurakGameSocket.types";
-import { parse } from "cookie";
-import github from "./api/auth/github";
-
-export type NextSocketIO = (err?: (ExtendedError | undefined)) => void
+import Fastify from "fastify";
+import fastifySession from "@fastify/session";
+import fastifyWebsocket from "@fastify/websocket";
+import fastifyCors from "@fastify/cors";
+import fastifyCookie from "@fastify/cookie";
+import fastifySocketIo from "fastify-socket.io";
+import pretty from "pino-pretty";
+import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import { PrismaClient } from "@prisma/client";
+import GithubAuth from "./api/auth/github";
+import VkAuth from "./api/auth/vk";
+import getUserProfile from "./api/profile/[personalLink].get";
+import onConnection from "./onConnection";
+import chatPlugin from "./module/Chat/chatPlugin";
 
 dotenv.config();
-const app = express();
-const httpServer = createServer(app);
-const port = Number(process.env.PORT);
-
-app.use(cors({ origin: serverOptions.cors.origin }));
-
-app.use("/api/profile", profile);
-app.use("/api/auth/github", github);
-
-export const io: IO.ServerIO = new Server(httpServer, serverOptions);
-io.on("connect", ioHandler);
-
-export const globalChat: GlobalChatIO.NamespaceIO = io.of("/global-chat");
-globalChat.on("connect", globalChatHandler);
-
-export const lobbiesNamespace: LobbiesIO.NamespaceIO = io.of("/lobbies");
-
-export const lobbies = new Lobbies();
-export const lobbiesService = new LobbiesService(lobbies, lobbiesNamespace);
-
-lobbiesNamespace.use(onConnectMiddleware);
-lobbiesNamespace.on("connect", lobbiesHandler);
-
-const uuidRegExp = /^\/game\/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/;
+const ONE_MINUTE_IN_MS = 60 * 1000;
+const TEN_MINUTES_IN_MS = ONE_MINUTE_IN_MS * 10;
+const TEN_DAYS_IN_MS = ONE_MINUTE_IN_MS * 60 * 24 * 10;
 export const durakGames = new Map<string, DurakGame>();
-
-export const gamesNamespace: DurakGameSocket.Namespace = io.of(uuidRegExp);
-gamesNamespace.use(onConnectMiddleware);
-gamesNamespace.use((socket, next) => {
-  const { cookie } = socket.handshake.headers;
-  if (!cookie) return next();
-  const { accname } = parse(cookie!);
-  socket.data.id = accname;
-  next();
+const fastify = Fastify({
+  logger: {
+    stream: pretty({ colorize: true }),
+  },
 });
-gamesNamespace.on("connect", durakGameSocketHandler.bind({ namespace: gamesNamespace }));
 
-httpServer.listen(port);
-instrument(io, { auth: false, mode: "development" });
+export const store = new PrismaSessionStore(new PrismaClient(), {
+  checkPeriod: TEN_MINUTES_IN_MS,
+  loggerLevel: "log",
+});
+
+fastify
+  .register(fastifyCors, { origin: [serverOptions.cors.origin] })
+  .register(fastifyCookie)
+  .register(fastifySession, {
+    secret: process.env.EXPRESS_PRISMA_SESSION_SECRET_KEY!,
+    cookie: { secure: false, sameSite: "lax", maxAge: TEN_DAYS_IN_MS },
+    store: store as any,
+  })
+  .register(fastifySocketIo, {
+    cors: {
+      origin: serverOptions.cors.origin,
+    },
+  })
+  .register(fastifyWebsocket, {
+    options: {
+      verifyClient: async function(info: any) {
+        // (info.req as FastifyRequest);
+      },
+    },
+  })
+  .register(VkAuth)
+  .register(GithubAuth)
+  .register(onConnection)
+  .register(getUserProfile)
+  .register(chatPlugin, { path: "/global-chat" })
+  .ready()
+  .then(function() {
+    // @ts-ignore
+    fastify.log.info(this);
+    instrument(fastify.io, { auth: false, mode: "development" });
+    const durakGame: DurakGameSocket.Namespace = fastify.io.of(
+      /^\/game\/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/,
+    );
+    durakGame.use(beforeConnectMiddleware);
+    durakGame.on("connect", durakGameSocketHandler.bind(durakGame));
+    return fastify.log.info(fastify.io.path());
+  });
+
+;(async () => {
+  try {
+    await fastify.listen({ port: Number(process.env.FASTIFY_PORT) });
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+})();

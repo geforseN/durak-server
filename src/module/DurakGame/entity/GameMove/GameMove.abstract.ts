@@ -3,16 +3,29 @@ import DurakGame from "../../DurakGame.implimetntation";
 import Card from "../Card";
 
 export abstract class GameMove<P extends Player> {
-  player: P;
+  player: P; // TODO rename to #player
   game: DurakGame;
   abstract defaultBehaviour: NodeJS.Timeout;
+  abstract defaultBehaviourCallTimeInUTC: number;
 
-  protected constructor({ player, game }: { player: P, game: DurakGame }) {
+  protected constructor({ player, game }: { player: P; game: DurakGame }) {
     this.player = player;
     this.game = game;
   }
 
-  abstract putCardOnDesk(card: Card, index: number): Promise<void>
+  // TODO rename to player
+  get _player() {
+    return this.game.players.getPlayer({ id: this.player.id });
+    // TODO use
+    // return this.game.players.getPlayer({ id: this.#player.id });
+  }
 
-  abstract stopMove(): void
+  abstract putCardOnDesk(card: Card, index: number): Promise<void>;
+
+  abstract stopMove(): void;
+
+  abstract allowsTransferMove(
+    card: Card,
+    slotIndex: number,
+  ): Promise<boolean> | never;
 }

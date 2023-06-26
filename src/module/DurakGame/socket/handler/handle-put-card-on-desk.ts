@@ -10,10 +10,8 @@ export default async function handlePutCardOnDesk(
   const { game, playerId: id } = this;
   const player = getPlayer(game, id);
   const card = getPlacedCard({ suit, rank }, game, player);
-
   if (game.players.isDefender(player)
-    && game.desk.allowsTransferMove({ card, index: slotIndex, nextDefender: player.left })) {
-    // if (game.round.currentMove.allowsTransferMove(card, slotIndex)) {
+    && await game.round.currentMove.allowsTransferMove(card, slotIndex)) {
     return game.round.makeTransferMove(card, slotIndex);
   }
   clearTimeout(game.round.currentMove.defaultBehaviour);

@@ -19,16 +19,12 @@ export default class LobbiesService {
   // TODO ACKNOWLEDGMENT EMIT
   //  НУЖНО НА КЛИЕНТЕ РЕАЛИЗОВАТЬ ПРЕДУПРЕЖДЕНИЕ,
   //  ЧТО ПОЛЬЗОВАТЕЛЬ НАХОДИТСЯ В ДРУГОМ ЛОББИ
-  handleLobbyCreation(user: LobbyUser, settings: GameSettings) {
-    try {
-      const inAnotherLobby = this.lobbies.isContainsUser({ accname: user.accname });
-      if (inAnotherLobby) this.handleUserDisconnect({ accname: user.accname });
-      const lobby = this.createLobby({ adminAccname: user.accname, settings });
-      this.addUserInLobby(lobby, user);
-      return lobby;
-    } catch (error) {
-      console.log(error);
-    }
+  handleLobbyCreation(user: any, settings: GameSettings) {
+    const inAnotherLobby = this.lobbies.isContainsUser({ accname: user.accname });
+    if (inAnotherLobby) this.handleUserDisconnect({ accname: user.accname });
+    const lobby = this.createLobby({ adminAccname: user.accname, settings });
+    this.addUserInLobby(lobby, user);
+    return lobby;
   }
 
   private createLobby({ adminAccname, settings }: LobbyConstructor): Lobby {
@@ -38,7 +34,7 @@ export default class LobbiesService {
     return lobby;
   }
 
-  addUserInLobby(lobby: Lobby, user: LobbyUser): void {
+  addUserInLobby(lobby: Lobby, user: any): void {
     lobby.addUser(user);
     this.namespace.emit("addedUser", user, lobby.id);
   }
@@ -47,7 +43,7 @@ export default class LobbiesService {
     const lobby = this.lobbies.findLobbyWithUser({ accname });
     if (!lobby) return;
 
-    this.removeUserFromLobby(lobby, { accname });
+    this.removeUserFromLobby(lobby, { id: accname });
     if (lobby.hasNoUsers) {
       this.deleteLobby(lobby);
     } else {
@@ -62,9 +58,9 @@ export default class LobbiesService {
     return lobby;
   }
 
-  removeUserFromLobby(lobby: Lobby, { accname }: LobbyUserIdentifier) {
-    lobby.removeUser({ accname });
-    this.namespace.emit("removeUser", accname, lobby.id);
+  removeUserFromLobby(lobby: Lobby, { id }: { id: string }) {
+    lobby.removeUser({ accname: id });
+    this.namespace.emit("removeUser", id, lobby.id);
   }
 
   updateLobbyAdmin(lobby: Lobby): void {
@@ -83,7 +79,7 @@ export default class LobbiesService {
   }
 
   handleError({ name, error, socket }: { name: string, error: Error | unknown, socket: LobbiesIO.SocketIO }) {
-    const accname = socket.data?.accname ?? socket.id;
+    const accname = socket.data?.sid ?? socket.id;
     if (error instanceof Error) error.name = name;
     lobbiesService.sendNotification(error as Error, { accname });
     console.log(name, ": ", error);

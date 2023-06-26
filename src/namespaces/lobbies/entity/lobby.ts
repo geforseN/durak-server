@@ -17,7 +17,7 @@ export default class Lobby {
     this.adminAccname = adminAccname;
   }
 
-  get value(): any {
+  get value(): Omit<Lobby, "users"> & { users: LobbyUser[] } {
     return {
       ...this,
       users: this.users.value,
@@ -56,7 +56,6 @@ export default class Lobby {
     if (!this.hasMaxUsers) return this;
     throw new Error("Максимум игроков превышен");
   }
-
 
   updateAdmin(): string {
     this.adminAccname = this.users.firstUser.accname;

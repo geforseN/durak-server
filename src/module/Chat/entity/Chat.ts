@@ -26,7 +26,7 @@ export default class Chat {
       this.#messages.shift();
     }
     this.#messages.push(message);
-    socket.emit("everySocket", "message__send", message);
+    socket.emit("everySocket", "message::send", message);
   }
 
   #ensureSenderCanReply({ replyMessageId }: ChatReplyMessage) {

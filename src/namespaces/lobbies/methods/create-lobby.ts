@@ -1,6 +1,5 @@
 import { type CreateLobbyContext } from "../lobbies.handler";
 import { GameSettings } from "../lobbies.types";
-import assertGuestSocket from "../helpers/assert-guest-socket";
 import { lobbiesService } from "../../../index";
 
 export default async function createLobby(
@@ -8,8 +7,9 @@ export default async function createLobby(
   settings: GameSettings,
 ) {
   try {
-    const accname = assertGuestSocket(this.socket)!;
-    const user = await this.xprisma.user.findOrThrow({ accname });
+    // LINE BELOW IS WRONG
+    const accname = this.socket.data.sid;
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: accname } });
     const lobby = lobbiesService.handleLobbyCreation(user, settings)!;
     this.socket.join(lobby.id);
   } catch (error) {
@@ -18,3 +18,10 @@ export default async function createLobby(
 }
 
 
+function createLobby_() {
+  // getUserId
+  // getUser
+  // new Lobby
+  // add lobbyRoom in lobbyRooms
+  // add user in lobbyRoom
+}

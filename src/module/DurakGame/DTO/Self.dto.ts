@@ -1,5 +1,5 @@
+import { LobbyUser } from "../../Lobbies/lobbies.namespace";
 import { Player, PlayerKind } from "../entity/Player";
-import { LobbyUser } from "../../../namespaces/lobbies/entity/lobby-users";
 import CardDTO from "./Card.dto";
 
 export default class SelfDTO {

@@ -7,7 +7,7 @@ type LoggedUserToServerEvents = {
   "createLobby": (room: GameSettings) => void;
 
   "joinLobby": (lobbyId: string, cellIndex: number) => void;
-  "leaveLobby": () => void;
+  "leaveLobby": (lobbyId: string) => void;
 };
 
 type LobbyAdminToServerEvents = {
@@ -24,8 +24,8 @@ export namespace LobbiesIO {
     LoggedUserToServerEvents & LobbyAdminToServerEvents;
 
   export type ServerToClientEvents = {
-    "restoreLobbies": (lobbies: Lobby[]) => void;
-    "lobbyCreated": (lobby: Lobby) => void;
+    "restoreLobbies": (lobbies: (Omit<Lobby, "users"> & { users: LobbyUser[] })[]) => void;
+    "lobbyCreated": (lobby: Omit<Lobby, "users"> & { users: LobbyUser[] }) => void;
     "addedUser": (user: LobbyUser, lobbyId: string) => void;
     "removeUser": (accname: string, lobbyId: string) => void;
     "deleteLobby": (lobbyId: string) => void;
@@ -40,9 +40,7 @@ export namespace LobbiesIO {
   export type InterServerEvents = {};
 
   export type SocketData = {
-    accname: string
-    role?: "USER" | "GUEST" // "ADMIN"
-    badTriesCount?: number
+    sid: string
   };
 
   export type SocketIO = Socket<

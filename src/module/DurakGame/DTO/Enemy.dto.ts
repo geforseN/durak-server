@@ -1,5 +1,5 @@
+import { LobbyUser } from "../../Lobbies/lobbies.namespace";
 import { Player, PlayerKind } from "../entity/Player";
-import { LobbyUser } from "../../../namespaces/lobbies/entity/lobby-users";
 
 export default class EnemyDTO {
   cardCount: number;

@@ -1,10 +1,11 @@
 import { DefenderMove } from "./DefenderMove";
 import Card from "../../Card";
-import { AfterHandler } from "../../GameRound";
+import { AfterHandler, insertCard } from "../../GameRound";
 
-type ConstructorArg =
-  ConstructorParameters<typeof DefenderMove>[number]
-  & { card: Card, slotIndex: number };
+type ConstructorArg = ConstructorParameters<typeof DefenderMove>[number] & {
+  card: Card;
+  slotIndex: number;
+};
 
 export class TransferMove extends DefenderMove implements AfterHandler {
   card: Card;
@@ -14,15 +15,11 @@ export class TransferMove extends DefenderMove implements AfterHandler {
     super(arg);
     this.card = this.player.remove({ card });
     this.slotIndex = slotIndex;
-    this.#insertTransferCardOnDesk();
+    this.#insertCard();
   }
 
-  #insertTransferCardOnDesk() {
-    return this.game.desk.receiveCard({
-      card: this.card,
-      index: this.slotIndex,
-      who: this.player,
-    });
+  #insertCard() {
+    return insertCard.call(this);
   }
 
   handleAfterInitialization() {

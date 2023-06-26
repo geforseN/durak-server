@@ -26,7 +26,7 @@ export default class DurakGameStateDto {
     this.isDiscardEmpty = game.discard.count === 0;
     this.isTalonEmpty = game.talon.isEmpty;
     this.isTalonHasOneCard = game.talon.count === 1;
-    this.playersCount = game.settings.maxUserCount;
+    this.playersCount = game.settings.userCount;
     this.roundNumber = game.round.number;
     this.isDefenderGaveUp = game.round.isDefenderGaveUp;
     this.settings = game.settings;

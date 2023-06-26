@@ -13,14 +13,14 @@ import {
 
 export default function initializeChat() {
   type UserId = string | ReturnType<typeof randomUUID>
-  const userSocketRooms = new Map<UserId, Set<WebSocket>>();
+  const userSockets = new Map<UserId, Set<WebSocket>>();
   const sockets = <WebSocket[]>[];
   const globalChat = new Chat();
 
   return function getChatContext(connection: SocketStream, request: FastifyRequest) {
     sockets.push(connection.socket);
-    addUserSocketInRoom(request, connection, userSocketRooms);
-    dispatchMessageToCertainListener(connection);
+    addUserSocketInRoom.call({ userSockets }, connection.socket, request.session.userProfile.userId);
+    dispatchMessageToCertainListener(connection.socket);
     emitSocketOn<"notification__send">(connection.socket);
     emitSocketOnce<"history__restore">(connection.socket);
     emitEverySocketOn<"message__send">(connection.socket, sockets);

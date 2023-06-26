@@ -5,9 +5,12 @@ import DurakGame from "../../../DurakGame.implimetntation";
 
 export class DefenderMove extends GameMove<Defender> {
   defaultBehaviour: NodeJS.Timeout;
+  defaultBehaviourCallTimeInUTC: number;
 
-  constructor(arg: { game: DurakGame, player: Defender }) {
+  constructor(arg: { game: DurakGame; player: Defender }) {
     super(arg);
+    this.defaultBehaviourCallTimeInUTC =
+      Date.now() + this.game.settings.moveTime;
     this.defaultBehaviour = this.#defaultBehaviour();
   }
 
@@ -18,13 +21,18 @@ export class DefenderMove extends GameMove<Defender> {
   }
 
   override async putCardOnDesk(card: Card, slotIndex: number) {
-    await this.game.desk
-      .getSlot({ index: slotIndex })
-      .ensureCanBeDefended({ card });
+    await this.game.desk.slots[slotIndex].ensureCanBeDefended({ card });
     this.game.round.makeDefendInsertMove(card, slotIndex);
   }
 
   override stopMove() {
     this.game.round.makeDefendStopMove();
+  }
+
+  async allowsTransferMove(card: Card, slotIndex: number) {
+    return (
+      this.player.left.canTakeMore({ cardCount: this.game.desk.cardCount }) &&
+      this.game.desk.allowsTransferMove(card, slotIndex)
+    );
   }
 }

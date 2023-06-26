@@ -14,15 +14,14 @@ export default class PlayersManager {
   }
 
   removeEmptyPlayers() {
-    const newPlayers: Player[] = [];
-    for (const player of this.players.__value) {
-      if (player.hand.isEmpty) {
-        this.remove({ player });
-      } else {
-        newPlayers.push(player);
+    // used Symbol.iterator here
+    this.players.__value = [...this.players].filter((player) => {
+      if (!player.hand.isEmpty) {
+        return true;
       }
-    }
-    this.players.__value = newPlayers;
+      this.remove({ player });
+      return false;
+    });
   }
 
   makeAttacker(playerOrIdentifier: Player | LobbyUserIdentifier): Attacker {
@@ -48,7 +47,7 @@ export default class PlayersManager {
   }
 
   private make<P extends Player>(
-    Player: { new(player: Player): P },
+    Player: { new (player: Player): P },
     playerOrId: Player | LobbyUserIdentifier,
   ): P {
     const id = this.getId(playerOrId);
@@ -61,7 +60,8 @@ export default class PlayersManager {
   }
 
   private getPlayerIndex({ id }: { id: string }): number {
-    return this.players.__value.findIndex((player) => player.id === id);
+    // used Symbol.iterator here
+    return [...this.players].findIndex((player) => player.id === id);
   }
 
   getOrderedPlayerEnemies({ id }: { id: string }): Player[] {
@@ -75,14 +75,14 @@ export default class PlayersManager {
     return enemies;
   }
 
+  // TODO remove me
   private getId(playerOrId: Player | LobbyUserIdentifier): string {
-    return playerOrId instanceof Player
-      ? playerOrId.id
-      : playerOrId.accname;
+    return playerOrId instanceof Player ? playerOrId.id : playerOrId.accname;
   }
 
   private defineSidePlayers(): void {
-    this.players.__value.forEach((player, playerIndex, players) => {
+    // used Symbol.iterator here
+    [...this.players].forEach((player, playerIndex, players) => {
       const sideIndexes = this.getSideIndexes(playerIndex);
       player.left = players[sideIndexes.leftPlayerIndex];
       player.right = players[sideIndexes.rightPlayerIndex];
@@ -100,7 +100,8 @@ export default class PlayersManager {
   }
 
   private updateRefs<P extends Player>(instance: P, playerIndex: number) {
-    const { leftPlayerIndex, rightPlayerIndex } = this.getSideIndexes(playerIndex);
+    const { leftPlayerIndex, rightPlayerIndex } =
+      this.getSideIndexes(playerIndex);
     this.players.__value[playerIndex] = instance;
     this.players.__value[leftPlayerIndex].right = instance;
     this.players.__value[rightPlayerIndex].left = instance;

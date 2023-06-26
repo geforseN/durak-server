@@ -1,4 +1,5 @@
 import oauthPlugin, { OAuth2Namespace } from "@fastify/oauth2";
+import { ConnectStatus, Prisma } from "@prisma/client";
 
 export const GITHUB_AUTH_CALLBACK_URI = "/login/github/callback";
 export const authProviderKey = "githubId";
@@ -11,11 +12,18 @@ declare module "fastify" {
 
   interface Session {
     auth: {
-      provider: "github" | "twitch"
+      provider: "github"
       userId: string
       access_token: string
     };
-    userProfile: any;
+    userProfile: {
+      userId: string,
+      personalLink: string,
+      updatedAt: Date,
+      photoUrl: string | null,
+      nickname: string,
+      connectStatus: ConnectStatus
+    }
   }
 }
 

@@ -1,11 +1,12 @@
 import { DefenderMove } from "./DefenderMove";
 
 import Card from "../../Card";
-import { AfterHandler } from "../../GameRound";
+import { AfterHandler, insertCard } from "../../GameRound";
 
-type ConstructorArg =
-  ConstructorParameters<typeof DefenderMove>[number]
-  & { card: Card, slotIndex: number };
+type ConstructorArg = ConstructorParameters<typeof DefenderMove>[number] & {
+  card: Card;
+  slotIndex: number;
+};
 
 export class InsertDefendCardMove extends DefenderMove implements AfterHandler {
   card: Card;
@@ -15,22 +16,18 @@ export class InsertDefendCardMove extends DefenderMove implements AfterHandler {
     super(arg);
     this.card = this.player.remove({ card });
     this.slotIndex = slotIndex;
-    this.#insertDefendCardOnDesk();
+    this.#insertCard();
   }
 
-  #insertDefendCardOnDesk() {
-    return this.game.desk.receiveCard({
-      card: this.card,
-      index: this.slotIndex,
-      who: this.player,
-    });
+  #insertCard() {
+    return insertCard.call(this);
   }
 
   handleAfterInitialization() {
     if (!this.game.desk.isDefended) {
       return this.game.round.giveDefenderDefend();
     }
-    if ((!this.player.hand.count || !this.game.desk.allowsMoves)) {
+    if (!this.player.hand.count || !this.game.desk.allowsMoves) {
       return this.game.handleWonDefence(this.player);
     }
     if (this.game.desk.allowsAttackerMove) {

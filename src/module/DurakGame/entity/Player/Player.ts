@@ -1,14 +1,14 @@
-import { LobbyUser } from "../../../../namespaces/lobbies/entity/lobby-users";
 import { Hand } from "../Deck";
 import Card from "../Card";
 import GameRound from "../GameRound";
 import GamePlayerService from "./Player.service";
+import { LobbyUser } from "../../../Lobbies/lobbies.namespace";
 
-const GOOD_CARD_AMOUNT = 6;
+export const GOOD_CARD_AMOUNT = 6 as const;
 const allowedMissingCardCount = [0, 1, 2, 3, 4, 5, 6] as const;
-export type AllowedMissingCardCount = typeof allowedMissingCardCount[number];
+export type AllowedMissingCardCount = (typeof allowedMissingCardCount)[number];
 export const playerKinds = ["Defender", "Attacker", "Player"] as const;
-export type PlayerKind = typeof playerKinds[number];
+export type PlayerKind = (typeof playerKinds)[number];
 
 export default class Player {
   info!: LobbyUser;
@@ -30,11 +30,14 @@ export default class Player {
   }
 
   get id(): string {
-    return this.info.accname;
+    return this.info.id;
   }
 
   get missingNumberOfCards(): AllowedMissingCardCount {
-    return Math.max(GOOD_CARD_AMOUNT - this.hand.count, 0) as AllowedMissingCardCount;
+    return Math.max(
+      GOOD_CARD_AMOUNT - this.hand.count,
+      0,
+    ) as AllowedMissingCardCount;
   }
 
   private initializeFromLobbyUser(lobbyUser: LobbyUser) {
@@ -61,5 +64,9 @@ export default class Player {
 
   injectService(playerService: GamePlayerService) {
     this.service = playerService;
+  }
+
+  static hasSameId(this: { id: string }, player: Player) {
+    return this.id === player.id;
   }
 }

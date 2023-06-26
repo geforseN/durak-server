@@ -1,9 +1,15 @@
 import assert from "node:assert";
 import { Attacker, Defender, Player } from "../Player";
 import {
-  GameMove, TransferMove, DefenderGaveUpMove,
-  AttackerMove, StopAttackMove, InsertAttackCardMove,
-  DefenderMove, StopDefenseMove, InsertDefendCardMove,
+  GameMove,
+  TransferMove,
+  DefenderGaveUpMove,
+  AttackerMove,
+  StopAttackMove,
+  InsertAttackCardMove,
+  DefenderMove,
+  StopDefenseMove,
+  InsertDefendCardMove,
 } from "../GameMove";
 import GameRoundService from "./GameRound.service";
 import DurakGame from "../../DurakGame.implimetntation";
@@ -15,7 +21,7 @@ export default class GameRound {
   private readonly service?: GameRoundService;
   game: DurakGame;
 
-  constructor({ number, game }: { number: number, game: DurakGame }) {
+  constructor({ number, game }: { number: number; game: DurakGame }) {
     if (!game.info.namespace) throw new Error("Socket namespace not found");
     this.service = new GameRoundService(game.info.namespace);
     this.game = game;
@@ -52,23 +58,25 @@ export default class GameRound {
   }
 
   #pushNextMove<M extends GameMove<Defender | Attacker>>(
-    UncertainMove: { new(arg: any): M },
+    UncertainMove: { new (arg: any): M },
     moveContext: Required<Pick<M, "player">>,
   ) {
     clearTimeout(this.currentMove?.defaultBehaviour);
-    this.moves.push(new UncertainMove({
-      game: this.game,
-      player: moveContext.player,
-    }));
+    this.moves.push(
+      new UncertainMove({
+        game: this.game,
+        player: moveContext.player,
+      }),
+    );
     this.service?.letMoveTo(
       moveContext.player,
-      Date.now() + this.game.settings.moveTime,
+      this.currentMove.defaultBehaviourCallTimeInUTC,
       this.game.settings.moveTime,
     );
   }
 
   #updateCurrentMoveTo<M extends GameMove<Attacker | Defender>>(
-    CertainMove: { new(arg: any): M },
+    CertainMove: { new (arg: any): M },
     moveContext: Partial<M> = {},
   ) {
     clearTimeout(this.currentMove.defaultBehaviour);
@@ -80,24 +88,25 @@ export default class GameRound {
   }
 
   get #firstDefenderMove(): GameMove<Defender | Attacker> | undefined {
-    return this.moves.find((move) =>
-      move instanceof InsertDefendCardMove
-      || move instanceof DefenderGaveUpMove,
+    return this.moves.find(
+      (move) =>
+        move instanceof InsertDefendCardMove ||
+        move instanceof DefenderGaveUpMove,
     );
   }
 
   get firstDefenderMove(): DefenderMove | never {
     assert.ok(this.#firstDefenderMove, "Нет защищающегося хода");
-    assert.ok(this.#firstDefenderMove instanceof DefenderMove, "Ход не является защищающимся");
+    assert.ok(
+      this.#firstDefenderMove instanceof DefenderMove,
+      "Ход не является защищающимся",
+    );
     return this.#firstDefenderMove;
   }
 
   get primalAttacker(): Attacker | never {
-    return this.firstDefenderMove.player.right as Attacker;
-  }
-
-  private get defender(): Defender | never {
-    return this.primalAttacker.left as Defender;
+    assert.ok(this.firstDefenderMove.player.right instanceof Attacker);
+    return this.firstDefenderMove.player.right;
   }
 
   get nextAttacker(): Player {
@@ -108,21 +117,12 @@ export default class GameRound {
 
   get hasPrimalAttacker(): boolean {
     return !!this.#firstDefenderMove;
-  };
-
-  get distributionQueue() {
-    const playersQueue: Player[] = [this.primalAttacker];
-    let player = this.defender.left;
-    while (!player.isPrimalAttacker({ round: this })) {
-      playersQueue.push(player);
-      player = player.left;
-    }
-    playersQueue.push(this.defender);
-    return playersQueue;
   }
 
   giveDefenderDefend() {
-    return this.#pushNextMove(DefenderMove, { player: this.game.players.defender });
+    return this.#pushNextMove(DefenderMove, {
+      player: this.game.players.defender,
+    });
   }
 
   giveDefenderLastChance() {
@@ -130,12 +130,16 @@ export default class GameRound {
   }
 
   giveAttackerAttack() {
-    return this.#pushNextMove(AttackerMove, { player: this.game.players.attacker });
+    return this.#pushNextMove(AttackerMove, {
+      player: this.game.players.attacker,
+    });
   }
 
   givePrimalAttackerAttack() {
     return this.game.round.#pushNextMove(AttackerMove, {
-      player: this.game.players.manager.makeNewAttacker(this.game.round.primalAttacker),
+      player: this.game.players.manager.makeNewAttacker(
+        this.game.round.primalAttacker,
+      ),
     });
   }
 
@@ -147,7 +151,9 @@ export default class GameRound {
 
   giveAttackerLeftDefend() {
     return this.#pushNextMove(DefenderMove, {
-      player: this.game.players.manager.makeDefender(this.game.players.attacker.left),
+      player: this.game.players.manager.makeDefender(
+        this.game.players.attacker.left,
+      ),
     });
   }
 
@@ -177,9 +183,8 @@ export default class GameRound {
 
   #make<M extends (DefenderMove | AttackerMove) & AfterHandler>(
     CertainMove: new (arg: any) => M,
-    certainMoveContext?: any,
+    certainMoveContext?: Partial<M>,
   ) {
-    clearTimeout(this.currentMove.defaultBehaviour);
     this.#updateCurrentMoveTo(CertainMove, certainMoveContext);
     assert.ok(this.currentMove instanceof CertainMove, "(-_-)");
     return this.currentMove.handleAfterInitialization();
@@ -188,4 +193,14 @@ export default class GameRound {
 
 export interface AfterHandler {
   handleAfterInitialization(): void;
+}
+
+export function insertCard(
+  this: GameMove<Attacker | Defender> & { card: Card; slotIndex: number },
+) {
+  return this.game.desk.receiveCard({
+    card: this.card,
+    index: this.slotIndex,
+    who: this.player,
+  });
 }
