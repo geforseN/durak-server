@@ -11,11 +11,11 @@ import {
   DeskSlot,
   EmptySlot,
   UnbeatenSlot,
-  UnbeatenTrumpSlot,
 } from "../DeskSlot";
 import { CanProvideCards } from "../../DurakGame.implimetntation";
 import { Discard } from "../Deck";
 import GameDeskService from "./Desk.service";
+import NextDeskSlot from "../DeskSlot/NextDeskSlot";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
   slots: DeskSlot[];
@@ -33,16 +33,16 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     this.slots = Array.from({ length }, () => new EmptySlot());
   }
 
-  private get cards(): Card[] {
+  get #cards(): Card[] {
     return this.slots.flatMap((slot) => slot.value);
   }
 
   get cardCount(): number {
-    return this.cards.length;
+    return this.#cards.length;
   }
 
   get ranks(): Rank[] {
-    return [...new Set(this.cards.map((card) => card.rank))];
+    return [...new Set(this.#cards.map((card) => card.rank))];
   }
 
   get unbeatenCardCount(): number {
@@ -81,7 +81,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return (
       this.slots[slotIndex] instanceof EmptySlot &&
       Promise.all(
-        this.slots.map((slot) => slot.ensureAllowsTransfer({ card })),
+        this.slots.map((slot) => slot.ensureAllowsTransfer(card)),
       ).then(
         () => true,
         () => false,
@@ -98,48 +98,36 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     index: number;
     who: SuperPlayer;
   }) {
-    this.slots[index] = this.nextDeskSlot({ card, slot: this.slots[index] });
+    this.slots[index] = new NextDeskSlot(this.slots[index], card).correctSlot;
     this.service?.receiveCard({ card, index, who });
   }
 
   provideCards<T extends Defender | Discard>(target: T) {
-    target.receiveCards(...this.cards);
-    this.clear();
+    target.receiveCards(...this.#cards);
+    this.#clear();
   }
 
-  private clear() {
+  #clear() {
     this.slots.forEach((_, index) => (this.slots[index] = new EmptySlot()));
     this.service?.clear();
   }
 
   async ensureCanAttack(card: Card, slotIndex: number): Promise<Card> {
     if (this.isEmpty) return card;
-    await this.slots[slotIndex].ensureCanBeAttacked({ card });
-    await this.assertCanPut(card);
+    await this.slots[slotIndex].ensureCanBeAttacked(card);
+    await this.#ensureCanPut(card);
     return card;
   }
 
-  private async assertCanPut(card: Card): Promise<Card> {
-    if (!this.hasSame({ rank: card.rank })) {
+  async #ensureCanPut(card: Card): Promise<Card> {
+    if (!this.#hasSame({ rank: card.rank })) {
       throw new Error("Нет схожего ранга на доске");
     }
     return card;
   }
 
-  private hasSame({ rank }: { rank: Rank }) {
+  #hasSame({ rank }: { rank: Rank }) {
     return this.slots.some((slot) => slot.has({ rank }));
-  }
-
-  private nextDeskSlot({ card, slot }: { card: Card; slot: DeskSlot }) {
-    if (slot instanceof EmptySlot) {
-      return card.isTrump
-        ? new UnbeatenTrumpSlot(card)
-        : new UnbeatenSlot(card);
-    }
-    if (slot instanceof UnbeatenSlot) {
-      return new DefendedSlot(slot.attackCard, card);
-    }
-    throw new Error("Can not update slot");
   }
 
   injectService(gameDeskService: GameDeskService) {
