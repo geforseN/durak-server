@@ -1,7 +1,7 @@
 import { randomInt } from "node:crypto";
 import Deck, { CardCount } from "../Deck.abstract";
 import Card, { Suit } from "../../Card";
-import { Player, Players, AllowedMissingCardCount } from "../../Player";
+import { Player } from "../../Player";
 import { CanProvideCards } from "../../../DurakGame.implimetntation";
 import GameTalonService from "./Talon.service";
 
