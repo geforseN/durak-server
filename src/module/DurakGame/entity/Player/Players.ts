@@ -5,31 +5,33 @@ import GamePlayerService from "./Player.service";
 import { LobbyUser } from "../../../Lobbies/lobbies.namespace";
 
 export default class Players {
-  __value: Player[];
+  #value: Player[];
   manager: PlayersManager;
 
   constructor(arg: LobbyUser[] | Players) {
     if (arg instanceof Players) {
-      this.__value = [...arg].filter((player) => {
+      const players = arg;
+      this.#value = [...players].filter((player) => {
         if (!player.hand.isEmpty) {
           return true;
         }
         arg.manager.remove({ player });
         return false;
       });
-      this.manager = arg.manager;
+      this.manager = players.manager;
     } else {
-      this.__value = arg.map((user) => new Player(user));
+      const users = arg;
+      this.#value = users.map((user) => new Player(user));
       this.manager = new PlayersManager(this);
     }
   }
 
   *[Symbol.iterator]() {
-    yield* this.__value;
+    yield* this.#value;
   }
 
   get count() {
-    return this.__value.length;
+    return this.#value.length;
   }
 
   get attacker(): Attacker {

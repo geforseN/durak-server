@@ -52,7 +52,7 @@ export default class GameRoundDistributionQueue {
     ) {
       const playerIndex =
         (givenCardCount / cardCount) % this.game.players.count;
-      const player = this.game.players.__value[playerIndex];
+      const player = [...this.game.players][playerIndex];
       this.game.talon.provideCards(player, cardCount);
     }
   }

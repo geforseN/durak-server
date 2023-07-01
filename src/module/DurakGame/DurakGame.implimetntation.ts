@@ -89,7 +89,7 @@ export default class DurakGame {
   }
 
   #end() {
-    this.info.durakPlayerId = this.players.__value[0].id;
+    this.info.durakPlayerId = [...this.players][0].id;
     this.service?.end(this);
   }
 

@@ -91,9 +91,9 @@ export default class PlayersManager {
   private updateRefs<P extends Player>(instance: P, playerIndex: number) {
     const { leftPlayerIndex, rightPlayerIndex } =
       this.getSideIndexes(playerIndex);
-    this.players.__value[playerIndex] = instance;
-    this.players.__value[leftPlayerIndex].right = instance;
-    this.players.__value[rightPlayerIndex].left = instance;
+    [...this.players][playerIndex] = instance;
+    [...this.players][leftPlayerIndex].right = instance;
+    [...this.players][rightPlayerIndex].left = instance;
   }
 
   private getSideIndexes(playerIndex: number) {
