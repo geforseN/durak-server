@@ -17,9 +17,10 @@ export class StopAttackMove extends AttackerMove implements AfterHandler {
   }
 
   #handleInPursuit() {
+    const { primalAttacker } = this.game.round;
     if (
-      this.player.left.id === this.game.round.primalAttacker.id ||
-      this.game.players.defender.left.id === this.game.round.primalAttacker.id
+      this.player.left === primalAttacker ||
+      this.game.players.defender.left === primalAttacker
     ) {
       return this.game.handleLostDefence(this.game.players.defender);
     }
