@@ -15,6 +15,7 @@ export class TransferMove extends DefenderMove implements AfterHandler {
     super(arg);
     this.card = this.player.remove({ card });
     this.slotIndex = slotIndex;
+    this.isInsertMove = true;
     this.#insertCard();
   }
 
