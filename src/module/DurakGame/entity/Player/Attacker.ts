@@ -5,8 +5,8 @@ import SuperPlayer from "./SuperPlayer";
 export default class Attacker extends SuperPlayer {
   hasPutLastCard(round: GameRound): boolean {
     return (
-      round.previousMove instanceof InsertAttackCardMove &&
-      round.previousMove.player.id === this.id
+      round.previousMove.isInsertMove &&
+      round.previousMove.player === this
     );
   }
 }
