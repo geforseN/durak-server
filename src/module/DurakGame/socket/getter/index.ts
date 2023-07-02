@@ -6,7 +6,7 @@ import { CardDTO } from "../../DTO";
 
 export function getPlayer(game: DurakGame, id: string): Player | never {
   const player = game.players.getPlayer({ id });
-  assert.ok(game.players.isSuperPlayer(player), "У вас нет прав ложить карту на стол");
+  assert.ok(player.isSuperPlayer, "У вас нет прав ложить карту на стол");
   assert.ok(game.round.currentMove.player === player, "У вас нет права ходить");
   return player;
 }
