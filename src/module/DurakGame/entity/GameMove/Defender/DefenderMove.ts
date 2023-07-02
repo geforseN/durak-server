@@ -2,6 +2,7 @@ import Defender from "../../Player/Defender";
 import { GameMove } from "../GameMove.abstract";
 import Card from "../../Card";
 import DurakGame from "../../../DurakGame.implimetntation";
+import assert from "node:assert";
 
 export class DefenderMove extends GameMove<Defender> {
   defaultBehaviour: NodeJS.Timeout;
@@ -18,6 +19,12 @@ export class DefenderMove extends GameMove<Defender> {
     return setTimeout(() => {
       this.stopMove();
     }, this.game.settings.moveTime);
+  }
+
+  override get player(): Defender {
+    const defender = super.player
+    assert.ok(defender instanceof Defender)
+    return defender;
   }
 
   override async putCardOnDesk(card: Card, slotIndex: number) {
