@@ -3,21 +3,20 @@ import DurakGame from "../../DurakGame.implimetntation";
 import Card from "../Card";
 
 export abstract class GameMove<P extends Player> {
-  player: P; // TODO rename to #player
+  #player: P;
   game: DurakGame;
   abstract defaultBehaviour: NodeJS.Timeout;
   abstract defaultBehaviourCallTimeInUTC: number;
+  isInsertMove: boolean;
 
   protected constructor({ player, game }: { player: P; game: DurakGame }) {
-    this.player = player;
+    this.#player = player;
     this.game = game;
+    this.isInsertMove = false;
   }
 
-  // TODO rename to player
-  get _player() {
-    return this.game.players.getPlayer({ id: this.player.id });
-    // TODO use
-    // return this.game.players.getPlayer({ id: this.#player.id });
+  get player() {
+    return this.game.players.getPlayer({ id: this.#player.id });
   }
 
   abstract putCardOnDesk(card: Card, index: number): Promise<void>;
