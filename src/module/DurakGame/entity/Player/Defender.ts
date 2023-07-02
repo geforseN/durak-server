@@ -21,4 +21,8 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
       return false;
     }
   }
+
+  override get isDefender() {
+    return true;
+  }
 }

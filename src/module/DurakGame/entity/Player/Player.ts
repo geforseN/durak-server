@@ -62,4 +62,16 @@ export default class Player {
   static hasSameId(this: { id: string }, player: Player) {
     return this.id === player.id;
   }
+
+  get isDefender() {
+    return false;
+  }
+
+  get isAttacker() {
+    return false;
+  }
+
+  get isSuperPlayer() {
+    return this.isAttacker || this.isDefender;
+  }
 }
