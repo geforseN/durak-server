@@ -24,7 +24,7 @@ export default function durakGameSocketHandler(
   socket.on("superPlayer__stopMove", stopMoveListener.bind({ game, playerId }));
   socket.on("player__exitGame", () => {
     try {
-      game.players.manager.remove({ player: game.players.getPlayer({ id: playerId }) });
+      // game.players.service.remove({ player: game.players.getPlayer({ id: playerId }) });
     } catch (error) {
       console.log(error);
     }
