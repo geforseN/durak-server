@@ -15,6 +15,7 @@ export class InsertAttackCardMove extends AttackerMove implements AfterHandler {
     super(arg);
     this.card = this.player.remove({ card });
     this.slotIndex = slotIndex;
+    this.isInsertMove = true;
     this.#insertCard();
   }
 
