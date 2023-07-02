@@ -27,6 +27,8 @@ export default class Player {
       this.right = arg.right;
       this.index = arg.index;
       this.service = arg.service;
+      this.left.right = this;
+      this.right.left = this;
     } else {
       this.hand = new Hand();
       this.info = arg;
