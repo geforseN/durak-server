@@ -1,8 +1,8 @@
-import Player, { PlayerKind, playerKinds } from "../Player/Player";
+import Player, { PlayerKind, playerKinds } from "./Player";
 import { DurakGameSocket } from "../../socket/DurakGameSocket.types";
 import assert from "assert";
 
-export default class GamePlayersManagerService {
+export default class GamePlayersWebsocketService {
   constructor(
     public namespace: DurakGameSocket.Namespace,
   ) {
