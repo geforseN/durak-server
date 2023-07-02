@@ -2,6 +2,7 @@ import Attacker from "../../Player/Attacker";
 import { GameMove } from "../GameMove.abstract";
 import Card from "../../Card";
 import DurakGame from "../../../DurakGame.implimetntation";
+import assert from "node:assert";
 
 export class AttackerMove extends GameMove<Attacker> {
   defaultBehaviour: NodeJS.Timeout;
@@ -9,7 +10,8 @@ export class AttackerMove extends GameMove<Attacker> {
 
   constructor(arg: { game: DurakGame; player: Attacker }) {
     super(arg);
-    this.defaultBehaviourCallTimeInUTC = Date.now() + this.game.settings.moveTime;
+    this.defaultBehaviourCallTimeInUTC =
+      Date.now() + this.game.settings.moveTime;
     this.defaultBehaviour = this.#defaultBehaviour();
   }
 
