@@ -3,7 +3,6 @@ import CorrectGameSettings, { GameSettings } from "./CorrectGameSettings";
 import EventEmitter from "events";
 import LobbySlots from "./LobbySlots";
 import assert from "node:assert";
-import WebSocket from "ws";
 import { getFirstTimeUser, LobbyUser as User } from "../lobbies.namespace";
 import LobbyUser from "./LobbyUser";
 
