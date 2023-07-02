@@ -34,6 +34,12 @@ export class AttackerMove extends GameMove<Attacker> {
     );
   }
 
+  override get player(): Attacker {
+    const attacker = super.player;
+    assert.ok(attacker instanceof Attacker);
+    return attacker;
+  }
+
   override async putCardOnDesk(card: Card, slotIndex: number) {
     await this.game.desk.ensureCanAttack(card, slotIndex);
     this.game.round.makeAttackInsertMove(card, slotIndex);
