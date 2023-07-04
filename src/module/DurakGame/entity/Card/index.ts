@@ -1,18 +1,17 @@
 export type Suit = (typeof Card.suits)[number];
 export type Rank = (typeof Card.ranks)[number];
 export type Power = number;
-export type CardConstructor = { suit: Suit; rank: Rank; isTrump?: boolean };
+export type CardConstructor = { suit: Suit; rank: Rank };
 
 export default class Card {
   readonly rank: Rank;
   readonly suit: Suit;
   readonly power: number;
-  isTrump: boolean;
+  isTrump: boolean = false;
 
-  constructor({ rank, suit, isTrump = false }: CardConstructor) {
+  constructor({ rank, suit }: CardConstructor) {
     this.rank = rank;
     this.suit = suit;
-    this.isTrump = isTrump;
     this.power = Card.powers[rank];
   }
 
@@ -66,8 +65,10 @@ export class TrumpCard extends Card {
   isTrump: boolean = true;
 }
 
+// TODO: add methods to class or delete class   
 class DefendCard {
   canBeat(attackCard: AttackCard) {}
 }
 
+// TODO: add methods to class or delete class
 class AttackCard {}
