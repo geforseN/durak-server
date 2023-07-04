@@ -16,7 +16,9 @@ export abstract class GameMove<P extends Player> {
   }
 
   get player() {
-    return this.game.players.getPlayer({ id: this.#player.id });
+    return this.game.players.get(
+      (player) => player.id === this.#player.id,
+    );
   }
 
   abstract putCardOnDesk(card: Card, index: number): Promise<void>;

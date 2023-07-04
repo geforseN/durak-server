@@ -19,12 +19,13 @@ import VkAuth from "./api/auth/vk";
 import getUserProfile from "./api/profile/[personalLink].get";
 import onConnection from "./onConnection";
 import chatPlugin from "./module/Chat/chatPlugin";
+import { UnstartedGame } from "./module/DurakGame/NonstartedDurakGame";
 
 dotenv.config();
 const ONE_MINUTE_IN_MS = 60 * 1000;
 const TEN_MINUTES_IN_MS = ONE_MINUTE_IN_MS * 10;
 const TEN_DAYS_IN_MS = ONE_MINUTE_IN_MS * 60 * 24 * 10;
-export const durakGames = new Map<string, DurakGame>();
+export const durakGames = new Map<string, UnstartedGame | DurakGame>();
 const fastify = Fastify({
   logger: {
     stream: pretty({ colorize: true }),

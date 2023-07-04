@@ -1,6 +1,8 @@
 import { DefenderMove } from "./DefenderMove";
 import Card from "../../Card";
 import { AfterHandler, insertCardStrategy } from "../../GameRound";
+import assert from "node:assert";
+import { Attacker, Defender } from "../../Player";
 
 type ConstructorArg = ConstructorParameters<typeof DefenderMove>[number] & {
   card: Card;
@@ -13,7 +15,7 @@ export class TransferMove extends DefenderMove implements AfterHandler {
 
   constructor({ card, slotIndex, ...arg }: ConstructorArg) {
     super(arg);
-    this.card = this.player.remove({ card });
+    this.card = arg.player.removeCard({ card });
     this.slotIndex = slotIndex;
     this.isInsertMove = true;
     this.#insertCard();
@@ -28,7 +30,9 @@ export class TransferMove extends DefenderMove implements AfterHandler {
     // should be this.#defaultBehaviour redefined
     // when this.player become Attacker (code line below)
     // or should just clearInterval(this.defaultBehaviour)
-    this.game.players.manager.makeNewAttacker(this.player);
+    assert.ok(this.player instanceof Defender);
+    this.game.players.attacker = this.player;
+    assert.ok(this.player instanceof Attacker);
     return this.game.round.giveAttackerLeftDefend();
   }
 }

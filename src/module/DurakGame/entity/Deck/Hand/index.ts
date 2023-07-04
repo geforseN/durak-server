@@ -1,28 +1,57 @@
 import Deck from "../Deck.abstract";
 import Card from "../../Card";
+import assert from "node:assert";
+import crypto from "node:crypto";
+import { CardDTO } from "../../../DTO";
 
 export default class Hand extends Deck {
   constructor() {
     super();
   }
 
-  get value() {
-    return this._value;
+  has({ rank, suit }: ConstructorParameters<typeof Card>[0]): boolean {
+    return this.value.some((card) => card.hasSame({ suit, rank }));
   }
 
-  has({ card: { suit, rank } }: { card: ConstructorParameters<typeof Card>[0] }): boolean {
-    return this._value.some((card) => card.hasSame({ suit, rank }));
+  // TODO TrumpCard class will be implemented
+  get({ rank, suit }: CardDTO) {
+    const foundCard = this.value.find((card) => card.hasSame({ rank, suit }));
+    assert.ok(foundCard, "У вас нет такой карты");
+    return foundCard;
   }
 
   receive(...cards: Card[]): void {
-    this._value.push(...cards);
+    this.value.push(...cards);
   }
 
-  findIndex({ card: { suit, rank } }: { card: Card }): number {
-    return this._value.findIndex((card) => card.hasSame({ suit, rank }));
+  #getCardIndex({ card: { suit, rank } }: { card: Card }): number {
+    const index = this.value.findIndex((card) => card.hasSame({ suit, rank }));
+    assert.notStrictEqual(index, -1, "Неверный индекс");
+    return index;
+  }
+
+  removeCard(card: Card) {
+    const index = this.#getCardIndex({ card });
+    const [removedCard] = this.value.splice(index, 1);
+    assert.ok(removedCard, "Не получилось убрать свою карту");
+    return removedCard;
+  }
+
+  get randomCard() {
+    return this.value[crypto.randomInt(0, this.count)];
   }
 
   get isEmpty(): boolean {
     return this.count === 0;
+  }
+}
+
+class SuperHand extends Hand {
+  override removeCard(card: Card): Card {
+    return super.removeCard(card);
+  }
+
+  override get randomCard() {
+    return super.randomCard;
   }
 }

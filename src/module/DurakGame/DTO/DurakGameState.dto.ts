@@ -1,11 +1,13 @@
 import DurakGame from "../DurakGame.implimetntation";
 import SelfDTO from "./Self.dto";
 import EnemyDTO from "./Enemy.dto";
+import { OrderedPlayerEnemies } from "../entity/Player/Players";
+import { DeskSlot } from "../entity/DeskSlot";
 
 export default class DurakGameStateDto {
   self: SelfDTO;
   enemies: EnemyDTO[];
-  deskSlots: DurakGame["desk"]["slots"];
+  deskSlots: DeskSlot[];
   trumpCard: DurakGame["talon"]["trumpCard"];
   allowedPlayerId: string;
   isDiscardEmpty: boolean;
@@ -17,10 +19,14 @@ export default class DurakGameStateDto {
   settings: DurakGame["settings"];
 
   constructor(game: DurakGame, playerId: string) {
-    const currentPlayer = game.players.getPlayer({ id: playerId });
+    const currentPlayer = game.players.get(
+      (player) => player.id === playerId,
+    );
     this.self = new SelfDTO(currentPlayer);
-    this.enemies = game.players.manager.getOrderedPlayerEnemies({ id: playerId }).map((enemy) => new EnemyDTO(enemy));
-    this.deskSlots = game.desk.slots;
+    this.enemies = new OrderedPlayerEnemies(currentPlayer).value.map(
+      (enemy) => new EnemyDTO(enemy),
+    );
+    this.deskSlots = [...game.desk];
     this.trumpCard = game.talon.trumpCard;
     this.allowedPlayerId = game.round.currentMove.player.id;
     this.isDiscardEmpty = game.discard.count === 0;

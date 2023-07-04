@@ -1,124 +1,105 @@
 import assert from "node:assert";
 import { DurakGameSocket } from "./socket/DurakGameSocket.types";
-import {
-  Discard,
-  Desk,
-  GameRound,
-  Talon,
-  Card,
-  Players,
-  AllowedMissingCardCount,
-} from "./entity";
+import { Discard, Desk, GameRound, Talon, Card, Players } from "./entity";
 import DurakGameService from "./DurakGame.service";
 import {
-  GamePlayersManagerService,
-  GamePlayerService,
-  GameDeskService,
-  GameTalonService,
-  GameDiscardService,
+  GamePlayerWebsocketService,
+  GameDeskWebsocketService,
+  GameTalonWebsocketService,
+  GameDiscardWebsocketService,
 } from "./socket/service";
-import Lobby from "../Lobbies/entity/Lobby";
 import { GameSettings } from "../Lobbies/entity/CorrectGameSettings";
 import GameRoundDistributionQueue from "./GameRoundDistributionQueue";
+import { UnstartedGame } from "./NonstartedDurakGame";
+import GameRoundService from "./entity/GameRound/GameRound.service";
 
 export default class DurakGame {
-  info: {
+  readonly info: {
     id: string;
     adminId: string;
+    namespace: DurakGameSocket.Namespace;
     durakPlayerId?: string;
-    namespace?: DurakGameSocket.Namespace;
+    isStarted: true;
   };
-  settings: GameSettings & {
-    initialDistribution: {
-      finalCardCount: AllowedMissingCardCount;
-      cardCountPerIteration: AllowedMissingCardCount;
-    };
-  };
+  readonly settings: GameSettings;
+  readonly talon: Talon;
+  readonly discard: Discard;
+  readonly desk: Desk;
+  readonly #wsService: DurakGameService;
   players: Players;
-  talon: Talon;
-  discard: Discard;
-  desk: Desk;
-  service?: DurakGameService;
-  round!: GameRound;
+  round: GameRound;
 
-  constructor({ id, settings, slots }: Lobby) {
-    this.info = { id, adminId: slots.admin.id };
-    this.settings = {
-      ...settings,
-      moveTime: 90_000,
-      initialDistribution: {
-        finalCardCount: 6,
-        cardCountPerIteration: 2,
-      },
-    };
-    this.players = new Players(slots.users);
-    this.talon = new Talon(settings.cardCount);
-    this.discard = new Discard();
-    this.desk = new Desk();
-  }
-
-  start(socketsNamespace: DurakGameSocket.Namespace) {
-    this.#injectServices(socketsNamespace);
+  constructor(game: UnstartedGame, namespace: DurakGameSocket.Namespace) {
+    this.info = { ...game.info, namespace, isStarted: true };
+    this.settings = { ...game.settings, moveTime: 90_000 };
+    this.players = new Players(
+      game.players,
+      new GamePlayerWebsocketService(namespace),
+    );
+    this.talon = new Talon(game.settings, new GameTalonWebsocketService(namespace));
+    this.discard = new Discard(new GameDiscardWebsocketService(namespace));
+    this.desk = new Desk(game.settings.desk, new GameDeskWebsocketService(namespace));
+    this.#wsService = new DurakGameService(namespace);
+    // TODO change code line below
+    // NOTE should be similar to => readonly this.distribution = new GameRoundDistribution(this);
     new GameRoundDistributionQueue(this).makeInitialDistribution();
-    this.#makeInitialSuperPlayers();
-    this.round = new GameRound(this);
+    this.#makeInitialSuperPlayersStrategy();
+    this.round = new GameRound(this, new GameRoundService(namespace));
   }
 
-  handleLostDefence(defender = this.players.defender): void {
-    this.desk.provideCards(defender);
-    this.service?.lostRound({ game: this });
-    this.#beforeNewRoundHandler();
-    if (this.players.count === 1) {
+  handleLostDefence(): void {
+    this.desk.provideCards(this.players.defender);
+    this.#wsService.lostRound(this);
+    try {
+      this.#prepareBeforeNewRound();
+    } catch {
       return this.#end();
     }
-    const attacker = this.players.manager.makeNewAttacker(defender.left);
-    this.players.manager.makeNewDefender(attacker.left);
+    this.players.attacker = this.players.defender.left;
+    this.players.defender = this.players.attacker.left;
     this.round = new GameRound(this);
   }
 
-  handleWonDefence(defender = this.players.defender): void {
+  handleWonDefence(): void {
     this.desk.provideCards(this.discard);
-    this.service?.wonRound({ game: this });
-    this.#beforeNewRoundHandler();
-    if (this.players.count === 1) {
+    this.#wsService.wonRound(this);
+    try {
+      this.#prepareBeforeNewRound();
+    } catch {
       return this.#end();
     }
-    const attacker = this.players.manager.makeNewAttacker(defender);
-    this.players.manager.makeDefender(attacker.left);
+    this.players.attacker = this.players.defender;
+    this.players.defender = this.players.attacker.left;
     this.round = new GameRound(this);
+  }
+
+  restoreState(socket: DurakGameSocket.Socket) {
+    this.#wsService.restoreState({ socket, game: this });
+  }
+
+  #prepareBeforeNewRound() {
+    if (this.talon.hasCards) {
+      // TODO change code line below  
+      // NOTE should be similar to => this.distribution.make()
+      new GameRoundDistributionQueue(this).makeDistribution();
+    } else {
+      this.players = new Players(this.players);
+      assert.ok(this.players.count !== 1);
+    }
   }
 
   #end() {
     this.info.durakPlayerId = [...this.players][0].id;
-    this.service?.end(this);
+    this.#wsService?.end(this);
   }
 
-  #beforeNewRoundHandler() {
-    if (this.talon.hasCards) {
-      new GameRoundDistributionQueue(this).makeDistribution();
-    } else {
-      this.players = new Players(this.players)
-    }
-  }
-
-  #makeInitialSuperPlayers() {
-    assert.ok(this.info.adminId, "Admin accname not found");
-    const desiredAttacker = this.players.getPlayer({ id: this.info.adminId });
-    const attacker = this.players.manager.makeAttacker(desiredAttacker);
-    const defender = this.players.manager.makeDefender(attacker.left);
-    return { attacker, defender };
-  }
-
-  #injectServices(socketsNamespace: DurakGameSocket.Namespace) {
-    this.info.namespace = socketsNamespace;
-    this.service = new DurakGameService(this.info.namespace);
-    this.desk.injectService(new GameDeskService(this.info.namespace));
-    this.talon.injectService(new GameTalonService(this.info.namespace));
-    this.players.injectService(new GamePlayerService(this.info.namespace));
-    this.players.manager.injectService(
-      new GamePlayersManagerService(this.info.namespace),
+  #makeInitialSuperPlayersStrategy() {
+    assert.ok(this.info.adminId, "AdminId not found");
+    const desiredAttacker = this.players.get(
+      (player) => player.id === this.info.adminId,
     );
-    this.discard.injectService(new GameDiscardService(this.info.namespace));
+    this.players.attacker = desiredAttacker;
+    this.players.defender = this.players.attacker.left;
   }
 }
 

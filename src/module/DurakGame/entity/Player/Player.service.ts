@@ -1,9 +1,10 @@
-import { Player } from "./index";
+import { Player, PlayerKind, playerKinds } from "./index";
 import Card from "../Card";
 import CardDTO from "../../DTO/Card.dto";
 import { DurakGameSocket } from "../../socket/DurakGameSocket.types";
+import assert from "node:assert";
 
-export default class GamePlayerService {
+export default class GamePlayerWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {
   }
 
@@ -16,4 +17,17 @@ export default class GamePlayerService {
     this.namespace.to(player.id).emit("superPlayer__removeCard", new CardDTO(card));
     this.namespace.except(player.id).emit("player__changeCardCount", player.id, player.hand.count);
   }
+
+  changeKind(kind: string, player: Player) {
+    assert.ok(isPlayerKind(kind));
+    this.namespace.emit("player__changeKind", kind, player.id);
+  }
+
+  exitGame(player: Player) {
+    this.namespace.emit("player__exitGame", player.id)
+  }
+}
+
+function isPlayerKind(kind: string | PlayerKind): kind is PlayerKind {
+  return playerKinds.includes(kind as PlayerKind)
 }

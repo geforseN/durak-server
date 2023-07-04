@@ -1,7 +1,7 @@
 import { DurakGameSocket } from "../../../socket/DurakGameSocket.types";
 import Card from "../../Card";
 
-export default class GameDiscardService {
+export default class GameDiscardWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {
   }
 

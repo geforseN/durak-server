@@ -12,93 +12,73 @@ import {
   InsertDefendCardMove,
 } from "../GameMove";
 import GameRoundService from "./GameRound.service";
-import DurakGame from "../../DurakGame.implimetntation";
-import Card from "../Card";
+import type DurakGame from "../../DurakGame.implimetntation";
+import type Card from "../Card";
 
 export default class GameRound {
   readonly number: number;
-  private readonly moves: GameMove<Defender | Attacker>[];
-  private readonly service?: GameRoundService;
-  game: DurakGame;
+  readonly #moves: GameMove<Defender | Attacker>[];
+  readonly #wsService: GameRoundService;
+  readonly game: DurakGame;
 
-  constructor(game: DurakGame) {
-    if (!game.info.namespace) throw new Error("Socket namespace not found");
-    this.service = new GameRoundService(game.info.namespace);
+  constructor(game: DurakGame, wsService: GameRoundService);
+  constructor(game: DurakGame);
+  constructor(game: DurakGame, wsService?: GameRoundService) {
+    this.#wsService = wsService || game.round.#wsService;
     this.game = game;
     this.number = !game.round ? 1 : game.round.number + 1;
-    this.moves = [];
+    this.#moves = []; // TODO new GameRoundMoves
     this.#pushNextMove(AttackerMove, { player: game.players.attacker });
   }
 
   get previousMove(): GameMove<Defender | Attacker> {
-    return this.moves[this.#currentMoveIndex - 1];
+    return this.#moves[this.#currentMoveIndex - 1];
   }
 
   get currentMove(): GameMove<Defender | Attacker> {
-    return this.moves[this.#currentMoveIndex];
+    return this.#moves[this.#currentMoveIndex];
   }
 
-  set currentMove(move: GameMove<Defender | Attacker>) {
-    this.moves[this.#currentMoveIndex] = move;
+  set #currentMove(move: GameMove<Defender | Attacker>) {
+    this.#moves[this.#currentMoveIndex] = move;
     if (move instanceof DefenderGaveUpMove) {
-      this.service?.emitDefenderGaveUp(this);
+      this.#wsService?.emitDefenderGaveUp(this);
     }
   }
 
   get #currentMoveIndex(): number {
-    return this.moves.length - 1;
-  }
-
-  isCurrentMoveAllowedTo(player: Player): boolean {
-    return this.currentMove.player.id === player.id;
+    return this.#moves.length - 1;
   }
 
   get isDefenderGaveUp() {
-    return !!this.moves.findLast((move) => move instanceof DefenderGaveUpMove);
+    return !!this.#moves.findLast((move) => move instanceof DefenderGaveUpMove);
   }
 
   #pushNextMove<M extends GameMove<Defender | Attacker>>(
     UncertainMove: { new (arg: any): M },
-    moveContext: Required<Pick<M, "player">>,
+    moveContext: { player: M["player"] },
   ) {
     clearTimeout(this.currentMove?.defaultBehaviour);
-    this.moves.push(
+    this.#moves.push(
       new UncertainMove({
         game: this.game,
         player: moveContext.player,
       }),
     );
-    this.service?.letMoveToPlayer(this);
-  }
-
-  #updateCurrentMoveTo<M extends GameMove<Attacker | Defender>>(
-    CertainMove: { new (arg: any): M },
-    moveContext: Partial<M> = {},
-  ) {
-    clearTimeout(this.currentMove.defaultBehaviour);
-    this.currentMove = new CertainMove({
-      game: this.game,
-      player: moveContext.player ?? this.currentMove.player,
-      ...moveContext,
-    });
-  }
-
-  get #firstDefenderMove(): GameMove<Defender> | undefined {
-    return this.moves.find(
-      (move) =>
-        (move instanceof InsertDefendCardMove ||
-          move instanceof DefenderGaveUpMove) &&
-        move instanceof DefenderMove,
-    ) as DefenderMove;
+    this.#wsService?.letMoveToPlayer(this);
   }
 
   get firstDefenderMove(): DefenderMove | never {
-    assert.ok(this.#firstDefenderMove, "Нет защищающегося хода");
-    assert.ok(
-      this.#firstDefenderMove instanceof DefenderMove,
-      "Ход не является защищающимся",
+    const firstDefenderMove = this.#moves.find(
+      (move): move is DefenderMove =>
+        move instanceof DefenderMove && !(move instanceof TransferMove),
     );
-    return this.#firstDefenderMove;
+    // (move: GameMove<Attacker | Defender>): move is DefenderMove =>
+    // (move instanceof InsertDefendCardMove ||
+    // move instanceof DefenderGaveUpMove) &&
+    // move instanceof DefenderMove;
+    assert.ok(firstDefenderMove, "Нет защищающегося хода");
+    return firstDefenderMove;
   }
 
   get primalAttacker(): Attacker | never {
@@ -106,24 +86,16 @@ export default class GameRound {
     return this.firstDefenderMove.player.right;
   }
 
-  get nextAttacker(): Player {
-    return this.game.players.attacker.id === this.game.round.primalAttacker.id
+  get #nextAttacker(): Player {
+    return this.game.players.attacker === this.primalAttacker
       ? this.game.players.defender.left
       : this.game.players.attacker.left;
-  }
-
-  get hasPrimalAttacker(): boolean {
-    return !!this.#firstDefenderMove;
   }
 
   giveDefenderDefend() {
     return this.#pushNextMove(DefenderMove, {
       player: this.game.players.defender,
     });
-  }
-
-  giveDefenderLastChance() {
-    return this.giveDefenderDefend();
   }
 
   giveAttackerAttack() {
@@ -133,56 +105,59 @@ export default class GameRound {
   }
 
   givePrimalAttackerAttack() {
-    return this.game.round.#pushNextMove(AttackerMove, {
-      player: this.game.players.manager.makeNewAttacker(
-        this.game.round.primalAttacker,
-      ),
-    });
+    this.game.players.attacker = this.primalAttacker;
+    return this.giveAttackerAttack();
   }
 
   giveNextAttackerAttack() {
-    return this.#pushNextMove(AttackerMove, {
-      player: this.game.players.manager.makeNewAttacker(this.nextAttacker),
-    });
+    this.game.players.attacker = this.#nextAttacker;
+    return this.giveAttackerAttack();
   }
 
   giveAttackerLeftDefend() {
-    return this.#pushNextMove(DefenderMove, {
-      player: this.game.players.manager.makeDefender(
-        this.game.players.attacker.left,
-      ),
-    });
+    assert.ok(this.currentMove instanceof TransferMove);
+    assert.ok(this.currentMove.player instanceof Attacker);
+    assert.ok(this.currentMove.player === this.game.players.attacker);
+    assert.ok(this.currentMove.player.left === this.game.players.attacker.left); // TODO remove
+    this.game.players.defender = this.currentMove.player.left;
+    assert.ok(this.currentMove.player.left === this.game.players.defender); // TODO remove
+    return this.giveDefenderDefend();
   }
 
   makeDefendInsertMove(card: Card, slotIndex: number) {
-    return this.#make(InsertDefendCardMove, { card, slotIndex });
+    return this.#updateCurrentMoveTo(InsertDefendCardMove, { card, slotIndex });
   }
 
   makeAttackInsertMove(card: Card, slotIndex: number) {
-    return this.#make(InsertAttackCardMove, { card, slotIndex });
+    return this.#updateCurrentMoveTo(InsertAttackCardMove, { card, slotIndex });
   }
 
   makeTransferMove(card: Card, slotIndex: number) {
-    return this.#make(TransferMove, { card, slotIndex });
+    return this.#updateCurrentMoveTo(TransferMove, { card, slotIndex });
   }
 
   makeAttackStopMove() {
-    return this.#make(StopAttackMove);
+    return this.#updateCurrentMoveTo(StopAttackMove);
   }
 
   makeDefendStopMove() {
-    return this.#make(StopDefenseMove);
+    return this.#updateCurrentMoveTo(StopDefenseMove);
   }
 
   makeDefenderLost() {
-    return this.#make(DefenderGaveUpMove);
+    return this.#updateCurrentMoveTo(DefenderGaveUpMove);
   }
 
-  #make<M extends (DefenderMove | AttackerMove) & AfterHandler>(
-    CertainMove: new (arg: any) => M,
+  #updateCurrentMoveTo<M extends (DefenderMove | AttackerMove) & AfterHandler>(
+    CertainMove: new (arg: any) => M & AfterHandler,
     certainMoveContext?: Partial<M>,
   ) {
-    this.#updateCurrentMoveTo(CertainMove, certainMoveContext);
+    clearTimeout(this.currentMove.defaultBehaviour);
+    this.#currentMove = new CertainMove({
+      game: this.game,
+      player: certainMoveContext?.player || this.currentMove.player,
+      ...certainMoveContext,
+    });
     assert.ok(
       this.currentMove instanceof CertainMove,
       "Current move was not correctly updated",
@@ -196,8 +171,9 @@ export interface AfterHandler {
 }
 
 export function insertCardStrategy(
-  this: GameMove<Attacker | Defender> & { card: Card; slotIndex: number },
+  this: InsertDefendCardMove | InsertAttackCardMove | TransferMove,
 ) {
+  assert.ok(this.player instanceof Attacker || this.player instanceof Defender);
   return this.game.desk.receiveCard({
     card: this.card,
     index: this.slotIndex,

@@ -4,18 +4,16 @@ export type Power = number;
 export type CardConstructor = { suit: Suit; rank: Rank; isTrump?: boolean };
 
 export default class Card {
-  rank: Rank;
-  suit: Suit;
+  readonly rank: Rank;
+  readonly suit: Suit;
+  readonly power: number;
   isTrump: boolean;
 
   constructor({ rank, suit, isTrump = false }: CardConstructor) {
     this.rank = rank;
     this.suit = suit;
     this.isTrump = isTrump;
-  }
-
-  get power(): Power {
-    return Card.powers[this.rank];
+    this.power = Card.powers[rank];
   }
 
   hasSame(cardProperties: Partial<CardConstructor>): boolean {
@@ -63,3 +61,13 @@ export default class Card {
     A: 13,
   } as const;
 }
+
+export class TrumpCard extends Card {
+  isTrump: boolean = true;
+}
+
+class DefendCard {
+  canBeat(attackCard: AttackCard) {}
+}
+
+class AttackCard {}

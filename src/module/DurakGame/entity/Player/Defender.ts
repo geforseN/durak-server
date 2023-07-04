@@ -13,9 +13,9 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
         //  below statement is for 2 players game:
         //  in 2 players game can be only one attacker
         //  IF attacker stop move THAN defender won
-        this.left.id === primalAttacker.id ||
+        this.left === primalAttacker ||
         // below statement is for more than 2 players game
-        game.players.attacker.left.id === primalAttacker.id
+        game.players.attacker.left === primalAttacker
       );
     } catch {
       return false;

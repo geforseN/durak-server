@@ -3,18 +3,24 @@ import Card from "../Card";
 export type CardCount = 24 | 36 | 52;
 
 export default abstract class Deck {
-  protected _value: Card[];
+  protected readonly value: Card[];
 
   protected constructor(size?: CardCount) {
-    this._value = this.#buildDeck(size);
+    this.value = this.#buildDeck(size);
+  }
+
+  *[Symbol.iterator]() {
+    yield* this.value;
   }
 
   get count(): number {
-    return this._value.length;
+    return this.value.length;
   }
 
   #avalableRanks(rankCount: number) {
-    return [...Card.ranks].reverse().filter((rank, index) => index < rankCount);
+    return [...Card.ranks]
+      .reverse()
+      .filter((_rank, index) => index < rankCount);
   }
 
   #buildDeck(size?: CardCount): Card[] {
@@ -22,9 +28,7 @@ export default abstract class Deck {
     const rankCount = Math.floor(size / Card.suits.length);
     const avalableRanks = this.#avalableRanks(rankCount);
     return Card.suits.flatMap((suit) =>
-      avalableRanks.map((rank) =>
-        new Card({ rank, suit }),
-      ),
+      avalableRanks.map((rank) => new Card({ rank, suit })),
     );
   }
 }
