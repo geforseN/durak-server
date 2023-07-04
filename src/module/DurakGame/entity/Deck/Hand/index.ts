@@ -1,7 +1,7 @@
+import crypto from "node:crypto";
+import assert from "node:assert";
 import Deck from "../Deck.abstract";
 import Card from "../../Card";
-import assert from "node:assert";
-import crypto from "node:crypto";
 import { CardDTO } from "../../../DTO";
 
 export default class Hand extends Deck {
@@ -26,7 +26,7 @@ export default class Hand extends Deck {
 
   #getCardIndex({ card: { suit, rank } }: { card: Card }): number {
     const index = this.value.findIndex((card) => card.hasSame({ suit, rank }));
-    assert.notStrictEqual(index, -1, "Неверный индекс");
+    assert.ok(index > 0, "Неверный индекс");
     return index;
   }
 
@@ -46,6 +46,7 @@ export default class Hand extends Deck {
   }
 }
 
+// TODO: work with class or delete class
 class SuperHand extends Hand {
   override removeCard(card: Card): Card {
     return super.removeCard(card);
