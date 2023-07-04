@@ -1,10 +1,9 @@
 import { DurakGameSocket } from "./socket/DurakGameSocket.types";
-import NotificationAlert from "../notification-alert";
 import DurakGameStateDto from "./DTO/DurakGameState.dto";
 import DurakGame from "./DurakGame.implimetntation";
 import { durakGames } from "../../index";
 
-export default class DurakGameService {
+export default class DurakGameWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
 
   wonRound(game: DurakGame) {
@@ -23,24 +22,19 @@ export default class DurakGameService {
     );
   }
 
-  handleError({ playerId, error }: { error: unknown; playerId: string }) {
-    if (!(error instanceof Error)) {
-      return console.log("!!!ERROR: ", error);
-    }
-    console.log(error);
-    this.namespace
-      .to(playerId)
-      .emit("notification__send", new NotificationAlert().fromError(error));
-  }
-
   restoreState({
     socket,
     game,
+    playerId,
   }: {
     game: DurakGame;
     socket: DurakGameSocket.Socket;
+    playerId: string;
   }) {
-    socket.emit("game__restoreState", new DurakGameStateDto(game, __PLAYER__ID__));
+    socket.emit(
+      "game__restoreState",
+      new DurakGameStateDto(game, playerId),
+    );
   }
 
   end(game: DurakGame) {
