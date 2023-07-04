@@ -16,13 +16,6 @@ export default async function handlePutCardOnDesk(
   const card = player.hand.get({ suit, rank });
   // TODO refactor player.isAllowedToTransferMove && game.desk.allowsTransferMove
   // OR try {game.round.makeTranferMove} catch {game.round.currentMove.putCardOnDesk}
-  if (
-    player.isDefender &&
-    (await game.round.currentMove.allowsTransferMove(card, slotIndex))
-  ) {
-    clearTimeout(game.round.currentMove.defaultBehaviour);
-    return game.round.makeTransferMove(card, slotIndex);
-  }
   clearTimeout(game.round.currentMove.defaultBehaviour);
   return await game.round.currentMove.putCardOnDesk(card, slotIndex);
 }

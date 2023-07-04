@@ -1,7 +1,7 @@
-import Defender from "../../Player/Defender";
-import { GameMove } from "../GameMove.abstract";
-import Card from "../../Card";
-import DurakGame from "../../../DurakGame.implimetntation";
+import GameMove from "../GameMove.abstract";
+import type Defender from "../../Player/Defender";
+import type DurakGame from "../../../DurakGame.implimetntation";
+import type Card from "../../Card";
 
 export class DefenderMove extends GameMove<Defender> {
   defaultBehaviour: NodeJS.Timeout;
@@ -20,12 +20,16 @@ export class DefenderMove extends GameMove<Defender> {
     }, this.game.settings.moveTime);
   }
 
-  override async putCardOnDesk(card: Card, slotIndex: number) {
-    await this.game.desk.slotAt(slotIndex)?.ensureCanBeDefended(card);
-    this.game.round.makeDefendInsertMove(card, slotIndex);
+  async putCardOnDesk(card: Card, slotIndex: number) {
+    if (await this.game.round.currentMove.allowsTransferMove(card, slotIndex)) {
+      this.game.round.makeTransferMove(card, slotIndex);
+    } else {
+      await this.game.desk.slotAt(slotIndex)?.ensureCanBeDefended(card);
+      this.game.round.makeDefendInsertMove(card, slotIndex);
+    }
   }
 
-  override stopMove() {
+  stopMove() {
     this.game.round.makeDefendStopMove();
   }
 
@@ -36,3 +40,4 @@ export class DefenderMove extends GameMove<Defender> {
     );
   }
 }
+export default DefenderMove;
