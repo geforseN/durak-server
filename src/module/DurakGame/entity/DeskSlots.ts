@@ -4,7 +4,7 @@ import { randomInt } from "node:crypto";
 import NextDeskSlot from "./DeskSlot/NextDeskSlot";
 
 export default class DeskSlots {
-  #value: DeskSlot[];
+  readonly #value: DeskSlot[];
 
   constructor(length: number) {
     this.#value = Array.from({ length }, () => new EmptySlot());
@@ -34,7 +34,7 @@ export default class DeskSlots {
     this.#value[index] = new NextDeskSlot(this.#value[index], card).correctSlot;
   }
 
-  allowsTransferMove(card: Card, slotIndex: number): Promise<boolean> {
+  async allowsTransferMove(card: Card, slotIndex: number): Promise<boolean> {
     if (this.at(slotIndex) instanceof EmptySlot) {
       return Promise.reject(false);
     }
@@ -54,7 +54,7 @@ export default class DeskSlots {
     return this.#value.some((slot) => slot.has({ rank }));
   }
 
-  get ramdomSlotIndex(): number {
+  get randomSlotIndex(): number {
     return randomInt(0, this.count);
   }
 }

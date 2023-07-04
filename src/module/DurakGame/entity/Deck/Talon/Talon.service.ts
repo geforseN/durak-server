@@ -3,16 +3,29 @@ import { Player } from "../../Player";
 import Card from "../../Card";
 import Talon from "./index";
 
-export default class GameTalonService {
-  constructor(private namespace: DurakGameSocket.Namespace) {
-  }
+// TODO refactor methods parametrs & methods names
+export default class GameTalonWebsocketService {
+  constructor(private namespace: DurakGameSocket.Namespace) {}
 
-  provideCardsAnimation({ player, cards, talon }: { player: Player, cards: Card[], talon: Talon }) {
-    this.namespace.except(player.id).emit("talon__distributeCardsTo", player.id, cards.length);
+  provideCardsAnimation({
+    player,
+    cards,
+    talon,
+  }: {
+    player: Player;
+    cards: Card[];
+    talon: Talon;
+  }) {
+    this.namespace
+      .except(player.id)
+      .emit("talon__distributeCardsTo", player.id, cards.length);
     this.emitCardsRepresentation({ possibleTrumpCardReceiver: player, talon });
   }
 
-  private emitCardsRepresentation(ctx: { possibleTrumpCardReceiver: Player, talon: Talon }) {
+  private emitCardsRepresentation(ctx: {
+    possibleTrumpCardReceiver: Player;
+    talon: Talon;
+  }) {
     if (ctx.talon.isEmpty) {
       this.moveTrumpCard({ player: ctx.possibleTrumpCardReceiver });
     } else if (ctx.talon.hasOneCard) {

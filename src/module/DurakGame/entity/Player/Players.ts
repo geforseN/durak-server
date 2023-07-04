@@ -1,43 +1,32 @@
 import assert from "node:assert";
 import { Attacker, Defender, Player, SuperPlayer } from "./index";
 import { LobbyUser } from "../../../Lobbies/lobbies.namespace";
-import GamePlayersWebsocketService from "./Players.service";
-import GamePlayerService from "./Player.service";
+import GamePlayerWebsocketService from "./Player.service";
 
 export default class Players {
   #value: Player[];
-  #websocketService?: GamePlayersWebsocketService;
 
+  constructor(lobbyUsersArray: LobbyUser[]);
+  constructor(players: Players, wsPlayerService: GamePlayerWebsocketService);
+  constructor(players: Players);
   constructor(
-    userArrayOrPlayers: LobbyUser[] | Players,
-    wsService?: GamePlayersWebsocketService,
+    lobbyUsersArrayOrPlayers: LobbyUser[] | Players,
+    wsPlayerService?: GamePlayerWebsocketService,
   ) {
-    if (userArrayOrPlayers instanceof Players) {
-      const players = userArrayOrPlayers;
-      this.#value = [...players].filter((player) => {
-        if (!player.hand.isEmpty) {
-          return true;
-        }
-        player.left.right = player.right;
-        player.right.left = player.left;
-        this.#websocketService?.exitGame(player);
-        return false;
-      });
-      this.#websocketService = players.#websocketService || wsService;
+    if (lobbyUsersArrayOrPlayers instanceof Players) {
+      const players = lobbyUsersArrayOrPlayers;
+      this.#value = wsPlayerService
+        ? players.#value.map((player) => new Player(player, wsPlayerService))
+        : players.#value.filter((player) => {
+            if (player.hand.isEmpty) {
+              player.exitGame();
+              return false;
+            }
+            return true;
+          });
     } else {
-      const usersArray = userArrayOrPlayers;
-      this.#value = usersArray
-        .map((user) => new Player(user))
-        .map((player, index, players) => {
-          const { leftPlayerIndex, rightPlayerIndex } = new SideIndexes(
-            index,
-            players.length,
-          );
-          player.left = players[leftPlayerIndex];
-          player.right = players[rightPlayerIndex];
-          return player;
-        });
-      this.#websocketService = undefined;
+      const lobbyUsersArray = lobbyUsersArrayOrPlayers;
+      this.#value = new PlayersWithIdentifiedSidePlayers(lobbyUsersArray).value;
     }
   }
 
@@ -50,87 +39,145 @@ export default class Players {
   }
 
   get attacker(): Attacker {
-    return this.#get(Attacker, "Атакующий не найден");
-    // return this.#get2((player) => player instanceof Attacker, "Атакующий не найден");
+    return this.#getSuperPlayerFromCallback(
+      (player): player is Attacker => player instanceof Attacker,
+      "Атакующий не найден",
+    );
   }
 
   get defender(): Defender {
-    return this.#get(Defender, "Защищающийся не найден");
-    // return this.#get2((player) => player instanceof Defender, "Защищающийся не найден");
+    return this.#getSuperPlayerFromCallback(
+      (player): player is Defender => player instanceof Defender,
+      "Защищающийся не найден",
+    );
   }
 
   set defender(player: Player) {
-    this.#set(player, Defender);
+    this.#changeKind(player, Defender);
   }
 
   set attacker(player: Player) {
-    this.#set(player, Attacker);
+    this.#changeKind(player, Attacker);
   }
 
-  #set<NewPlayerKind extends Player, OldPlayerKind extends Player>(
-    unupdatedPlayer: OldPlayerKind,
-    CertainPlayer: { new (player: OldPlayerKind): NewPlayerKind },
-  ): NewPlayerKind {
-    const updatedPlayer = new CertainPlayer(unupdatedPlayer);
-    const nonBasicCertainPlayer = [...this].find(
-      (player) =>
-        player instanceof CertainPlayer && !(player.constructor !== Player),
+  // IF kinds are same THEN return
+  // find old player index
+  // put new player in index
+  #changeKind<OldPlayer extends Player, NewPlayer extends SuperPlayer | Player>(
+    targetOfKindChange: OldPlayer,
+    ParticularKind: { new (player: OldPlayer): NewPlayer },
+  ) {
+    if (targetOfKindChange.constructor === ParticularKind) {
+      return console.log(
+        "Players#set fast return: kind to set is same as old kind",
+      );
+    }
+    const playerIndex = this.#value.indexOf(targetOfKindChange);
+    assert.ok(playerIndex !== -1);
+    const updatedPlayer = new ParticularKind(targetOfKindChange);
+    this.#value.splice(playerIndex, 1, updatedPlayer);
+    const certainSuperPlayer = this.#value.find(
+      (player): player is SuperPlayer =>
+        player instanceof ParticularKind && player.constructor !== Player,
     );
-    if (nonBasicCertainPlayer && nonBasicCertainPlayer !== updatedPlayer) {
-      this.#set(nonBasicCertainPlayer, Player);
+    if (certainSuperPlayer && certainSuperPlayer !== updatedPlayer) {
+      this.#changeKind(certainSuperPlayer, Player);
     }
-    if (unupdatedPlayer.constructor !== updatedPlayer.constructor) {
-      this.#websocketService?.changeKind(CertainPlayer.name, updatedPlayer);
-    }
-    return updatedPlayer;
+    this.#changePlayerKindIfNeeded(targetOfKindChange, updatedPlayer);
   }
 
-  #get<PlayerToFind extends SuperPlayer>(
+  #setPlayer<OldPlayerKind extends Player>(
+    oldPlayer: OldPlayerKind,
+    CertainPlayer = Player,
+  ) {
+    const playerIndex = this.#value.indexOf(oldPlayer);
+    assert.ok(playerIndex !== -1);
+    const updatedPlayer = new CertainPlayer(oldPlayer);
+    this.#value.splice(playerIndex, 1, updatedPlayer);
+
+    if (oldPlayer.constructor !== CertainPlayer) {
+      const newKind = updatedPlayer.constructor.name;
+      oldPlayer.changeKind(newKind);
+    }
+  }
+
+  #changePlayerKindIfNeeded(oldPlayer: Player, updatedPlayer: Player) {
+    const isKindHasChanged =
+      oldPlayer.constructor !== updatedPlayer.constructor;
+    if (isKindHasChanged) {
+      const newKind = updatedPlayer.constructor.name;
+      oldPlayer.changeKind(newKind);
+    }
+  }
+
+  #getInstanceOf<PlayerToFind extends SuperPlayer>(
     PlayerToFind: {
       new (...arg: any): PlayerToFind;
     },
     notFoundMessage: string,
   ): PlayerToFind {
-    const player = [...this].find((player) => player instanceof PlayerToFind);
+    const player = this.#value.find(
+      (player): player is PlayerToFind => player instanceof PlayerToFind,
+    );
     assert.ok(player, notFoundMessage);
-    assert.ok(player instanceof PlayerToFind, "TypeScript");
     return player;
   }
 
-  getPlayer({ id }: { id: string }): Player {
-    const player = [...this].find((player) => player.id === id);
-    assert.ok(player, "Игрок не найден");
+  #getSuperPlayerFromCallback<PlayerToFind extends SuperPlayer>(
+    cb: (p: Player) => p is PlayerToFind,
+    notFoundMessage: string,
+  ): PlayerToFind {
+    const player = this.#value.find(cb);
+    assert.ok(player, notFoundMessage);
     return player;
   }
 
-  injectService(
-    playersService: GamePlayersWebsocketService,
-    playerService: GamePlayerService,
-  ) {
-    this.#websocketService = playersService;
-    [...this].forEach((player) => player.injectService(playerService));
+  getPlayerById(id: string): Player {
+    return this.get((player) => player.id === id);
+  }
+
+  get(
+    cb: (player: Player) => boolean,
+    notFoundMessage = "Игрок не найден",
+  ): Player {
+    const player = this.#value.find(cb);
+    assert.ok(player, notFoundMessage);
+    return player;
   }
 }
-
 export class OrderedPlayerEnemies {
-  #value: Player[];
+  value: Player[];
 
   constructor(player: Player) {
-    this.#value = [];
+    this.value = [];
     let enemy = player.left;
     while (enemy.id !== player.id) {
-      this.#value.push(enemy);
+      this.value.push(enemy);
       enemy = enemy.left;
     }
   }
+}
 
-  *[Symbol.iterator]() {
-    yield* this.#value;
+export class PlayersWithIdentifiedSidePlayers {
+  value: Player[];
+
+  constructor(lobbyUsersArray: LobbyUser[]) {
+    this.value = lobbyUsersArray
+      .map((user) => new Player(user))
+      .map((player, index, players) => {
+        const { leftPlayerIndex, rightPlayerIndex } = new SidePlayersIndexes(
+          index,
+          players.length,
+        );
+        player.left = players[leftPlayerIndex];
+        player.right = players[rightPlayerIndex];
+        return player;
+      });
   }
 }
 
-export class SideIndexes {
-  constructor(private playerIndex: number, private playersCount: number) {}
+export class SidePlayersIndexes {
+  constructor(public playerIndex: number, public playersCount: number) {}
   get leftPlayerIndex() {
     const isLastPlayer = this.playerIndex === this.playersCount - 1;
     return isLastPlayer ? 0 : this.playerIndex + 1;
@@ -138,5 +185,18 @@ export class SideIndexes {
   get rightPlayerIndex() {
     const isFirstPlayer = this.playerIndex === 0;
     return isFirstPlayer ? this.playersCount - 1 : this.playerIndex - 1;
+  }
+}
+
+export class NonEmptyPlayers {
+  value: Player[];
+  constructor(players: Players) {
+    this.value = [...players].filter((player) => {
+      if (!player.hand.isEmpty) {
+        return true;
+      }
+      player.exitGame();
+      return false;
+    });
   }
 }

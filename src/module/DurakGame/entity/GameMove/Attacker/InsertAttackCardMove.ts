@@ -13,7 +13,7 @@ export class InsertAttackCardMove extends AttackerMove implements AfterHandler {
 
   constructor({ card, slotIndex, ...arg }: ConstructorArg) {
     super(arg);
-    this.card = this.player.remove({ card });
+    this.card = arg.player.removeCard({ card });
     this.slotIndex = slotIndex;
     this.isInsertMove = true;
     this.#insertCard();
@@ -26,10 +26,12 @@ export class InsertAttackCardMove extends AttackerMove implements AfterHandler {
   handleAfterMoveIsDone() {
     if (
       this.player.hand.isEmpty ||
-      !this.game.players.defender.canDefend(this.game.desk.unbeatenSlots.cardCount) ||
+      !this.game.players.defender.canDefend(
+        this.game.desk.unbeatenSlots.cardCount,
+      ) ||
       !this.game.desk.allowsAttackerMove
     ) {
-      return this.game.round.giveDefenderLastChance();
+      return this.game.round.giveDefenderDefend();
     }
     return this.game.round.giveAttackerAttack();
   }

@@ -1,17 +1,19 @@
 import { AttackerMove } from "./AttackerMove";
 import { AfterHandler } from "../../GameRound";
+import assert from "node:assert";
+import { Attacker } from "../../Player";
 
 export class StopAttackMove extends AttackerMove implements AfterHandler {
   handleAfterMoveIsDone() {
+    assert.ok(this.player instanceof Attacker);
     if (this.game.round.isDefenderGaveUp) {
       return this.#handleInPursuit();
     }
-    debugger;
     if (this.player.hasPutLastCard(this.game.round)) {
       return this.game.round.giveDefenderDefend();
     }
     if (this.game.players.defender.canWinDefense(this.game)) {
-      return this.game.handleWonDefence(this.game.players.defender);
+      return this.game.handleWonDefence();
     }
     return this.game.round.giveNextAttackerAttack();
   }
@@ -22,7 +24,7 @@ export class StopAttackMove extends AttackerMove implements AfterHandler {
       this.player.left === primalAttacker ||
       this.game.players.defender.left === primalAttacker
     ) {
-      return this.game.handleLostDefence(this.game.players.defender);
+      return this.game.handleLostDefence();
     }
     return this.game.round.giveNextAttackerAttack();
   }

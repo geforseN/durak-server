@@ -1,5 +1,8 @@
 import assert from "node:assert";
-import { GOOD_CARD_AMOUNT } from "../../DurakGame/entity/Player/Player";
+import {
+  AllowedMissingCardCount,
+  GOOD_CARD_AMOUNT,
+} from "../../DurakGame/entity/Player/Player";
 
 export type UserCount = 2 | 3 | 4 | 5 | 6;
 export type GameType = "basic" | "perevodnoy";
@@ -10,19 +13,39 @@ export type GameSettings = {
   gameType: GameType;
   cardCount: CardCount;
   moveTime: number;
-}
+  initialDistribution: {
+    finalCardCount: AllowedMissingCardCount;
+    cardCountPerIteration: AllowedMissingCardCount;
+  };
+  desk: {
+    allowedFilledSlotCount: AllowedMissingCardCount;
+    slotCount: AllowedMissingCardCount;
+  };
+};
 
 export default class CorrectGameSettings {
-  userCount: UserCount;
-  gameType: GameType;
-  cardCount: CardCount;
-  moveTime: number;
+  userCount: GameSettings["userCount"];
+  gameType: GameSettings["gameType"];
+  cardCount: GameSettings["cardCount"];
+  moveTime: GameSettings["moveTime"];
+  initialDistribution: GameSettings["initialDistribution"];
+  desk: GameSettings["desk"];
 
-  constructor({ userCount, cardCount, gameType, moveTime = 15_000 }: GameSettings) {
+  constructor({
+    userCount,
+    cardCount,
+    gameType,
+    moveTime = 15_000,
+  }: GameSettings) {
     this.userCount = userCount;
     this.cardCount = cardCount;
     this.gameType = gameType;
     this.moveTime = moveTime;
+    this.initialDistribution = {
+      finalCardCount: 6,
+      cardCountPerIteration: 2,
+    };
+    this.desk = { allowedFilledSlotCount: 6, slotCount: 6 };
     this.#ensureCorrectUserCount(this.userCount);
     this.#ensureCorrectCardCount(this.cardCount);
     this.#ensureCorrectGameType(this.gameType);
@@ -30,7 +53,10 @@ export default class CorrectGameSettings {
   }
 
   #ensureCorrectUserCount(userCount: number): asserts userCount is UserCount {
-    assert.ok(this.#allowedUserCount.includes(userCount), "Нельзя создать лобби из менее двух или более шести игроков");
+    assert.ok(
+      this.#allowedUserCount.includes(userCount),
+      "Нельзя создать лобби из менее двух или более шести игроков",
+    );
   }
 
   get #allowedUserCount() {
@@ -38,7 +64,10 @@ export default class CorrectGameSettings {
   }
 
   #ensureCorrectCardCount(cardCount: number): asserts cardCount is CardCount {
-    assert.ok(this.#allowedCardCount.includes(cardCount), "Неверное количество карт");
+    assert.ok(
+      this.#allowedCardCount.includes(cardCount),
+      "Неверное количество карт",
+    );
   }
 
   get #allowedCardCount() {

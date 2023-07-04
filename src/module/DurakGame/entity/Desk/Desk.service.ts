@@ -3,7 +3,7 @@ import { DurakGameSocket } from "../../socket/DurakGameSocket.types";
 import { SuperPlayer } from "../Player";
 import CardDTO from "../../DTO/Card.dto";
 
-export default class GameDeskService {
+export default class GameDeskWebscoketService {
   constructor(private namespace: DurakGameSocket.Namespace) {
   }
 

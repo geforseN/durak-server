@@ -5,8 +5,8 @@ import DurakGame from "../../../DurakGame.implimetntation";
 import assert from "node:assert";
 
 export class AttackerMove extends GameMove<Attacker> {
-  defaultBehaviour: NodeJS.Timeout;
-  defaultBehaviourCallTimeInUTC: number;
+  readonly defaultBehaviour: NodeJS.Timeout;
+  readonly defaultBehaviourCallTimeInUTC: number;
 
   constructor(arg: { game: DurakGame; player: Attacker }) {
     super(arg);
@@ -16,8 +16,7 @@ export class AttackerMove extends GameMove<Attacker> {
   }
 
   #defaultBehaviour() {
-    console.log("#defaultBehaviour AttackerMove");
-    console.log(Object.getPrototypeOf(this).name);
+    console.log("#defaultBehaviour AttackerMove", this.constructor.name);
     return setTimeout(async () => {
       console.log("TIMEOUT: defaultBehaviour called");
       if (this.game.desk.isEmpty) {
@@ -30,16 +29,11 @@ export class AttackerMove extends GameMove<Attacker> {
   }
 
   async #insertRandomCardOfPlayer() {
+    assert.ok(this.player instanceof Attacker);
     return await this.putCardOnDesk(
       this.player.randomCard,
-      this.game.desk.slots.ramdomSlotIndex,
+      this.game.desk.randomSlotIndex,
     );
-  }
-
-  override get player(): Attacker {
-    const attacker = super.player;
-    assert.ok(attacker instanceof Attacker);
-    return attacker;
   }
 
   override async putCardOnDesk(card: Card, slotIndex: number) {

@@ -1,12 +1,14 @@
 import type DurakGame from "./DurakGame.implimetntation";
 import { Player } from "./entity/Player";
 
+// TODO refactor
 export default class GameRoundDistributionQueue {
   game: DurakGame;
   playersQueue: Player[];
 
   constructor(game: DurakGame) {
     this.game = game;
+    // TODO refactor
     this.playersQueue = this.#makeDistributionQueue();
   }
 
@@ -25,9 +27,9 @@ export default class GameRoundDistributionQueue {
     const distributionQueue = this.playersQueue
       // TODO remove mapping if assert will never happen
       .map((distributionPlayer) => {
-        const player = this.game.players.getPlayer({
-          id: distributionPlayer.id,
-        });
+        const player = this.game.players.get(
+          (player) => player.id === distributionPlayer.id,
+        );
         console.assert(
           distributionPlayer === player,
           "DISTRIBUTION %s QUEUE",
@@ -41,6 +43,7 @@ export default class GameRoundDistributionQueue {
     }
   }
 
+  // TODO refactor
   makeInitialDistribution() {
     const { finalCardCount, cardCountPerIteration: cardCount } =
       this.game.settings.initialDistribution;

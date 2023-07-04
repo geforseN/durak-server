@@ -15,8 +15,8 @@ import Lobby from "./entity/Lobby";
 import prisma from "../../../prisma";
 import EventEmitter from "events";
 import { durakGames } from "../../index";
-import DurakGame from "../DurakGame/DurakGame.implimetntation";
 import User from "./entity/LobbyUser";
+import { UnstartedGame } from "../DurakGame/NonstartedDurakGame";
 
 export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
   const handleConnection = initializeGameLobbies();
@@ -95,7 +95,7 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
           "game::start",
           async function ({ lobbyId }: { lobbyId?: Lobby["id"] }) {
             const lobby = await getLobby.call({ lobbies, userId }, lobbyId);
-            durakGames.set(lobby.id, new DurakGame(lobby));
+            durakGames.set(lobby.id, new UnstartedGame(lobby));
           },
         )
         .on("lobby::user::move", () => {});

@@ -14,7 +14,7 @@ export class InsertDefendCardMove extends DefenderMove implements AfterHandler {
 
   constructor({ card, slotIndex, ...arg }: ConstructorArg) {
     super(arg);
-    this.card = this.player.remove({ card });
+    this.card = arg.player.removeCard({ card });
     this.slotIndex = slotIndex;
     this.isInsertMove = true;
     this.#insertCard();
@@ -29,7 +29,7 @@ export class InsertDefendCardMove extends DefenderMove implements AfterHandler {
       return this.game.round.giveDefenderDefend();
     }
     if (!this.player.hand.count || !this.game.desk.allowsMoves) {
-      return this.game.handleWonDefence(this.player);
+      return this.game.handleWonDefence();
     }
     if (this.game.desk.allowsAttackerMove) {
       return this.game.round.givePrimalAttackerAttack();
