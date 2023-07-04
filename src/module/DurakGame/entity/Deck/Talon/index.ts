@@ -1,10 +1,10 @@
-import { randomInt } from "node:crypto";
-import Deck, { CardCount } from "../Deck.abstract";
-import Card, { Suit } from "../../Card";
-import { Player } from "../../Player";
-import { CanProvideCards } from "../../../DurakGame.implimetntation";
-import GameTalonWebsocketService from "./Talon.service";
 import assert from "node:assert";
+import crypto from "node:crypto";
+import Deck, { CardCount } from "../Deck.abstract";
+import Card, { TrumpCard } from "../../Card";
+import { type Player } from "../../Player";
+import { type CanProvideCards } from "../../../DurakGame.implimetntation";
+import type GameTalonWebsocketService from "./Talon.service";
 
 export default class Talon extends Deck implements CanProvideCards<Player> {
   readonly #wsService: GameTalonWebsocketService;
@@ -16,19 +16,11 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
   ) {
     super(settings.cardCount);
     this.#shuffle().#shuffle().#shuffle().#shuffle().#shuffle();
-    this.trumpCard = new Card({ ...this.value[0], isTrump: true });
-    this.value.forEach((card) => {
-      card.isTrump = card.suit === this.trumpCard.suit;
-    });
+    this.trumpCard = new TrumpCard(this.value[0]);
+    this.value = this.value.map((card) =>
+      card.suit === this.trumpCard.suit ? new TrumpCard(card) : card,
+    );
     this.#wsService = wsService;
-  }
-
-  get trumpSuit(): Suit {
-    return this.trumpCard.suit;
-  }
-
-  get hasCards(): boolean {
-    return !this.isEmpty;
   }
 
   get isEmpty(): boolean {
@@ -51,14 +43,14 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
   // TODO refactor alghoritm
   #shuffle(): this {
     for (let currentIndex = 0; currentIndex < this.count; currentIndex++) {
-      this.#swapCards(currentIndex, randomInt(this.count));
+      this.#swapCards(currentIndex, crypto.randomInt(this.count));
     }
     return this;
   }
 
   get #lastCards() {
     const lastCards = this.value.splice(0, this.count);
-    assert.ok(!this.hasCards);
+    assert.ok(this.isEmpty);
     return lastCards;
   }
 
