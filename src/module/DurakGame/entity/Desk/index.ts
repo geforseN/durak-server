@@ -106,8 +106,8 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return this.#slots.allowsTransferMove(card, slotIndex);
   }
 
-  get randomSlotIndex() {
-    return this.#slots.randomSlotIndex;
+  get randomEmptySlotIndex() {
+    return this.#slots.randomEmptySlotIndex;
   }
 
   get cardsCount() {
