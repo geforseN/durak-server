@@ -41,8 +41,8 @@ export default class DeskSlots {
     return Promise.all(
       this.#value.map((slot) => slot.ensureAllowsTransfer(card)),
     ).then(
-      () => true,
-      () => false,
+      (_cards) => true,
+      (_errorWithReason) => false,
     );
   }
 
@@ -54,8 +54,17 @@ export default class DeskSlots {
     return this.#value.some((slot) => slot.has({ rank }));
   }
 
-  get randomSlotIndex(): number {
-    return randomInt(0, this.count);
+  get randomEmptySlotIndex(): number {
+    const emptySlotIndexes = this.#value.reduce(
+      (indexesOfEmptySlots: number[], slot, index) => {
+        if (slot instanceof EmptySlot) {
+          indexesOfEmptySlots.push(index);
+        }
+        return indexesOfEmptySlots;
+      },
+      [],
+    );
+    return emptySlotIndexes[randomInt(0, emptySlotIndexes.length)];
   }
 }
 
