@@ -17,16 +17,20 @@ export default class Players {
       const players = lobbyUsersArrayOrPlayers;
       this.#value = wsPlayerService
         ? players.#value.map((player) => new Player(player, wsPlayerService))
-        : players.#value.filter((player) => {
-            if (player.hand.isEmpty) {
-              player.exitGame();
-              return false;
-            }
-            return true;
-          });
+        : players.#value.reduce((nonEmptyPlayers: Player[], player) => {
+            player.hand.isEmpty
+              ? player.exitGame()
+              : nonEmptyPlayers.push(player);
+            return nonEmptyPlayers;
+          }, []);
     } else {
       const lobbyUsersArray = lobbyUsersArrayOrPlayers;
-      this.#value = new PlayersWithIdentifiedSidePlayers(lobbyUsersArray).value;
+      this.#value = lobbyUsersArray.map((user) => new Player(user));
+      this.#value.forEach((player, index, players) => {
+        const indexes = new SidePlayersIndexes(index, players.length);
+        player.left = players[indexes.leftPlayerIndex];
+        player.right = players[indexes.rightPlayerIndex];
+      });
     }
   }
 
@@ -39,14 +43,14 @@ export default class Players {
   }
 
   get attacker(): Attacker {
-    return this.#getSuperPlayerFromCallback(
+    return this.get<Attacker>(
       (player): player is Attacker => player instanceof Attacker,
       "Атакующий не найден",
     );
   }
 
   get defender(): Defender {
-    return this.#getSuperPlayerFromCallback(
+    return this.get<Defender>(
       (player): player is Defender => player instanceof Defender,
       "Защищающийся не найден",
     );
@@ -60,82 +64,44 @@ export default class Players {
     this.#changeKind(player, Attacker);
   }
 
-  // IF kinds are same THEN return
-  // find old player index
-  // put new player in index
-  #changeKind<OldPlayer extends Player, NewPlayer extends SuperPlayer | Player>(
-    targetOfKindChange: OldPlayer,
-    ParticularKind: { new (player: OldPlayer): NewPlayer },
+  #changeKind(
+    targetOfKindChange: Player,
+    ParticularKind: { new (...args: any): Player | SuperPlayer },
   ) {
     if (targetOfKindChange.constructor === ParticularKind) {
       return console.log(
-        "Players#set fast return: kind to set is same as old kind",
+        "Players#set fast return: targetOfKindChange already have ParticularKind",
       );
     }
-    const playerIndex = this.#value.indexOf(targetOfKindChange);
-    assert.ok(playerIndex !== -1);
-    const updatedPlayer = new ParticularKind(targetOfKindChange);
-    this.#value.splice(playerIndex, 1, updatedPlayer);
-    const certainSuperPlayer = this.#value.find(
+    const particularSuperKind = this.#value.find(
       (player): player is SuperPlayer =>
         player instanceof ParticularKind && player.constructor !== Player,
     );
-    if (certainSuperPlayer && certainSuperPlayer !== updatedPlayer) {
-      this.#changeKind(certainSuperPlayer, Player);
+    if (!particularSuperKind) {
+      return console.log(`No ${ParticularKind.name} was found`);
+    } else {
+      this.#update(particularSuperKind, Player);
     }
-    this.#changePlayerKindIfNeeded(targetOfKindChange, updatedPlayer);
+    this.#update(targetOfKindChange, ParticularKind);
   }
 
-  #setPlayer<OldPlayerKind extends Player>(
-    oldPlayer: OldPlayerKind,
-    CertainPlayer = Player,
+  #update<OldPlayerKind extends Player>(
+    targetOfUpdate: OldPlayerKind,
+    ParticularKind: { new (...args: any): Player | SuperPlayer },
   ) {
-    const playerIndex = this.#value.indexOf(oldPlayer);
-    assert.ok(playerIndex !== -1);
-    const updatedPlayer = new CertainPlayer(oldPlayer);
-    this.#value.splice(playerIndex, 1, updatedPlayer);
-
-    if (oldPlayer.constructor !== CertainPlayer) {
-      const newKind = updatedPlayer.constructor.name;
-      oldPlayer.changeKind(newKind);
-    }
+    const playerIndex = this.#value.indexOf(targetOfUpdate);
+    assert.ok(playerIndex > 0);
+    const updatedTarget = new ParticularKind(targetOfUpdate);
+    this.#value.splice(playerIndex, 1, updatedTarget);
+    updatedTarget.changeKindTo(ParticularKind);
+    return updatedTarget;
   }
 
-  #changePlayerKindIfNeeded(oldPlayer: Player, updatedPlayer: Player) {
-    const isKindHasChanged =
-      oldPlayer.constructor !== updatedPlayer.constructor;
-    if (isKindHasChanged) {
-      const newKind = updatedPlayer.constructor.name;
-      oldPlayer.changeKind(newKind);
-    }
-  }
-
-  #getInstanceOf<PlayerToFind extends SuperPlayer>(
-    PlayerToFind: {
-      new (...arg: any): PlayerToFind;
-    },
+  get(cb: (player: Player) => boolean, notFoundMessage?: string): Player;
+  get<SuperPlayerToFind extends SuperPlayer>(
+    cb: (p: Player) => p is SuperPlayerToFind,
     notFoundMessage: string,
-  ): PlayerToFind {
-    const player = this.#value.find(
-      (player): player is PlayerToFind => player instanceof PlayerToFind,
-    );
-    assert.ok(player, notFoundMessage);
-    return player;
-  }
-
-  #getSuperPlayerFromCallback<PlayerToFind extends SuperPlayer>(
-    cb: (p: Player) => p is PlayerToFind,
-    notFoundMessage: string,
-  ): PlayerToFind {
-    const player = this.#value.find(cb);
-    assert.ok(player, notFoundMessage);
-    return player;
-  }
-
-  getPlayerById(id: string): Player {
-    return this.get((player) => player.id === id);
-  }
-
+  ): SuperPlayerToFind;
   get(
     cb: (player: Player) => boolean,
     notFoundMessage = "Игрок не найден",
@@ -158,24 +124,6 @@ export class OrderedPlayerEnemies {
   }
 }
 
-export class PlayersWithIdentifiedSidePlayers {
-  value: Player[];
-
-  constructor(lobbyUsersArray: LobbyUser[]) {
-    this.value = lobbyUsersArray
-      .map((user) => new Player(user))
-      .map((player, index, players) => {
-        const { leftPlayerIndex, rightPlayerIndex } = new SidePlayersIndexes(
-          index,
-          players.length,
-        );
-        player.left = players[leftPlayerIndex];
-        player.right = players[rightPlayerIndex];
-        return player;
-      });
-  }
-}
-
 export class SidePlayersIndexes {
   constructor(public playerIndex: number, public playersCount: number) {}
   get leftPlayerIndex() {
@@ -185,18 +133,5 @@ export class SidePlayersIndexes {
   get rightPlayerIndex() {
     const isFirstPlayer = this.playerIndex === 0;
     return isFirstPlayer ? this.playersCount - 1 : this.playerIndex - 1;
-  }
-}
-
-export class NonEmptyPlayers {
-  value: Player[];
-  constructor(players: Players) {
-    this.value = [...players].filter((player) => {
-      if (!player.hand.isEmpty) {
-        return true;
-      }
-      player.exitGame();
-      return false;
-    });
   }
 }
