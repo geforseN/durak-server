@@ -1,6 +1,6 @@
-import Player from "../Player/Player";
-import DurakGame from "../../DurakGame.implimetntation";
-import Card from "../Card";
+import type Player from "../Player/Player";
+import type DurakGame from "../../DurakGame.implimetntation";
+import type Card from "../Card";
 
 export abstract class GameMove<P extends Player> {
   #player: P;
@@ -30,3 +30,9 @@ export abstract class GameMove<P extends Player> {
     slotIndex: number,
   ): Promise<boolean> | never;
 }
+
+export interface AfterHandler {
+  handleAfterMoveIsDone(): void;
+}
+
+export default GameMove
