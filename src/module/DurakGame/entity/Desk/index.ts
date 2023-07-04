@@ -89,14 +89,9 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     this.#wsService?.clear();
   }
 
-  async ensureCanAttack(card: Card, slotIndex: number): Promise<Card> {
-    if (this.isEmpty) return card;
+  async ensureCanAttack(card: Card, slotIndex: number): Promise<void> {
+    if (this.isEmpty) return;
     await this.slotAt(slotIndex)?.ensureCanBeAttacked(card);
-    this.#ensureCanPut(card);
-    return card;
-  }
-
-  #ensureCanPut(card: Card) {
     if (!this.#slots.someSlotHas({ rank: card.rank })) {
       throw new Error("Нет схожего ранга на доске");
     }
