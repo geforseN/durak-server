@@ -1,5 +1,5 @@
-import { DefenderMove } from "./DefenderMove";
-import { AfterHandler } from "../../GameRound";
+import DefenderMove from "./DefenderMove";
+import { type AfterHandler } from "../GameMove.abstract";
 
 export class DefenderGaveUpMove extends DefenderMove implements AfterHandler {
   handleAfterMoveIsDone() {

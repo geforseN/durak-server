@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import { DurakGameSocket } from "./socket/DurakGameSocket.types";
 import { Discard, Desk, GameRound, Talon, Card, Players } from "./entity";
-import DurakGameService from "./DurakGame.service";
+import DurakGameWebsocketService from "./DurakGame.service";
 import {
   GamePlayerWebsocketService,
   GameDeskWebsocketService,
@@ -25,7 +25,7 @@ export default class DurakGame {
   readonly talon: Talon;
   readonly discard: Discard;
   readonly desk: Desk;
-  readonly #wsService: DurakGameService;
+  readonly #wsService: DurakGameWebsocketService;
   players: Players;
   round: GameRound;
 
@@ -36,12 +36,18 @@ export default class DurakGame {
       game.players,
       new GamePlayerWebsocketService(namespace),
     );
-    this.talon = new Talon(game.settings, new GameTalonWebsocketService(namespace));
+    this.talon = new Talon(
+      game.settings,
+      new GameTalonWebsocketService(namespace),
+    );
     this.discard = new Discard(new GameDiscardWebsocketService(namespace));
-    this.desk = new Desk(game.settings.desk, new GameDeskWebsocketService(namespace));
-    this.#wsService = new DurakGameService(namespace);
-    // TODO change code line below
-    // NOTE should be similar to => readonly this.distribution = new GameRoundDistribution(this);
+    this.desk = new Desk(
+      game.settings.desk,
+      new GameDeskWebsocketService(namespace),
+    );
+    this.#wsService = new DurakGameWebsocketService(namespace);
+    // TODO: change code line below
+    // NOTE: should be similar to => readonly this.distribution = new GameRoundDistribution(this);
     new GameRoundDistributionQueue(this).makeInitialDistribution();
     this.#makeInitialSuperPlayersStrategy();
     this.round = new GameRound(this, new GameRoundService(namespace));
@@ -73,18 +79,19 @@ export default class DurakGame {
     this.round = new GameRound(this);
   }
 
-  restoreState(socket: DurakGameSocket.Socket) {
-    this.#wsService.restoreState({ socket, game: this });
+  // TODO: remove playerId param when socket.data will contain playerId
+  restoreState(socket: DurakGameSocket.Socket, playerId: string) {
+    this.#wsService.restoreState({ socket, game: this, playerId });
   }
 
   #prepareBeforeNewRound() {
-    if (this.talon.hasCards) {
-      // TODO change code line below  
-      // NOTE should be similar to => this.distribution.make()
-      new GameRoundDistributionQueue(this).makeDistribution();
-    } else {
+    if (this.talon.isEmpty) {
       this.players = new Players(this.players);
       assert.ok(this.players.count !== 1);
+    } else {
+      // TODO: change code line below
+      // NOTE: should be similar to => this.distribution.make()
+      new GameRoundDistributionQueue(this).makeDistribution();
     }
   }
 

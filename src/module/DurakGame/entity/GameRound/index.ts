@@ -14,6 +14,7 @@ import {
 import GameRoundService from "./GameRound.service";
 import type DurakGame from "../../DurakGame.implimetntation";
 import type Card from "../Card";
+import { type AfterHandler } from "../GameMove/GameMove.abstract";
 
 export default class GameRound {
   readonly number: number;
@@ -117,10 +118,7 @@ export default class GameRound {
   giveAttackerLeftDefend() {
     assert.ok(this.currentMove instanceof TransferMove);
     assert.ok(this.currentMove.player instanceof Attacker);
-    assert.ok(this.currentMove.player === this.game.players.attacker);
-    assert.ok(this.currentMove.player.left === this.game.players.attacker.left); // TODO remove
     this.game.players.defender = this.currentMove.player.left;
-    assert.ok(this.currentMove.player.left === this.game.players.defender); // TODO remove
     return this.giveDefenderDefend();
   }
 
@@ -149,7 +147,7 @@ export default class GameRound {
   }
 
   #updateCurrentMoveTo<M extends (DefenderMove | AttackerMove) & AfterHandler>(
-    CertainMove: new (arg: any) => M & AfterHandler,
+    CertainMove: new (arg: any) => M,
     certainMoveContext?: Partial<M>,
   ) {
     clearTimeout(this.currentMove.defaultBehaviour);
@@ -164,10 +162,6 @@ export default class GameRound {
     );
     return this.currentMove.handleAfterMoveIsDone();
   }
-}
-
-export interface AfterHandler {
-  handleAfterMoveIsDone(): void;
 }
 
 export function insertCardStrategy(

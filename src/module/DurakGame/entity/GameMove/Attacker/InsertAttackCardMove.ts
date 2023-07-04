@@ -1,6 +1,7 @@
 import { AttackerMove } from "./AttackerMove";
-import Card from "../../Card";
-import { AfterHandler, insertCardStrategy } from "../../GameRound";
+import { insertCardStrategy } from "../../GameRound";
+import { type AfterHandler } from "../GameMove.abstract";
+import type Card from "../../Card";
 
 type ConstructorArg = ConstructorParameters<typeof AttackerMove>[number] & {
   card: Card;
@@ -11,9 +12,9 @@ export class InsertAttackCardMove extends AttackerMove implements AfterHandler {
   card: Card;
   slotIndex: number;
 
-  constructor({ card, slotIndex, ...arg }: ConstructorArg) {
-    super(arg);
-    this.card = arg.player.removeCard({ card });
+  constructor({ game, player, card, slotIndex }: ConstructorArg) {
+    super({ game, player });
+    this.card = player.removeCard(card);
     this.slotIndex = slotIndex;
     this.isInsertMove = true;
     this.#insertCard();
