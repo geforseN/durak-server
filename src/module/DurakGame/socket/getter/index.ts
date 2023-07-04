@@ -12,14 +12,3 @@ export function getPlayer(game: DurakGame, playerId: string): Player | never {
   assert.ok(game.round.currentMove.player === player, "У вас нет права ходить");
   return player;
 }
-
-export function getCard(
-  card: CardDTO,
-  game: DurakGame,
-  player: Player,
-): Card | never {
-  assert.ok(player.hand.has(card), "У вас нет такой карты");
-  // TODO const player.hand.get(card)
-  // NOTE player.hand.get should throw if not card was found
-  return new Card({ ...card, isTrump: game.talon.trumpSuit === card.suit });
-}

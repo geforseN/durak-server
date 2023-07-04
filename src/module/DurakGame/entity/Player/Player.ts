@@ -76,7 +76,7 @@ export default class Player {
     return this.wsService?.exitGame(this);
   }
 
-  changeKind(newKind: string) {
+  changeKindTo(newKind: PlayerKind | typeof Player) {
     this.wsService?.changeKind(newKind, this);
   }
 }

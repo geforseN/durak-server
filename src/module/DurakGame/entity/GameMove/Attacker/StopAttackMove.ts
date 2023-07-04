@@ -1,7 +1,7 @@
-import { AttackerMove } from "./AttackerMove";
-import { AfterHandler } from "../../GameRound";
 import assert from "node:assert";
+import AttackerMove from "./AttackerMove";
 import { Attacker } from "../../Player";
+import { type AfterHandler } from "../GameMove.abstract";
 
 export class StopAttackMove extends AttackerMove implements AfterHandler {
   handleAfterMoveIsDone() {
