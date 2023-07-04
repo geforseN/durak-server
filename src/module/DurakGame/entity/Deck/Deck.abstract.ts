@@ -3,7 +3,7 @@ import Card from "../Card";
 export type CardCount = 24 | 36 | 52;
 
 export default abstract class Deck {
-  protected readonly value: Card[];
+  protected value: Card[];
 
   protected constructor(size?: CardCount) {
     this.value = this.#buildDeck(size);
