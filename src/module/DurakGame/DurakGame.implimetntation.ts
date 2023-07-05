@@ -1,8 +1,7 @@
 import assert from "node:assert";
-import { DurakGameSocket } from "./socket/DurakGameSocket.types";
 import { Discard, Desk, GameRound, Talon, Card, Players } from "./entity";
-import DurakGameWebsocketService from "./DurakGame.service";
 import {
+  DurakGameWebsocketService,
   GamePlayerWebsocketService,
   GameDeskWebsocketService,
   GameTalonWebsocketService,
@@ -10,8 +9,9 @@ import {
   GameRoundWebsocketService,
 } from "./socket/service";
 import GameRoundDistributionQueue from "./GameRoundDistributionQueue";
-import { UnstartedGame } from "./NonstartedDurakGame";
-import GameRoundService from "./entity/GameRound/GameRound.service";
+import { type DurakGameSocket } from "./socket/DurakGameSocket.types";
+import { type GameSettings } from "../Lobbies/entity/CorrectGameSettings";
+import { type UnstartedGame } from "./NonstartedDurakGame";
 
 export default class DurakGame {
   readonly info: {
@@ -29,20 +29,23 @@ export default class DurakGame {
   players: Players;
   round: GameRound;
 
-  constructor(game: UnstartedGame, namespace: DurakGameSocket.Namespace) {
-    this.info = { ...game.info, namespace, isStarted: true };
-    this.settings = { ...game.settings, moveTime: 90_000 };
+  constructor(
+    unstartedGame: UnstartedGame,
+    namespace: DurakGameSocket.Namespace,
+  ) {
+    this.info = { ...unstartedGame.info, namespace, isStarted: true };
+    this.settings = { ...unstartedGame.settings, moveTime: 90_000 };
     this.players = new Players(
-      game.players,
+      unstartedGame.players,
       new GamePlayerWebsocketService(namespace),
     );
     this.talon = new Talon(
-      game.settings,
+      unstartedGame.settings,
       new GameTalonWebsocketService(namespace),
     );
     this.discard = new Discard(new GameDiscardWebsocketService(namespace));
     this.desk = new Desk(
-      game.settings.desk,
+      unstartedGame.settings.desk,
       new GameDeskWebsocketService(namespace),
     );
     this.#wsService = new DurakGameWebsocketService(namespace);
