@@ -2,15 +2,15 @@ import Player from "./Player";
 import Card from "../Card";
 
 export default abstract class SuperPlayer extends Player {
-  removeCard(card: Card): Card {
-    return this.hand.removeCard(card)
+  remove(cb: (card: Card) => boolean): Card {
+    return this.hand.remove(cb);
   }
 
   @logGetter()
   get randomCard() {
     return this.hand.randomCard;
   }
-};
+}
 
 function logGetter(headMessage: string = "LOG:") {
   return function <This, Return>(
