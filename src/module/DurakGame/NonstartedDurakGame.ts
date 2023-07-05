@@ -1,7 +1,7 @@
-import { GameSettings } from "../Lobbies/entity/CorrectGameSettings";
-import Lobby from "../Lobbies/entity/Lobby";
-import { Players } from "./entity";
-import { DurakGameSocket } from "./socket/DurakGameSocket.types";
+import { Player } from "./entity/Player";
+import { type GameSettings } from "../Lobbies/entity/CorrectGameSettings";
+import type Lobby from "../Lobbies/entity/Lobby";
+import { type DurakGameSocket } from "./socket/DurakGameSocket.types";
 
 export class UnstartedGame {
   info: {
@@ -12,7 +12,7 @@ export class UnstartedGame {
     isStarted: false;
   };
   settings: GameSettings;
-  players: Players;
+  players: Player[];
   constructor(lobby: Lobby) {
     this.info = {
       id: lobby.id,
@@ -20,6 +20,6 @@ export class UnstartedGame {
       isStarted: false,
     };
     this.settings = lobby.settings;
-    this.players = new Players(lobby.slots.users);
+    this.players = lobby.slots.users.map((user) => new Player(user));
   }
 }
