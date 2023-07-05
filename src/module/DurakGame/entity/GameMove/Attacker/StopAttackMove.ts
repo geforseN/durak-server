@@ -13,7 +13,7 @@ export class StopAttackMove extends AttackerMove implements AfterHandler {
       return this.game.round.giveDefenderDefend();
     }
     if (this.game.players.defender.canWinDefense(this.game)) {
-      return this.game.handleWonDefence();
+      return this.game.handleSuccessfulDefence();
     }
     return this.game.round.giveNextAttackerAttack();
   }
@@ -24,7 +24,7 @@ export class StopAttackMove extends AttackerMove implements AfterHandler {
       this.player.left === primalAttacker ||
       this.game.players.defender.left === primalAttacker
     ) {
-      return this.game.handleLostDefence();
+      return this.game.handleFailedDefence();
     }
     return this.game.round.giveNextAttackerAttack();
   }

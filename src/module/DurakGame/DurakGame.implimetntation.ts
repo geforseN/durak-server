@@ -53,7 +53,7 @@ export default class DurakGame {
     this.round = new GameRound(this, new GameRoundService(namespace));
   }
 
-  handleLostDefence(): void {
+  handleFailedDefence(): void {
     this.desk.provideCards(this.players.defender);
     this.#wsService.lostRound(this);
     try {
@@ -66,7 +66,7 @@ export default class DurakGame {
     this.round = new GameRound(this);
   }
 
-  handleWonDefence(): void {
+  handleSuccessfulDefence(): void {
     this.desk.provideCards(this.discard);
     this.#wsService.wonRound(this);
     try {

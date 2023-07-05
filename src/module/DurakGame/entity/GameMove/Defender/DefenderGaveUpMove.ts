@@ -5,6 +5,6 @@ export class DefenderGaveUpMove extends DefenderMove implements AfterHandler {
   handleAfterMoveIsDone() {
     return this.game.desk.allowsMoves
       ? this.game.round.givePrimalAttackerAttack()
-      : this.game.handleLostDefence();
+      : this.game.handleFailedDefence();
   }
 }
