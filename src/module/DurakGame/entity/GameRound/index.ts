@@ -29,7 +29,7 @@ export default class GameRound {
     this.game = game;
     this.number = !game.round ? 1 : game.round.number + 1;
     this.#moves = []; // TODO new GameRoundMoves
-    this.#pushNextMove(AttackerMove, { player: game.players.attacker });
+    this.giveAttackerAttack();
   }
 
   get previousMove(): GameMove<Defender | Attacker> {
@@ -74,10 +74,6 @@ export default class GameRound {
       (move): move is DefenderMove =>
         move instanceof DefenderMove && !(move instanceof TransferMove),
     );
-    // (move: GameMove<Attacker | Defender>): move is DefenderMove =>
-    // (move instanceof InsertDefendCardMove ||
-    // move instanceof DefenderGaveUpMove) &&
-    // move instanceof DefenderMove;
     assert.ok(firstDefenderMove, "Нет защищающегося хода");
     return firstDefenderMove;
   }
