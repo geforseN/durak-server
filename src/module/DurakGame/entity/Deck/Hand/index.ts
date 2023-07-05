@@ -2,38 +2,38 @@ import crypto from "node:crypto";
 import assert from "node:assert";
 import Deck from "../Deck.abstract";
 import Card from "../../Card";
-import { CardDTO } from "../../../DTO";
 
 export default class Hand extends Deck {
   constructor() {
     super();
   }
 
-  has({ rank, suit }: ConstructorParameters<typeof Card>[0]): boolean {
-    return this.value.some((card) => card.hasSame({ suit, rank }));
+  get(cb: (card: Card) => boolean, notFoundMessage = "У вас нет такой карты") {
+    const card = this.value.find(cb);
+    assert.ok(card, notFoundMessage);
+    return card;
   }
 
-  // TODO TrumpCard class will be implemented
-  get({ rank, suit }: CardDTO) {
-    const foundCard = this.value.find((card) => card.hasSame({ rank, suit }));
-    assert.ok(foundCard, "У вас нет такой карты");
-    return foundCard;
+  #getIndex(
+    cb: (card: Card) => boolean,
+    notFoundMessage = "Неверный индекс",
+  ): number {
+    const index = this.value.findIndex(cb);
+    assert.ok(index > 0, notFoundMessage);
+    return index;
   }
 
   receive(...cards: Card[]): void {
     this.value.push(...cards);
   }
 
-  #getCardIndex({ card: { suit, rank } }: { card: Card }): number {
-    const index = this.value.findIndex((card) => card.hasSame({ suit, rank }));
-    assert.ok(index > 0, "Неверный индекс");
-    return index;
-  }
-
-  removeCard(card: Card) {
-    const index = this.#getCardIndex({ card });
+  remove(
+    cb: (card: Card) => boolean,
+    notRemovedMessage = "Не получилось убрать свою карту",
+  ) {
+    const index = this.#getIndex(cb);
     const [removedCard] = this.value.splice(index, 1);
-    assert.ok(removedCard, "Не получилось убрать свою карту");
+    assert.ok(removedCard, notRemovedMessage);
     return removedCard;
   }
 
@@ -48,8 +48,8 @@ export default class Hand extends Deck {
 
 // TODO: work with class or delete class
 class SuperHand extends Hand {
-  override removeCard(card: Card): Card {
-    return super.removeCard(card);
+  override remove(cb: (card: Card) => boolean): Card {
+    return super.remove(cb);
   }
 
   override get randomCard() {

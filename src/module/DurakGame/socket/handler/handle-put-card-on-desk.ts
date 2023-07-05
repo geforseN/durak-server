@@ -13,7 +13,7 @@ export default async function handlePutCardOnDesk(
       player.id === playerId && game.round.currentMove.player === player,
     "У вас нет права хода",
   );
-  const card = player.hand.get({ suit, rank });
+  const card = player.hand.get((card) => card.hasSame({ rank, suit }));
   // TODO refactor player.isAllowedToTransferMove && game.desk.allowsTransferMove
   // OR try {game.round.makeTranferMove} catch {game.round.currentMove.putCardOnDesk}
   clearTimeout(game.round.currentMove.defaultBehaviour);

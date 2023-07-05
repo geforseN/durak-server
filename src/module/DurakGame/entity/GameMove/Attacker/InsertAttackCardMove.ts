@@ -12,9 +12,14 @@ export class InsertAttackCardMove extends AttackerMove implements AfterHandler {
   card: Card;
   slotIndex: number;
 
-  constructor({ game, player, card, slotIndex }: ConstructorArg) {
+  constructor({
+    game,
+    player,
+    card: { suit, rank },
+    slotIndex,
+  }: ConstructorArg) {
     super({ game, player });
-    this.card = player.removeCard(card);
+    this.card = player.remove((card) => card.hasSame({ suit, rank }));
     this.slotIndex = slotIndex;
     this.isInsertMove = true;
     this.#insertCard();
