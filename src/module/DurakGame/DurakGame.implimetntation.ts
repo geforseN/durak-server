@@ -7,8 +7,8 @@ import {
   GameDeskWebsocketService,
   GameTalonWebsocketService,
   GameDiscardWebsocketService,
+  GameRoundWebsocketService,
 } from "./socket/service";
-import { GameSettings } from "../Lobbies/entity/CorrectGameSettings";
 import GameRoundDistributionQueue from "./GameRoundDistributionQueue";
 import { UnstartedGame } from "./NonstartedDurakGame";
 import GameRoundService from "./entity/GameRound/GameRound.service";
@@ -50,7 +50,7 @@ export default class DurakGame {
     // NOTE: should be similar to => readonly this.distribution = new GameRoundDistribution(this);
     new GameRoundDistributionQueue(this).makeInitialDistribution();
     this.#makeInitialSuperPlayersStrategy();
-    this.round = new GameRound(this, new GameRoundService(namespace));
+    this.round = new GameRound(this, new GameRoundWebsocketService(namespace));
   }
 
   handleFailedDefence(): void {

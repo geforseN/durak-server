@@ -11,7 +11,7 @@ import {
   StopDefenseMove,
   InsertDefendCardMove,
 } from "../GameMove";
-import GameRoundService from "./GameRound.service";
+import type GameRoundWebsocketService from "./GameRound.service";
 import type DurakGame from "../../DurakGame.implimetntation";
 import type Card from "../Card";
 import { type AfterHandler } from "../GameMove/GameMove.abstract";
@@ -19,12 +19,12 @@ import { type AfterHandler } from "../GameMove/GameMove.abstract";
 export default class GameRound {
   readonly number: number;
   readonly #moves: GameMove<Defender | Attacker>[];
-  readonly #wsService: GameRoundService;
+  readonly #wsService: GameRoundWebsocketService;
   readonly game: DurakGame;
 
-  constructor(game: DurakGame, wsService: GameRoundService);
+  constructor(game: DurakGame, wsService: GameRoundWebsocketService);
   constructor(game: DurakGame);
-  constructor(game: DurakGame, wsService?: GameRoundService) {
+  constructor(game: DurakGame, wsService?: GameRoundWebsocketService) {
     this.#wsService = wsService || game.round.#wsService;
     this.game = game;
     this.number = !game.round ? 1 : game.round.number + 1;

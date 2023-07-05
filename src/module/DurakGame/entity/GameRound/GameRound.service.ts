@@ -1,7 +1,7 @@
 import { DurakGameSocket } from "../../socket/DurakGameSocket.types";
 import GameRound from ".";
 
-export default class GameRoundService {
+export default class GameRoundWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
 
   letMoveToPlayer(round: GameRound) {
