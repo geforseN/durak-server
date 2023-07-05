@@ -1,31 +1,35 @@
 import assert from "node:assert";
 import { Attacker, Defender, Player, SuperPlayer } from "./index";
-import { LobbyUser } from "../../../Lobbies/lobbies.namespace";
 import GamePlayerWebsocketService from "./Player.service";
 
 export default class Players {
   #value: Player[];
 
-  constructor(lobbyUsersArray: LobbyUser[]);
-  constructor(players: Players, wsPlayerService: GamePlayerWebsocketService);
+  constructor(
+    unstartedGamePlayers: Player[],
+    wsPlayerService: GamePlayerWebsocketService,
+  );
   constructor(players: Players);
   constructor(
-    lobbyUsersArrayOrPlayers: LobbyUser[] | Players,
+    players: Players | Player[],
     wsPlayerService?: GamePlayerWebsocketService,
   ) {
-    if (lobbyUsersArrayOrPlayers instanceof Players) {
-      const players = lobbyUsersArrayOrPlayers;
-      this.#value = wsPlayerService
-        ? players.#value.map((player) => new Player(player, wsPlayerService))
-        : players.#value.reduce((nonEmptyPlayers: Player[], player) => {
-            player.hand.isEmpty
-              ? player.exitGame()
-              : nonEmptyPlayers.push(player);
-            return nonEmptyPlayers;
-          }, []);
+    if (players instanceof Players) {
+      this.#value = players.#value.reduce(
+        (nonEmptyPlayers: Player[], player) => {
+          player.hand.isEmpty
+            ? player.exitGame()
+            : nonEmptyPlayers.push(player);
+          return nonEmptyPlayers;
+        },
+        [],
+      );
     } else {
-      const lobbyUsersArray = lobbyUsersArrayOrPlayers;
-      this.#value = lobbyUsersArray.map((user) => new Player(user));
+      assert.ok(wsPlayerService);
+      const unstartedGamePlayers = players;
+      this.#value = unstartedGamePlayers.map(
+        (player) => new Player(player, wsPlayerService),
+      );
       this.#value.forEach((player, index, players) => {
         const indexes = new SidePlayersIndexes(index, players.length);
         player.left = players[indexes.leftPlayerIndex];
