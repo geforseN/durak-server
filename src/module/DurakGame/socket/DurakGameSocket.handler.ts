@@ -1,9 +1,9 @@
+import assert from "assert";
 import { DurakGameSocket } from "./DurakGameSocket.types";
 import { durakGames } from "../../../index";
 import { cardPlaceListener, stopMoveListener } from "./listener";
 import DurakGame from "../DurakGame.implimetntation";
 import { UnstartedGame } from "../NonstartedDurakGame";
-import assert from "assert";
 
 export default function durakGameSocketHandler(
   this: DurakGameSocket.Namespace,
@@ -27,7 +27,7 @@ export default function durakGameSocketHandler(
     // NOTE: method below throws if no
     game.players.get((player) => player.id === playerId);
     this.to(playerId).emit("game__currentId", game.info.id);
-    game.restoreState(socket);
+    game.restoreState(socket, playerId);
   } catch (error) {
     if (error instanceof Error) console.log("RESTORE STATE ERROR", error);
     else console.log("IDK", error);
