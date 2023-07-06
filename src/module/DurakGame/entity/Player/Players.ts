@@ -1,6 +1,6 @@
 import assert from "node:assert";
-import { Attacker, Defender, Player, SuperPlayer } from "./index";
 import GamePlayerWebsocketService from "./Player.service";
+import { Attacker, Defender, Player, SuperPlayer } from "./index";
 
 export default class Players {
   #value: Player[];
@@ -24,17 +24,16 @@ export default class Players {
         },
         [],
       );
-    } else {
-      assert.ok(wsPlayerService);
+    } else if (wsPlayerService) {
       const unstartedGamePlayers = players;
       this.#value = unstartedGamePlayers.map(
         (player) => new Player(player, wsPlayerService),
       );
-      this.#value.forEach((player, index, players) => {
-        const indexes = new SidePlayersIndexes(index, players.length);
-        player.left = players[indexes.leftPlayerIndex];
-        player.right = players[indexes.rightPlayerIndex];
-      });
+      this.#value = this.#value.map(
+        (player, index, players) => new Player(player, index, players),
+      );
+    } else {
+      throw new Error("Players constructor failure");
     }
   }
 
@@ -72,18 +71,12 @@ export default class Players {
     targetOfKindChange: Player,
     ParticularKind: { new (...args: any): Player | SuperPlayer },
   ) {
-    if (targetOfKindChange.constructor === ParticularKind) {
-      return console.log(
-        "Players#set fast return: targetOfKindChange already have ParticularKind",
-      );
-    }
+    if (targetOfKindChange.constructor === ParticularKind) return;
     const particularSuperKind = this.#value.find(
       (player): player is SuperPlayer =>
         player instanceof ParticularKind && player.constructor !== Player,
     );
-    if (!particularSuperKind) {
-      return console.log(`No ${ParticularKind.name} was found`);
-    } else {
+    if (particularSuperKind) {
       this.#update(particularSuperKind, Player);
     }
     this.#update(targetOfKindChange, ParticularKind);
@@ -97,8 +90,6 @@ export default class Players {
     assert.ok(playerIndex > 0);
     const updatedTarget = new ParticularKind(targetOfUpdate);
     this.#value.splice(playerIndex, 1, updatedTarget);
-    updatedTarget.changeKindTo(ParticularKind);
-    return updatedTarget;
   }
 
   get(cb: (player: Player) => boolean, notFoundMessage?: string): Player;
@@ -115,27 +106,4 @@ export default class Players {
     return player;
   }
 }
-export class OrderedPlayerEnemies {
-  value: Player[];
 
-  constructor(player: Player) {
-    this.value = [];
-    let enemy = player.left;
-    while (enemy.id !== player.id) {
-      this.value.push(enemy);
-      enemy = enemy.left;
-    }
-  }
-}
-
-export class SidePlayersIndexes {
-  constructor(public playerIndex: number, public playersCount: number) {}
-  get leftPlayerIndex() {
-    const isLastPlayer = this.playerIndex === this.playersCount - 1;
-    return isLastPlayer ? 0 : this.playerIndex + 1;
-  }
-  get rightPlayerIndex() {
-    const isFirstPlayer = this.playerIndex === 0;
-    return isFirstPlayer ? this.playersCount - 1 : this.playerIndex - 1;
-  }
-}
