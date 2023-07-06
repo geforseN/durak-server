@@ -26,16 +26,13 @@ export default class GamePlayerWebsocketService {
       .emit("player__changeCardCount", player.id, player.hand.count);
   }
 
-  changeKind(
-    kind: PlayerKind | typeof Player,
-    player: Player,
-  ) {
-    if (typeof kind !== "string") {
-      assert.ok(isPlayerKind(kind.name));
-      this.namespace.emit("player__changeKind", kind.name, player.id);
-    } else {
-      this.namespace.emit("player__changeKind", kind, player.id);
-    }
+  emitOwnKind(player: Player) {
+    assert.ok(isPlayerKind(player.constructor.name));
+    this.namespace.emit(
+      "player__changeKind",
+      player.constructor.name,
+      player.id,
+    );
   }
 
   exitGame(player: Player) {
