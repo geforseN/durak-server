@@ -1,10 +1,9 @@
-import { LobbyUser } from "../../Lobbies/lobbies.namespace";
 import { Player, PlayerKind } from "../entity/Player";
 import CardDTO from "./Card.dto";
 
 export default class SelfDTO {
   cards: CardDTO[];
-  info: LobbyUser;
+  info: Player['info'];
   role: PlayerKind;
   id: string;
 
