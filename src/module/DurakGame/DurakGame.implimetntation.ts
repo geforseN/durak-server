@@ -18,7 +18,7 @@ export default class DurakGame {
     id: string;
     adminId: string;
     namespace: DurakGameSocket.Namespace;
-    durakPlayerId?: string;
+    durakId?: string;
     isStarted: true;
   };
   readonly settings: GameSettings;
@@ -99,7 +99,8 @@ export default class DurakGame {
   }
 
   #end() {
-    this.info.durakPlayerId = [...this.players][0].id;
+    const [durak] = this.players;
+    this.info.durakId = durak.id;
     this.#wsService?.end(this);
   }
 
