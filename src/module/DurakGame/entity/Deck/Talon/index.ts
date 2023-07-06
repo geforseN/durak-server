@@ -23,10 +23,6 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
     this.#wsService = wsService;
   }
 
-  get isEmpty(): boolean {
-    return this.count === 0;
-  }
-
   get hasOneCard(): boolean {
     return this.count === 1;
   }
