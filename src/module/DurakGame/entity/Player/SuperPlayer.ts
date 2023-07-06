@@ -17,9 +17,11 @@ function logGetter(headMessage: string = "LOG:") {
     target: (this: This) => Return,
     context: ClassGetterDecoratorContext<This, Return>,
   ) {
-    return function(this: This): Return {
+    return function (this: This): Return {
       const returnValue = target.call(this);
-      console.log(`${headMessage}: ${context.name.toString()} => ${returnValue}'.`);
+      console.log(
+        `${headMessage}: ${context.name.toString()} => ${returnValue}'.`,
+      );
       return returnValue;
     };
   };
