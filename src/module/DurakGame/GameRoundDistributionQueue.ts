@@ -9,20 +9,20 @@ export default class GameRoundDistributionQueue {
     this.game = game;
   }
 
-  get playersQueue() {
+  *playersQueue() {
     const { primalAttacker } = this.game.round;
-    const playersQueue: Player[] = [primalAttacker];
-    assert.strictEqual(primalAttacker.left, this.game.players.defender);
-    let player = primalAttacker.left as Player;
+    const { defender } = this.game.players;
+    yield primalAttacker;
+    assert.strictEqual(primalAttacker.left, defender);
+    let player = defender as Player;
     while ((player = player.left) !== primalAttacker) {
-      playersQueue.push(player);
+      yield player;
     }
-    playersQueue.push(primalAttacker.left);
-    return playersQueue;
+    yield defender;
   }
 
   makeDistribution() {
-    for (const player of this.playersQueue) {
+    for (const player of this.playersQueue()) {
       if (this.game.talon.isEmpty) return;
       this.game.talon.provideCards(player);
     }
