@@ -8,7 +8,8 @@
     "start-cool": "node --loader ts-node/esm src/index.ts",
     "dev": "node --loader ts-node/esm --inspect src/index.ts",
     "dev:respawn": "tsnd --transpile-only --inspect -- src/index.ts",
-    "prisma": "ts-node prisma/seed.ts"
+    "prisma": "ts-node prisma/seed.ts",
+    "check": "npx npm-check-updates -u"
   },
   "keywords": [],
   "author": "",
