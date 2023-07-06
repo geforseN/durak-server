@@ -17,6 +17,10 @@ export default abstract class Deck {
     return this.value.length;
   }
 
+  get isEmpty() {
+    return this.value.length === 1;
+  }
+
   #avalableRanks(rankCount: number) {
     return [...Card.ranks]
       .reverse()
