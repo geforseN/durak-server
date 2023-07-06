@@ -52,7 +52,7 @@ fastify
   })
   .register(fastifyWebsocket, {
     options: {
-      verifyClient: async function(info: any) {
+      verifyClient: async function (info: any) {
         // (info.req as FastifyRequest);
       },
     },
@@ -63,19 +63,20 @@ fastify
   .register(getUserProfile)
   .register(chatPlugin, { path: "/global-chat" })
   .ready()
-  .then(function() {
-    // @ts-ignore
-    fastify.log.info(this);
-    instrument(fastify.io, { auth: false, mode: "development" });
-    const durakGame: DurakGameSocket.Namespace = fastify.io.of(
-      /^\/game\/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/,
-    );
-    durakGame.use(beforeConnectMiddleware);
-    durakGame.on("connect", durakGameSocketHandler.bind(durakGame));
-    return fastify.log.info(fastify.io.path());
-  });
+  .then(
+    function (this: typeof fastify) {
+      this.log.info(this);
+      instrument(this.io, { auth: false, mode: "development" });
+      const durakGame: DurakGameSocket.Namespace = this.io.of(
+        /^\/game\/[\da-fA-F]{8}\b-[\da-fA-F]{4}\b-[\da-fA-F]{4}\b-[\da-fA-F]{4}\b-[\da-fA-F]{12}$/,
+      );
+      durakGame.use(beforeConnectMiddleware);
+      durakGame.on("connect", durakGameSocketHandler.bind(durakGame));
+      return fastify.log.info(this.io.path());
+    }.bind(fastify),
+  );
 
-;(async () => {
+(async () => {
   try {
     await fastify.listen({ port: Number(process.env.FASTIFY_PORT) });
   } catch (err) {

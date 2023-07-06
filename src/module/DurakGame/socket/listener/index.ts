@@ -9,7 +9,7 @@ export function stopMoveListener(
   try {
     handleStopMove.call(this);
   } catch (error) {
-    this.game.#wsService?.handleError({ playerId: this.playerId, error });
+    handleError({ playerId: this.playerId, error });
   }
 }
 
@@ -21,6 +21,6 @@ export async function cardPlaceListener(
   try {
     await handlePutCardOnDesk.call(this, card, slotIndex);
   } catch (error) {
-    this.game.#wsService?.handleError({ playerId: this.playerId, error });
+    handleError({ playerId: this.playerId, error });
   }
 }
