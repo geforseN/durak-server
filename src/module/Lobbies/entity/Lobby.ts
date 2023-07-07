@@ -34,7 +34,7 @@ export default class Lobby {
     return this.slots.isFull;
   }
 
-  hasUser(cb: (user?: User) => boolean): boolean {
+  has(cb: (user?: User) => boolean): boolean {
     return this.slots.hasUser(cb);
   }
 
@@ -82,13 +82,5 @@ export default class Lobby {
       slotIndex,
     });
     return user;
-  }
-
-  static hasUserWithSameId(this: { userId: string }, lobby: Lobby) {
-    return lobby.hasUser(LobbyUser.hasSameId.bind({ id: this.userId }));
-  }
-
-  static hasSameId(this: { id: string }, lobby: Lobby) {
-    return this.id === lobby.id;
   }
 }
