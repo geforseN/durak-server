@@ -58,6 +58,27 @@ export default class Lobbies {
     });
   }
 
+  async addddUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
+    const desiredLobby = await this.#get((lobby) => lobby.id === lobbyId);
+    assert.ok(
+      !desiredLobby.isFull,
+      new NoAccessError("Лобби полностью занято"),
+    );
+    assert.ok(
+      !desiredLobby.has((user) => user?.id === userId),
+      "Вы уже в этом лобби",
+    );
+    const pastLobby = await this.#get((lobby) =>
+      lobby.has((user) => user?.id === userId),
+    );
+    if (!pastLobby) {
+      const user = await getFirstTimeUser(userId);
+      return desiredLobby.bestInsertUser(user, slotIndex, this.emitter);
+    }
+    const user = pastLobby.bestRemoveUser (userId, this.emitter)
+    // ELSE remove user AND IF remove user IS admin THEN change admin AND ID pastLobby is empty THEN remove lobby
+  }
+
   pushNewLobby(settings: GameSettings) {
     const lobby = new Lobby({ settings });
     this.value.push(lobby);
