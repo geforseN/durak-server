@@ -1,7 +1,9 @@
-import { FastifyInstance, FastifyRequest } from "fastify";
-import { SocketStream } from "@fastify/websocket";
-import { randomUUID } from "crypto";
-import WebSocket from "ws";
+import type WebSocket from "ws";
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { SocketStream } from "@fastify/websocket";
+import type { randomUUID } from "crypto";
+import type { GameSettings } from "./entity/CorrectGameSettings";
+import type Lobby from "./entity/Lobby";
 import {
   addUserSocketInRoom,
   dispatchMessageToCertainListener,
@@ -10,13 +12,8 @@ import {
   emitSocketOnce,
 } from "../../ws";
 import Lobbies from "./entity/Lobbies";
-import { GameSettings } from "./entity/CorrectGameSettings";
-import Lobby from "./entity/Lobby";
 import prisma from "../../../prisma";
 import EventEmitter from "events";
-import { durakGames } from "../../index";
-import User from "./entity/LobbyUser";
-import { UnstartedGame } from "../DurakGame/NonstartedDurakGame";
 
 export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
   const handleConnection = initializeGameLobbies();
@@ -25,78 +22,40 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
     { websocket: true },
     async function (connection: SocketStream, request: FastifyRequest) {
       const { userId, socket, lobbies } = handleConnection(connection, request);
-      socket.emit(/* ONCE */"lobbies::restore", {
-        lobbies: lobbies.value,
-        lobbyId: await lobbies
-          .find(Lobby.hasUserWithSameId.bind({ userId }))
-          .then(
-            (lobby) => lobby.id,
-            () => undefined,
-          ),
-      });
+      // NOTE: emit this ONCE
+      socket.emit("lobbies::restore", await lobbies.restoreState(userId));
+      if (!userId) {
+        return console.log("FAST RETURN: NO USER_ID");
+      }
       socket
-        .on(
-          "lobby::add",
-          async function ({ settings }: { settings: GameSettings }) {
-            return lobbies.push(new Lobby({ settings }), this);
-          },
+        .on("lobby::add", ({ settings }: { settings: GameSettings }) =>
+          lobbies.pushNewLobby(settings),
         )
-        .on(
-          "lobby::remove",
-          async function ({ lobbyId }: { lobbyId?: string }) {
-            lobbyId ??= (
-              await lobbies.find(Lobby.hasUserWithSameId.bind({ userId }))
-            ).id;
-            return lobbies.remove(Lobby.hasSameId.bind({ id: lobbyId }), this);
-          },
+        .on("lobby::remove", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
+          lobbies.removeLobby(userId, lobbyId),
         )
         .on(
           "lobby::user::join",
-          async function ({
+          // ? should this handler be async ?
+          async ({
             lobbyId,
             slotIndex = -1,
           }: {
             lobbyId: Lobby["id"];
             slotIndex: number;
-          }) {
-            if (!lobbies.hasUser(User.hasSameId.bind({ id: userId }))) {
-              const [lobby, user] = await Promise.all([
-                lobbies.find(Lobby.hasSameId.bind({ id: lobbyId })),
-                getFirstTimeUser(userId),
-              ]);
-              lobby.put(user, slotIndex);
-              return this.emit("socket", "user::lobby::current", { lobbyId: lobby.id });
-            }
-            const [oldLobby, lobby] = await Promise.all([
-              lobbies.find(Lobby.hasUserWithSameId.bind({ userId })),
-              lobbies.find(Lobby.hasSameId.bind({ id: lobbyId })),
-            ]);
-            if (lobby === oldLobby) {
-              return lobby.moveUser(
-                User.hasSameId.bind({ id: userId }),
-                slotIndex,
-              );
-            }
-            lobby.put(
-              oldLobby.remove(User.hasSameId.bind({ id: userId })),
-              slotIndex,
-            );
-            return this.emit("socket", "user::lobby::current", { lobbyId: lobby.id });
-          },
+          }) => await lobbies.addUserInLobby(userId, lobbyId, slotIndex),
         )
         .on(
           "lobby::user::leave",
-          async function ({ lobbyId }: { lobbyId?: Lobby["id"] }) {
-            const lobby = await getLobby.call({ lobbies, userId }, lobbyId);
-            return lobby.remove(User.hasSameId.bind({ id: userId }));
-          },
+          // ? should this handler be async ?
+          async ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
+            await lobbies.removeUserFromLobby(userId, lobbyId),
         )
         .on(
-          "game::start",
-          async function ({ lobbyId }: { lobbyId?: Lobby["id"] }) {
-            const lobby = await getLobby.call({ lobbies, userId }, lobbyId);
-            durakGames.set(lobby.id, new UnstartedGame(lobby));
-          },
+          "lobby::upgrate",
+          // ? should this handler be async ?
+          async ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
+            await lobbies.updateLobbyToUnstartedGame(userId, lobbyId),
         )
         .on("lobby::user::move", () => {});
     },
@@ -107,12 +66,15 @@ function initializeGameLobbies() {
   type UserId = string | ReturnType<typeof randomUUID>;
   const userSockets = new Map<UserId, Set<WebSocket>>();
   const sockets = <WebSocket[]>[];
-  const ee = new EventEmitter();
-  ee.on("message", (...args) => {
-    // TODO implement
-    console.log(...args);
-  });
-  const lobbies = new Lobbies(ee);
+  const lobbies = new Lobbies(
+    new EventEmitter().on(
+      "everySocket",
+      (eventName: string, payload: Record<string, any>) => {
+        const message = JSON.stringify({ eventName, payload });
+        sockets.forEach((socket) => socket.emit(message));
+      },
+    ),
+  );
   return function handleConnection(
     connection: SocketStream,
     request: FastifyRequest,
@@ -149,18 +111,6 @@ export async function getFirstTimeUser(userId: string) {
     id: userId,
     isAdmin: false,
   };
-}
-
-async function getLobby(
-  this: { lobbies: Lobbies; userId: string },
-  lobbyId?: Lobby["id"],
-) {
-  lobbyId ||= (
-    await this.lobbies.find(
-      Lobby.hasUserWithSameId.bind({ userId: this.userId }),
-    )
-  ).id;
-  return await this.lobbies.find(Lobby.hasSameId.bind({ id: lobbyId }));
 }
 
 export type LobbyUser = Awaited<ReturnType<typeof getFirstTimeUser>>;

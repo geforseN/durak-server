@@ -4,7 +4,6 @@ import EventEmitter from "events";
 import LobbySlots from "./LobbySlots";
 import assert from "node:assert";
 import { getFirstTimeUser, LobbyUser as User } from "../lobbies.namespace";
-import LobbyUser from "./LobbyUser";
 
 export default class Lobby {
   id: string;
@@ -35,12 +34,28 @@ export default class Lobby {
   }
 
   has(cb: (user?: User) => boolean): boolean {
-    return this.slots.hasUser(cb);
+    return this.slots.has(cb);
+  }
+
+  get(cb: (user?: User) => boolean) {
+    return this.slots;
+  }
+
+  get admin() {
+    return this.slots.admin;
   }
 
   updateAdmin() {
     this.slots.admin = this.slots.mostLeftSideNonAdminUser;
     this.emitter.emit("everySocket", "lobby::admin::update", {
+      adminId: this.slots.admin.id,
+      lobbyId: this.id,
+    });
+  }
+
+  bestUpdateAdmin(emitter: EventEmitter) {
+    this.slots.admin = this.slots.mostLeftSideNonAdminUser;
+    emitter.emit("everySocket", "lobby::admin::update", {
       adminId: this.slots.admin.id,
       lobbyId: this.id,
     });
@@ -60,7 +75,7 @@ export default class Lobby {
   }
 
   remove(cb: (user?: User) => boolean) {
-    const user = this.slots.removeUser(cb);
+    const user = this.slots.remove(cb);
     this.emitter.emit("lobby::user::leave", {
       lobbyId: this.id,
       userId: user.id,
@@ -73,9 +88,20 @@ export default class Lobby {
     return user;
   }
 
-  moveUser(cb: (user?: User) => boolean, slotIndex = -1) {
+  bestRemove(userId: string, emitter: EventEmitter) {
+    const user = this.slots.remove((user) => user?.id === userId);
+    if (this.isEmpty) {
+      emitter.emit("everySocket", "lobby::delete", {
+        lobbyId: this.id,
+      });
+    } else if (user.isAdmin) {
+      this.bestUpdateAdmin(emitter);
+    }
+  }
+
+  move(cb: (user?: User) => boolean, slotIndex = -1) {
     assert.ok(slotIndex !== -1, "Выберете конкретный слот для перестановки.");
-    const user = this.slots.moveUser(cb, slotIndex);
+    const user = this.slots.move(cb, slotIndex);
     this.emitter.emit("lobby::user::move", {
       lobbyId: this.id,
       userId: user.id,
