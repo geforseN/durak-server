@@ -41,24 +41,24 @@ export default class LobbySlots<
   }
 
   get admin(): LobbyUser {
-    return this.#getUser((user) => user.isAdmin, "Админ не найден");
+    return this.getUser((user) => user.isAdmin, "Админ не найден");
   }
 
   set admin(newAdmin: LobbyUser) {
     this.admin.isAdmin = false;
-    const user = this.#getUser((user) => user.id === newAdmin.id);
+    const user = this.getUser((user) => user.id === newAdmin.id);
     user.isAdmin = true;
     this.emitter.emit("admin::update", user);
   }
 
   get mostLeftSideNonAdminUser() {
-    return this.#getUser(
+    return this.getUser(
       (user) => user.id !== this.admin.id,
       "Не получилось обновить админа лобби: некому стать новым админом",
     );
   }
 
-  hasUser(cb: (user?: LobbyUser) => boolean) {
+  has(cb: (user?: LobbyUser) => boolean) {
     return this.#value.some(cb);
   }
 
@@ -74,12 +74,12 @@ export default class LobbySlots<
     return slotIndex;
   }
 
-  moveUser(cb: (user?: LobbyUser) => boolean, slotIndex: number) {
-    return this.#putUser(this.removeUser(cb), slotIndex);
+  move(cb: (user?: LobbyUser) => boolean, slotIndex: number) {
+    return this.#putUser(this.remove(cb), slotIndex);
   }
 
-  removeUser(cb: (user?: LobbyUser) => boolean) {
-    return this.#removeUserByIndex(this.value.indexOf(this.#getUser(cb)));
+  remove(cb: (user?: LobbyUser) => boolean) {
+    return this.#removeUserByIndex(this.value.indexOf(this.getUser(cb)));
   }
 
   #putUserInFirstFoundEmptySlot(user: LobbyUser): number {
@@ -102,7 +102,7 @@ export default class LobbySlots<
     return user;
   }
 
-  #getUser(
+  getUser(
     cb: (user: LobbyUser) => boolean,
     notFoundMessage: string | Error = "Пользователь не был найден",
   ): LobbyUser {

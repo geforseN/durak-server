@@ -1,79 +1,123 @@
 import Lobby from "./Lobby";
 import EventEmitter from "events";
 import assert from "node:assert";
-import WebSocket from "ws";
-import { LobbyUser } from "../lobbies.namespace";
+import { getFirstTimeUser } from "../lobbies.namespace";
+import { durakGames } from "../../..";
+import { UnstartedGame } from "../../DurakGame/NonstartedDurakGame";
+import { GameSettings } from "./CorrectGameSettings";
 
 export default class Lobbies {
-  readonly #value: Lobby[];
-  readonly #emitter: EventEmitter;
+  readonly value: Lobby[];
+  readonly emitter: EventEmitter;
 
   constructor(emitter: EventEmitter, value: Lobby[] = []) {
-    this.#value = value;
-    this.#emitter = emitter;
+    this.emitter = emitter;
+    this.value = value;
   }
 
-  get value() {
-    return this.#value.map((lobby) => lobby.value);
+  get #state() {
+    return this.value.map((lobby) => lobby.value);
   }
 
-  push(lobby: Lobby, socket: WebSocket) {
-    this.#addLobby(lobby);
-    socket.emit("everySocket", "lobby::add", { lobby });
-    this.#emitter.emit("everySocket", "lobby::add", { lobbyId: lobby.id });
+  async restoreState(userId: string) {
+    return {
+      lobbies: this.#state,
+      lobbyId:
+        userId &&
+        (await this.#get((lobby) =>
+          lobby.has((user) => user?.id === userId),
+        ).then(
+          (lobby) => lobby.id,
+          () => undefined,
+        )),
+    };
+  }
+  
+  async addUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
+    if (!this.value.some((lobby) => lobby.has((user) => user?.id === userId))) {
+      const [lobby, user] = await Promise.all([
+        this.#get((lobby) => lobby.id === lobbyId),
+        getFirstTimeUser(userId),
+      ]);
+      lobby.put(user, slotIndex);
+      return this.emitter.emit("socket", "user::lobby::current", {
+        lobbyId: lobby.id,
+      });
+    }
+    const [oldLobby, lobby] = await Promise.all([
+      this.#get((lobby) => lobby.has((user) => user?.id === userId)),
+      this.#get((lobby) => lobby.id === lobbyId),
+    ]);
+    if (lobby === oldLobby) {
+      return lobby.move((user) => user?.id === userId, slotIndex);
+    }
+    const user = oldLobby.remove((user) => user?.id === userId);
+    lobby.put(user, slotIndex);
+    return this.emitter.emit("socket", "user::lobby::current", {
+      lobbyId: lobby.id,
+    });
+  }
+
+  pushNewLobby(settings: GameSettings) {
+    const lobby = new Lobby({ settings });
+    this.value.push(lobby);
+    this.emitter.emit("everySocket", "lobby::add", { lobby });
     return lobby;
   }
 
-  remove(cb: (lobby: Lobby) => boolean, socket: WebSocket) {
-    const [lobby] = this.#removeLobby(cb);
-    socket.emit("everySocket", "lobby::remove", { lobbyId: lobby.id });
-    this.#emitter.emit("everySocket", "lobby::remove", { lobbyId: lobby.id });
-    return lobby;
+  async updateLobbyToUnstartedGame(userId: string, lobbyId?: string) {
+    const lobby = await this.#get(
+      lobbyId
+        ? (lobby) => lobby.id === lobbyId
+        : (lobby) => lobby.has((user) => user?.id === userId),
+    );
+    assert.ok(lobby.admin.id === userId, new NoAccessError());
+    durakGames.set(lobby.id, new UnstartedGame(lobby));
   }
 
-  async find(cb: (lobby: Lobby) => boolean) {
-    return this.#value[this.#getLobbyIndex(cb)];
+  removeLobby(userId: string, lobbyId?: string) {
+    const lobbyIndex = this.#getLobbyIndex(
+      lobbyId
+        ? (lobby) => lobby.id === lobbyId
+        : (lobby) => lobby.has((user) => user?.id === userId),
+    );
+    assert.ok(lobbyIndex > 0, new NoLobbyError());
+    const lobby = this.value[lobbyIndex];
+    assert.ok(lobby.admin.id === userId, new NoAccessError());
+    this.value.splice(lobbyIndex, 1);
+    this.emitter.emit("everySocket", "lobby::remove", { lobbyId: lobby.id });
   }
 
-  hasUser(cb: (user?: LobbyUser) => boolean) {
-    return this.#value.some((lobby) => lobby.hasUser(cb));
+  async removeUserFromLobby(userId: string, lobbyId?: string) {
+    const lobby = await this.#get(
+      lobbyId
+        ? (lobby) => lobby.id === lobbyId
+        : (lobby) => lobby.has((user) => user?.id === userId),
+    );
+    return lobby.bestRemove(userId, this.emitter);
   }
 
-  #addLobby(lobby: Lobby) {
-    return this.#value.push(lobby);
-  }
-
-  #removeLobby(cb: (lobby: Lobby) => boolean) {
-    return this.#value.splice(this.#getLobbyIndex(cb), 1);
+  async #get(cb: (lobby: Lobby) => boolean): Promise<Lobby> | never {
+    return this.value[this.#getLobbyIndex(cb)];
   }
 
   #getLobbyIndex(cb: (lobby: Lobby) => boolean) {
-    const index = this.#value.findIndex(cb);
-    assert.ok(index !== -1, "Лобби с данным идентификатором не найдено.");
+    const index = this.value.findIndex(cb);
+    assert.ok(index > 0, new NoLobbyError());
     return index;
   }
 }
 
-export interface IGameLobbyUser {
-  id: string;
-  isAdmin: boolean;
-  nickname: string;
+class NoLobbyError extends Error {
+  constructor() {
+    super("Нет такого лобби");
+    this.name = "Ошибка удаления лобби";
+  }
 }
 
-interface ILobby<GameLobbyUser> {
-  get value(): any;
-
-  id: string;
-
-  hasUser(cb: (user?: GameLobbyUser) => boolean): boolean;
-
-  putUser(user: GameLobbyUser, slotIndex: number): any;
-
-  removeUser(cb: (user?: GameLobbyUser) => boolean): GameLobbyUser;
-
-  swapUser(cb: (user?: GameLobbyUser) => boolean, slotIndex: number): boolean;
-
-  slots: {
-    get value(): (GameLobbyUser | undefined)[];
-  };
+class NoAccessError extends Error {
+  constructor(message?: string) {
+    super(message || "Вы не являетесь админом лобби");
+    this.name = "Ошибка доступа";
+  }
 }
