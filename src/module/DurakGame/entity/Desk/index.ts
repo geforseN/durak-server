@@ -79,7 +79,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     this.#wsService?.receiveCard({ card, index, who });
   }
 
-  provideCards<T extends Defender | Discard>(target: T) {
+  provideCards<Target extends Defender | Discard>(target: Target) {
     target.receiveCards(...this.#slots.cards);
     this.#clear();
   }
