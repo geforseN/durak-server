@@ -26,11 +26,11 @@ export default class Lobbies {
     };
   }
 
-  async addUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
-    const [pastLobby, desiredLobby] = await Promise.all([
-      this.value.find((lobby) => lobby.has((user) => user?.id === userId)),
-      this.#get((lobby) => lobby.id === lobbyId),
-    ]);
+  addUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
+    const pastLobby = this.value.find((lobby) =>
+      lobby.has((user) => user?.id === userId),
+    );
+    const desiredLobby = this.#get((lobby) => lobby.id === lobbyId);
     assert.ok(
       !desiredLobby.isFull,
       new LobbyAccessError("Лобби полностью занято"),
@@ -41,10 +41,13 @@ export default class Lobbies {
       // UPD: moveUser method will throw on slot.isValid assert
       return desiredLobby.moveUser(userId, slotIndex);
     }
-    const user = pastLobby
-      ? pastLobby.removeUser(userId)
-      : await getFirstTimeUser(userId);
-    return desiredLobby.insertUser(user, slotIndex);
+    if (pastLobby) {
+      const user = pastLobby.removeUser(userId);
+      return desiredLobby.insertUser(user, slotIndex);
+    }
+    return getFirstTimeUser(userId).then((user) =>
+      desiredLobby.insertUser(user, slotIndex),
+    );
   }
 
   pushNewLobby(settings: GameSettings) {
@@ -53,8 +56,8 @@ export default class Lobbies {
     this.emitter.emit("everySocket", "lobby::add", { lobby });
   }
 
-  async upgrateLobbyToUnstartedGame(userId: string, lobbyId?: string) {
-    const lobby = await this.#get(
+  upgrateLobbyToUnstartedGame(userId: string, lobbyId?: string) {
+    const lobby = this.#get(
       lobbyId
         ? (lobby) => lobby.id === lobbyId
         : (lobby) => lobby.has((user) => user?.id === userId),
@@ -76,8 +79,8 @@ export default class Lobbies {
     this.emitter.emit("everySocket", "lobby::remove", { lobbyId: lobby.id });
   }
 
-  async removeUserFromLobby(userId: string, lobbyId?: string) {
-    const lobby = await this.#get(
+  removeUserFromLobby(userId: string, lobbyId?: string) {
+    const lobby = this.#get(
       lobbyId
         ? (lobby) => lobby.id === lobbyId
         : (lobby) => lobby.has((user) => user?.id === userId),
@@ -85,10 +88,10 @@ export default class Lobbies {
     return lobby.removeUser(userId);
   }
 
-  async #get(
+  #get(
     cb: (lobby: Lobby) => boolean,
     message: Error | string = new FindLobbyError(),
-  ): Promise<Lobby> | never {
+  ): Lobby | never {
     const lobby = this.value.find(cb);
     assert.ok(lobby, message);
     return lobby;

@@ -36,7 +36,7 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
         )
         .on(
           "lobby::user::join",
-          async ({
+          ({
             lobbyId,
             slotIndex = -1,
           }: {
@@ -45,18 +45,14 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
           }) => {
             // CHECK slotIndex IS valid
             // NOTE: slotIndex === -1 IS valid
-            await lobbies.addUserInLobby(userId, lobbyId, slotIndex);
+            lobbies.addUserInLobby(userId, lobbyId, slotIndex);
           },
         )
-        .on(
-          "lobby::user::leave",
-          async ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-            await lobbies.removeUserFromLobby(userId, lobbyId),
+        .on("lobby::user::leave", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
+          lobbies.removeUserFromLobby(userId, lobbyId),
         )
-        .on(
-          "lobby::upgrate",
-          async ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-            await lobbies.upgrateLobbyToUnstartedGame(userId, lobbyId),
+        .on("lobby::upgrate", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
+          lobbies.upgrateLobbyToUnstartedGame(userId, lobbyId),
         )
         .on(
           "lobby::user::move",
@@ -67,7 +63,7 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
             slotIndex: number;
             lobbyId?: Lobby["id"];
           }) => {
-            // CHECK slotIndex !== IS valid AND slotIndex !== -1  
+            // CHECK slotIndex !== IS valid AND slotIndex !== -1
           },
         );
     },
