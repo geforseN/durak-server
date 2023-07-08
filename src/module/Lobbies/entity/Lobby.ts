@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import CorrectGameSettings, { type GameSettings } from "./CorrectGameSettings";
 import type EventEmitter from "events";
 import LobbySlots from "./LobbySlots";
-import { getFirstTimeUser, LobbyUser as User } from "../lobbies.namespace";
+import { getFirstTimeUser, type LobbyUser } from "../lobbies.namespace";
 
 export default class Lobby {
   id: string;
@@ -39,7 +39,7 @@ export default class Lobby {
     return this.slots.isFull;
   }
 
-  has(cb: (user?: User) => boolean): boolean {
+  has(cb: (user?: LobbyUser) => boolean): boolean {
     return this.slots.has(cb);
   }
 
@@ -55,7 +55,7 @@ export default class Lobby {
     });
   }
 
-  insertUser(user: User, slotIndex: number) {
+  insertUser(user: LobbyUser, slotIndex: number) {
     const filledSlotIndex = this.slots.putUser(user, slotIndex);
     this.lobbiesEmitter.emit("lobby::user::put", {
       lobbyId: this.id,
