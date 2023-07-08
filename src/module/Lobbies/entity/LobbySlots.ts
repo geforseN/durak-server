@@ -1,5 +1,6 @@
 import assert from "node:assert";
 import EventEmitter from "events";
+import { LobbyAccessError } from "../error";
 
 export default class LobbySlots<
   LobbyUser extends { id: string; isAdmin: boolean },
@@ -44,6 +45,10 @@ export default class LobbySlots<
     return this.getUser((user) => user.isAdmin, "Админ не найден");
   }
 
+  swap(i: number, k: number) {
+    [this.#value[i], this.#value[k]] = [this.#value[k], this.#value[i]];
+  }
+
   set admin(newAdmin: LobbyUser) {
     this.admin.isAdmin = false;
     const user = this.getUser((user) => user.id === newAdmin.id);
@@ -63,14 +68,17 @@ export default class LobbySlots<
   }
 
   putUser(user: LobbyUser, slotIndex = -1): number {
-    if (slotIndex === -1) {
-      return this.#putUserInFirstFoundEmptySlot(user);
-    }
+    assert.ok(!this.isFull, new LobbyAccessError("Лобби полностью занято"));
+    slotIndex = slotIndex === -1 ? this.#firstFoundEmptySlotIndex : slotIndex;
     assert.ok(
-      this.#slotAt(slotIndex).IsValid,
+      this.slotAt(slotIndex).isValid,
       "Неверно указан желаемый индекс слота",
     );
-    this.#putUser(user, slotIndex);
+    assert.ok(
+      this.slotAt(slotIndex).isEmpty,
+      new LobbyAccessError("Cлот уже занят"),
+    );
+    this.#value.splice(slotIndex, 1, user);
     return slotIndex;
   }
 
@@ -79,13 +87,8 @@ export default class LobbySlots<
   }
 
   remove(cb: (user?: LobbyUser) => boolean) {
-    return this.#removeUserByIndex(this.value.indexOf(this.getUser(cb)));
-  }
-
-  #putUserInFirstFoundEmptySlot(user: LobbyUser): number {
-    const slotIndex = this.#firstFoundEmptySlotIndex;
-    this.#putUser(user, slotIndex);
-    return slotIndex;
+    const userIndex = this.value.indexOf(this.getUser(cb));
+    return this.#removeUserByIndex(userIndex);
   }
 
   get #firstFoundEmptySlotIndex() {
@@ -94,7 +97,7 @@ export default class LobbySlots<
 
   #putUser(user: LobbyUser, slotIndex: number): LobbyUser {
     assert.ok(
-      this.#slotAt(slotIndex).isEmpty,
+      this.slotAt(slotIndex).isEmpty,
       "Данный слот уже занят другим игроком.",
     );
     this.#value.splice(slotIndex, 1, user);
@@ -111,6 +114,10 @@ export default class LobbySlots<
     return user;
   }
 
+  findSlotIndex(cb: (user?: LobbyUser) => boolean) {
+    return this.#value.findIndex(cb);
+  }
+
   #removeUserByIndex(slotIndex: number): LobbyUser {
     const [user] = this.#value.splice(slotIndex, 1, undefined);
     assert.ok(user, "NO WAY: По желаемому индексу не был удален игрок");
@@ -118,10 +125,10 @@ export default class LobbySlots<
     return user;
   }
 
-  #slotAt(slotIndex: number) {
+  slotAt(slotIndex: number) {
     return {
       isEmpty: !!this.#value[slotIndex],
-      IsValid:
+      isValid:
         Number.isInteger(slotIndex) &&
         slotIndex >= 0 &&
         slotIndex <= this.slotsCount - 1,

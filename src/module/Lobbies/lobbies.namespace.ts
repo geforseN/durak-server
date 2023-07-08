@@ -36,28 +36,40 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
         )
         .on(
           "lobby::user::join",
-          // ? should this handler be async ?
           async ({
             lobbyId,
             slotIndex = -1,
           }: {
             lobbyId: Lobby["id"];
             slotIndex: number;
-          }) => await lobbies.addUserInLobby(userId, lobbyId, slotIndex),
+          }) => {
+            // CHECK slotIndex IS valid
+            // NOTE: slotIndex === -1 IS valid
+            await lobbies.addUserInLobby(userId, lobbyId, slotIndex);
+          },
         )
         .on(
           "lobby::user::leave",
-          // ? should this handler be async ?
           async ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
             await lobbies.removeUserFromLobby(userId, lobbyId),
         )
         .on(
           "lobby::upgrate",
-          // ? should this handler be async ?
           async ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-            await lobbies.updateLobbyToUnstartedGame(userId, lobbyId),
+            await lobbies.upgrateLobbyToUnstartedGame(userId, lobbyId),
         )
-        .on("lobby::user::move", () => {});
+        .on(
+          "lobby::user::move",
+          ({
+            slotIndex,
+            lobbyId,
+          }: {
+            slotIndex: number;
+            lobbyId?: Lobby["id"];
+          }) => {
+            // CHECK slotIndex !== IS valid AND slotIndex !== -1  
+          },
+        );
     },
   );
 }
