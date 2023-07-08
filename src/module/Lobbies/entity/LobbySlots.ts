@@ -6,11 +6,11 @@ export default class LobbySlots<
   LobbyUser extends { id: string; isAdmin: boolean },
 > {
   readonly #value: (LobbyUser | undefined)[];
-  emitter: EventEmitter;
+  readonly #emitter: EventEmitter;
 
   constructor({ size, emitter }: { size: number; emitter: EventEmitter }) {
     this.#value = new Array(size).fill(undefined);
-    this.emitter = emitter;
+    this.#emitter = emitter;
   }
 
   get value() {
@@ -53,7 +53,7 @@ export default class LobbySlots<
     this.admin.isAdmin = false;
     const user = this.getUser((user) => user.id === newAdmin.id);
     user.isAdmin = true;
-    this.emitter.emit("admin::update", user);
+    this.#emitter.emit("admin::update", user);
   }
 
   get mostLeftSideNonAdminUser() {
@@ -121,7 +121,7 @@ export default class LobbySlots<
   #removeUserByIndex(slotIndex: number): LobbyUser {
     const [user] = this.#value.splice(slotIndex, 1, undefined);
     assert.ok(user, "NO WAY: По желаемому индексу не был удален игрок");
-    this.emitter.emit("user::leave", user, slotIndex);
+    this.#emitter.emit("user::leave", user, slotIndex);
     return user;
   }
 
