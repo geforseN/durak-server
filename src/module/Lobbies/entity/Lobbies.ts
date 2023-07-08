@@ -6,110 +6,80 @@ import { GameSettings } from "./CorrectGameSettings";
 import { LobbyAccessError, DeleteLobbyError, FindLobbyError } from "../error";
 
 export default class Lobbies {
-  readonly value: Lobby[];
-  readonly emitter: EventEmitter;
-  readonly map: Map<string, Lobby>;
+  readonly #emitter: EventEmitter;
+  readonly #map: Map<string, Lobby>;
 
-  constructor(emitter: EventEmitter, value: Lobby[] = []) {
-    this.emitter = emitter;
-    this.value = value;
-    this.map = new Map();
+  constructor(emitter: EventEmitter, map = new Map<string, Lobby>()) {
+    this.#emitter = emitter;
+    this.#map = map;
   }
 
-  async restoreState(userId: string) {
-    return {
-      lobbies: this.value.map((lobby) => lobby.value),
-      lobbyId:
-        userId &&
-        this.value.find((lobby) => lobby.has((user) => user?.id === userId))
-          ?.id,
-    };
+  restoreState() {
+    return { lobbies: [...this.#map.values()] };
   }
 
   async addUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
-    const desiredLobby = this.#getLobbyWithId(lobbyId);
+    const desiredLobby = this.#map.get(lobbyId) || raise(new FindLobbyError());
     assert.ok(
       !desiredLobby.isFull,
       new LobbyAccessError("Лобби полностью занято"),
     );
-    const pastLobby = this.#findLobbyWithUser(userId);
+    const pastLobby = this.#findLobby(userId);
     if (pastLobby === desiredLobby) {
       return desiredLobby.moveUser(userId, slotIndex);
     }
     const user = pastLobby
-      ? pastLobby.removeUser(userId)
+      ? pastLobby.removeUserWithEmit(userId)
       : await getFirstTimeUser(userId);
     return desiredLobby.insertUser(user, slotIndex);
   }
 
   pushNewLobby(settings: GameSettings) {
-    const lobby = new Lobby({ settings, lobbiesEmitter: this.emitter });
-    this.value.push(lobby);
-    this.emitter.emit("everySocket", "lobby::add", { lobby });
+    const lobby = new Lobby({ settings, lobbiesEmitter: this.#emitter });
+    this.#map.set(lobby.id, lobby);
+    this.#emitter.emit("everySocket", "lobby::add", { lobby });
   }
 
-  upgrateLobbyToUnstartedGame(userId: string, lobbyId?: string) {
-    const lobby = this.#get(
-      lobbyId
-        ? (lobby) => lobby.id === lobbyId
-        : (lobby) => lobby.has((user) => user?.id === userId),
-    );
-    lobby.updateToUnstartedGame(userId);
+  upgrateLobbyToUnstartedGame(
+    userId: string,
+    lobbyId = this.#getLobbyId(userId),
+  ) {
+    const lobby = this.#map.get(lobbyId) || raise();
+    lobby.tryUpdateToUnstartedGame(userId);
     // TODO in Vue:
     // FOR unstarted game users UPDATE their state: SET gameId to lobbyId
-    this.removeLobby(userId, lobbyId);
+    this.#map.delete(lobby.id);
+    this.#emitter.emit("everySocket", "lobby::remove", { lobbyId: lobby.id });
   }
 
-  removeLobby(userId: string, lobbyId?: string) {
-    const lobbyIndex = this.#getLobbyIndex(
-      lobbyId
-        ? (lobby) => lobby.id === lobbyId
-        : (lobby) => lobby.has((user) => user?.id === userId),
-      new DeleteLobbyError(),
-    );
-    const lobby = this.value[lobbyIndex];
+  removeLobby(userId: string, lobbyId = this.#getLobbyId(userId)) {
+    const lobby = this.#map.get(lobbyId) || raise();
     assert.ok(lobby.admin.id === userId, new LobbyAccessError());
-    this.value.splice(lobbyIndex, 1);
-    this.emitter.emit("everySocket", "lobby::remove", { lobbyId: lobby.id });
+    this.#emitter.emit("everySocket", "lobby::remove", { lobbyId });
     // TODO in Vue:
     // FOR deleted users UPDATE their state: SET lobbyId to null
   }
 
-  removeUserFromLobby(userId: string, lobbyId?: string) {
-    return this.#getLobbySomehow(userId, lobbyId).removeUser(userId);
+  removeUserFromLobby(userId: string, lobbyId = this.#getLobbyId(userId)) {
+    const lobby = this.#map.get(lobbyId) || raise();
+    lobby.removeUserWithEmit(userId);
   }
 
-  #get(
-    cb: (lobby: Lobby) => boolean,
-    message: Error | string = new FindLobbyError(),
-  ): Lobby | never {
-    const lobby = this.value.find(cb);
-    assert.ok(lobby, message);
-    return lobby;
+  #getLobbyId(userId: string): string | never {
+    return this.#findLobby(userId)?.id || raise();
   }
 
-  #getLobbyIndex(
-    cb: (lobby: Lobby) => boolean,
-    message: Error | string = new FindLobbyError(),
-  ) {
-    const index = this.value.findIndex(cb);
-    assert.ok(index > 0, message);
-    return index;
+  #getLobby(userId: string): Lobby | never {
+    return this.#findLobby(userId) || raise();
   }
 
-  #findLobbyWithUser(userId: string) {
-    return this.value.find((lobby) => lobby.has((user) => user?.id === userId));
+  #findLobby(userId: string): Lobby | undefined {
+    for (const lobby of this.#map.values()) {
+      if (lobby.hasUser(userId)) return lobby;
+    }
   }
+}
 
-  #getLobbyWithId(lobbyId: Lobby["id"]) {
-    return this.#get((lobby) => lobby.id === lobbyId);
-  }
-
-  #getLobbySomehow(userId: string, lobbyId?: Lobby["id"]) {
-    return this.#get(
-      lobbyId
-        ? (lobby) => lobby.id === lobbyId
-        : (lobby) => lobby.has((user) => user?.id === userId),
-    );
-  }
+function raise(err = new Error()): never {
+  throw err;
 }
