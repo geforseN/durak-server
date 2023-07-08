@@ -1,23 +1,29 @@
-import { randomUUID } from "node:crypto";
-import CorrectGameSettings, { GameSettings } from "./CorrectGameSettings";
-import EventEmitter from "events";
-import LobbySlots from "./LobbySlots";
 import assert from "node:assert";
+import crypto from "node:crypto";
+import CorrectGameSettings, { type GameSettings } from "./CorrectGameSettings";
+import type EventEmitter from "events";
+import LobbySlots from "./LobbySlots";
 import { getFirstTimeUser, LobbyUser as User } from "../lobbies.namespace";
 
 export default class Lobby {
   id: string;
   settings: GameSettings;
   slots: LobbySlots<Awaited<ReturnType<typeof getFirstTimeUser>>>;
-  emitter: EventEmitter;
+  lobbiesEmitter: EventEmitter;
 
-  constructor({ settings }: { settings: GameSettings }) {
-    this.emitter = new EventEmitter(); // TODO
-    this.id = randomUUID();
+  constructor({
+    settings,
+    lobbiesEmitter: bestEmitter,
+  }: {
+    settings: GameSettings;
+    lobbiesEmitter: EventEmitter;
+  }) {
+    this.lobbiesEmitter = bestEmitter;
+    this.id = crypto.randomUUID();
     this.settings = new CorrectGameSettings(settings);
     this.slots = new LobbySlots({
       size: settings.userCount,
-      emitter: this.emitter,
+      emitter: this.lobbiesEmitter,
     });
   }
 
@@ -37,76 +43,56 @@ export default class Lobby {
     return this.slots.has(cb);
   }
 
-  get(cb: (user?: User) => boolean) {
-    return this.slots;
-  }
-
   get admin() {
     return this.slots.admin;
   }
 
   updateAdmin() {
     this.slots.admin = this.slots.mostLeftSideNonAdminUser;
-    this.emitter.emit("everySocket", "lobby::admin::update", {
+    this.lobbiesEmitter.emit("everySocket", "lobby::admin::update", {
       adminId: this.slots.admin.id,
       lobbyId: this.id,
     });
   }
 
-  bestUpdateAdmin(emitter: EventEmitter) {
-    this.slots.admin = this.slots.mostLeftSideNonAdminUser;
-    emitter.emit("everySocket", "lobby::admin::update", {
-      adminId: this.slots.admin.id,
-      lobbyId: this.id,
-    });
-  }
-
-  put(user: User, slotIndex = -1) {
-    assert.ok(
-      !this.isFull,
-      "Не получилось добавить игрока из лобби. \nЛобби полностью занято.",
-    );
-    slotIndex = this.slots.putUser(user, slotIndex);
-    this.emitter.emit("lobby::user::put", {
+  insertUser(user: User, slotIndex: number) {
+    const filledSlotIndex = this.slots.putUser(user, slotIndex);
+    this.lobbiesEmitter.emit("lobby::user::put", {
       lobbyId: this.id,
       user,
-      slotIndex,
+      slotIndex: filledSlotIndex,
     });
   }
 
-  remove(cb: (user?: User) => boolean) {
-    const user = this.slots.remove(cb);
-    this.emitter.emit("lobby::user::leave", {
-      lobbyId: this.id,
-      userId: user.id,
-    });
+  removeUser(userId: string) {
+    const user = this.slots.remove((user) => user?.id === userId);
     if (this.isEmpty) {
-      this.emitter.emit("lobby::delete", { lobbyId: this.id });
+      this.lobbiesEmitter.emit("everySocket", "lobby::delete", {
+        lobbyId: this.id,
+      });
     } else if (user.isAdmin) {
       this.updateAdmin();
     }
     return user;
   }
 
-  bestRemove(userId: string, emitter: EventEmitter) {
-    const user = this.slots.remove((user) => user?.id === userId);
-    if (this.isEmpty) {
-      emitter.emit("everySocket", "lobby::delete", {
-        lobbyId: this.id,
-      });
-    } else if (user.isAdmin) {
-      this.bestUpdateAdmin(emitter);
-    }
-  }
-
-  move(cb: (user?: User) => boolean, slotIndex = -1) {
-    assert.ok(slotIndex !== -1, "Выберете конкретный слот для перестановки.");
-    const user = this.slots.move(cb, slotIndex);
-    this.emitter.emit("lobby::user::move", {
+  moveUser(userId: string, desiredSlotIndex: number) {
+    const currentSlotIndex = this.slots.findSlotIndex(
+      (user) => user?.id === userId,
+    );
+    assert.ok(
+      currentSlotIndex !== desiredSlotIndex,
+      "Данный слот уже занят вами",
+    );
+    const slot = this.slots.slotAt(desiredSlotIndex);
+    assert.ok(slot.isValid && slot.isEmpty);
+    this.slots.swap(currentSlotIndex, desiredSlotIndex);
+    this.lobbiesEmitter.emit("everySocket", "lobby::user::move", {
       lobbyId: this.id,
-      userId: user.id,
-      slotIndex,
+      userId,
+      newSlotIndex: desiredSlotIndex,
+      // NOTE: property below can be omited
+      pastSlotIndex: currentSlotIndex,
     });
-    return user;
   }
 }

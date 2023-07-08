@@ -5,6 +5,7 @@ import { getFirstTimeUser } from "../lobbies.namespace";
 import { durakGames } from "../../..";
 import { UnstartedGame } from "../../DurakGame/NonstartedDurakGame";
 import { GameSettings } from "./CorrectGameSettings";
+import { LobbyAccessError, DeleteLobbyError, FindLobbyError } from "../error";
 
 export default class Lobbies {
   readonly value: Lobby[];
@@ -15,84 +16,50 @@ export default class Lobbies {
     this.value = value;
   }
 
-  get #state() {
-    return this.value.map((lobby) => lobby.value);
-  }
-
   async restoreState(userId: string) {
     return {
-      lobbies: this.#state,
+      lobbies: this.value.map((lobby) => lobby.value),
       lobbyId:
         userId &&
-        (await this.#get((lobby) =>
-          lobby.has((user) => user?.id === userId),
-        ).then(
-          (lobby) => lobby.id,
-          () => undefined,
-        )),
+        this.value.find((lobby) => lobby.has((user) => user?.id === userId))
+          ?.id,
     };
   }
-  
+
   async addUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
-    if (!this.value.some((lobby) => lobby.has((user) => user?.id === userId))) {
-      const [lobby, user] = await Promise.all([
-        this.#get((lobby) => lobby.id === lobbyId),
-        getFirstTimeUser(userId),
-      ]);
-      lobby.put(user, slotIndex);
-      return this.emitter.emit("socket", "user::lobby::current", {
-        lobbyId: lobby.id,
-      });
-    }
-    const [oldLobby, lobby] = await Promise.all([
-      this.#get((lobby) => lobby.has((user) => user?.id === userId)),
+    const [pastLobby, desiredLobby] = await Promise.all([
+      this.value.find((lobby) => lobby.has((user) => user?.id === userId)),
       this.#get((lobby) => lobby.id === lobbyId),
     ]);
-    if (lobby === oldLobby) {
-      return lobby.move((user) => user?.id === userId, slotIndex);
-    }
-    const user = oldLobby.remove((user) => user?.id === userId);
-    lobby.put(user, slotIndex);
-    return this.emitter.emit("socket", "user::lobby::current", {
-      lobbyId: lobby.id,
-    });
-  }
-
-  async addddUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
-    const desiredLobby = await this.#get((lobby) => lobby.id === lobbyId);
     assert.ok(
       !desiredLobby.isFull,
-      new NoAccessError("Лобби полностью занято"),
+      new LobbyAccessError("Лобби полностью занято"),
     );
-    assert.ok(
-      !desiredLobby.has((user) => user?.id === userId),
-      "Вы уже в этом лобби",
-    );
-    const pastLobby = await this.#get((lobby) =>
-      lobby.has((user) => user?.id === userId),
-    );
-    if (!pastLobby) {
-      const user = await getFirstTimeUser(userId);
-      return desiredLobby.bestInsertUser(user, slotIndex, this.emitter);
+    if (pastLobby === desiredLobby) {
+      // ! slotIndex can be -1 here !
+      // ? how should it work then ?
+      // UPD: moveUser method will throw on slot.isValid assert
+      return desiredLobby.moveUser(userId, slotIndex);
     }
-    const user = pastLobby.bestRemoveUser (userId, this.emitter)
-    // ELSE remove user AND IF remove user IS admin THEN change admin AND ID pastLobby is empty THEN remove lobby
+    const user = pastLobby
+      ? pastLobby.removeUser(userId)
+      : await getFirstTimeUser(userId);
+    return desiredLobby.insertUser(user, slotIndex);
   }
 
   pushNewLobby(settings: GameSettings) {
-    const lobby = new Lobby({ settings });
+    const lobby = new Lobby({ settings, lobbiesEmitter: this.emitter });
     this.value.push(lobby);
     this.emitter.emit("everySocket", "lobby::add", { lobby });
-    return lobby;
   }
 
-  async updateLobbyToUnstartedGame(userId: string, lobbyId?: string) {
+  async upgrateLobbyToUnstartedGame(userId: string, lobbyId?: string) {
     const lobby = await this.#get(
       lobbyId
         ? (lobby) => lobby.id === lobbyId
         : (lobby) => lobby.has((user) => user?.id === userId),
     );
-    assert.ok(lobby.admin.id === userId, new NoAccessError());
+    assert.ok(lobby.admin.id === userId, new LobbyAccessError());
     durakGames.set(lobby.id, new UnstartedGame(lobby));
   }
 
@@ -102,9 +69,9 @@ export default class Lobbies {
         ? (lobby) => lobby.id === lobbyId
         : (lobby) => lobby.has((user) => user?.id === userId),
     );
-    assert.ok(lobbyIndex > 0, new NoLobbyError());
+    assert.ok(lobbyIndex > 0, new DeleteLobbyError());
     const lobby = this.value[lobbyIndex];
-    assert.ok(lobby.admin.id === userId, new NoAccessError());
+    assert.ok(lobby.admin.id === userId, new LobbyAccessError());
     this.value.splice(lobbyIndex, 1);
     this.emitter.emit("everySocket", "lobby::remove", { lobbyId: lobby.id });
   }
@@ -115,30 +82,24 @@ export default class Lobbies {
         ? (lobby) => lobby.id === lobbyId
         : (lobby) => lobby.has((user) => user?.id === userId),
     );
-    return lobby.bestRemove(userId, this.emitter);
+    return lobby.removeUser(userId);
   }
 
-  async #get(cb: (lobby: Lobby) => boolean): Promise<Lobby> | never {
-    return this.value[this.#getLobbyIndex(cb)];
+  async #get(
+    cb: (lobby: Lobby) => boolean,
+    message: Error | string = new FindLobbyError(),
+  ): Promise<Lobby> | never {
+    const lobby = this.value.find(cb);
+    assert.ok(lobby, message);
+    return lobby;
   }
 
-  #getLobbyIndex(cb: (lobby: Lobby) => boolean) {
+  #getLobbyIndex(
+    cb: (lobby: Lobby) => boolean,
+    message: Error | string = new FindLobbyError(),
+  ) {
     const index = this.value.findIndex(cb);
-    assert.ok(index > 0, new NoLobbyError());
+    assert.ok(index > 0, message);
     return index;
-  }
-}
-
-class NoLobbyError extends Error {
-  constructor() {
-    super("Нет такого лобби");
-    this.name = "Ошибка удаления лобби";
-  }
-}
-
-class NoAccessError extends Error {
-  constructor(message?: string) {
-    super(message || "Вы не являетесь админом лобби");
-    this.name = "Ошибка доступа";
   }
 }
