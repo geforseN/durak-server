@@ -23,7 +23,7 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
     async function (connection: SocketStream, request: FastifyRequest) {
       const { userId, socket, lobbies } = handleConnection(connection, request);
       // NOTE: emit this ONCE
-      socket.emit("lobbies::restore", await lobbies.restoreState(userId));
+      socket.emit("lobbies::restore", lobbies.restoreState());
       if (!userId) {
         return console.log("FAST RETURN: NO USER_ID");
       }
@@ -36,16 +36,16 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
         )
         .on(
           "lobby::user::join",
-          ({
+          async ({
             lobbyId,
             slotIndex = -1,
           }: {
             lobbyId: Lobby["id"];
             slotIndex: number;
           }) => {
-            // CHECK slotIndex IS valid
-            // NOTE: slotIndex === -1 IS valid
-            lobbies.addUserInLobby(userId, lobbyId, slotIndex);
+            // NOTE: IF user didn't send slotIndex (didn't specified slotIndex) THEN slotIndex === -1
+            // NOTE: will throw WHEN user wanna join same lobby AND user didn't specified slotIndex
+            await lobbies.addUserInLobby(userId, lobbyId, slotIndex);
           },
         )
         .on("lobby::user::leave", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
