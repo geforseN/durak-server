@@ -3,7 +3,7 @@ import EventEmitter from "events";
 import assert from "node:assert";
 import { getFirstTimeUser } from "../lobbies.namespace";
 import { GameSettings } from "./CorrectGameSettings";
-import { LobbyAccessError, DeleteLobbyError, FindLobbyError } from "../error";
+import { LobbyAccessError, FindLobbyError } from "../error";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;
