@@ -2,18 +2,18 @@ import Lobby from "./Lobby";
 import EventEmitter from "events";
 import assert from "node:assert";
 import { getFirstTimeUser } from "../lobbies.namespace";
-import { durakGames } from "../../..";
-import { UnstartedGame } from "../../DurakGame/NonstartedDurakGame";
 import { GameSettings } from "./CorrectGameSettings";
 import { LobbyAccessError, DeleteLobbyError, FindLobbyError } from "../error";
 
 export default class Lobbies {
   readonly value: Lobby[];
   readonly emitter: EventEmitter;
+  readonly map: Map<string, Lobby>;
 
   constructor(emitter: EventEmitter, value: Lobby[] = []) {
     this.emitter = emitter;
     this.value = value;
+    this.map = new Map();
   }
 
   async restoreState(userId: string) {
@@ -26,28 +26,20 @@ export default class Lobbies {
     };
   }
 
-  addUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
-    const pastLobby = this.value.find((lobby) =>
-      lobby.has((user) => user?.id === userId),
-    );
-    const desiredLobby = this.#get((lobby) => lobby.id === lobbyId);
+  async addUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
+    const desiredLobby = this.#getLobbyWithId(lobbyId);
     assert.ok(
       !desiredLobby.isFull,
       new LobbyAccessError("Лобби полностью занято"),
     );
+    const pastLobby = this.#findLobbyWithUser(userId);
     if (pastLobby === desiredLobby) {
-      // ! slotIndex can be -1 here !
-      // ? how should it work then ?
-      // UPD: moveUser method will throw on slot.isValid assert
       return desiredLobby.moveUser(userId, slotIndex);
     }
-    if (pastLobby) {
-      const user = pastLobby.removeUser(userId);
-      return desiredLobby.insertUser(user, slotIndex);
-    }
-    return getFirstTimeUser(userId).then((user) =>
-      desiredLobby.insertUser(user, slotIndex),
-    );
+    const user = pastLobby
+      ? pastLobby.removeUser(userId)
+      : await getFirstTimeUser(userId);
+    return desiredLobby.insertUser(user, slotIndex);
   }
 
   pushNewLobby(settings: GameSettings) {
@@ -62,8 +54,10 @@ export default class Lobbies {
         ? (lobby) => lobby.id === lobbyId
         : (lobby) => lobby.has((user) => user?.id === userId),
     );
-    assert.ok(lobby.admin.id === userId, new LobbyAccessError());
-    durakGames.set(lobby.id, new UnstartedGame(lobby));
+    lobby.updateToUnstartedGame(userId);
+    // TODO in Vue:
+    // FOR unstarted game users UPDATE their state: SET gameId to lobbyId
+    this.removeLobby(userId, lobbyId);
   }
 
   removeLobby(userId: string, lobbyId?: string) {
@@ -71,21 +65,18 @@ export default class Lobbies {
       lobbyId
         ? (lobby) => lobby.id === lobbyId
         : (lobby) => lobby.has((user) => user?.id === userId),
+      new DeleteLobbyError(),
     );
-    assert.ok(lobbyIndex > 0, new DeleteLobbyError());
     const lobby = this.value[lobbyIndex];
     assert.ok(lobby.admin.id === userId, new LobbyAccessError());
     this.value.splice(lobbyIndex, 1);
     this.emitter.emit("everySocket", "lobby::remove", { lobbyId: lobby.id });
+    // TODO in Vue:
+    // FOR deleted users UPDATE their state: SET lobbyId to null
   }
 
   removeUserFromLobby(userId: string, lobbyId?: string) {
-    const lobby = this.#get(
-      lobbyId
-        ? (lobby) => lobby.id === lobbyId
-        : (lobby) => lobby.has((user) => user?.id === userId),
-    );
-    return lobby.removeUser(userId);
+    return this.#getLobbySomehow(userId, lobbyId).removeUser(userId);
   }
 
   #get(
@@ -104,5 +95,21 @@ export default class Lobbies {
     const index = this.value.findIndex(cb);
     assert.ok(index > 0, message);
     return index;
+  }
+
+  #findLobbyWithUser(userId: string) {
+    return this.value.find((lobby) => lobby.has((user) => user?.id === userId));
+  }
+
+  #getLobbyWithId(lobbyId: Lobby["id"]) {
+    return this.#get((lobby) => lobby.id === lobbyId);
+  }
+
+  #getLobbySomehow(userId: string, lobbyId?: Lobby["id"]) {
+    return this.#get(
+      lobbyId
+        ? (lobby) => lobby.id === lobbyId
+        : (lobby) => lobby.has((user) => user?.id === userId),
+    );
   }
 }
