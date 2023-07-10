@@ -1,32 +1,39 @@
 import assert from "node:assert";
 import EventEmitter from "events";
-import { LobbyAccessError } from "../error";
+import FilledSlot from "./FilledSlot";
+import EmptySlot from "./EmptySlot";
+import { raise } from "../../..";
+import { LobbyUser } from "../lobbies.namespace";
 
-export default class LobbySlots<
-  LobbyUser extends { id: string; isAdmin: boolean },
-> {
-  readonly #value: (LobbyUser | undefined)[];
+export default class LobbySlots {
+  readonly #value: (EmptySlot | FilledSlot)[];
   readonly #emitter: EventEmitter;
 
-  constructor({ size, emitter }: { size: number; emitter: EventEmitter }) {
-    this.#value = new Array(size).fill(undefined);
+  constructor({
+    size: length,
+    emitter,
+  }: {
+    size: number;
+    emitter: EventEmitter;
+  }) {
+    this.#value = Array.from({ length }, (_, index) => new EmptySlot(index));
     this.#emitter = emitter;
   }
 
   get value() {
-    return [...this.#value];
+    return this.#value.map((slot) => slot.value);
   }
 
-  get #users() {
-    return this.#value.filter((user) => user) as LobbyUser[];
+  get #userSlots() {
+    return this.#value.filter((slot): slot is FilledSlot => slot.isFilled);
   }
 
-  get users() {
-    return [...this.#users];
+  get #emptySlots() {
+    return this.#value.filter((slot): slot is FilledSlot => slot.isEmpty);
   }
 
   get usersCount() {
-    return this.users.length;
+    return this.#userSlots.length;
   }
 
   get isEmpty() {
@@ -41,8 +48,12 @@ export default class LobbySlots<
     return this.#value.length;
   }
 
-  get admin(): LobbyUser {
-    return this.getUser((user) => user.isAdmin, "Админ не найден");
+  get admin(): LobbyUser | never {
+    return this.#userSlots.find((slot) => slot.user.isAdmin)?.value || raise();
+  }
+
+  hasUser(userid: string): boolean {
+    return this.#userSlots.some((slot) => slot.user.id === userid);
   }
 
   swap(i: number, k: number) {
@@ -51,87 +62,45 @@ export default class LobbySlots<
 
   set admin(newAdmin: LobbyUser) {
     this.admin.isAdmin = false;
-    const user = this.getUser((user) => user.id === newAdmin.id);
+    const user =
+      this.#userSlots.find((slot) => slot.user.id === newAdmin.id)?.value ||
+      raise();
     user.isAdmin = true;
     this.#emitter.emit("admin::update", user);
   }
 
   get mostLeftSideNonAdminUser() {
-    return this.getUser(
-      (user) => user.id !== this.admin.id,
+    // NOTE: comparing objects here, be careful, might work wrong
+    return this.#userSlots.find(
+      (slot) => slot.user !== this.admin,
       "Не получилось обновить админа лобби: некому стать новым админом",
-    );
+    )?.user || raise();
   }
 
-  has(cb: (user?: LobbyUser) => boolean) {
-    return this.#value.some(cb);
-  }
-
-  putUser(user: LobbyUser, slotIndex = -1): number {
-    assert.ok(!this.isFull, new LobbyAccessError("Лобби полностью занято"));
+  putUser(user: LobbyUser, slotIndex = -1): number | never {
+    throw new Error("Method not implemented.");
     slotIndex = slotIndex === -1 ? this.#firstFoundEmptySlotIndex : slotIndex;
     assert.ok(
-      this.slotAt(slotIndex).isValid,
-      "Неверно указан желаемый индекс слота",
+      slotIndex !== -1,
+      "Невероятная ошибка! Лобби не должно быть полностью занято, одна не был найден даже один свободный слот",
     );
-    assert.ok(
-      this.slotAt(slotIndex).isEmpty,
-      new LobbyAccessError("Cлот уже занят"),
-    );
-    this.#value.splice(slotIndex, 1, user);
+    this.#value[slotIndex].ABSCTRACT__append(user);
     return slotIndex;
   }
-
-  move(cb: (user?: LobbyUser) => boolean, slotIndex: number) {
-    return this.#putUser(this.remove(cb), slotIndex);
+  
+  removeUser(userId: string): LobbyUser {
+    // TODO EMIT 
+    throw new Error("Method not implemented.");
   }
 
-  remove(cb: (user?: LobbyUser) => boolean) {
-    const userIndex = this.value.indexOf(this.getUser(cb));
-    return this.#removeUserByIndex(userIndex);
+  get #firstFoundEmptySlotIndex(): number | never {
+    return this.#emptySlots[0]?.index || raise();
   }
 
-  get #firstFoundEmptySlotIndex() {
-    return this.#value.indexOf(this.#value.find((slot) => !slot));
-  }
-
-  #putUser(user: LobbyUser, slotIndex: number): LobbyUser {
-    assert.ok(
-      this.slotAt(slotIndex).isEmpty,
-      "Данный слот уже занят другим игроком.",
+  getSlotIndexOfUser(userId: string): number | never {
+    return (
+      this.#userSlots.find((userSlot) => userSlot.user.id === userId)?.index ||
+      raise()
     );
-    this.#value.splice(slotIndex, 1, user);
-    // this.emitter.emit("user::join", user, slotIndex);
-    return user;
-  }
-
-  getUser(
-    cb: (user: LobbyUser) => boolean,
-    notFoundMessage: string | Error = "Пользователь не был найден",
-  ): LobbyUser {
-    const user = this.#users.find(cb);
-    assert.ok(user, notFoundMessage);
-    return user;
-  }
-
-  findSlotIndex(cb: (user?: LobbyUser) => boolean) {
-    return this.#value.findIndex(cb);
-  }
-
-  #removeUserByIndex(slotIndex: number): LobbyUser {
-    const [user] = this.#value.splice(slotIndex, 1, undefined);
-    assert.ok(user, "NO WAY: По желаемому индексу не был удален игрок");
-    this.#emitter.emit("user::leave", user, slotIndex);
-    return user;
-  }
-
-  slotAt(slotIndex: number) {
-    return {
-      isEmpty: !!this.#value[slotIndex],
-      isValid:
-        Number.isInteger(slotIndex) &&
-        slotIndex >= 0 &&
-        slotIndex <= this.slotsCount - 1,
-    };
   }
 }
