@@ -84,3 +84,7 @@ fastify
     process.exit(1);
   }
 })();
+
+export function raise(err = new Error()): never {
+  throw err;
+}
