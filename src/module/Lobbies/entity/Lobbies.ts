@@ -1,9 +1,9 @@
 import Lobby from "./Lobby";
 import EventEmitter from "events";
-import assert from "node:assert";
 import { getFirstTimeUser } from "../lobbies.namespace";
 import { GameSettings } from "./CorrectGameSettings";
 import { LobbyAccessError, FindLobbyError } from "../error";
+import { raise } from "../../..";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;
@@ -12,6 +12,15 @@ export default class Lobbies {
   constructor(emitter: EventEmitter, map = new Map<string, Lobby>()) {
     this.#emitter = emitter;
     this.#map = map;
+    this.#emitter
+      .on("lobby##remove", ({ lobbyId }) => {
+        this.#map.delete(lobbyId);
+        this.#emitter.emit("everySocket", "lobby::remove", { lobbyId });
+      })
+      .on("lobby##add", ({ lobby }) => {
+        this.#map.set(lobby.id, lobby);
+        this.#emitter.emit("everySocket", "lobby::add", { lobby });
+      });
   }
 
   restoreState() {
@@ -20,66 +29,59 @@ export default class Lobbies {
 
   async addUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
     const desiredLobby = this.#map.get(lobbyId) || raise(new FindLobbyError());
-    assert.ok(
-      !desiredLobby.isFull,
-      new LobbyAccessError("Лобби полностью занято"),
-    );
-    const pastLobby = this.#findLobby(userId);
+    desiredLobby.assertSlotIndex(slotIndex);
+    desiredLobby.ensureCanJoin(userId, slotIndex);
+    const pastLobby = this.#findLobbyWithUser(userId);
     if (pastLobby === desiredLobby) {
       return desiredLobby.moveUser(userId, slotIndex);
     }
     const user = pastLobby
-      ? pastLobby.removeUserWithEmit(userId)
+      ? pastLobby.removeUser(userId)
       : await getFirstTimeUser(userId);
     return desiredLobby.insertUser(user, slotIndex);
   }
 
   pushNewLobby(settings: GameSettings) {
-    const lobby = new Lobby({ settings, lobbiesEmitter: this.#emitter });
-    this.#map.set(lobby.id, lobby);
-    this.#emitter.emit("everySocket", "lobby::add", { lobby });
+    return new Lobby({ settings, lobbiesEmitter: this.#emitter });
   }
 
   upgrateLobbyToUnstartedGame(
     userId: string,
-    lobbyId = this.#getLobbyId(userId),
+    lobbyId = this.#getLobbyIdWithUser(userId),
   ) {
     const lobby = this.#map.get(lobbyId) || raise();
-    lobby.tryUpdateToUnstartedGame(userId);
+    lobby.ensureIsAdmin(userId);
+    lobby.updateToUnstartedGame();
     // TODO in Vue:
     // FOR unstarted game users UPDATE their state: SET gameId to lobbyId
-    this.#map.delete(lobby.id);
-    this.#emitter.emit("everySocket", "lobby::remove", { lobbyId: lobby.id });
   }
 
-  removeLobby(userId: string, lobbyId = this.#getLobbyId(userId)) {
+  removeLobby(userId: string, lobbyId = this.#getLobbyIdWithUser(userId)) {
     const lobby = this.#map.get(lobbyId) || raise();
-    assert.ok(lobby.admin.id === userId, new LobbyAccessError());
-    this.#emitter.emit("everySocket", "lobby::remove", { lobbyId });
-    // TODO in Vue:
+    lobby.ensureIsAdmin(userId);
+    this.#emitter.emit("lobby##remove", { lobbyId }); // TODO in Vue:
     // FOR deleted users UPDATE their state: SET lobbyId to null
   }
 
-  removeUserFromLobby(userId: string, lobbyId = this.#getLobbyId(userId)) {
+  removeUserFromLobby(
+    userId: string,
+    lobbyId = this.#getLobbyIdWithUser(userId),
+  ) {
     const lobby = this.#map.get(lobbyId) || raise();
-    lobby.removeUserWithEmit(userId);
+    lobby.removeUser(userId);
   }
 
-  #getLobbyId(userId: string): string | never {
-    return this.#findLobby(userId)?.id || raise();
+  #getLobbyIdWithUser(userId: string): string | never {
+    return this.#findLobbyWithUser(userId)?.id || raise();
   }
 
-  #getLobby(userId: string): Lobby | never {
-    return this.#findLobby(userId) || raise();
+  #getLobbyWithUser(userId: string): Lobby | never {
+    return this.#findLobbyWithUser(userId) || raise();
   }
 
-  #findLobby(userId: string): Lobby | undefined {
+  #findLobbyWithUser(userId: string): Lobby | undefined {
     for (const lobby of this.#map.values()) {
       if (lobby.hasUser(userId)) return lobby;
     }
   }
-}
-
-function raise(err = new Error()): never {
-  throw err;
 }
