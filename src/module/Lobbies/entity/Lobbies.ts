@@ -2,7 +2,7 @@ import Lobby from "./Lobby";
 import EventEmitter from "events";
 import { getFirstTimeUser } from "../lobbies.namespace";
 import { GameSettings } from "./CorrectGameSettings";
-import { LobbyAccessError, FindLobbyError } from "../error";
+import { FindLobbyError } from "../error";
 import { raise } from "../../..";
 
 export default class Lobbies {
@@ -45,38 +45,33 @@ export default class Lobbies {
     return new Lobby({ settings, lobbiesEmitter: this.#emitter });
   }
 
-  upgrateLobbyToUnstartedGame(
-    userId: string,
-    lobbyId = this.#getLobbyIdWithUser(userId),
-  ) {
-    const lobby = this.#map.get(lobbyId) || raise();
+  upgrateLobbyToUnstartedGame(userId: string, lobbyId?: Lobby["id"]) {
+    const lobby = this.#getLobbyOrThrow(userId, lobbyId);
     lobby.ensureIsAdmin(userId);
     lobby.updateToUnstartedGame();
     // TODO in Vue:
     // FOR unstarted game users UPDATE their state: SET gameId to lobbyId
   }
 
-  removeLobby(userId: string, lobbyId = this.#getLobbyIdWithUser(userId)) {
-    const lobby = this.#map.get(lobbyId) || raise();
+  removeLobby(userId: string, lobbyId?: Lobby["id"]) {
+    const lobby = this.#getLobbyOrThrow(userId, lobbyId);
     lobby.ensureIsAdmin(userId);
-    this.#emitter.emit("lobby##remove", { lobbyId }); // TODO in Vue:
+    this.#emitter.emit("lobby##remove", { lobbyId: lobby.id });
+    // TODO in Vue:
     // FOR deleted users UPDATE their state: SET lobbyId to null
   }
 
-  removeUserFromLobby(
-    userId: string,
-    lobbyId = this.#getLobbyIdWithUser(userId),
-  ) {
-    const lobby = this.#map.get(lobbyId) || raise();
+  removeUserFromLobby(userId: string, lobbyId?: Lobby["id"]) {
+    const lobby = this.#getLobbyOrThrow(userId, lobbyId);
     lobby.removeUser(userId);
   }
 
-  #getLobbyIdWithUser(userId: string): string | never {
-    return this.#findLobbyWithUser(userId)?.id || raise();
-  }
-
-  #getLobbyWithUser(userId: string): Lobby | never {
-    return this.#findLobbyWithUser(userId) || raise();
+  #getLobbyOrThrow(userId: string, lobbyId?: Lobby["id"]) {
+    return (
+      (lobbyId && this.#map.get(lobbyId)) ||
+      this.#findLobbyWithUser(userId) ||
+      raise(new FindLobbyError())
+    );
   }
 
   #findLobbyWithUser(userId: string): Lobby | undefined {
