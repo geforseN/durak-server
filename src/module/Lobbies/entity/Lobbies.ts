@@ -23,47 +23,40 @@ export default class Lobbies {
       });
   }
 
-  restoreState() {
+  get state() {
     return { lobbies: [...this.#map.values()] };
   }
 
   async addUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
-    const desiredLobby = this.#map.get(lobbyId) || raise(new FindLobbyError());
-    desiredLobby.assertSlotIndex(slotIndex);
-    desiredLobby.ensureCanJoin(userId, slotIndex);
-    const pastLobby = this.#findLobbyWithUser(userId);
+    const [pastLobby, desiredLobby] = [
+      this.#findLobbyWithUser(userId),
+      this.#map.get(lobbyId) || raise(new FindLobbyError()),
+    ];
+    if (!pastLobby) {
+      return desiredLobby.insertUser(await getFirstTimeUser(userId), slotIndex);
+    }
     if (pastLobby === desiredLobby) {
       return desiredLobby.moveUser(userId, slotIndex);
     }
-    const user = pastLobby
-      ? pastLobby.removeUser(userId)
-      : await getFirstTimeUser(userId);
-    return desiredLobby.insertUser(user, slotIndex);
+    return desiredLobby.pickUserFrom(pastLobby, userId, slotIndex);
   }
 
   pushNewLobby(settings: GameSettings) {
-    return new Lobby({ settings, lobbiesEmitter: this.#emitter });
+    return new Lobby(settings, this.#emitter);
   }
 
+  // TODO in Vue: FOR unstarted game users UPDATE their state: SET gameId to lobbyId
   upgrateLobbyToUnstartedGame(userId: string, lobbyId?: Lobby["id"]) {
-    const lobby = this.#getLobbyOrThrow(userId, lobbyId);
-    lobby.ensureIsAdmin(userId);
-    lobby.updateToUnstartedGame();
-    // TODO in Vue:
-    // FOR unstarted game users UPDATE their state: SET gameId to lobbyId
+    return this.#getLobbyOrThrow(userId, lobbyId).updateToUnstartedGame(userId);
   }
 
+  // TODO in Vue: FOR deleted users UPDATE their state: SET lobbyId to null
   removeLobby(userId: string, lobbyId?: Lobby["id"]) {
-    const lobby = this.#getLobbyOrThrow(userId, lobbyId);
-    lobby.ensureIsAdmin(userId);
-    this.#emitter.emit("lobby##remove", { lobbyId: lobby.id });
-    // TODO in Vue:
-    // FOR deleted users UPDATE their state: SET lobbyId to null
+    return this.#getLobbyOrThrow(userId, lobbyId).deleteSelf(userId);
   }
 
   removeUserFromLobby(userId: string, lobbyId?: Lobby["id"]) {
-    const lobby = this.#getLobbyOrThrow(userId, lobbyId);
-    lobby.removeUser(userId);
+    return this.#getLobbyOrThrow(userId, lobbyId).removeUser(userId);
   }
 
   #getLobbyOrThrow(userId: string, lobbyId?: Lobby["id"]) {

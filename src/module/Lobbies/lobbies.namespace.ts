@@ -23,7 +23,7 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
     async function (connection: SocketStream, request: FastifyRequest) {
       const { userId, socket, lobbies } = handleConnection(connection, request);
       // NOTE: emit this ONCE
-      socket.emit("lobbies::restore", lobbies.restoreState());
+      socket.emit("lobbies::restore", lobbies.state);
       if (!userId) {
         return console.log("FAST RETURN: NO USER_ID");
       }
