@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import crypto from "node:crypto";
+import type EventEmitter from "node:events";
 import CorrectGameSettings, { type GameSettings } from "./CorrectGameSettings";
-import type EventEmitter from "events";
 import LobbySlots from "./LobbySlots";
 import { type LobbyUser } from "../lobbies.namespace";
 import { LobbyAccessError } from "../error";
@@ -14,42 +14,14 @@ export default class Lobby {
   slots: LobbySlots;
   lobbiesEmitter: EventEmitter;
 
-  constructor({
-    settings,
-    lobbiesEmitter,
-  }: {
-    settings: GameSettings;
-    lobbiesEmitter: EventEmitter;
-  }) {
+  constructor(settings: GameSettings, lobbiesEmitter: EventEmitter) {
+    this.settings = new CorrectGameSettings(settings);
     this.lobbiesEmitter = lobbiesEmitter;
     this.id = crypto.randomUUID();
-    this.settings = new CorrectGameSettings(settings);
-    this.slots = new LobbySlots({
-      size: settings.userCount,
-      emitter: this.lobbiesEmitter,
-    });
+    this.slots = new LobbySlots(settings.userCount, this.lobbiesEmitter);
     this.lobbiesEmitter.emit("lobby##add", { lobby: this });
-  }
-
-  assertSlotIndex(slotIndex: number) {
-    if (!Number.isInteger(slotIndex)) throw 1;
-    if (slotIndex < -1) throw 2;
-    if (slotIndex > this.settings.userCount) throw 3;
-  }
-  
-  ensureIsAdmin(userId: string) {
-    assert.ok(this.admin.id === userId, new LobbyAccessError());
-  }
-  
-  ensureCanJoin(userId: string, slotIndex: number) {
-    assert.ok(!this.isFull, new LobbyAccessError("Лобби полностью занято"));
-    // NOTE: fast return below but still should handle -1 later
-    if (slotIndex === -1) return;
-    const slotToJoin = this.slots.value[slotIndex];
-    const userSlot = this.slots.ABSTRACT__findUser(userId);
-    assert.ok(slotToJoin.isEmpty);
-    if (!userSlot) return;
-    assert.ok(userSlot.index !== slotToJoin, "Данный слот уже занят вами");
+    // TODO: this.emptySlots = new EmptySlotsOfLobby(this)
+    // TODO: this.users = new UsersOfLobby(this)
   }
 
   get value() {
@@ -64,23 +36,23 @@ export default class Lobby {
     return this.slots.isFull;
   }
 
-  hasUser(userId: string) {
-    return this.slots.hasUser(userId);
-  }
-
   get admin() {
     return this.slots.admin;
   }
 
-  @emitUserInserted
-  insertUser(user: LobbyUser, slotIndex: number): number {
-    this.assertSlotIndex(slotIndex);
-    return this.slots.putUser(user, slotIndex);
+  hasUser(userId: string) {
+    return this.slots.hasUser(userId);
   }
 
-  updateToUnstartedGame(): void {
+  @insertSlotIndexAndEmitUserInserted
+  insertUser(user: LobbyUser, slotIndex: number): number {
+    return this.slots.insertUser(user, slotIndex);
+  }
+
+  @emitLobbyRemoved
+  updateToUnstartedGame(userIdOfWhoWannaUpdate: string): void {
+    assert.ok(this.admin.id === userIdOfWhoWannaUpdate, new LobbyAccessError());
     durakGames.set(this.id, new UnstartedGame(this));
-    this.lobbiesEmitter.emit("lobby##remove", { lobbyId: this.id });
   }
 
   @emitUserRemovedAndMore
@@ -88,13 +60,30 @@ export default class Lobby {
     return this.slots.removeUser(userId);
   }
 
-  @emitUserMoved
+  @assertSlotIndexAndEmitUserMoved
   moveUser(userId: string, newSlotIndex: number): number {
-    if (this.isFull) throw new LobbyAccessError("Лобби полностью занято");
-    const newSlot = this.slots.getSlotForInsert(newSlotIndex);
-    const oldSlot = this.slots.getSlotOfUser(userId);
+    assert.ok(!this.isFull, new LobbyAccessError("Лобби полностью занято"));
+    const [newSlot, oldSlot] = [
+      this.slots.getEmptySlot(newSlotIndex),
+      this.slots.getSlotOfUser(userId),
+    ];
     this.slots.swapValues(oldSlot, newSlot);
     return oldSlot.index;
+  }
+
+  // TODO add emit decorator
+  pickUserFrom(lobby: Lobby, userId: string, slotIndex: number) {
+    assert.ok(!this.isFull, new LobbyAccessError("Лобби полностью занято"));
+    assert.ok(
+      this.slots.at(slotIndex).isEmpty,
+      new LobbyAccessError("Желаемый слот занят"),
+    );
+    return this.insertUser(lobby.removeUser(userId), slotIndex);
+  }
+
+  @emitLobbyRemoved
+  deleteSelf(userIdOfWhoWannaRemove: string) {
+    assert.ok(this.admin.id === userIdOfWhoWannaRemove, new LobbyAccessError());
   }
 }
 
@@ -103,7 +92,7 @@ function emitUserRemovedAndMore<
   Args extends Parameters<Lobby["removeUser"]>,
   Return extends ReturnType<Lobby["removeUser"]>,
 >(
-  target: (this: This, ...args: Args) => Return,
+  target: Lobby["removeUser"],
   __context__: ClassMethodDecoratorContext<
     This,
     (this: This, ...args: Args) => Return
@@ -126,11 +115,11 @@ function emitUserRemovedAndMore<
         lobbyId: this.id,
       });
     }
-    return removedUser;
+    return removedUser as Return;
   };
 }
 
-function emitUserMoved<
+function assertSlotIndexAndEmitUserMoved<
   This extends Lobby,
   Args extends Parameters<Lobby["moveUser"]>,
   Return extends ReturnType<Lobby["moveUser"]>,
@@ -146,7 +135,7 @@ function emitUserMoved<
         newSlotIndex >= 0 &&
         newSlotIndex < this.settings.userCount,
     );
-    const pastSlotIndex = target.call(this, userId, newSlotIndex);
+    const pastSlotIndex = target.apply(this, [userId, newSlotIndex]);
     this.lobbiesEmitter.emit("everySocket", "lobby::user::move", {
       lobbyId: this.id,
       userId,
@@ -157,25 +146,41 @@ function emitUserMoved<
   };
 }
 
-function emitUserInserted<
+function insertSlotIndexAndEmitUserInserted<
   This extends Lobby,
   Args extends Parameters<Lobby["insertUser"]>,
   Return extends ReturnType<Lobby["insertUser"]>,
 >(
-  target: (this: This, ...args: Args) => Return,
+  target: Lobby["insertUser"],
   __context__: ClassMethodDecoratorContext<
     This,
     (this: This, ...args: Args) => Return
   >,
 ) {
   return function (this: This, ...args: Args): Return {
-    const [user] = args;
-    const filledSlotIndex = target.apply(this, args);
-    this.lobbiesEmitter.emit("everySocket", "lobby::user::put", {
+    let [user, slotIndex] = args;
+    if (slotIndex === -1) {
+      slotIndex = this.slots.firstFoundEmptySlot.index;
+    }
+    const filledSlotIndex = target.apply(this, [user, slotIndex]);
+    this.lobbiesEmitter.emit("everySocket", "lobby::user::insert", {
       lobbyId: this.id,
       user,
       slotIndex: filledSlotIndex,
     });
-    return filledSlotIndex;
+    return filledSlotIndex as Return;
+  };
+}
+
+function emitLobbyRemoved<This extends Lobby, Args extends unknown[], Return>(
+  target: (this: This, ...args: Args) => Return,
+  __context__: ClassMethodDecoratorContext<
+    This,
+    (this: This, ...args: Args) => Return
+  >,
+) {
+  return function (this: This, ...args: Args) {
+    target.apply(this, args);
+    this.lobbiesEmitter.emit("lobby##remove", { lobbyId: this.id });
   };
 }
