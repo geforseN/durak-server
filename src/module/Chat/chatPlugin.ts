@@ -1,11 +1,11 @@
+import { type FastifyInstance } from "fastify";
 import assert from "node:assert";
-import { FastifyInstance } from "fastify";
-import WebSocket from "ws";
+import type WebSocket from "ws";
 import getUser from "../../../prisma/user/getUserForChat";
 import NotificationAlert from "../notification-alert";
 import createMessage from "./createMessage";
-import initializeChat from "./initializeChatNamespace";
 import { Chat, ChatMessage } from "./entity";
+import initializeChat from "./initializeChatNamespace";
 
 export default async function chatPlugin(fastify: FastifyInstance, options: { path: string }) {
   const getChatContext = initializeChat();
