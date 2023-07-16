@@ -2,6 +2,7 @@ import DefenderMove from "./DefenderMove";
 import { insertCardStrategy } from "../../GameRound";
 import { type AfterHandler } from "../GameMove.abstract";
 import type Card from "../../Card";
+import { SuccessfulDefence } from "../../../SuccessfulDefence";
 
 type ConstructorArg = ConstructorParameters<typeof DefenderMove>[number] & {
   card: Card;
@@ -34,7 +35,7 @@ export class InsertDefendCardMove extends DefenderMove implements AfterHandler {
       return this.game.round.giveDefenderDefend();
     }
     if (this.player.hand.isEmpty || !this.game.desk.allowsMoves) {
-      return this.game.handleSuccessfulDefence();
+      return new SuccessfulDefence(this.game).pushNewRound();
     }
     if (this.game.desk.allowsAttackerMove) {
       return this.game.round.givePrimalAttackerAttack();

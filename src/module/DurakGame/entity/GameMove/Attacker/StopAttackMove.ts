@@ -2,6 +2,8 @@ import assert from "node:assert";
 import AttackerMove from "./AttackerMove";
 import { Attacker } from "../../Player";
 import { type AfterHandler } from "../GameMove.abstract";
+import { FailedDefence } from "../../../FailedDefence";
+import { SuccessfulDefence } from "../../../SuccessfulDefence";
 
 export class StopAttackMove extends AttackerMove implements AfterHandler {
   handleAfterMoveIsDone() {
@@ -13,7 +15,7 @@ export class StopAttackMove extends AttackerMove implements AfterHandler {
       return this.game.round.giveDefenderDefend();
     }
     if (this.game.players.defender.canWinDefense(this.game)) {
-      return this.game.handleSuccessfulDefence();
+      return new SuccessfulDefence(this.game).pushNewRound();
     }
     return this.game.round.giveNextAttackerAttack();
   }
@@ -24,7 +26,7 @@ export class StopAttackMove extends AttackerMove implements AfterHandler {
       this.player.left === primalAttacker ||
       this.game.players.defender.left === primalAttacker
     ) {
-      return this.game.handleFailedDefence();
+      return new FailedDefence(this.game).pushNewRound();
     }
     return this.game.round.giveNextAttackerAttack();
   }
