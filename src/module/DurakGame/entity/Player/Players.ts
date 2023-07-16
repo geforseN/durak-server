@@ -3,7 +3,7 @@ import GamePlayerWebsocketService from "./Player.service";
 import { Attacker, Defender, Player, SuperPlayer } from "./index";
 
 export default class Players {
-  #value: Player[];
+  readonly #value: Player[];
 
   constructor(
     unstartedGamePlayers: Player[],
@@ -17,9 +17,11 @@ export default class Players {
     if (players instanceof Players) {
       this.#value = players.#value.reduce(
         (nonEmptyPlayers: Player[], player) => {
-          player.hand.isEmpty
-            ? player.exitGame()
-            : nonEmptyPlayers.push(player);
+          if (player.hand.isEmpty) {
+            player.exitGame();
+          } else {
+            nonEmptyPlayers.push(player);
+          }
           return nonEmptyPlayers;
         },
         [],
@@ -106,4 +108,3 @@ export default class Players {
     return player;
   }
 }
-
