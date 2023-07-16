@@ -49,59 +49,14 @@ export default class DurakGame {
       new GameDeskWebsocketService(namespace),
     );
     this.#wsService = new DurakGameWebsocketService(namespace);
-    // TODO: change code line below
-    // NOTE: should be similar to => readonly this.distribution = new GameRoundDistribution(this);
     new GameRoundDistributionQueue(this).makeInitialDistribution();
     this.#makeInitialSuperPlayersStrategy();
     this.round = new GameRound(this, new GameRoundWebsocketService(namespace));
   }
 
-  handleFailedDefence(): void {
-    this.desk.provideCards(this.players.defender);
-    this.#wsService.lostRound(this);
-    try {
-      this.#prepareBeforeNewRound();
-    } catch {
-      return this.#end();
-    }
-    this.players.attacker = this.players.defender.left;
-    this.players.defender = this.players.attacker.left;
-    this.round = new GameRound(this);
-  }
-
-  handleSuccessfulDefence(): void {
-    this.desk.provideCards(this.discard);
-    this.#wsService.wonRound(this);
-    try {
-      this.#prepareBeforeNewRound();
-    } catch {
-      return this.#end();
-    }
-    this.players.attacker = this.players.defender;
-    this.players.defender = this.players.attacker.left;
-    this.round = new GameRound(this);
-  }
-
   // TODO: remove playerId param when socket.data will contain playerId
   restoreState(socket: DurakGameSocket.Socket, playerId: string) {
     this.#wsService.restoreState({ socket, game: this, playerId });
-  }
-
-  #prepareBeforeNewRound() {
-    if (this.talon.isEmpty) {
-      this.players = new Players(this.players);
-      assert.ok(this.players.count !== 1);
-    } else {
-      // TODO: change code line below
-      // NOTE: should be similar to => this.distribution.make()
-      new GameRoundDistributionQueue(this).makeDistribution();
-    }
-  }
-
-  #end() {
-    const [durak] = this.players;
-    this.info.durakId = durak.id;
-    this.#wsService?.end(this);
   }
 
   #makeInitialSuperPlayersStrategy() {
