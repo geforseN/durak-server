@@ -17,15 +17,20 @@ export class AttackerMove extends GameMove<Attacker> {
 
   #defaultBehaviour() {
     console.log("#defaultBehaviour of AttackerMove", this.constructor.name);
-    return setTimeout(async () => {
-      console.log("TIMEOUT: defaultBehaviour called");
-      assert.ok(this.player instanceof Attacker);
-      console.log("TIMEOUT: insertRandomCard");
-      await this.putCardOnDesk(
-        this.player.randomCard,
-        this.game.desk.randomEmptySlotIndex,
-      );
-    }, this.game.settings.moveTime);
+    return setTimeout(
+      this.#defaultBehaviourLogic.bind(this),
+      this.game.settings.moveTime,
+    );
+  }
+
+  async #defaultBehaviourLogic() {
+    console.log("TIMEOUT: defaultBehaviour called");
+    assert.ok(this.player instanceof Attacker, 'TIMEOUT: defaultBehaviour BUG');
+    console.log("TIMEOUT: insertRandomCard");
+    await this.putCardOnDesk(
+      this.player.randomCard,
+      this.game.desk.randomEmptySlotIndex,
+    );
   }
 
   async putCardOnDesk(card: Card, slotIndex: number) {

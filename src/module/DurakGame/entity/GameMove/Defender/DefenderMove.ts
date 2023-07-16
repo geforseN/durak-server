@@ -15,9 +15,7 @@ export class DefenderMove extends GameMove<Defender> {
   }
 
   #defaultBehaviour(): NodeJS.Timeout {
-    return setTimeout(() => {
-      this.stopMove();
-    }, this.game.settings.moveTime);
+    return setTimeout(this.stopMove.bind(this), this.game.settings.moveTime);
   }
 
   async putCardOnDesk(card: Card, slotIndex: number) {
