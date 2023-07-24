@@ -42,17 +42,13 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
           }: {
             lobbyId: Lobby["id"];
             slotIndex: number;
-          }) => {
-            // NOTE: IF user didn't send slotIndex (didn't specified slotIndex) THEN slotIndex === -1
-            // NOTE: will throw WHEN user wanna join same lobby AND user didn't specified slotIndex
-            await lobbies.addUserInLobby(userId, lobbyId, slotIndex);
-          },
+          }) => await lobbies.addUserInLobby(userId, lobbyId, slotIndex),
         )
         .on("lobby::user::leave", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
           lobbies.removeUserFromLobby(userId, lobbyId),
         )
-        .on("lobby::upgrate", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-          lobbies.upgrateLobbyToUnstartedGame(userId, lobbyId),
+        .on("lobby::upgrade", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
+          lobbies.upgradeLobbyToUnstartedGame(userId, lobbyId),
         )
         .on(
           "lobby::user::move",

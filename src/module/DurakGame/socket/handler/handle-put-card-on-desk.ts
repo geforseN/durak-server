@@ -1,21 +1,26 @@
-import DurakGame from "../../DurakGame.implimetntation";
-import { CardDTO } from "../../DTO";
-import { SuperPlayer } from "../../entity/Player";
+import type DurakGame from "../../DurakGame.implimetntation";
+import { type CardDTO } from "../../DTO";
+import { Attacker, Defender, type SuperPlayer } from "../../entity/Player";
 
 export default async function handlePutCardOnDesk(
   this: { game: DurakGame; playerId: string },
-  { suit, rank }: CardDTO,
+  cardDTO: CardDTO,
   slotIndex: number,
 ) {
-  const { game, playerId } = this;
-  const player = game.players.get(
-    (player): player is SuperPlayer =>
-      player.id === playerId && game.round.currentMove.player === player,
-    "У вас нет права хода",
-  );
-  const card = player.hand.get((card) => card.hasSame({ rank, suit }));
-  // TODO refactor player.isAllowedToTransferMove && game.desk.allowsTransferMove
-  // OR try {game.round.makeTranferMove} catch {game.round.currentMove.putCardOnDesk}
-  clearTimeout(game.round.currentMove.defaultBehaviour);
-  return await game.round.currentMove.putCardOnDesk(card, slotIndex);
+  this.game.round.currentMove.defaultBehaviour.shouldBeCalled = false;
+  try {
+    // TODO remove излишнее instanceof check
+    await this.game.players
+      .get<SuperPlayer>(
+        (player): player is SuperPlayer =>
+          player.id === this.playerId &&
+          this.game.round.currentMove.player === player &&
+          (player instanceof Attacker || player instanceof Defender),
+        "У вас нет права хода",
+      )
+      .putCardOnDesk(this.game.round.currentMove, cardDTO, slotIndex);
+  } catch (error) {
+    this.game.round.currentMove.defaultBehaviour.shouldBeCalled = true;
+    throw error;
+  }
 }

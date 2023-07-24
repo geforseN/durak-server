@@ -6,7 +6,6 @@ import DurakGame from "./module/DurakGame/DurakGame.implimetntation";
 import beforeConnectMiddleware from "./namespaces/on-connect.middleware";
 import { DurakGameSocket } from "./module/DurakGame/socket/DurakGameSocket.types";
 import Fastify from "fastify";
-import fastifySession from "@fastify/session";
 import fastifyWebsocket from "@fastify/websocket";
 import fastifyCors from "@fastify/cors";
 import fastifyCookie from "@fastify/cookie";
@@ -20,11 +19,14 @@ import getUserProfile from "./api/profile/[personalLink].get";
 import onConnection from "./onConnection";
 import chatPlugin from "./module/Chat/chatPlugin";
 import { UnstartedGame } from "./module/DurakGame/NonstartedDurakGame";
+import { type SessionStore, fastifySession } from "@fastify/session";
 
 dotenv.config();
 const ONE_MINUTE_IN_MS = 60 * 1000;
 const TEN_MINUTES_IN_MS = ONE_MINUTE_IN_MS * 10;
 const TEN_DAYS_IN_MS = ONE_MINUTE_IN_MS * 60 * 24 * 10;
+const uuidRegex =
+  /[\da-fA-F]{8}\b-[\da-fA-F]{4}\b-[\da-fA-F]{4}\b-[\da-fA-F]{4}\b-[\da-fA-F]{12}$/;
 export const durakGames = new Map<string, UnstartedGame | DurakGame>();
 const fastify = Fastify({
   logger: {
@@ -32,7 +34,7 @@ const fastify = Fastify({
   },
 });
 
-export const store = new PrismaSessionStore(new PrismaClient(), {
+export const store: SessionStore = new PrismaSessionStore(new PrismaClient(), {
   checkPeriod: TEN_MINUTES_IN_MS,
   loggerLevel: "log",
 });
@@ -43,7 +45,7 @@ fastify
   .register(fastifySession, {
     secret: process.env.EXPRESS_PRISMA_SESSION_SECRET_KEY!,
     cookie: { secure: false, sameSite: "lax", maxAge: TEN_DAYS_IN_MS },
-    store: store as any,
+    store,
   })
   .register(fastifySocketIo, {
     cors: {
@@ -65,10 +67,9 @@ fastify
   .ready()
   .then(
     function (this: typeof fastify) {
-      this.log.info(this);
       instrument(this.io, { auth: false, mode: "development" });
       const durakGame: DurakGameSocket.Namespace = this.io.of(
-        /^\/game\/[\da-fA-F]{8}\b-[\da-fA-F]{4}\b-[\da-fA-F]{4}\b-[\da-fA-F]{4}\b-[\da-fA-F]{12}$/,
+        new RegExp("game/" + uuidRegex),
       );
       durakGame.use(beforeConnectMiddleware);
       durakGame.on("connect", durakGameSocketHandler.bind(durakGame));
@@ -85,6 +86,18 @@ fastify
   }
 })();
 
-export function raise(err = new Error()): never {
-  throw err;
+export function raise(err: Error | string = new Error()): never {
+  throw typeof err === "string" ? new Error(err) : err;
+}
+
+function decorator<This, Args extends unknown[], Return>(
+  target: (this: This, ...args: Args) => Return,
+  __context__: ClassMethodDecoratorContext<
+    This,
+    (this: This, ...args: Args) => Return
+  >,
+) {
+  return function (this: This, ...args: Args): Return {
+    return target.apply(this, args);
+  };
 }

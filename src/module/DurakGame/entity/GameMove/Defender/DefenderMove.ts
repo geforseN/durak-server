@@ -2,33 +2,18 @@ import GameMove from "../GameMove.abstract";
 import type Defender from "../../Player/Defender";
 import type DurakGame from "../../../DurakGame.implimetntation";
 import type Card from "../../Card";
+import { Player, SuperPlayer } from "../../Player";
+import { DefenderMoveDefaultBehavior } from "./DefenderMoveDefaultBehavior";
 
-export class DefenderMove extends GameMove<Defender> {
-  defaultBehaviour: NodeJS.Timeout;
-  defaultBehaviourCallTimeInUTC: number;
+export default class DefenderMove extends GameMove {
+  performer: Defender;
+  defaultBehavior: DefenderMoveDefaultBehavior;
 
-  constructor(arg: { game: DurakGame; player: Defender }) {
-    super(arg);
-    this.defaultBehaviourCallTimeInUTC =
-      Date.now() + this.game.settings.moveTime;
-    this.defaultBehaviour = this.#defaultBehaviour();
-  }
-
-  #defaultBehaviour(): NodeJS.Timeout {
-    return setTimeout(this.stopMove.bind(this), this.game.settings.moveTime);
-  }
-
-  async putCardOnDesk(card: Card, slotIndex: number) {
-    if (await this.game.round.currentMove.allowsTransferMove(card, slotIndex)) {
-      this.game.round.makeTransferMove(card, slotIndex);
-    } else {
-      await this.game.desk.slotAt(slotIndex)?.ensureCanBeDefended(card);
-      this.game.round.makeDefendInsertMove(card, slotIndex);
-    }
-  }
-
-  stopMove() {
-    this.game.round.makeDefendStopMove();
+  constructor(game: DurakGame, movePerformer: Player = game.players.defender) {
+    super(game);
+    this.game.players.defender = movePerformer;
+    this.performer = this.game.players.defender;
+    this.defaultBehavior = new DefenderMoveDefaultBehavior(this);
   }
 
   async allowsTransferMove(card: Card, slotIndex: number) {
@@ -38,4 +23,3 @@ export class DefenderMove extends GameMove<Defender> {
     );
   }
 }
-export default DefenderMove;

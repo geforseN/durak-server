@@ -53,6 +53,7 @@ export default class Lobby {
   updateToUnstartedGame(userIdOfWhoWannaUpdate: string): void {
     assert.ok(this.admin.id === userIdOfWhoWannaUpdate, new LobbyAccessError());
     durakGames.set(this.id, new UnstartedGame(this));
+    // emit to users in event lobby::upgrade
   }
 
   @emitUserRemovedAndMore

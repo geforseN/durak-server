@@ -1,32 +1,35 @@
 import { AttackerMove } from "./AttackerMove";
-import { insertCardStrategy } from "../../GameRound";
 import { type AfterHandler } from "../GameMove.abstract";
 import type Card from "../../Card";
+import type DurakGame from "../../../DurakGame.implimetntation";
+import { CardInsert } from "../../GameRound/CardInsert.interface";
 
-type ConstructorArg = ConstructorParameters<typeof AttackerMove>[number] & {
+export class InsertAttackCardMove
+  extends AttackerMove
+  implements AfterHandler, CardInsert
+{
   card: Card;
   slotIndex: number;
-};
 
-export class InsertAttackCardMove extends AttackerMove implements AfterHandler {
-  card: Card;
-  slotIndex: number;
-
-  constructor({
-    game,
-    player,
-    card: { suit, rank },
-    slotIndex,
-  }: ConstructorArg) {
-    super({ game, player });
-    this.card = player.remove((card) => card.hasSame({ suit, rank }));
+  constructor(
+    game: DurakGame,
+    {
+      card: cardToRemove,
+      slotIndex,
+    }: {
+      card: Card;
+      slotIndex: number;
+    },
+  ) {
+    super(game, game.players.attacker);
+    this.card = this.performer.remove((card) => card === cardToRemove);
     this.slotIndex = slotIndex;
     this.isInsertMove = true;
-    this.#insertCard();
-  }
-
-  #insertCard() {
-    return insertCardStrategy.call(this);
+    this.game.desk.receiveCard({
+      card: this.card,
+      index: this.slotIndex,
+      source: this.performer,
+    });
   }
 
   handleAfterMoveIsDone() {
@@ -37,8 +40,8 @@ export class InsertAttackCardMove extends AttackerMove implements AfterHandler {
       ) ||
       !this.game.desk.allowsAttackerMove
     ) {
-      return this.game.round.giveDefenderDefend();
+      return this.game.round.giveDefendTo(this.game.players.defender);
     }
-    return this.game.round.giveAttackerAttack();
+    return this.game.round.giveAttackTo(this.game.players.attacker);
   }
 }

@@ -1,4 +1,4 @@
-import { Players } from "./entity";
+import { GameRound, Players } from "./entity";
 import GameRoundDistributionQueue from "./GameRoundDistributionQueue";
 import type DurakGame from "./DurakGame.implimetntation";
 
@@ -15,5 +15,5 @@ export abstract class RoundEnd {
     }
   }
 
-  abstract pushNewRound(): void;
+  abstract get newGameRound(): GameRound | undefined;
 }

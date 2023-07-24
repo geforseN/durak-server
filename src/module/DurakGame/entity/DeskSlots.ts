@@ -46,7 +46,9 @@ export default class DeskSlots {
     );
   }
 
-  at(index: number) {
+  at(index: number): DeskSlot | undefined {
+    // TODO add raise
+    // TODO set return value to DeskSlot only
     return this.#value.at(index);
   }
 
@@ -55,7 +57,7 @@ export default class DeskSlots {
   }
 
   get randomEmptySlotIndex(): number {
-    const emptySlotIndexes = this.#value.reduce(
+    const emptySlotsIndexes = this.#value.reduce(
       (indexesOfEmptySlots: number[], slot, index) => {
         if (slot instanceof EmptySlot) {
           indexesOfEmptySlots.push(index);
@@ -64,7 +66,7 @@ export default class DeskSlots {
       },
       [],
     );
-    return emptySlotIndexes[randomInt(0, emptySlotIndexes.length)];
+    return emptySlotsIndexes[randomInt(emptySlotsIndexes.length)];
   }
 }
 

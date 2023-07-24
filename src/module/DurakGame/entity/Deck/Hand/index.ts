@@ -38,7 +38,7 @@ export default class Hand extends Deck {
   }
 
   get randomCard() {
-    return this.value[crypto.randomInt(0, this.count)];
+    return this.value[crypto.randomInt(this.count)];
   }
 
   get isEmpty(): boolean {

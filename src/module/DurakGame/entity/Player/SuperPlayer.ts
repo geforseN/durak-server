@@ -1,5 +1,7 @@
 import Player from "./Player";
 import Card from "../Card";
+import { GameMove } from "../GameMove";
+import { CardDTO } from "../../DTO";
 
 export default abstract class SuperPlayer extends Player {
   remove(cb: (card: Card) => boolean): Card {
@@ -10,6 +12,13 @@ export default abstract class SuperPlayer extends Player {
   get randomCard() {
     return this.hand.randomCard;
   }
+
+  abstract stopMove(move: GameMove): void;
+  abstract putCardOnDesk(
+    move: GameMove,
+    card: CardDTO,
+    slotIndex: number,
+  ): Promise<void>;
 }
 
 function logGetter(headMessage: string = "LOG:") {

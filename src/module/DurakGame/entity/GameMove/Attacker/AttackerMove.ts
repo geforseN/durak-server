@@ -3,43 +3,35 @@ import GameMove from "../GameMove.abstract";
 import Attacker from "../../Player/Attacker";
 import type DurakGame from "../../../DurakGame.implimetntation";
 import type Card from "../../Card";
+import { StopAttackMove } from "./StopAttackMove";
+import { InsertAttackCardMove } from "./InsertAttackCardMove";
+import { type Player } from "../../Player";
+import { AttackerMoveDefaultBehavior } from "./AttackerMoveDefaultBehavior";
 
-export class AttackerMove extends GameMove<Attacker> {
-  readonly defaultBehaviour: NodeJS.Timeout;
-  readonly defaultBehaviourCallTimeInUTC: number;
+export class AttackerMove extends GameMove {
+  readonly performer: Attacker;
+  readonly defaultBehavior: AttackerMoveDefaultBehavior
 
-  constructor({ game, player }: { game: DurakGame; player: Attacker }) {
-    super({ game, player });
-    this.defaultBehaviourCallTimeInUTC =
-      Date.now() + this.game.settings.moveTime;
-    this.defaultBehaviour = this.#defaultBehaviour();
-  }
-
-  #defaultBehaviour() {
-    console.log("#defaultBehaviour of AttackerMove", this.constructor.name);
-    return setTimeout(
-      this.#defaultBehaviourLogic.bind(this),
-      this.game.settings.moveTime,
-    );
-  }
-
-  async #defaultBehaviourLogic() {
-    console.log("TIMEOUT: defaultBehaviour called");
-    assert.ok(this.player instanceof Attacker, 'TIMEOUT: defaultBehaviour BUG');
-    console.log("TIMEOUT: insertRandomCard");
-    await this.putCardOnDesk(
-      this.player.randomCard,
-      this.game.desk.randomEmptySlotIndex,
-    );
+  constructor(game: DurakGame, movePerformer: Player = game.players.attacker) {
+    super(game);
+    this.game.players.attacker = movePerformer;
+    this.performer = this.game.players.attacker;
+    this.defaultBehavior = new AttackerMoveDefaultBehavior(this);
   }
 
   async putCardOnDesk(card: Card, slotIndex: number) {
+    assert.ok(this === this.game.round.currentMove);
+    this.defaultBehavior.stop()
     await this.game.desk.ensureCanAttack(card, slotIndex);
-    this.game.round.makeAttackInsertMove(card, slotIndex);
+    this.updateTo(InsertAttackCardMove, {
+      card,
+      slotIndex,
+    });
   }
 
   stopMove() {
-    this.game.round.makeAttackStopMove();
+    this.defaultBehavior.stop()
+    this.updateTo(StopAttackMove);
   }
 
   async allowsTransferMove() {

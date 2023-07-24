@@ -10,12 +10,11 @@ export default class DurakGameStateDto {
   deskSlots: DeskSlot[];
   trumpCard: DurakGame["talon"]["trumpCard"];
   allowedPlayerId: string;
+  roundNumber: number;
+  isDefenderGaveUp: boolean;
   isDiscardEmpty: boolean;
   isTalonEmpty: boolean;
   isTalonHasOneCard: boolean;
-  isDefenderGaveUp: boolean;
-  playersCount: number;
-  roundNumber: number;
   settings: DurakGame["settings"];
 
   constructor(game: DurakGame, playerId: string) {
@@ -27,12 +26,11 @@ export default class DurakGameStateDto {
     this.deskSlots = [...game.desk];
     this.trumpCard = game.talon.trumpCard;
     this.allowedPlayerId = game.round.currentMove.player.id;
+    this.roundNumber = game.round.number;
+    this.isDefenderGaveUp = game.round.moves.isDefenderGaveUp;
     this.isDiscardEmpty = game.discard.isEmpty;
     this.isTalonEmpty = game.talon.isEmpty;
     this.isTalonHasOneCard = game.talon.hasOneCard;
-    this.playersCount = game.settings.userCount;
-    this.roundNumber = game.round.number;
-    this.isDefenderGaveUp = game.round.isDefenderGaveUp;
     this.settings = game.settings;
   }
 }
