@@ -1,1 +1,3 @@
-export default class PursuitAttackMove {}
+export default class PursuitAttackMove {
+    constructor() {}
+}

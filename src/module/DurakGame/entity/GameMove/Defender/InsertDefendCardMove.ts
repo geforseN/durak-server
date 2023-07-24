@@ -1,46 +1,44 @@
 import DefenderMove from "./DefenderMove";
-import { insertCardStrategy } from "../../GameRound";
 import { type AfterHandler } from "../GameMove.abstract";
 import type Card from "../../Card";
-import { SuccessfulDefence } from "../../../SuccessfulDefence";
+import SuccessfulDefense from "../../../SuccessfulDefense";
+import AttackerMove from "../Attacker/AttackerMove";
+import { type CardInsert } from "../../GameRound/CardInsert.interface";
+import type DurakGame from "../../../DurakGame.implimetntation";
 
-type ConstructorArg = ConstructorParameters<typeof DefenderMove>[number] & {
+export class InsertDefendCardMove
+  extends DefenderMove
+  implements AfterHandler, CardInsert
+{
   card: Card;
   slotIndex: number;
-};
 
-export class InsertDefendCardMove extends DefenderMove implements AfterHandler {
-  card: Card;
-  slotIndex: number;
-
-  constructor({
-    game,
-    player,
-    card: { suit, rank },
-    slotIndex,
-  }: ConstructorArg) {
-    super({ game, player });
-    this.card = player.remove((card) => card.hasSame({ suit, rank }));
+  constructor(
+    game: DurakGame,
+    { card: cardToRemove, slotIndex }: { card: Card; slotIndex: number },
+  ) {
+    super(game, game.players.defender);
+    this.card = this.performer.remove((card) => card === cardToRemove);
     this.slotIndex = slotIndex;
     this.isInsertMove = true;
-    this.#insertCard();
-  }
-
-  #insertCard() {
-    return insertCardStrategy.call(this);
+    this.game.desk.receiveCard({
+      card: this.card,
+      index: this.slotIndex,
+      source: this.performer,
+    });
   }
 
   handleAfterMoveIsDone() {
     if (!this.game.desk.isDefended) {
-      return this.game.round.giveDefenderDefend();
+      return this.game.round.giveDefendTo(this.game.players.defender);
     }
     if (this.player.hand.isEmpty || !this.game.desk.allowsMoves) {
-      return new SuccessfulDefence(this.game).pushNewRound();
+      return this.game.round.endWith(SuccessfulDefense);
     }
     if (this.game.desk.allowsAttackerMove) {
-      return this.game.round.givePrimalAttackerAttack();
+      return this.game.round.giveAttackTo(this.game.round.primalAttacker);
     }
     console.log("look at me -> handleAfterCardInsert <- look at me");
-    return this.game.round.giveDefenderDefend();
+    return this.game.round.giveDefendTo(this.game.players.defender);
   }
 }

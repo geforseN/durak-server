@@ -27,6 +27,8 @@ export default class Lobbies {
     return { lobbies: [...this.#map.values()] };
   }
 
+  // NOTE: IF user didn't send slotIndex (didn't specified slotIndex) THEN slotIndex === -1
+  // NOTE: will throw WHEN user wanna join same lobby AND user didn't specified slotIndex
   async addUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
     const [pastLobby, desiredLobby] = [
       this.#findLobbyWithUser(userId),
@@ -46,7 +48,7 @@ export default class Lobbies {
   }
 
   // TODO in Vue: FOR unstarted game users UPDATE their state: SET gameId to lobbyId
-  upgrateLobbyToUnstartedGame(userId: string, lobbyId?: Lobby["id"]) {
+  upgradeLobbyToUnstartedGame(userId: string, lobbyId?: Lobby["id"]) {
     return this.#getLobbyOrThrow(userId, lobbyId).updateToUnstartedGame(userId);
   }
 

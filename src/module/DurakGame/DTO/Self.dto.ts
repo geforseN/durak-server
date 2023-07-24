@@ -4,13 +4,13 @@ import CardDTO from "./Card.dto";
 export default class SelfDTO {
   cards: CardDTO[];
   info: Player['info'];
-  role: PlayerKind;
+  kind: PlayerKind;
   id: string;
 
   constructor(player: Player) {
     this.cards = [...player.hand].map((card) => new CardDTO(card));
     this.info = player.info;
-    this.role = player.constructor.name as PlayerKind;
+    this.kind = player.constructor.name as PlayerKind;
     this.id = player.id;
   }
 }

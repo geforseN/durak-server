@@ -13,6 +13,8 @@ export class UnstartedGame {
   };
   settings: GameSettings;
   players: Player[];
+  isStarted: boolean;
+
   constructor(lobby: Lobby) {
     this.info = {
       id: lobby.id,
@@ -20,6 +22,7 @@ export class UnstartedGame {
       isStarted: false,
     };
     this.settings = lobby.settings;
-    this.players = lobby.slots.users.map((user) => new Player(user));
+    this.players = lobby.slots.value.map((slot) => new Player(slot));
+    this.isStarted = false;
   }
 }

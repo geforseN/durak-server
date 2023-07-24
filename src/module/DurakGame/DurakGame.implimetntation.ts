@@ -6,7 +6,6 @@ import {
   GameDeskWebsocketService,
   GameTalonWebsocketService,
   GameDiscardWebsocketService,
-  GameRoundWebsocketService,
 } from "./socket/service";
 import GameRoundDistributionQueue from "./GameRoundDistributionQueue";
 import { type DurakGameSocket } from "./socket/DurakGameSocket.types";
@@ -28,7 +27,8 @@ export default class DurakGame {
   readonly #wsService: DurakGameWebsocketService;
   players: Players;
   round: GameRound;
-
+  isStarted: boolean;
+  
   constructor(
     unstartedGame: UnstartedGame,
     namespace: DurakGameSocket.Namespace,
@@ -51,7 +51,8 @@ export default class DurakGame {
     this.#wsService = new DurakGameWebsocketService(namespace);
     new GameRoundDistributionQueue(this).makeInitialDistribution();
     this.#makeInitialSuperPlayersStrategy();
-    this.round = new GameRound(this, new GameRoundWebsocketService(namespace));
+    this.round = new GameRound(this);
+    this.isStarted = true;
   }
 
   // TODO: remove playerId param when socket.data will contain playerId

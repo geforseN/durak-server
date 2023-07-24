@@ -1,15 +1,27 @@
 import assert from "node:assert";
-import { getPlayer } from "../getter";
 import DurakGame from "../../DurakGame.implimetntation";
+import { SuperPlayer } from "../../entity/Player";
 
 export default function handleStopMove(this: {
   game: DurakGame;
   playerId: string;
 }) {
-  const { game, playerId } = this;
-  const player = getPlayer(game, playerId);
-  assert.ok(!game.desk.isEmpty, "Нельзя закончить раунд с пустым столом");
-  assert.ok(player.isSuperPlayer, "Нет права закончить ход");
-  clearTimeout(game.round.currentMove.defaultBehaviour);
-  game.round.currentMove.stopMove();
+  try {
+    this.game.round.currentMove.defaultBehaviour.shouldBeCalled = false;
+    assert.ok(
+      !this.game.desk.isEmpty,
+      "Нельзя закончить раунд с пустым столом",
+    );
+    this.game.players
+      .get<SuperPlayer>(
+        (player): player is SuperPlayer =>
+          player.id === this.playerId &&
+          this.game.round.currentMove.player === player,
+        "Нет права закончить ход",
+      )
+      .stopMove(this.game.round.currentMove);
+  } catch (error) {
+    this.game.round.currentMove.defaultBehaviour.shouldBeCalled = true;
+    throw error;
+  }
 }

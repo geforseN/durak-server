@@ -13,11 +13,15 @@ export default function durakGameSocketHandler(
     data: { sid },
     nsp: { name: gameId },
   } = socket;
+  let playerId = "_ ___ ____---ABOBA-adasd-asdasdasd";
+  // TODO const startedDurakGames = new Map()
+  // TODO const usstartedDurakGames = new Map()
   let game = durakGames.get(gameId);
   socket.onAny((eventName: string, ...args) => console.log(eventName, args));
   if (!game) return handleNoSuchGameOnline(socket);
   if (!playerId) return handleNotAuthorized(socket);
   if (isGameNotStarted(game)) {
+    // game.updateTo(new DurakGame, durakGames)
     const startedGame = new DurakGame(game, this);
     durakGames.set(gameId, startedGame);
     game = startedGame;
@@ -39,7 +43,8 @@ export default function durakGameSocketHandler(
   socket.on("superPlayer__stopMove", stopMoveListener.bind({ game, playerId }));
   socket.on("player__exitGame", () => {
     try {
-      // game.players.service.remove({ player: game.players.getPlayer({ id: playerId }) });
+      assert.ok(game instanceof DurakGame);
+      game.players.remove((player) => player.id === playerId);
     } catch (error) {
       console.log(error);
     }
@@ -52,10 +57,7 @@ function handleNoSuchGameOnline(socket: DurakGameSocket.Socket) {
 }
 
 function handleNotAuthorized(socket: DurakGameSocket.Socket) {
-  // console.log("not authorized to such game")
   socket.disconnect();
-  // socket.removeListener("superPlayer__putCardOnDesk")
-  // socket.off("superPlayer__stopMove")
 }
 
 function isGameNotStarted(

@@ -3,7 +3,7 @@ import { DurakGameSocket } from "../../socket/DurakGameSocket.types";
 import { SuperPlayer } from "../Player";
 import CardDTO from "../../DTO/Card.dto";
 
-export default class GameDeskWebscoketService {
+export default class GameDeskWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {
   }
 
@@ -11,7 +11,7 @@ export default class GameDeskWebscoketService {
     this.namespace.emit("desk__clear");
   }
 
-  receiveCard({ card, index, who }: { card: Card, index: number, who: SuperPlayer }) {
-    this.namespace.emit("desk__cardReceive", new CardDTO(card), index, who.id);
+  receiveCard({ card, index, source }: { card: Card, index: number, source: SuperPlayer }) {
+    this.namespace.emit("desk__cardReceive", new CardDTO(card), index, source.id);
   }
 }

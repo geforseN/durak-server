@@ -1,11 +1,20 @@
 import DefenderMove from "./DefenderMove";
 import { type AfterHandler } from "../GameMove.abstract";
-import { FailedDefence } from "../../../FailedDefence";
+import FailedDefense from "../../../FailedDefense";
 
 export class DefenderGaveUpMove extends DefenderMove implements AfterHandler {
+  // TODO in ctor: this.game.players.defender.isGaveUp = true
+  
   handleAfterMoveIsDone() {
-    return this.game.desk.allowsMoves
-      ? this.game.round.givePrimalAttackerAttack()
-      : new FailedDefence(this.game).pushNewRound();
+    if (!this.game.desk.allowsMoves) {
+      return this.game.round.endWith(FailedDefense);
+    }
+    return this.game.round.giveAttackTo(this.game.round.primalAttacker);
+  }
+
+  override emitOwnData() {
+    this.game.info.namespace.emit("defender__gaveUp", {
+      defenderId: this.player.id,
+    });
   }
 }

@@ -1,12 +1,13 @@
 import DefenderMove from "./DefenderMove";
 import { type AfterHandler } from "../GameMove.abstract";
+import { DefenderGaveUpMove } from "./DefenderGaveUpMove";
 
 export class StopDefenseMove extends DefenderMove implements AfterHandler {
-  //REVIEW - logic of method could have changed
   handleAfterMoveIsDone() {
     if (this.game.desk.isDefended) {
-      return this.game.round.givePrimalAttackerAttack();
+      return this.game.round.giveAttackTo(this.game.round.primalAttacker);
     }
-    return this.game.round.makeDefenderLost();
+    this.updateTo(DefenderGaveUpMove);
+    return;
   }
 }

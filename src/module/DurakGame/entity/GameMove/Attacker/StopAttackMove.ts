@@ -1,33 +1,32 @@
-import assert from "node:assert";
-import AttackerMove from "./AttackerMove";
-import { Attacker } from "../../Player";
+import FailedDefence from "../../../FailedDefense";
+import SuccessfulDefence from "../../../SuccessfulDefense";
 import { type AfterHandler } from "../GameMove.abstract";
-import { FailedDefence } from "../../../FailedDefence";
-import { SuccessfulDefence } from "../../../SuccessfulDefence";
+import AttackerMove from "./AttackerMove";
 
 export class StopAttackMove extends AttackerMove implements AfterHandler {
   handleAfterMoveIsDone() {
-    assert.ok(this.player instanceof Attacker);
-    if (this.game.round.isDefenderGaveUp) {
+    // TODO: 
+    // remove this.game.round.moves.isDefenderGaveUp
+    // add this.game.players.defender.isGaveUp 
+    if (this.game.round.moves.isDefenderGaveUp) {
       return this.#handleInPursuit();
     }
-    if (this.player.hasPutLastCard(this.game.round)) {
-      return this.game.round.giveDefenderDefend();
+    if (this.performer.hasPutLastCard(this.game)) {
+      return this.game.round.giveDefendTo(this.game.players.defender);
     }
     if (this.game.players.defender.canWinDefense(this.game)) {
-      return new SuccessfulDefence(this.game).pushNewRound();
+      return this.game.round.endWith(SuccessfulDefence);
     }
-    return this.game.round.giveNextAttackerAttack();
+    return this.game.round.giveAttackTo(this.game.round.nextAttacker);
   }
 
   #handleInPursuit() {
-    const { primalAttacker } = this.game.round;
     if (
-      this.player.left === primalAttacker ||
-      this.game.players.defender.left === primalAttacker
+      this.player.left === this.game.round.primalAttacker ||
+      this.game.players.defender.left === this.game.round.primalAttacker
     ) {
-      return new FailedDefence(this.game).pushNewRound();
+      return this.game.round.endWith(FailedDefence);
     }
-    return this.game.round.giveNextAttackerAttack();
+    return this.game.round.giveAttackTo(this.game.round.nextAttacker);
   }
 }

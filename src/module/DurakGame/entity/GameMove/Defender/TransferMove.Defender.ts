@@ -1,44 +1,40 @@
-import assert from "node:assert";
-import DefenderMove from "./DefenderMove";
-import { Attacker, Defender } from "../../Player";
-import { insertCardStrategy } from "../../GameRound";
+import type DurakGame from "../../../DurakGame.implimetntation";
 import type Card from "../../Card";
+import { type CardInsert } from "../../GameRound/CardInsert.interface";
 import { type AfterHandler } from "../GameMove.abstract";
+import DefenderMove from "./DefenderMove";
 
-type ConstructorArg = ConstructorParameters<typeof DefenderMove>[number] & {
+export class TransferMove
+  extends DefenderMove
+  implements AfterHandler, CardInsert
+{
   card: Card;
   slotIndex: number;
-};
 
-export class TransferMove extends DefenderMove implements AfterHandler {
-  card: Card;
-  slotIndex: number;
-
-  constructor({
-    game,
-    player,
-    card: { suit, rank },
-    slotIndex,
-  }: ConstructorArg) {
-    super({ game, player });
-    this.card = player.remove((card) => card.hasSame({ suit, rank }));
-    this.slotIndex = slotIndex;
+  constructor(
+    game: DurakGame,
+    context: {
+      card: Card;
+      slotIndex: number;
+    },
+  ) {
+    super(game, game.players.defender);
+    this.card = this.performer.remove((card) => card === context.card);
+    this.slotIndex = context.slotIndex;
     this.isInsertMove = true;
-    this.#insertCard();
+    this.game.desk.receiveCard({
+      card: this.card,
+      index: this.slotIndex,
+      source: this.performer,
+    });
   }
 
-  #insertCard() {
-    return insertCardStrategy.call(this);
-  }
-
+  // TODO: fix hard to catch bug in this.#defaultBehavior
+  // should be this.#defaultBehavior redefined
+  // when this.player become Attacker (code line below)
+  // or should just clearInterval(this.defaultBehavior)
   handleAfterMoveIsDone() {
-    // TODO: fix hard to catch bug in this.#defeaultBeheviour
-    // should be this.#defaultBehaviour redefined
-    // when this.player become Attacker (code line below)
-    // or should just clearInterval(this.defaultBehaviour)
-    assert.ok(this.player instanceof Defender);
-    this.game.players.attacker = this.player;
-    assert.ok(this.player instanceof Attacker);
-    return this.game.round.giveAttackerLeftDefend();
+    this.game.players.attacker = this.performer;
+    return this.game.round.giveDefendTo(this.player.left);
   }
 }

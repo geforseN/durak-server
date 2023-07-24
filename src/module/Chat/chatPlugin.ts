@@ -47,7 +47,7 @@ async function sendMessageInChatHandler(
 
 function handleError(error: unknown, socket: WebSocket) {
   if (error instanceof Error) {
-    socket.emit("socket", "notification::push", new NotificationAlert().fromError(error));
+    socket.emit("socket", "notification::push", new NotificationAlert(error));
   } else {
     console.log("GlobalChat Error:", error);
   }

@@ -1,5 +1,5 @@
 import { parse } from "cookie";
-import { LobbiesIO } from "./lobbies/lobbies.types";
+import { LobbiesIO } from "./lobbies.types";
 import { ExtendedError } from "socket.io/dist/namespace";
 
 export default function onConnectMiddleware(socket: LobbiesIO.SocketIO, next: (err?: (ExtendedError | undefined)) => void) {
