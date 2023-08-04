@@ -5,6 +5,8 @@ import {
 import NotificationAlert from "../../notification-alert";
 import { CardDTO, DurakGameStateDTO } from "../DTO";
 import { PlayerKind } from "../entity/Player";
+import { env } from "../../..";
+import { ConnectStatus } from "@prisma/client";
 
 export namespace DurakGameSocket {
   export type ClientToServerEvents = {
@@ -12,19 +14,23 @@ export namespace DurakGameSocket {
     superPlayer__stopMove: () => void;
     superPlayer__putCardOnDesk: (card: CardDTO, slotIndex: number) => void;
   };
-
   export type ServerToClientEvents = {
     notification__send: (notification: NotificationAlert) => void;
     game__restoreState: (state: DurakGameStateDTO) => void;
     game__over: () => void;
     game__currentId: (gameId: string) => void;
-    player__allowedToMove: (
-     payload: {
-      allowedPlayerId: string,
-      moveEndTimeInUTC: number,
-      moveTimeInSeconds: number,
-     }
-    ) => void;
+    player__allowedToMove: (payload: {
+      allowedPlayerId: string;
+      moveEndTimeInUTC: number;
+      moveTimeInSeconds: number;
+    }) => void;
+    "game::move::new": ({
+      name,
+      allowedPlayerId,
+    }: {
+      name: string;
+      allowedPlayerId: string;
+    }) => void;
     player__changeCardCount: (playerId: string, cardCount: number) => void;
     player__changeKind: (kind: PlayerKind, playerId: string) => void;
     player__exitGame: (playerId: string) => void;
@@ -46,10 +52,18 @@ export namespace DurakGameSocket {
     discard__setIsNotEmpty: () => void;
   };
 
-  export type InterServerEvents = {};
+  export type InterServerEvents = Record<string, never>;
 
   export type SocketData = {
-    sid: string;
+    sessionId: string;
+    userProfile: {
+      userId: string;
+      personalLink: string;
+      updatedAt: Date;
+      photoUrl: string | null;
+      nickname: string;
+      connectStatus: ConnectStatus;
+    };
   };
 
   export type Socket = SocketIOSocket<

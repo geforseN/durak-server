@@ -1,4 +1,4 @@
-import DurakGame from "../DurakGame.implimetntation";
+import DurakGame from "../DurakGame";
 import SelfDTO from "./Self.dto";
 import EnemyDTO from "./Enemy.dto";
 import OrderedPlayerEnemies from "../entity/Player/OrderedPlayerEnemies";

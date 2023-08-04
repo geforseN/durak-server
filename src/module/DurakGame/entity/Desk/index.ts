@@ -1,6 +1,6 @@
 import type { Defender, SuperPlayer, AllowedMissingCardCount } from "../Player";
 import type Card from "../Card";
-import { type CanProvideCards } from "../../DurakGame.implimetntation";
+import { type CanProvideCards } from "../../DurakGame";
 import { type Discard } from "../Deck";
 import type GameDeskWebsocketService from "./Desk.service";
 import DeskSlots, {
@@ -8,6 +8,7 @@ import DeskSlots, {
   FilledSlots,
   UnbeatenSlots,
 } from "../DeskSlots";
+import { raise } from "../../../..";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
   #slots: DeskSlots;
@@ -87,7 +88,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
 
   async ensureCanAttack(card: Card, slotIndex: number): Promise<void> {
     if (this.isEmpty) return;
-    await this.slotAt(slotIndex)?.ensureCanBeAttacked(card);
+    await this.slotAt(slotIndex).ensureCanBeAttacked(card);
     if (!this.#slots.someSlotHas({ rank: card.rank })) {
       throw new Error("Нет схожего ранга на доске");
     }

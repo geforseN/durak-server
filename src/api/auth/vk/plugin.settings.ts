@@ -2,7 +2,7 @@ import oauthPlugin, { OAuth2Namespace } from "@fastify/oauth2";
 
 export const VK_AUTH_CALLBACK_URI = "/login/vk/callback";
 export const authProviderKey = "vkId";
-const NAMESPACE_NAME = 'vkOAuth2';
+const NAMESPACE_NAME = "vkOAuth2";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -12,7 +12,7 @@ declare module "fastify" {
 
 export default {
   name: NAMESPACE_NAME,
-  scope: ['email'],
+  scope: ["email"],
   credentials: {
     client: {
       id: process.env.VK_CLIENT_ID!,

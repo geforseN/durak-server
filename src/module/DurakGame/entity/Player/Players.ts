@@ -107,4 +107,12 @@ export default class Players {
     assert.ok(player, notFoundMessage);
     return player;
   }
+
+  remove(cb: (player: Player) => boolean, notRemovedMessage?: string): Player {
+    const playerIndex = this.#value.findIndex(cb);
+    assert.ok(playerIndex, notRemovedMessage);
+    const [player] = this.#value.splice(playerIndex, 1);
+    player.exitGame();
+    return player;
+  }
 }

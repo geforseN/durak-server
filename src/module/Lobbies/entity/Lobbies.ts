@@ -47,9 +47,9 @@ export default class Lobbies {
     return new Lobby(settings, this.#emitter);
   }
 
-  // TODO in Vue: FOR unstarted game users UPDATE their state: SET gameId to lobbyId
-  upgradeLobbyToUnstartedGame(userId: string, lobbyId?: Lobby["id"]) {
-    return this.#getLobbyOrThrow(userId, lobbyId).updateToUnstartedGame(userId);
+  // TODO in Vue: FOR not started game users UPDATE their state: SET gameId to lobbyId
+  upgradeLobbyToNonStartedGame(userId: string, lobbyId?: Lobby["id"]) {
+    return this.#getLobbyOrThrow(userId, lobbyId).upgradeToNonStartedGame(userId);
   }
 
   // TODO in Vue: FOR deleted users UPDATE their state: SET lobbyId to null

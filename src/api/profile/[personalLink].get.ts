@@ -1,21 +1,34 @@
-import { FastifyInstance } from "fastify";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { FastifyInstance } from "../..";
+import prisma from "../../../prisma";
+import z from "zod";
 
 export default function getUserProfile(fastify: FastifyInstance) {
-  return fastify.get("/profile", async function(request, reply) {
-    const { personalLink } = request.query as { personalLink: string };
-    if (!personalLink) throw new Error("Не указана ссылка пользователя");
-    const user = await prisma.userProfile.findFirst({
-      where: { personalLink },
-      select: {
-        nickname: true,
-        connectStatus: true,
-        photoUrl: true,
-      },
-    });
-    if (!user) throw new Error("Нет доступа");
-    return reply.send(user);
+  return fastify.route({
+    method: "GET",
+    url: "/profile",
+    schema: {
+      querystring: z.object({
+        personalLink: z.string({
+          description: "Не указана ссылка пользователя",
+        }),
+      }),
+    },
+    handler: async function (request, reply) {
+      const user = await prisma.userProfile.findFirst({
+        where: { personalLink: request.query.personalLink },
+        select: {
+          nickname: true,
+          connectStatus: true,
+          photoUrl: true,
+          User: { include: { UserGameStat: true } },
+        },
+      });
+      if (!user) {
+        // Пользователь не был найдем, но
+        // для безопасности просто отправим "Нет доступа"
+        throw new Error("Нет доступа");
+      }
+      return reply.send(user);
+    },
   });
 }

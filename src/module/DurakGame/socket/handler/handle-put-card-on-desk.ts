@@ -1,4 +1,4 @@
-import type DurakGame from "../../DurakGame.implimetntation";
+import type DurakGame from "../../DurakGame";
 import { type CardDTO } from "../../DTO";
 import { Attacker, Defender, type SuperPlayer } from "../../entity/Player";
 
@@ -7,7 +7,7 @@ export default async function handlePutCardOnDesk(
   cardDTO: CardDTO,
   slotIndex: number,
 ) {
-  this.game.round.currentMove.defaultBehaviour.shouldBeCalled = false;
+  this.game.round.currentMove.defaultBehavior.shouldBeCalled = false;
   try {
     // TODO remove излишнее instanceof check
     await this.game.players
@@ -18,9 +18,9 @@ export default async function handlePutCardOnDesk(
           (player instanceof Attacker || player instanceof Defender),
         "У вас нет права хода",
       )
-      .putCardOnDesk(this.game.round.currentMove, cardDTO, slotIndex);
+      .putCardOnDesk(this.game.round, cardDTO, slotIndex);
   } catch (error) {
-    this.game.round.currentMove.defaultBehaviour.shouldBeCalled = true;
+    this.game.round.currentMove.defaultBehavior.shouldBeCalled = true;
     throw error;
   }
 }

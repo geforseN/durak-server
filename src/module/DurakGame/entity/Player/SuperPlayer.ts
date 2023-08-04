@@ -1,7 +1,7 @@
 import Player from "./Player";
 import Card from "../Card";
-import { GameMove } from "../GameMove";
 import { CardDTO } from "../../DTO";
+import GameRound from "../GameRound";
 
 export default abstract class SuperPlayer extends Player {
   remove(cb: (card: Card) => boolean): Card {
@@ -13,15 +13,15 @@ export default abstract class SuperPlayer extends Player {
     return this.hand.randomCard;
   }
 
-  abstract stopMove(move: GameMove): void;
+  abstract stopMove(round: GameRound): void;
   abstract putCardOnDesk(
-    move: GameMove,
+    round: GameRound,
     card: CardDTO,
     slotIndex: number,
   ): Promise<void>;
 }
 
-function logGetter(headMessage: string = "LOG:") {
+function logGetter(headMessage = "LOG:") {
   return function <This, Return>(
     target: (this: This) => Return,
     context: ClassGetterDecoratorContext<This, Return>,

@@ -1,5 +1,5 @@
 import { AttackerMove } from "./Attacker/AttackerMove";
-import { DefenderMove } from "./Defender/DefenderMove";
+import DefenderMove from "./Defender/DefenderMove";
 import { GameMove } from "./GameMove.abstract";
 import { InsertAttackCardMove } from "./Attacker/InsertAttackCardMove";
 import { InsertDefendCardMove } from "./Defender/InsertDefendCardMove";

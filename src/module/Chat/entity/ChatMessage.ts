@@ -1,13 +1,13 @@
 import { randomUUID } from "crypto";
-import getUserForChat from "../../../../prisma/user/getUserForChat";
+import { ChatContext } from "../chatPlugin";
 
 export default class ChatMessage {
-  sender: Awaited<ReturnType<typeof getUserForChat>>;
+  sender: ChatContext["sender"];
   date: number;
   text: string;
   id: ReturnType<typeof randomUUID>;
 
-  constructor(props: { sender: Awaited<ReturnType<typeof getUserForChat>>, text: string }) {
+  constructor(props: { sender: ChatContext["sender"]; text: string }) {
     this.date = new Date().getTime();
     this.sender = props.sender;
     this.text = props.text;

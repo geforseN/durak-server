@@ -1,34 +1,35 @@
 import assert from "node:assert";
 import { CardDTO } from "../../DTO";
-import type DurakGame from "../../DurakGame.implimetntation";
-import Card from "../Card";
-import { GameMove, InsertAttackCardMove, StopAttackMove } from "../GameMove";
+import { InsertAttackCardMove, StopAttackMove } from "../GameMove";
 import SuperPlayer from "./SuperPlayer";
+import GameRound from "../GameRound";
 
 export default class Attacker extends SuperPlayer {
-  stopMove(move: GameMove): void {
-    move.updateTo(StopAttackMove);
+  stopMove(round: GameRound): void {
+    assert.ok(this === round.currentMove.player);
+    round.currentMove.updateTo(StopAttackMove);
   }
 
   async putCardOnDesk(
-    move: GameMove,
+    round: GameRound,
     { rank, suit }: CardDTO,
     slotIndex: number,
   ): Promise<void> {
-    assert.ok(move === move.game.round.currentMove);
-    move.defaultBehavior.stop();
+    "TODO ensure can't make transfer move" &&
+      Promise.reject(new Error("Атакующий не может перевести карту"));
+    assert.ok(this === round.currentMove.player);
     const card = this.hand.get((card) => card.hasSame({ rank, suit }));
-    await move.game.desk.ensureCanAttack(card, slotIndex);
-    move.updateTo(InsertAttackCardMove, {
+    await round.game.desk.ensureCanAttack(card, slotIndex);
+    round.currentMove.updateTo(InsertAttackCardMove, {
       card,
       slotIndex,
     });
   }
 
-  hasPutLastCard(game: DurakGame): boolean {
+  hasPutLastCard(round: GameRound): boolean {
     return (
-      game.round.moves.previousMove.isInsertMove &&
-      game.round.moves.previousMove.player === this
+      round.moves.previousMove.isInsertMove &&
+      round.moves.previousMove.player === this
     );
   }
 

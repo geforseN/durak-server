@@ -3,7 +3,7 @@ import { type GameSettings } from "../Lobbies/entity/CorrectGameSettings";
 import type Lobby from "../Lobbies/entity/Lobby";
 import { type DurakGameSocket } from "./socket/DurakGameSocket.types";
 
-export class UnstartedGame {
+export class NonStartedDurakGame {
   info: {
     id: string;
     adminId: string;
@@ -13,7 +13,7 @@ export class UnstartedGame {
   };
   settings: GameSettings;
   players: Player[];
-  isStarted: boolean;
+  isStarted: false;
 
   constructor(lobby: Lobby) {
     this.info = {

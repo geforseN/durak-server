@@ -1,14 +1,18 @@
 import WebSocket from "ws";
 import ChatMessage from "./ChatMessage";
 import ChatReplyMessage from "./ChatReplyMessage";
+import { ChatMessageEvent } from "../chatPlugin";
 
 export default class Chat {
   readonly #messages: ChatMessage[];
   readonly #maxMessages: number;
 
-  constructor({ maxMessages = 100, messages = [] }: Partial<{
-    maxMessages: number,
-    messages: ChatMessage[]
+  constructor({
+    maxMessages = 100,
+    messages = [],
+  }: Partial<{
+    maxMessages: number;
+    messages: ChatMessage[];
   }> = {}) {
     this.#maxMessages = maxMessages;
     this.#messages = messages;
@@ -26,12 +30,18 @@ export default class Chat {
       this.#messages.shift();
     }
     this.#messages.push(message);
-    socket.emit("everySocket", "message::send", message);
+    socket.emit("everySocket", new ChatMessageEvent(message));
   }
 
   #ensureSenderCanReply({ replyMessageId }: ChatReplyMessage) {
-    if ([...this.#messages].reverse().every(({ id }) => replyMessageId !== id)) {
-      throw new Error("Сообщение, на которое вы отправили ответ, не было найдено");
+    if (
+      [...this.#messages]
+        .reverse()
+        .every((message) => replyMessageId !== message.id)
+    ) {
+      throw new Error(
+        "Сообщение, на которое вы отправили ответ, не было найдено",
+      );
     }
   }
 }

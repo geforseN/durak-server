@@ -2,6 +2,7 @@ import { DefendedSlot, DeskSlot, EmptySlot, UnbeatenSlot } from "./DeskSlot";
 import Card, { Rank } from "./Card";
 import { randomInt } from "node:crypto";
 import NextDeskSlot from "./DeskSlot/NextDeskSlot";
+import { raise } from "../../..";
 
 export default class DeskSlots {
   readonly #value: DeskSlot[];
@@ -46,10 +47,8 @@ export default class DeskSlots {
     );
   }
 
-  at(index: number): DeskSlot | undefined {
-    // TODO add raise
-    // TODO set return value to DeskSlot only
-    return this.#value.at(index);
+  at(index: number): DeskSlot {
+    return this.#value.at(index) || raise();
   }
 
   someSlotHas({ rank }: { rank: Rank }) {

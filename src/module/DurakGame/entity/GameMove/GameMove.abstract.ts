@@ -1,5 +1,5 @@
 import type Player from "../Player/Player";
-import type DurakGame from "../../DurakGame.implimetntation";
+import type DurakGame from "../../DurakGame";
 import type {
   InsertAttackCardMove,
   InsertDefendCardMove,
@@ -27,15 +27,11 @@ export abstract class GameMove {
   emitOwnData() {
     this.game.info.namespace.emit("game::move::new", {
       name: this.constructor.name,
+      allowedPlayerId: this.player.id,
     });
   }
-  
-  abstract allowsTransferMove(
-    card: Card,
-    slotIndex: number,
-  ): Promise<boolean> | never;
 
-  emitAllowedPlayerData() {
+  emitContext() {
     this.game.info.namespace.emit("player__allowedToMove", {
       allowedPlayerId: this.player.id,
       moveEndTimeInUTC: this.defaultBehavior,
@@ -50,7 +46,12 @@ export abstract class GameMove {
       | typeof InsertAttackCardMove
       | typeof InsertDefendCardMove
       | typeof TransferMove,
-  >(Move: CertainMove, context?: ConstructorParameters<typeof Move>[1]): void {
+  >(
+    Move: CertainMove,
+    context?: Record<string, never> | { card: Card; slotIndex: number },
+    // | { performer: Player }
+    // | { performer: Player; card: Card; slotIndex: number },
+  ): void {
     this.defaultBehavior.stop();
     this.game.round.currentMove = new Move(this.game, context);
   }

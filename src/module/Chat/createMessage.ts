@@ -1,9 +1,9 @@
-import getUserForChat from "../../../prisma/user/getUserForChat";
 import { randomUUID } from "crypto";
 import { ChatMessage, ChatReplyMessage } from "./entity";
+import { ChatContext } from "./chatPlugin";
 
 export default function createMessage({ sender, text, replyMessageId }: {
-  sender: Awaited<ReturnType<typeof getUserForChat>>,
+  sender: ChatContext['sender'],
   text: string,
   replyMessageId?: string | ReturnType<typeof randomUUID>
 }) {

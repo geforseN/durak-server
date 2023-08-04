@@ -1,6 +1,6 @@
-import { GameRound, Players } from "./entity";
+import { GameRound, Players } from ".";
 import GameRoundDistributionQueue from "./GameRoundDistributionQueue";
-import type DurakGame from "./DurakGame.implimetntation";
+import type DurakGame from "../DurakGame";
 
 export abstract class RoundEnd {
   constructor(protected game: DurakGame) {}

@@ -1,6 +1,6 @@
 import handlePutCardOnDesk from "../handler/handle-put-card-on-desk";
 import handleStopMove from "../handler/handle-stop-move";
-import DurakGame from "../../DurakGame.implimetntation";
+import DurakGame from "../../DurakGame";
 import { CardDTO } from "../../DTO";
 import NotificationAlert from "../../../notification-alert";
 import assert from "node:assert";

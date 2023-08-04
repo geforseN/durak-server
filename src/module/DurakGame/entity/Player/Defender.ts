@@ -1,58 +1,62 @@
 import assert from "node:assert";
-import type DurakGame from "../../DurakGame.implimetntation";
-import { type CanReceiveCards } from "../../DurakGame.implimetntation";
-import type Card from "../Card";
+import { type CanReceiveCards } from "../../DurakGame";
 import SuperPlayer from "./SuperPlayer";
-import type DefenderMove from "../GameMove/Defender/DefenderMove";
 import {
   InsertDefendCardMove,
   StopDefenseMove,
   TransferMove,
 } from "../GameMove";
 import { CardDTO } from "../../DTO";
+import GameRound from "../GameRound";
+import Card from "../Card";
 
 export default class Defender extends SuperPlayer implements CanReceiveCards {
   async putCardOnDesk(
-    move: DefenderMove,
+    round: GameRound,
     { rank, suit }: CardDTO,
     slotIndex: number,
   ) {
-    assert.ok(this === move.player);
-    assert.ok(move === move.game.round.currentMove);
-    move.defaultBehavior.stop();
+    assert.ok(this === round.currentMove.player);
     const card = this.hand.get((card) => card.hasSame({ rank, suit }));
-    // TODO remove move.allowsTransferMove
-    // TODO add move.updateToInsertCardMove()
-    if (await move.game.desk.allowsTransferMove(this, card, slotIndex)) {
-      move.updateTo(TransferMove, { card, slotIndex });
-    } else {
-      await move.game.desk.slotAt(slotIndex)?.ensureCanBeDefended(card);
-      move.updateTo(InsertDefendCardMove, { card, slotIndex });
+    if (await this.canMakeTransferMove(round, card, slotIndex)) {
+      return round.currentMove.updateTo(TransferMove, { card, slotIndex });
     }
+    await round.game.desk.slotAt(slotIndex).ensureCanBeDefended(card);
+    return round.currentMove.updateTo(InsertDefendCardMove, {
+      card,
+      slotIndex
+    });
   }
 
-  stopMove(move: DefenderMove) {
-    assert.ok(this === move.player);
-    move.updateTo(StopDefenseMove);
+  stopMove(round: GameRound) {
+    assert.ok(this === round.currentMove.player);
+    round.currentMove.updateTo(StopDefenseMove);
   }
 
   canDefend(cardCount: number) {
     return this.canTakeMore(cardCount);
   }
 
-  canWinDefense(game: DurakGame) {
+  canWinDefense(round: GameRound) {
     try {
       return (
         //  below statement is for 2 players game:
         //  in 2 players game can be only one attacker
         //  IF attacker stop move THAN defender won
-        this.left === game.round.primalAttacker ||
+        this.left === round.primalAttacker ||
         // below statement is for more than 2 players game
-        game.players.attacker.left === game.round.primalAttacker
+        round.game.players.attacker.left === round.primalAttacker
       );
     } catch {
       return false;
     }
+  }
+
+  async canMakeTransferMove(round: GameRound, card: Card, slotIndex: number) {
+    return (
+      this.left.canTakeMore(round.game.desk.cardsCount) &&
+      round.game.desk.allowsTransferMove(card, slotIndex)
+    );
   }
 
   override get isDefender() {

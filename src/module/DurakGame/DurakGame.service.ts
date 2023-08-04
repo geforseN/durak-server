@@ -1,7 +1,7 @@
 import DurakGameStateDto from "./DTO/DurakGameState.dto";
 import { durakGames } from "../../index";
 import { type DurakGameSocket } from "./socket/DurakGameSocket.types";
-import type DurakGame from "./DurakGame.implimetntation";
+import type DurakGame from "./DurakGame";
 
 export default class DurakGameWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
