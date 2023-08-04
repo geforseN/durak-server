@@ -1,10 +1,9 @@
 import DefenderMove from "./DefenderMove";
 import { type AfterHandler } from "../GameMove.abstract";
 import type Card from "../../Card";
-import SuccessfulDefense from "../../../SuccessfulDefense";
-import AttackerMove from "../Attacker/AttackerMove";
+import SuccessfulDefense from "../../Defense/SuccessfulDefense";
 import { type CardInsert } from "../../GameRound/CardInsert.interface";
-import type DurakGame from "../../../DurakGame.implimetntation";
+import type DurakGame from "../../../DurakGame";
 
 export class InsertDefendCardMove
   extends DefenderMove
@@ -17,7 +16,7 @@ export class InsertDefendCardMove
     game: DurakGame,
     { card: cardToRemove, slotIndex }: { card: Card; slotIndex: number },
   ) {
-    super(game, game.players.defender);
+    super(game, { performer: game.players.defender });
     this.card = this.performer.remove((card) => card === cardToRemove);
     this.slotIndex = slotIndex;
     this.isInsertMove = true;

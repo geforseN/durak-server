@@ -1,6 +1,6 @@
 import Deck from "../Deck.abstract";
 import Card from "../../Card";
-import { CanReceiveCards } from "../../../DurakGame.implimetntation";
+import { CanReceiveCards } from "../../../DurakGame";
 import GameDiscardWebsocketService from "./Discard.service";
 
 export default class Discard extends Deck implements CanReceiveCards {

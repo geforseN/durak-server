@@ -6,7 +6,7 @@ import LobbySlots from "./LobbySlots";
 import { type LobbyUser } from "../lobbies.namespace";
 import { LobbyAccessError } from "../error";
 import { durakGames } from "../../..";
-import { UnstartedGame } from "../../DurakGame/NonstartedDurakGame";
+import { NonStartedDurakGame } from "../../DurakGame/NonStartedDurakGame";
 
 export default class Lobby {
   id: string;
@@ -18,7 +18,7 @@ export default class Lobby {
     this.settings = new CorrectGameSettings(settings);
     this.lobbiesEmitter = lobbiesEmitter;
     this.id = crypto.randomUUID();
-    this.slots = new LobbySlots(settings.userCount, this.lobbiesEmitter);
+    this.slots = new LobbySlots(settings.userCount);
     this.lobbiesEmitter.emit("lobby##add", { lobby: this });
     // TODO: this.emptySlots = new EmptySlotsOfLobby(this)
     // TODO: this.users = new UsersOfLobby(this)
@@ -50,10 +50,10 @@ export default class Lobby {
   }
 
   @emitLobbyRemoved
-  updateToUnstartedGame(userIdOfWhoWannaUpdate: string): void {
+  upgradeToNonStartedGame(userIdOfWhoWannaUpdate: string): void {
     assert.ok(this.admin.id === userIdOfWhoWannaUpdate, new LobbyAccessError());
-    durakGames.set(this.id, new UnstartedGame(this));
-    // emit to users in event lobby::upgrade
+    durakGames.set(this.id, new NonStartedDurakGame(this));
+    // TODO emit to this.users 'lobby::upgrade'
   }
 
   @emitUserRemovedAndMore
@@ -65,7 +65,7 @@ export default class Lobby {
   moveUser(userId: string, newSlotIndex: number): number {
     assert.ok(!this.isFull, new LobbyAccessError("Лобби полностью занято"));
     const [newSlot, oldSlot] = [
-      this.slots.getEmptySlot(newSlotIndex),
+      this.slots.getEmptySlotAt(newSlotIndex),
       this.slots.getSlotOfUser(userId),
     ];
     this.slots.swapValues(oldSlot, newSlot);
@@ -159,11 +159,10 @@ function insertSlotIndexAndEmitUserInserted<
   >,
 ) {
   return function (this: This, ...args: Args): Return {
-    let [user, slotIndex] = args;
-    if (slotIndex === -1) {
-      slotIndex = this.slots.firstFoundEmptySlot.index;
-    }
-    const filledSlotIndex = target.apply(this, [user, slotIndex]);
+    const [user, slotIndex] = args;
+    const finalSlotIndex =
+      slotIndex === -1 ? this.slots.firstFoundEmptySlot.index : slotIndex;
+    const filledSlotIndex = target.apply(this, [user, finalSlotIndex]);
     this.lobbiesEmitter.emit("everySocket", "lobby::user::insert", {
       lobbyId: this.id,
       user,

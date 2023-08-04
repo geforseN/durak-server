@@ -1,4 +1,4 @@
-import type DurakGame from "../../../DurakGame.implimetntation";
+import type DurakGame from "../../../DurakGame";
 import type Card from "../../Card";
 import { type CardInsert } from "../../GameRound/CardInsert.interface";
 import { type AfterHandler } from "../GameMove.abstract";
@@ -18,7 +18,7 @@ export class TransferMove
       slotIndex: number;
     },
   ) {
-    super(game, game.players.defender);
+    super(game, { performer: game.players.defender });
     this.card = this.performer.remove((card) => card === context.card);
     this.slotIndex = context.slotIndex;
     this.isInsertMove = true;
@@ -38,3 +38,21 @@ export class TransferMove
     return this.game.round.giveDefendTo(this.player.left);
   }
 }
+// TODO CertainMoves constructor should be like:
+//  constructor(
+//     game: DurakGame,
+//     context: {
+//       card: Card;
+//       slotIndex: number;
+//       performer?: Player;
+//     },
+//   ) {
+//     super(game, { performer: context.performer || game.players.defender });
+//     this.card = this.performer.remove((card) => card === context.card);
+//     this.slotIndex = context.slotIndex;
+//     this.isInsertMove = true;
+//     this.game.desk.receiveCard({
+//       card: this.card,
+//       index: this.slotIndex,
+//       source: this.performer,
+//     });

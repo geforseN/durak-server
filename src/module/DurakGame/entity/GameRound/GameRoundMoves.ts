@@ -21,16 +21,16 @@ export default class GameRoundMoves {
     return this.#value[this.#currentMoveIndex];
   }
 
-  set currentMove(move: DefenderMove | AttackerMove) {
-    this.currentMove.defaultBehaviour.stop();
-    this.#value[this.#currentMoveIndex] = move;
-    move.emitOwnData();
+  set currentMove(certainMove: DefenderMove | AttackerMove) {
+    this.currentMove.defaultBehavior.stop();
+    this.#value[this.#currentMoveIndex] = certainMove;
+    certainMove.emitOwnData();
     assert.ok(
-      "handleAfterMoveIsDone" in move &&
-        typeof move.handleAfterMoveIsDone === "function",
+      "handleAfterMoveIsDone" in certainMove &&
+        typeof certainMove.handleAfterMoveIsDone === "function",
       "TypeScript",
     );
-    move.handleAfterMoveIsDone();
+    certainMove.handleAfterMoveIsDone();
   }
 
   get #currentMoveIndex(): number {
@@ -42,9 +42,9 @@ export default class GameRoundMoves {
   }
 
   set nextMove(uncertainMove: DefenderMove | AttackerMove) {
-    clearTimeout_____(this.currentMove?.defaultBehavior);
+    this.currentMove?.defaultBehavior.stop();
     this.#value.push(uncertainMove);
-    uncertainMove.emitAllowedPlayerData();
+    uncertainMove.emitContext();
   }
 
   get firstDefenderMove(): DefenderMove | never {

@@ -1,14 +1,15 @@
 import assert from "node:assert";
-import EventEmitter from "events";
 import EmptySlot from "./EmptySlot";
 import FilledSlot from "./FilledSlot";
 import { raise } from "../../..";
 import { LobbyUser } from "../lobbies.namespace";
+import { InternalError } from "../../DurakGame/error";
 
 export default class LobbySlots {
   readonly #value: (EmptySlot | FilledSlot)[];
+  #lobbyId = undefined;
 
-  constructor(slotsCount: number, __emitter__: EventEmitter) {
+  constructor(slotsCount: number) {
     this.#value = Array.from(
       { length: slotsCount },
       (_, index) => new EmptySlot(index),
@@ -48,7 +49,10 @@ export default class LobbySlots {
   }
 
   get admin(): LobbyUser | never {
-    return this.#userSlots.find((slot) => slot.user.isAdmin)?.user || raise();
+    return (
+      this.#userSlots.find((slot) => slot.user.isAdmin)?.user ||
+      raise(new InternalError())
+    );
   }
 
   set admin(newAdmin: LobbyUser) {
@@ -57,19 +61,18 @@ export default class LobbySlots {
   }
 
   get mostLeftSideNonAdminUser() {
-    const { admin } = this;
     return (
-      this.#userSlots.find((slot) => slot.user !== admin)?.user ||
+      this.#userSlots.find((slot) => slot.user !== this.admin)?.user ||
       raise(
-        new Error(
+        new InternalError(
           "Не получилось обновить админа лобби: некому стать новым админом",
         ),
       )
     );
   }
 
-  hasUser(userid: string): boolean {
-    return this.#userSlots.some((slot) => slot.user.id === userid);
+  hasUser(userId: string): boolean {
+    return this.#userSlots.some((slot) => slot.user.id === userId);
   }
 
   swapValues(oldSlot: FilledSlot, newSlot: EmptySlot) {
@@ -105,7 +108,7 @@ export default class LobbySlots {
     return this.#value[slotIndex];
   }
 
-  getEmptySlot(slotIndex: number) {
+  getEmptySlotAt(slotIndex: number) {
     return (
       this.#emptySlots.find((slot) => slot.index === slotIndex) ||
       raise(new Error("Данный слот уже занят"))

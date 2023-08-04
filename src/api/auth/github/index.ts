@@ -2,8 +2,15 @@ import { FastifyInstance, FastifyRequest } from "fastify";
 import oauthPlugin, { OAuth2Token } from "@fastify/oauth2";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import pluginSettings, { authProviderKey, GITHUB_AUTH_CALLBACK_URI } from "./plugin.settings";
-import { findUserWithAuthProvider, findUserByEmail, getUpdatedUserWithNewAuthProvider } from "../index";
+import pluginSettings, {
+  authProviderKey,
+  GITHUB_AUTH_CALLBACK_URI,
+} from "./plugin.settings";
+import {
+  findUserWithAuthProvider,
+  findUserByEmail,
+  getUpdatedUserWithNewAuthProvider,
+} from "../index";
 
 const prisma = new PrismaClient();
 
@@ -32,12 +39,11 @@ const githubUserPrivateEmailsSchema = z.array(
     visibility: z.string().nullable(),
   }),
 );
-type GithubUserPrivateEmails = z.input<typeof githubUserPrivateEmailsSchema>
+type GithubUserPrivateEmails = z.input<typeof githubUserPrivateEmailsSchema>;
 
-
-export default async function(fastify: FastifyInstance) {
+export default async function (fastify: FastifyInstance) {
   fastify.register(oauthPlugin, pluginSettings);
-  fastify.get(GITHUB_AUTH_CALLBACK_URI, async function(request, reply) {
+  fastify.get(GITHUB_AUTH_CALLBACK_URI, async function (request, reply) {
     const tokenData: OAuth2Token = await getTokenData(fastify, request);
     const { access_token } = tokenData.token;
     const githubUser = await getGithubUser(access_token);
@@ -60,7 +66,8 @@ async function getGithubUser(access_token: string): Promise<GithubUser> {
 async function getUser(githubUser: GithubUser, access_token: string) {
   const githubLinkedUser = await findGithubLinkedUser(githubUser.id);
   if (githubLinkedUser) return githubLinkedUser;
-  const { email = await getPrivatePrimalGithubUserEmail(access_token) } = githubUser;
+  const { email = await getPrivatePrimalGithubUserEmail(access_token) } =
+    githubUser;
   if (!email) {
     return createNewGithubLinkedUser(githubUser);
   }
@@ -70,7 +77,10 @@ async function getUser(githubUser: GithubUser, access_token: string) {
   }
   return user.UserAuthInfo?.githubId
     ? user
-    : getUpdatedUserWithGithubAuth({ userId: user.id, githubId: githubUser.id });
+    : getUpdatedUserWithGithubAuth({
+        userId: user.id,
+        githubId: githubUser.id,
+      });
 }
 
 async function getPrivatePrimalGithubUserEmail(access_token: string) {
@@ -78,7 +88,9 @@ async function getPrivatePrimalGithubUserEmail(access_token: string) {
   return emails.find((email) => email.primary)?.email;
 }
 
-async function getGithubUserEmails(access_token: string): Promise<GithubUserPrivateEmails> {
+async function getGithubUserEmails(
+  access_token: string,
+): Promise<GithubUserPrivateEmails> {
   const emailsData = await fetch("https://api.github.com/user/emails", {
     headers: {
       Authorization: `Bearer ${access_token}`,
@@ -88,7 +100,12 @@ async function getGithubUserEmails(access_token: string): Promise<GithubUserPriv
   return githubUserPrivateEmailsSchema.parse(await emailsData.json());
 }
 
-function createNewGithubLinkedUser({ email = null, id, login, avatar_url }: GithubUser) {
+function createNewGithubLinkedUser({
+  email = null,
+  id,
+  login,
+  avatar_url,
+}: GithubUser) {
   return prisma.user.create({
     data: {
       email,
@@ -111,7 +128,6 @@ function createNewGithubLinkedUser({ email = null, id, login, avatar_url }: Gith
   });
 }
 
-
 function findGithubLinkedUser(githubUserId: number) {
   return findUserWithAuthProvider({
     authProviderIdValue: githubUserId,
@@ -119,7 +135,13 @@ function findGithubLinkedUser(githubUserId: number) {
   });
 }
 
-function getUpdatedUserWithGithubAuth({ userId, githubId }: { userId: string, githubId: number }) {
+function getUpdatedUserWithGithubAuth({
+  userId,
+  githubId,
+}: {
+  userId: string;
+  githubId: number;
+}) {
   return getUpdatedUserWithNewAuthProvider({
     userId,
     authProviderKey,
@@ -128,12 +150,21 @@ function getUpdatedUserWithGithubAuth({ userId, githubId }: { userId: string, gi
 }
 
 async function getTokenData(fastify: FastifyInstance, request: FastifyRequest) {
-  const tokenData: OAuth2Token = await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
+  const tokenData: OAuth2Token =
+    await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
   githubTokenSchema.parse(tokenData.token);
   return tokenData;
 }
 
-function setSession(request: FastifyRequest, user: any, { token: { access_token } }: OAuth2Token) {
-  request.session.set("auth", { userId: user.id, provider: "github", access_token });
+function setSession(
+  request: FastifyRequest,
+  user: any,
+  { token: { access_token } }: OAuth2Token,
+) {
+  request.session.set("auth", {
+    userId: user.id,
+    provider: "github",
+    access_token,
+  });
   request.session.set("userProfile", user.UserProfile);
 }

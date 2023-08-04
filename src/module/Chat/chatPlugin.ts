@@ -1,28 +1,33 @@
 import { type FastifyInstance } from "fastify";
 import assert from "node:assert";
 import type WebSocket from "ws";
-import getUser from "../../../prisma/user/getUserForChat";
 import NotificationAlert from "../notification-alert";
 import createMessage from "./createMessage";
-import { Chat, ChatMessage } from "./entity";
+import { Chat, ChatMessage, ChatReplyMessage } from "./entity";
 import initializeChat from "./initializeChatNamespace";
+import { WebsocketEvent } from "../../ws";
 
-export default async function chatPlugin(fastify: FastifyInstance, options: { path: string }) {
+export type ChatContext = ReturnType<ReturnType<typeof initializeChat>>
+
+export default async function chatPlugin(
+  fastify: FastifyInstance,
+  options: { path: string },
+) {
   const getChatContext = initializeChat();
-  return fastify.get(options.path, { websocket: true }, async function(connection, request) {
-    const context = getChatContext(connection, request);
-    context.socket.emit("socketOnce", "chat::restore", context.chat.cache);
-    context.socket.on("message::send", onMessageSendListener.bind(context));
-  });
+  return fastify.get(
+    options.path,
+    { websocket: true },
+    async function (connection, request) {
+      const context = getChatContext(connection, request);
+      context.socket.emit("socket", new ChatRestoreEvent(context.chat));
+      context.socket.on("message::send", onMessageSendListener.bind(context));
+    },
+  );
 }
 
 async function onMessageSendListener(
-  this: {
-    socket: WebSocket,
-    userId: string,
-    chat: Chat,
-  },
-  { text, replyMessageId }: { text: string, replyMessageId?: string },
+  this: ChatContext,
+  { text, replyMessageId }: { text: string; replyMessageId?: string },
 ) {
   try {
     await sendMessageInChatHandler.call(this, { text, replyMessageId });
@@ -32,23 +37,48 @@ async function onMessageSendListener(
 }
 
 async function sendMessageInChatHandler(
-  this: {
-    socket: WebSocket
-    userId: string,
-    chat: Chat,
-  },
-  { text, replyMessageId }: { text: string, replyMessageId?: string },
+  this: ChatContext,
+  { text, replyMessageId }: { text: string; replyMessageId?: string },
 ) {
   ChatMessage.ensureCorrectTextLength(text);
   assert.ok(this.userId, "Вы не можете отправить сообщение");
-  const sender = await getUser(this.userId);
-  this.chat.addMessage(createMessage({ sender, text, replyMessageId }), this.socket);
+  this.chat.addMessage(
+    createMessage({ sender: this.sender, text, replyMessageId }),
+    this.socket,
+  );
 }
 
 function handleError(error: unknown, socket: WebSocket) {
   if (error instanceof Error) {
-    socket.emit("socket", "notification::push", new NotificationAlert(error));
+    socket.emit("socket", new NotificationAlertEvent(error));
   } else {
     console.log("GlobalChat Error:", error);
+  }
+}
+
+class NotificationAlertEvent extends WebsocketEvent {
+  notificationAlert;
+
+  constructor(error: Error) {
+    super("notification::push");
+    this.notificationAlert = new NotificationAlert(error);
+  }
+}
+
+export class ChatMessageEvent extends WebsocketEvent {
+  message;
+
+  constructor(message: ChatMessage | ChatReplyMessage) {
+    super("message::send");
+    this.message = message;
+  }
+}
+
+class ChatRestoreEvent extends WebsocketEvent {
+  cache;
+
+  constructor(chat: Chat) {
+    super("chat::restore");
+    this.cache = chat.cache;
   }
 }

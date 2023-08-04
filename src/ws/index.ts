@@ -1,9 +1,8 @@
 import WebSocket from "ws";
 import assert from "node:assert";
 
-
 function wsHelpersModule() {
-  function __sendToSocket__<EventName extends string>(
+  function __sendToSocket<EventName extends string>(
     this: { socket: WebSocket },
     eventName: EventName,
     ...payload: any[]
@@ -20,22 +19,27 @@ function wsHelpersModule() {
     this.sockets.forEach((socket) => socket.send(message));
   }
 
-  function emitSocketOnce<EventName extends string>(socket: WebSocket) {
-    socket.once("socketOnce", __sendToSocket__.bind({ socket }));
+  function emitSocketOnce(socket: WebSocket) {
+    socket.once("socketOnce", __sendToSocket.bind({ socket }));
   }
 
-  function emitSocketOn<EventName extends string>(socket: WebSocket) {
-    socket.on("socket", __sendToSocket__.bind({ socket }));
+  function emitSocketOn(socket: WebSocket) {
+    socket.on("socket", __sendToSocket.bind({ socket }));
   }
 
-  function emitEverySocketOn<EventName extends string>(socket: WebSocket, sockets: WebSocket[]) {
+  function emitEverySocketOn(
+    socket: WebSocket,
+    sockets: WebSocket[],
+  ) {
     socket.on("everySocket", __sendToEverySocket.bind({ sockets }));
   }
 
   function dispatchMessageToCertainListener(socket: WebSocket) {
-    socket.onmessage = function(event) {
+    socket.onmessage = function (event) {
       assert.ok(typeof event.data === "string");
-      const { eventName, payload } = JSON.parse(event.data);
+      const parsedData = JSON.parse(event.data);
+      assert.ok(typeof parsedData === "object" && parsedData !== null);
+      const { eventName, payload } = parsedData;
       assert.ok(typeof eventName === "string");
       assert.ok(typeof payload === "object" && payload !== null);
       this.emit(eventName, payload);
@@ -44,7 +48,8 @@ function wsHelpersModule() {
 
   function addUserSocketInRoom<UserSockets extends Map<string, Set<WebSocket>>>(
     this: { userSockets: UserSockets },
-    socket: WebSocket, userId?: string,
+    socket: WebSocket,
+    userId?: string,
   ) {
     if (!userId) return;
     if (!this.userSockets.has(userId)) {
@@ -70,3 +75,14 @@ export const {
   dispatchMessageToCertainListener,
   addUserSocketInRoom,
 } = wsHelpersModule();
+
+export class WebsocketEvent {
+  constructor(public eventName: string) {}
+
+  get asString() {
+    return JSON.stringify({
+      eventName: this.eventName,
+      payload: { ...this, eventName: undefined },
+    });
+  }
+}

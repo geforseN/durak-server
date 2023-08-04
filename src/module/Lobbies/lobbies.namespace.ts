@@ -15,14 +15,14 @@ import Lobbies from "./entity/Lobbies";
 import prisma from "../../../prisma";
 import EventEmitter from "events";
 
-export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
+export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
   const handleConnection = initializeGameLobbies();
   fastify.get(
     "/game-lobbies",
     { websocket: true },
     async function (connection: SocketStream, request: FastifyRequest) {
+      // TODO add userProfile in return object of handleConnection
       const { userId, socket, lobbies } = handleConnection(connection, request);
-      // NOTE: emit this ONCE
       socket.emit("lobbies::restore", lobbies.state);
       if (!userId) {
         return console.log("FAST RETURN: NO USER_ID");
@@ -36,6 +36,7 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
         )
         .on(
           "lobby::user::join",
+          // TODO in lobbies.addUserInLobby instead of userId use userProfile as first param
           async ({
             lobbyId,
             slotIndex = -1,
@@ -48,7 +49,7 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
           lobbies.removeUserFromLobby(userId, lobbyId),
         )
         .on("lobby::upgrade", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-          lobbies.upgradeLobbyToUnstartedGame(userId, lobbyId),
+          lobbies.upgradeLobbyToNonStartedGame(userId, lobbyId),
         )
         .on(
           "lobby::user::move",
@@ -73,8 +74,8 @@ function initializeGameLobbies() {
   const lobbies = new Lobbies(
     new EventEmitter().on(
       "everySocket",
-      (eventName: string, payload: Record<string, any>) => {
-        const message = JSON.stringify({ eventName, payload });
+      (eventName: string, payload: Record<string, unknown>) => {
+        const message = JSON.stringify({ eventName, ...payload });
         sockets.forEach((socket) => socket.emit(message));
       },
     ),
@@ -91,7 +92,6 @@ function initializeGameLobbies() {
     );
     dispatchMessageToCertainListener(connection.socket);
     emitSocketOn(connection.socket);
-    emitSocketOnce(connection.socket);
     emitEverySocketOn(connection.socket, sockets);
     return {
       userId: request.session.userProfile.userId,

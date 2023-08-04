@@ -1,10 +1,10 @@
 import { Player } from "../Player";
 import { AttackerMove, DefenderMove } from "../GameMove";
-import type DurakGame from "../../DurakGame.implimetntation";
+import type DurakGame from "../../DurakGame";
 import GameRoundMoves from "./GameRoundMoves";
 import { AfterHandler } from "../GameMove/GameMove.abstract";
-import FailedDefense from "../../FailedDefense";
-import SuccessfulDefense from "../../SuccessfulDefense";
+import FailedDefense from "../Defense/FailedDefense";
+import SuccessfulDefense from "../Defense/SuccessfulDefense";
 import { raise } from "../../../..";
 
 export default class GameRound {
@@ -25,11 +25,15 @@ export default class GameRound {
   }
 
   giveAttackTo(player: Player) {
-    this.game.round.moves.nextMove = new AttackerMove(this.game, player);
+    this.game.round.moves.nextMove = new AttackerMove(this.game, {
+      performer: player,
+    });
   }
 
   giveDefendTo(player: Player) {
-    this.game.round.moves.nextMove = new DefenderMove(this.game, player);
+    this.game.round.moves.nextMove = new DefenderMove(this.game, {
+      performer: player,
+    });
   }
 
   get currentMove(): DefenderMove | AttackerMove {

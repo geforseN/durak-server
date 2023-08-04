@@ -1,6 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["clientExtensions"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -46,24 +45,24 @@ model User {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserAuthInfo {
   userId   String  @id @unique
+  User     User    @relation(fields: [userId], references: [id])
   hash     String?
   yandexId String? @unique
   githubId Int?    @unique
   vkId     Int?    @unique
   twitchId String? @unique
-  User     User    @relation(fields: [userId], references: [id])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserGamePlayer {
+  durakGameNumber Int
+  DurakGame       DurakGame @relation(fields: [durakGameNumber], references: [number])
+  userId          String
+  User            User      @relation(fields: [userId], references: [id])
   index           Int
   winPlace        Int?
   winRoundNumber  Int?
   hasLost         Boolean   @default(false)
-  durakGameNumber Int
-  userId          String
-  DurakGame       DurakGame @relation(fields: [durakGameNumber], references: [number])
-  User            User      @relation(fields: [userId], references: [id])
 
   @@unique([durakGameNumber, index])
 }
@@ -71,22 +70,22 @@ model UserGamePlayer {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserGameStat {
   userId             String   @id @unique
+  User               User     @relation(fields: [userId], references: [id])
   wonGamesCount      Int      @default(0)
   lostGamesCount     Int      @default(0)
   unstableGamesCount Int      @default(0)
   createdAt          DateTime @default(now())
-  User               User     @relation(fields: [userId], references: [id])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserProfile {
   userId        String        @id @unique
+  User          User          @relation(fields: [userId], references: [id])
   personalLink  String        @unique @default(cuid())
   updatedAt     DateTime      @updatedAt
   photoUrl      String?
   nickname      String        @default("Durak Player")
   connectStatus ConnectStatus @default(OFFLINE)
-  User          User          @relation(fields: [userId], references: [id])
 }
 
 enum ConnectStatus {

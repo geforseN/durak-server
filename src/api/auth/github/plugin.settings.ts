@@ -12,18 +12,19 @@ declare module "fastify" {
 
   interface Session {
     auth: {
-      provider: "github"
-      userId: string
-      access_token: string
+      provider: "github";
+      userId: string;
+      access_token: string;
     };
     userProfile: {
-      userId: string,
-      personalLink: string,
-      updatedAt: Date,
-      photoUrl: string | null,
-      nickname: string,
-      connectStatus: ConnectStatus
-    }
+      userId: string;
+      personalLink: string;
+      updatedAt: Date;
+      photoUrl: string | null;
+      nickname: string;
+      connectStatus: ConnectStatus;
+    };
+    isAnonymous: boolean;
   }
 }
 

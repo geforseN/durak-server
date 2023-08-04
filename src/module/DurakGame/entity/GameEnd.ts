@@ -1,5 +1,5 @@
-import { durakGames } from "../..";
-import type DurakGame from "./DurakGame.implimetntation";
+import { durakGames } from "../../..";
+import type DurakGame from "../DurakGame";
 
 export class GameEnd {
   constructor(private game: DurakGame) {}

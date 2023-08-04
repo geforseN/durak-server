@@ -1,10 +1,10 @@
 import DefenderMove from "./DefenderMove";
 import { type AfterHandler } from "../GameMove.abstract";
-import FailedDefense from "../../../FailedDefense";
+import FailedDefense from "../../Defense/FailedDefense";
 
 export class DefenderGaveUpMove extends DefenderMove implements AfterHandler {
   // TODO in ctor: this.game.players.defender.isGaveUp = true
-  
+
   handleAfterMoveIsDone() {
     if (!this.game.desk.allowsMoves) {
       return this.game.round.endWith(FailedDefense);
@@ -13,6 +13,7 @@ export class DefenderGaveUpMove extends DefenderMove implements AfterHandler {
   }
 
   override emitOwnData() {
+    super.emitOwnData();
     this.game.info.namespace.emit("defender__gaveUp", {
       defenderId: this.player.id,
     });

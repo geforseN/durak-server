@@ -1,7 +1,7 @@
 import { AttackerMove } from "./AttackerMove";
 import { type AfterHandler } from "../GameMove.abstract";
 import type Card from "../../Card";
-import type DurakGame from "../../../DurakGame.implimetntation";
+import type DurakGame from "../../../DurakGame";
 import { CardInsert } from "../../GameRound/CardInsert.interface";
 
 export class InsertAttackCardMove
@@ -21,7 +21,7 @@ export class InsertAttackCardMove
       slotIndex: number;
     },
   ) {
-    super(game, game.players.attacker);
+    super(game, { performer: game.players.attacker });
     this.card = this.performer.remove((card) => card === cardToRemove);
     this.slotIndex = slotIndex;
     this.isInsertMove = true;

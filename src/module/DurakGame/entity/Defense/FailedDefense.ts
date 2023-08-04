@@ -1,12 +1,12 @@
-import { GameRound } from "./entity";
-import { RoundEnd } from "./RoundEnd";
-import { GameEnd } from "./GameEnd";
+import { GameRound } from "..";
+import { RoundEnd } from "../RoundEnd";
+import { GameEnd } from "../GameEnd";
 
-class SuccessfulDefense extends RoundEnd {
+class FailedDefense extends RoundEnd {
   get newGameRound() {
-    this.game.desk.provideCards(this.game.discard);
+    this.game.desk.provideCards(this.game.players.defender);
     this.game.info.namespace.emit(
-      "defender__wonRound",
+      "defender__lostRound",
       this.game.players.defender.id,
       this.game.round.number,
     );
@@ -15,10 +15,10 @@ class SuccessfulDefense extends RoundEnd {
     } catch {
       return void new GameEnd(this.game).handle();
     }
-    this.game.players.attacker = this.game.players.defender;
+    this.game.players.attacker = this.game.players.defender.left;
     this.game.players.defender = this.game.players.attacker.left;
     return new GameRound(this.game);
   }
 }
 
-export { SuccessfulDefense as default };
+export { FailedDefense as default };
