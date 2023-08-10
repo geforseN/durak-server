@@ -1,6 +1,6 @@
 import DefenderMove from "./DefenderMove";
 import { type AfterHandler } from "../GameMove.abstract";
-import FailedDefense from "../../Defense/FailedDefense";
+import FailedDefense from "../../DefenseEnding/FailedDefense";
 
 export class DefenderGaveUpMove extends DefenderMove implements AfterHandler {
   // TODO in ctor: this.game.players.defender.isGaveUp = true

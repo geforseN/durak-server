@@ -1,46 +1,33 @@
-import { randomUUID } from "crypto";
 import { FastifyRequest } from "fastify";
 import { SocketStream } from "@fastify/websocket";
-import WebSocket from "ws";
 import { Chat } from "./entity";
-import {
-  dispatchMessageToCertainListener as addMessageDispatchToCertainListener,
-  addUserSocketInRoom,
-  WebsocketEvent,
-} from "../../ws";
+import { SocketsStore, defaultListeners } from "../../ws";
 
 export default function initializeChat() {
-  type UserId = string | ReturnType<typeof randomUUID>;
-  const userSockets = new Map<UserId, Set<WebSocket>>();
-  const sockets = <WebSocket[]>[];
-  const globalChat = new Chat();
+  const chat = new Chat();
+  const socketsStore = new SocketsStore();
 
   return function getChatContext(
     connection: SocketStream,
     request: FastifyRequest,
   ) {
-    sockets.push(connection.socket);
-    addUserSocketInRoom.call(
-      { userSockets },
-      connection.socket,
-      request.session.userProfile.userId,
-    );
-    connection.socket.on("everySocket", (event: WebsocketEvent) => {
-      const message = event.asString;
-      sockets.forEach((socket) => socket.send(message));
-    });
-    connection.socket.on("socket", (event: WebsocketEvent) => {
-      connection.socket.send(event.asString);
-    });
-    addMessageDispatchToCertainListener(connection.socket);
+    socketsStore.add(connection.socket);
+    socketsStore
+      .room(request.session.userProfile.userId)
+      .add(connection.socket);
+    connection.socket
+      .addListener("everySocket", socketsStore.emitSockets)
+      .addListener("socket", defaultListeners.socket)
+      .addListener("message", defaultListeners.message);
     return {
       sender: {
         ...request.session.userProfile,
+        userProfile: request.session.userProfile,
         id: request.session.userProfile.userId,
       },
       userId: request.session.userProfile.userId,
       socket: connection.socket,
-      chat: globalChat,
+      chat,
     };
   };
 }

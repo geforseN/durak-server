@@ -60,6 +60,7 @@ model UserGamePlayer {
   userId          String
   User            User      @relation(fields: [userId], references: [id])
   index           Int
+  result          GameEndResult
   winPlace        Int?
   winRoundNumber  Int?
   hasLost         Boolean   @default(false)
@@ -103,4 +104,9 @@ enum GameStatus {
 enum GameType {
   BASIC
   PEREVODNOY
+}
+
+enum GameEndResult {
+  WON
+  LOST
 }

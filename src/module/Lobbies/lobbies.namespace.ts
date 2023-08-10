@@ -1,19 +1,13 @@
-import type WebSocket from "ws";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { SocketStream } from "@fastify/websocket";
-import type { randomUUID } from "crypto";
 import type { GameSettings } from "./entity/CorrectGameSettings";
 import type Lobby from "./entity/Lobby";
-import {
-  addUserSocketInRoom,
-  dispatchMessageToCertainListener,
-  emitEverySocketOn,
-  emitSocketOn,
-  emitSocketOnce,
-} from "../../ws";
+import { SocketsStore, defaultListeners } from "../../ws";
 import Lobbies from "./entity/Lobbies";
 import prisma from "../../../prisma";
 import EventEmitter from "events";
+
+type GameLobbiesContext = ReturnType<ReturnType<typeof initializeGameLobbies>>;
 
 export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
   const handleConnection = initializeGameLobbies();
@@ -22,17 +16,17 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
     { websocket: true },
     async function (connection: SocketStream, request: FastifyRequest) {
       // TODO add userProfile in return object of handleConnection
-      const { userId, socket, lobbies } = handleConnection(connection, request);
-      socket.emit("lobbies::restore", lobbies.state);
-      if (!userId) {
+      const context = handleConnection(connection, request);
+      context.socket.emit("lobbies::restore", context.lobbies.state);
+      if (!context.user.id) {
         return console.log("FAST RETURN: NO USER_ID");
       }
-      socket
+      context.socket
         .on("lobby::add", ({ settings }: { settings: GameSettings }) =>
-          lobbies.pushNewLobby(settings),
+          context.lobbies.pushNewLobby(settings, context.user),
         )
         .on("lobby::remove", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-          lobbies.removeLobby(userId, lobbyId),
+          context.lobbies.removeLobby(lobbyId, context.user),
         )
         .on(
           "lobby::user::join",
@@ -43,13 +37,18 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
           }: {
             lobbyId: Lobby["id"];
             slotIndex: number;
-          }) => await lobbies.addUserInLobby(userId, lobbyId, slotIndex),
+          }) =>
+            await context.lobbies.addUserInLobby(
+              lobbyId,
+              context.user,
+              slotIndex,
+            ),
         )
         .on("lobby::user::leave", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-          lobbies.removeUserFromLobby(userId, lobbyId),
+          context.lobbies.removeUserFromLobby(lobbyId, context.user),
         )
         .on("lobby::upgrade", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-          lobbies.upgradeLobbyToNonStartedGame(userId, lobbyId),
+          context.lobbies.upgradeLobbyToNonStartedGame(lobbyId, context.user),
         )
         .on(
           "lobby::user::move",
@@ -68,32 +67,29 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
 }
 
 function initializeGameLobbies() {
-  type UserId = string | ReturnType<typeof randomUUID>;
-  const userSockets = new Map<UserId, Set<WebSocket>>();
-  const sockets = <WebSocket[]>[];
+  const socketsStore = new SocketsStore();
   const lobbies = new Lobbies(
-    new EventEmitter().on(
-      "everySocket",
-      (eventName: string, payload: Record<string, unknown>) => {
-        const message = JSON.stringify({ eventName, ...payload });
-        sockets.forEach((socket) => socket.emit(message));
-      },
-    ),
+    new EventEmitter().addListener("everySocket", socketsStore.emitSockets),
   );
   return function handleConnection(
     connection: SocketStream,
     request: FastifyRequest,
   ) {
-    sockets.push(connection.socket);
-    addUserSocketInRoom.call(
-      { userSockets },
-      connection.socket,
-      request.session.userProfile.userId,
-    );
-    dispatchMessageToCertainListener(connection.socket);
-    emitSocketOn(connection.socket);
-    emitEverySocketOn(connection.socket, sockets);
+    socketsStore.add(connection.socket);
+    socketsStore
+      .room(request.session.userProfile.userId)
+      .add(connection.socket);
+    connection.socket
+      .addListener("message", defaultListeners.message)
+      .addListener("socket", defaultListeners.socket)
+      .addListener("everySocket", socketsStore.emitSockets);
     return {
+      user: {
+        ...request.session.userProfile,
+        id: request.session.userProfile.userId,
+        userProfile: request.session.userProfile,
+        isAdmin: false,
+      },
       userId: request.session.userProfile.userId,
       socket: connection.socket,
       lobbies,
@@ -117,4 +113,5 @@ export async function getFirstTimeUser(userId: string) {
   };
 }
 
+// TODO remove me
 export type LobbyUser = Awaited<ReturnType<typeof getFirstTimeUser>>;

@@ -1,25 +1,27 @@
-import Lobby from "./Lobby";
-import EventEmitter from "events";
-import { getFirstTimeUser } from "../lobbies.namespace";
-import { GameSettings } from "./CorrectGameSettings";
-import { FindLobbyError } from "../error";
+import type { User } from "@prisma/client";
+import type EventEmitter from "events";
 import { raise } from "../../..";
+import { CustomWebsocketEvent } from "../../../ws";
+import { FindLobbyError } from "../error";
+import type { GameSettings } from "./CorrectGameSettings";
+import Lobby from "./Lobby";
+import LobbyUser from "./LobbyUser";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;
   readonly #map: Map<string, Lobby>;
 
-  constructor(emitter: EventEmitter, map = new Map<string, Lobby>()) {
+  constructor(emitter: EventEmitter, map = new Map<Lobby["id"], Lobby>()) {
     this.#emitter = emitter;
     this.#map = map;
     this.#emitter
       .on("lobby##remove", ({ lobbyId }) => {
         this.#map.delete(lobbyId);
-        this.#emitter.emit("everySocket", "lobby::remove", { lobbyId });
+        this.#emitter.emit("everySocket", new LobbyRemoveEvent(lobbyId));
       })
       .on("lobby##add", ({ lobby }) => {
         this.#map.set(lobby.id, lobby);
-        this.#emitter.emit("everySocket", "lobby::add", { lobby });
+        this.#emitter.emit("everySocket", new LobbyAddEvent(lobby));
       });
   }
 
@@ -29,39 +31,44 @@ export default class Lobbies {
 
   // NOTE: IF user didn't send slotIndex (didn't specified slotIndex) THEN slotIndex === -1
   // NOTE: will throw WHEN user wanna join same lobby AND user didn't specified slotIndex
-  async addUserInLobby(userId: string, lobbyId: string, slotIndex: number) {
+  async addUserInLobby(user: User, lobbyId: Lobby["id"], slotIndex: number) {
     const [pastLobby, desiredLobby] = [
-      this.#findLobbyWithUser(userId),
+      this.#findLobbyWithUser(user.id),
       this.#map.get(lobbyId) || raise(new FindLobbyError()),
     ];
     if (!pastLobby) {
-      return desiredLobby.insertUser(await getFirstTimeUser(userId), slotIndex);
+      // TODO rework class LobbyUser
+      // new LobbyUser(session);
+      user = new LobbyUser();
+      return desiredLobby.insertUser(user, slotIndex);
     }
     if (pastLobby === desiredLobby) {
-      return desiredLobby.moveUser(userId, slotIndex);
+      return desiredLobby.moveUser(user.id, slotIndex);
     }
-    return desiredLobby.pickUserFrom(pastLobby, userId, slotIndex);
+    return desiredLobby.pickUserFrom(pastLobby, user.id, slotIndex);
   }
 
-  pushNewLobby(settings: GameSettings) {
-    return new Lobby(settings, this.#emitter);
+  pushNewLobby(settings: GameSettings, initiator: User) {
+    const lobby = new Lobby(settings, this.#emitter);
+    lobby.insertUser(initiator, 0);
+    return lobby;
   }
 
   // TODO in Vue: FOR not started game users UPDATE their state: SET gameId to lobbyId
-  upgradeLobbyToNonStartedGame(userId: string, lobbyId?: Lobby["id"]) {
-    return this.#getLobbyOrThrow(userId, lobbyId).upgradeToNonStartedGame(userId);
+  upgradeLobbyToNonStartedGame(userId: User["id"], lobbyId?: Lobby["id"]) {
+    return this.#getLobby(userId, lobbyId).upgradeToNonStartedGame(userId);
   }
 
   // TODO in Vue: FOR deleted users UPDATE their state: SET lobbyId to null
-  removeLobby(userId: string, lobbyId?: Lobby["id"]) {
-    return this.#getLobbyOrThrow(userId, lobbyId).deleteSelf(userId);
+  removeLobby(lobbyId: Lobby["id"] | undefined, initiator: User) {
+    return this.#_getLobbyOrThrow(lobbyId, initiator).deleteSelf(initiator.id);
   }
 
-  removeUserFromLobby(userId: string, lobbyId?: Lobby["id"]) {
-    return this.#getLobbyOrThrow(userId, lobbyId).removeUser(userId);
+  removeUserFromLobby(userId: User["id"], lobbyId?: Lobby["id"]) {
+    return this.#getLobby(userId, lobbyId).removeUser(userId);
   }
 
-  #getLobbyOrThrow(userId: string, lobbyId?: Lobby["id"]) {
+  #getLobby(userId: User["id"], lobbyId?: Lobby["id"]) {
     return (
       (lobbyId && this.#map.get(lobbyId)) ||
       this.#findLobbyWithUser(userId) ||
@@ -69,9 +76,35 @@ export default class Lobbies {
     );
   }
 
-  #findLobbyWithUser(userId: string): Lobby | undefined {
+  #_getLobbyOrThrow(lobbyId: Lobby["id"] | undefined, user: User) {
+    return (
+      (lobbyId && this.#map.get(lobbyId)) ||
+      this.#findLobbyWithUser(user.id) ||
+      raise(new FindLobbyError())
+    );
+  }
+
+  #findLobbyWithUser(userId: User["id"]): Lobby | undefined {
     for (const lobby of this.#map.values()) {
       if (lobby.hasUser(userId)) return lobby;
     }
+  }
+}
+
+class LobbyAddEvent extends CustomWebsocketEvent {
+  lobby;
+
+  constructor(lobby: Lobby) {
+    super("lobby::add");
+    this.lobby = {
+      ...lobby,
+      lobbiesEmitter: undefined,
+    };
+  }
+}
+
+class LobbyRemoveEvent extends CustomWebsocketEvent {
+  constructor(public lobbyId: Lobby["id"]) {
+    super("lobby::remove");
   }
 }
