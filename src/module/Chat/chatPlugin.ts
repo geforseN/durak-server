@@ -5,7 +5,7 @@ import NotificationAlert from "../notification-alert";
 import createMessage from "./createMessage";
 import { Chat, ChatMessage, ChatReplyMessage } from "./entity";
 import initializeChat from "./initializeChatNamespace";
-import { WebsocketEvent } from "../../ws";
+import { CustomWebsocketEvent } from "../../ws";
 
 export type ChatContext = ReturnType<ReturnType<typeof initializeChat>>
 
@@ -41,7 +41,6 @@ async function sendMessageInChatHandler(
   { text, replyMessageId }: { text: string; replyMessageId?: string },
 ) {
   ChatMessage.ensureCorrectTextLength(text);
-  assert.ok(this.userId, "Вы не можете отправить сообщение");
   this.chat.addMessage(
     createMessage({ sender: this.sender, text, replyMessageId }),
     this.socket,
@@ -56,7 +55,7 @@ function handleError(error: unknown, socket: WebSocket) {
   }
 }
 
-class NotificationAlertEvent extends WebsocketEvent {
+class NotificationAlertEvent extends CustomWebsocketEvent {
   notificationAlert;
 
   constructor(error: Error) {
@@ -65,7 +64,7 @@ class NotificationAlertEvent extends WebsocketEvent {
   }
 }
 
-export class ChatMessageEvent extends WebsocketEvent {
+export class ChatMessageEvent extends CustomWebsocketEvent {
   message;
 
   constructor(message: ChatMessage | ChatReplyMessage) {
@@ -74,7 +73,7 @@ export class ChatMessageEvent extends WebsocketEvent {
   }
 }
 
-class ChatRestoreEvent extends WebsocketEvent {
+class ChatRestoreEvent extends CustomWebsocketEvent {
   cache;
 
   constructor(chat: Chat) {

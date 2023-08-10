@@ -1,5 +1,5 @@
-import FailedDefense from "../../Defense/FailedDefense";
-import SuccessfulDefense from "../../Defense/SuccessfulDefense";
+import FailedDefense from "../../DefenseEnding/FailedDefense";
+import SuccessfulDefense from "../../DefenseEnding/SuccessfulDefense";
 import { type AfterHandler } from "../GameMove.abstract";
 import AttackerMove from "./AttackerMove";
 

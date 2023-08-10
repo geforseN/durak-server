@@ -3,8 +3,8 @@ import { AttackerMove, DefenderMove } from "../GameMove";
 import type DurakGame from "../../DurakGame";
 import GameRoundMoves from "./GameRoundMoves";
 import { AfterHandler } from "../GameMove/GameMove.abstract";
-import FailedDefense from "../Defense/FailedDefense";
-import SuccessfulDefense from "../Defense/SuccessfulDefense";
+import FailedDefense from "../DefenseEnding/FailedDefense";
+import SuccessfulDefense from "../DefenseEnding/SuccessfulDefense";
 import { raise } from "../../../..";
 
 export default class GameRound {

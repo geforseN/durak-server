@@ -1,7 +1,7 @@
 import DefenderMove from "./DefenderMove";
 import { type AfterHandler } from "../GameMove.abstract";
 import type Card from "../../Card";
-import SuccessfulDefense from "../../Defense/SuccessfulDefense";
+import SuccessfulDefense from "../../DefenseEnding/SuccessfulDefense";
 import { type CardInsert } from "../../GameRound/CardInsert.interface";
 import type DurakGame from "../../../DurakGame";
 

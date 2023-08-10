@@ -1,82 +1,37 @@
 import WebSocket from "ws";
 import assert from "node:assert";
+import { User } from "@prisma/client";
 
-function wsHelpersModule() {
-  function __sendToSocket<EventName extends string>(
-    this: { socket: WebSocket },
-    eventName: EventName,
-    ...payload: any[]
-  ) {
-    this.socket.send(JSON.stringify({ eventName, payload }));
+export const defaultListeners = {
+  everySocket(this: WebSocket[], event: CustomWebsocketEvent) {
+    const message = event.asString;
+    this.forEach((socket) => socket.send(message));
+  },
+  socket(this: WebSocket, event: CustomWebsocketEvent) {
+    this.send(event.asString);
+  },
+  message(this: WebSocket, data: WebSocket.RawData, _isBinary: boolean) {
+    const parsedData = JSON.parse(data.toString());
+    assert.ok(typeof parsedData === "object" && parsedData !== null);
+    const { eventName, payload } = parsedData;
+    assert.ok(typeof eventName === "string");
+    assert.ok(typeof payload === "object" && payload !== null);
+    this.emit(eventName, payload);
+  },
+};
+
+export function addUserSocketInRoom<
+  UserSockets extends Map<string, Set<WebSocket>>,
+>(this: { userSockets: UserSockets }, socket: WebSocket, userId?: string) {
+  if (!userId) return;
+  if (!this.userSockets.has(userId)) {
+    this.userSockets.set(userId, new Set([socket]));
+  } else {
+    this.userSockets.get(userId)?.add(socket);
   }
-
-  function __sendToEverySocket<EventName extends string>(
-    this: { sockets: WebSocket[] },
-    eventName: EventName,
-    ...payload: any[]
-  ) {
-    const message = JSON.stringify({ eventName, payload });
-    this.sockets.forEach((socket) => socket.send(message));
-  }
-
-  function emitSocketOnce(socket: WebSocket) {
-    socket.once("socketOnce", __sendToSocket.bind({ socket }));
-  }
-
-  function emitSocketOn(socket: WebSocket) {
-    socket.on("socket", __sendToSocket.bind({ socket }));
-  }
-
-  function emitEverySocketOn(
-    socket: WebSocket,
-    sockets: WebSocket[],
-  ) {
-    socket.on("everySocket", __sendToEverySocket.bind({ sockets }));
-  }
-
-  function dispatchMessageToCertainListener(socket: WebSocket) {
-    socket.onmessage = function (event) {
-      assert.ok(typeof event.data === "string");
-      const parsedData = JSON.parse(event.data);
-      assert.ok(typeof parsedData === "object" && parsedData !== null);
-      const { eventName, payload } = parsedData;
-      assert.ok(typeof eventName === "string");
-      assert.ok(typeof payload === "object" && payload !== null);
-      this.emit(eventName, payload);
-    };
-  }
-
-  function addUserSocketInRoom<UserSockets extends Map<string, Set<WebSocket>>>(
-    this: { userSockets: UserSockets },
-    socket: WebSocket,
-    userId?: string,
-  ) {
-    if (!userId) return;
-    if (!this.userSockets.has(userId)) {
-      this.userSockets.set(userId, new Set([socket]));
-    } else {
-      this.userSockets.get(userId)?.add(socket);
-    }
-  }
-
-  return {
-    emitSocketOnce,
-    emitSocketOn,
-    emitEverySocketOn,
-    dispatchMessageToCertainListener,
-    addUserSocketInRoom,
-  };
 }
 
-export const {
-  emitSocketOn,
-  emitSocketOnce,
-  emitEverySocketOn,
-  dispatchMessageToCertainListener,
-  addUserSocketInRoom,
-} = wsHelpersModule();
-
-export class WebsocketEvent {
+export class CustomWebsocketEvent {
   constructor(public eventName: string) {}
 
   get asString() {
@@ -84,5 +39,43 @@ export class WebsocketEvent {
       eventName: this.eventName,
       payload: { ...this, eventName: undefined },
     });
+  }
+}
+
+export class SocketsStore {
+  #value: Set<WebSocket>;
+  #userSockets: Map<User["id"], Set<WebSocket>>;
+
+  constructor() {
+    this.#value = new Set<WebSocket>();
+    this.emitSockets = this.emitSockets.bind(this);
+    this.#userSockets = new Map<User["id"], Set<WebSocket>>();
+  }
+
+  emitSockets(event: CustomWebsocketEvent) {
+    const message = event.asString;
+    this.#value.forEach((socket) => socket.send(message));
+  }
+
+  add(socket: WebSocket) {
+    this.#value.add(socket);
+  }
+
+  room(userId: string) {
+    if (!userId) return { add: () => {} };
+    return {
+      add: (socket: WebSocket) => {
+        if (!this.#userSockets.has(userId)) {
+          this.#userSockets.set(userId, new Set([socket]));
+        } else {
+          this.#userSockets.get(userId)?.add(socket);
+        }
+      },
+    };
+  }
+
+  delete(socket: WebSocket) {
+    const isExisted = this.#value.delete(socket);
+    assert.ok(isExisted, "Provided socket wasn't found in store");
   }
 }

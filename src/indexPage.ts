@@ -1,11 +1,14 @@
-import fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import { SocketStream } from "@fastify/websocket";
-import prisma from "../prisma";
-import { WebsocketEvent } from "./ws";
 import type WebSocket from "ws";
-import { raise } from ".";
+import type {
+  FastifyBaseLogger,
+  FastifyInstance,
+  FastifyRequest,
+} from "fastify";
 import assert from "node:assert";
 import crypto from "node:crypto";
+import prisma from "../prisma";
+import { CustomWebsocketEvent, SocketsStore, defaultListeners } from "./ws";
 
 export default async function indexPage(fastify: FastifyInstance) {
   const socketsStore = new SocketsStore();
@@ -13,52 +16,55 @@ export default async function indexPage(fastify: FastifyInstance) {
     method: "GET",
     url: "/",
     handler: async function handler(request, reply) {
-      this.log.child({ requestId: request.id }).info("HTML: GET /");
+      const context = { requestId: request.id, session: request.session };
+      const log = this.log.child(context);
+      log.info("HTTP: GET /");
+      !request.session.isModified;
       if (!request.session.isAnonymous) {
-        const { UserProfile } = await getShortLiveAnonymousUser.call(
-          this,
-          request,
-        );
-        this.log.info({ UserProfile });
-        request.session.userProfile = UserProfile || raise();
+        log.info("session doesn't exist, start of anonymous session creation");
+        const userProfile = await getUserProfile(log);
+        request.session.userProfile = userProfile;
         request.session.isAnonymous = true;
-        this.log
-          .child({ requestId: request.id, session: request.session })
-          .info("session save");
+        log.info("session saved in RAM, start session save is store");
         await request.session.save();
-        this.log
-          .child({ requestId: request.id, session: request.session })
-          .info("session saved");
+        log.info("session saved is store");
       } else {
-        this.log.child({ session: request.session }).info("session exist");
+        log.info("session exist in store");
       }
-      this.log.child({ requestId: request.id }).info("sendFile index.html");
+      log.info("sendFile index.html");
       return reply.type("text/html").sendFile("index.html");
     },
     wsHandler: async function wsHandler(connection, request) {
       socketsStore.add(connection.socket);
-      this.log.child({ requestId: request.id }).info("WebSocket: / NEW");
-      subscribeToEvents(connection, request, socketsStore);
+      const context = { requestId: request.id, session: request.session };
+      const log = this.log.child(context);
+      log.info("WebSocket: / NEW");
+      connection.socket.addListener(
+        "everySocket",
+        function (this: WebSocket, ...args: [CustomWebsocketEvent]) {
+          const event = args[0];
+          log.info({ event }, "WS / everySocket");
+          socketsStore.emitSockets.call(this, event);
+        },
+      );
+      connection.socket.addListener(
+        "socket",
+        function (this: WebSocket, event: CustomWebsocketEvent) {
+          log.info({ event }, "WS / socket");
+          defaultListeners.socket.call(this, event);
+        },
+      );
       updateConnectionStatus(connection, request);
-      if (!request.session.userProfile) {
-        connection.socket.removeAllListeners();
-        return request.server.log.error("sendUserProfile");
-      }
       connection.socket.emit(
         "socket",
         new UserProfileRestoreEvent(request.session.userProfile),
       );
-      connection.socket.onclose = () => {
+      connection.socket.addListener("close", (_code, _reason) => {
         socketsStore.delete(connection.socket);
-        if (!request.session.userProfile) {
-          return request.server.log.error(
-            "handleUserDisconnect: no userProfile in session",
-          );
-        }
         if (request.session.userProfile.connectStatus === "ONLINE") {
           setTimeout(makeUserOffline, 5_000, request);
         }
-      };
+      });
     },
   });
 }
@@ -102,38 +108,28 @@ async function makeUserOffline(request: FastifyRequest) {
     .catch((error) => request.server.log.error("makeUserOffline", error));
 }
 
-async function getShortLiveAnonymousUser(
-  this: FastifyInstance,
-  request: FastifyRequest,
-) {
-  this.log.warn("No Session");
-  this.log
-    .child({ requestId: request.id })
-    .debug("start shortLiveAnonymousUser creation");
-  const shortLiveAnonymousUser = await prisma.user.create({
+async function getUserProfile(log: FastifyBaseLogger) {
+  // сайт xsgames.co предоставляет api, которое раздает jpg изображения
+  // максимальное количество изображений (в момент написания этого комментария) равно 54 (0..53)
+  const int = crypto.randomInt(54);
+  const photoUrl = `https://xsgames.co/randomusers/assets/avatars/pixel/${int}.jpg`;
+  log.info("start user creation");
+  const { UserProfile: userProfile } = await prisma.user.create({
     data: {
       UserProfile: {
-        create: {
-          // сайт xsgames.co предоставляет api, которое раздает jpg изображения
-          // максимальное количество изображений (в момент написания этого комментария) равно 55 (0..54)
-          photoUrl: `https://xsgames.co/randomusers/assets/avatars/pixel/${crypto.randomInt(
-            54,
-          )}.jpg`,
-          nickname: "Anonymous",
-        },
+        create: { photoUrl, nickname: "Anonymous" },
       },
     },
     select: {
       UserProfile: true,
     },
   });
-  this.log
-    .child({ requestId: request.id })
-    .debug("end shortLiveAnonymousUser creation");
-  return shortLiveAnonymousUser;
+  assert.ok(userProfile, "TypeScript");
+  log.info({ userProfile }, "end user creation");
+  return userProfile;
 }
 
-class UserProfileRestoreEvent extends WebsocketEvent {
+class UserProfileRestoreEvent extends CustomWebsocketEvent {
   userProfile;
 
   constructor(
@@ -144,7 +140,7 @@ class UserProfileRestoreEvent extends WebsocketEvent {
   }
 }
 
-class UserConnectStatusUpdateEvent extends WebsocketEvent {
+class UserConnectStatusUpdateEvent extends CustomWebsocketEvent {
   userId;
   connectStatus;
 
@@ -157,55 +153,15 @@ class UserConnectStatusUpdateEvent extends WebsocketEvent {
   }
 }
 
-class SocketsStore {
-  sockets: WebSocket[] = [];
+// function withBefore(
+//   decorator: Function,
+//   decoratedFunc: (...args: any[]) => void,
+// ) {
+//   decorator();
+//   return decoratedFunc;
+// }
 
-  add(socket: WebSocket) {
-    this.sockets.push(socket);
-  }
-
-  emitSockets(message: string) {
-    this.sockets.forEach((socket) => socket.send(message));
-  }
-
-  delete(socket: WebSocket) {
-    const index = this.sockets.indexOf(socket);
-    assert.ok(index > 0);
-    this.sockets.splice(index, 1);
-  }
-}
-
-function subscribeToEvents(
-  connection: SocketStream,
-  request: FastifyRequest,
-  socketsStore: SocketsStore,
-) {
-  connection.socket.on("everySocket", (event: WebsocketEvent) => {
-    request.server.log
-      .child({
-        requestId: request.id,
-        eventAsString: event.asString,
-        event,
-      })
-      .info(
-        "everySocket send",
-        request.id,
-        event.constructor.name,
-        event.asString,
-      );
-    socketsStore.emitSockets(event.asString);
-  });
-  connection.socket.on("socket", (event: WebsocketEvent) => {
-    request.server.log
-      .child({
-        requestId: request.id,
-        eventAsString: event.asString,
-        event,
-      })
-      .info("socket send");
-    connection.socket.send(event.asString);
-  });
-}
-
-function emitEverySocket() {}
-function emitSocket() {}
+// function q(this: WebSocket, event: CustomWebsocketEvent) {
+//   log.info({ event }, "socket");
+//   defaultListers.socket.call(this, event);
+// }
