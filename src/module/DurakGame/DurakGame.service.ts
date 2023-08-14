@@ -1,11 +1,11 @@
 import DurakGameStateDto from "./DTO/DurakGameState.dto";
-import { durakGames } from "../../index";
 import { type DurakGameSocket } from "./socket/DurakGameSocket.types";
 import type DurakGame from "./DurakGame";
 
 export default class DurakGameWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
 
+  // TODO add usage
   wonRound(game: DurakGame) {
     this.namespace.emit(
       "defender__wonRound",
@@ -14,6 +14,7 @@ export default class DurakGameWebsocketService {
     );
   }
 
+  // TODO add usage
   lostRound(game: DurakGame) {
     this.namespace.emit(
       "defender__lostRound",
@@ -31,14 +32,6 @@ export default class DurakGameWebsocketService {
     socket: DurakGameSocket.Socket;
     playerId: string;
   }) {
-    socket.emit(
-      "game__restoreState",
-      new DurakGameStateDto(game, playerId),
-    );
-  }
-
-  end(game: DurakGame) {
-    this.namespace.emit("game__over");
-    durakGames.delete(game.info.id);
+    socket.emit("game__restoreState", new DurakGameStateDto(game, playerId));
   }
 }

@@ -34,8 +34,10 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
     this.#wsService.provideCardsAnimation({ player, cards, talon: this });
   }
 
-  /** @param count Positive number */
   #pop(count = 1): Card[] {
+    if (count < 0) {
+      throw new Error("count must be positive number");
+    }
     const startIndex = this.count - count;
     if (startIndex <= 0) {
       return this.#lastCards;

@@ -8,11 +8,12 @@ import type {
   TransferMove,
 } from ".";
 import Card from "../Card";
+import DefaultBehavior from "./DefaultBehavior";
 
 export abstract class GameMove {
   game: DurakGame;
   abstract performer: Player;
-  abstract defaultBehavior: XDDDDDDDDDDDDDDDDDDDDDDD;
+  abstract defaultBehavior: DefaultBehavior<GameMove>;
   isInsertMove: boolean;
 
   protected constructor(game: DurakGame) {
@@ -34,7 +35,7 @@ export abstract class GameMove {
   emitContext() {
     this.game.info.namespace.emit("player__allowedToMove", {
       allowedPlayerId: this.player.id,
-      moveEndTimeInUTC: this.defaultBehavior,
+      moveEndTimeInUTC: this.defaultBehavior.callTime.UTC,
       moveTimeInSeconds: this.game.settings.moveTime,
     });
   }
@@ -48,9 +49,10 @@ export abstract class GameMove {
       | typeof TransferMove,
   >(
     Move: CertainMove,
-    context?: Record<string, never> | { card: Card; slotIndex: number },
+    // TODO: fix type of context
     // | { performer: Player }
     // | { performer: Player; card: Card; slotIndex: number },
+    context?: Record<string, never> | { card: Card; slotIndex: number },
   ): void {
     this.defaultBehavior.stop();
     this.game.round.currentMove = new Move(this.game, context);

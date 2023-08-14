@@ -1,38 +1,26 @@
 import assert from "node:assert";
 import Attacker from "../../Player/Attacker";
 import { AttackerMove } from "./AttackerMove";
+import DefaultBehavior from "../DefaultBehavior";
 
-export class AttackerMoveDefaultBehavior {
-  #value;
-  callTimeInUTC;
-  #move;
-  shouldBeCalled;
+export class AttackerMoveDefaultBehavior extends DefaultBehavior<AttackerMove /* TODO specify move type*/> {
+  value: NodeJS.Timeout;
 
   constructor(move: AttackerMove) {
-    this.#move = move;
-    this.callTimeInUTC = Date.now() + move.game.settings.moveTime;
-    this.#value = this.#_value_;
-    this.shouldBeCalled = true;
-  }
-
-  get #_value_() {
-    return setTimeout(async () => {
+    super(move);
+    this.value = setTimeout(async () => {
       if (!this.shouldBeCalled) return;
-      console.log("TIMEOUT: defaultBehaviour ATTACKER called");
+      console.log("TIMEOUT: defaultBehavior ATTACKER called");
       assert.ok(
-        this.#move.player instanceof Attacker,
-        "TIMEOUT: defaultBehaviour BUG",
+        this.move.player instanceof Attacker,
+        "TIMEOUT: defaultBehavior BUG",
       );
       console.log("TIMEOUT: ATTACKER insertRandomCard");
-      await this.#move.player.putCardOnDesk(
-        this.#move,
-        this.#move.player.randomCard,
-        this.#move.game.desk.randomEmptySlotIndex,
+      await this.move.player.putCardOnDesk(
+        this.move,
+        this.move.player.randomCard,
+        this.move.game.desk.randomEmptySlotIndex,
       );
-    }, this.#move.game.settings.moveTime);
-  }
-
-  stop() {
-    clearTimeout(this.#value);
+    }, this.move.game.settings.moveTime);
   }
 }

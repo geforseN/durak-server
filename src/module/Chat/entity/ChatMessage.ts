@@ -13,13 +13,4 @@ export default class ChatMessage {
     this.text = props.text;
     this.id = randomUUID();
   }
-
-  static ensureCorrectTextLength(text: string) {
-    if (!text.length) {
-      throw new Error("Нельзя прислать пустое сообщение");
-    }
-    if (text.length > 128) {
-      throw new Error("Длинна сообщения превышает 128");
-    }
-  }
 }

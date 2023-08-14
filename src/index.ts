@@ -30,6 +30,7 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
+import getMe from "./api/me";
 
 dotenv.config();
 
@@ -94,6 +95,7 @@ fastify
         imgSrc: [
           "'self'",
           "https://xsgames.co/randomusers/assets/avatars/pixel/",
+          "https://cdn.7tv.app/emote/6306876cbe8c19d70f9d6b22/4x.webp",
         ],
       },
     },
@@ -125,6 +127,7 @@ fastify
   .register(VkAuth)
   .register(GithubAuth)
   .register(indexPage)
+  .register(getMe)
   .register(getUserProfile)
   .register(chatPlugin, { path: "/global-chat" })
   .register(gameLobbiesPlugin)
@@ -191,7 +194,8 @@ function setUserProfileIntoSocketData(
           });
           return next();
         }
-        socket.data.userProfile = session.userProfile;
+        socket.data.user = session.user;
+        socket.data.userProfile = session.userProfile ?? raise();
         return next();
       });
     },

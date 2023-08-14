@@ -1,13 +1,10 @@
 import { type FastifyInstance } from "fastify";
-import assert from "node:assert";
-import type WebSocket from "ws";
-import NotificationAlert from "../notification-alert";
 import createMessage from "./createMessage";
 import { Chat, ChatMessage, ChatReplyMessage } from "./entity";
 import initializeChat from "./initializeChatNamespace";
-import { CustomWebsocketEvent } from "../../ws";
+import { CustomWebsocketEvent, NotificationAlertEvent } from "../../ws";
 
-export type ChatContext = ReturnType<ReturnType<typeof initializeChat>>
+export type ChatContext = ReturnType<ReturnType<typeof initializeChat>>;
 
 export default async function chatPlugin(
   fastify: FastifyInstance,
@@ -19,7 +16,7 @@ export default async function chatPlugin(
     { websocket: true },
     async function (connection, request) {
       const context = getChatContext(connection, request);
-      context.socket.emit("socket", new ChatRestoreEvent(context.chat));
+      context.socket.send(new ChatRestoreEvent(context.chat).asString);
       context.socket.on("message::send", onMessageSendListener.bind(context));
     },
   );
@@ -30,39 +27,19 @@ async function onMessageSendListener(
   { text, replyMessageId }: { text: string; replyMessageId?: string },
 ) {
   try {
-    await sendMessageInChatHandler.call(this, { text, replyMessageId });
+    this.chat.ensureCorrectLength(text);
+    this.chat.addMessage(
+      createMessage({ sender: this.sender, text, replyMessageId }),
+      this.socket, // TODO use SocketStore, not WebSocket as second arg
+    );
   } catch (error) {
-    handleError(error, this.socket);
+    if (!(error instanceof Error)) {
+      return console.log("GlobalChat Error:", error);
+    }
+    this.socket.send(new NotificationAlertEvent(error).asString);
   }
 }
 
-async function sendMessageInChatHandler(
-  this: ChatContext,
-  { text, replyMessageId }: { text: string; replyMessageId?: string },
-) {
-  ChatMessage.ensureCorrectTextLength(text);
-  this.chat.addMessage(
-    createMessage({ sender: this.sender, text, replyMessageId }),
-    this.socket,
-  );
-}
-
-function handleError(error: unknown, socket: WebSocket) {
-  if (error instanceof Error) {
-    socket.emit("socket", new NotificationAlertEvent(error));
-  } else {
-    console.log("GlobalChat Error:", error);
-  }
-}
-
-class NotificationAlertEvent extends CustomWebsocketEvent {
-  notificationAlert;
-
-  constructor(error: Error) {
-    super("notification::push");
-    this.notificationAlert = new NotificationAlert(error);
-  }
-}
 
 export class ChatMessageEvent extends CustomWebsocketEvent {
   message;

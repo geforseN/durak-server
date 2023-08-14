@@ -2,9 +2,13 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { SocketStream } from "@fastify/websocket";
 import type { GameSettings } from "./entity/CorrectGameSettings";
 import type Lobby from "./entity/Lobby";
-import { SocketsStore, defaultListeners } from "../../ws";
+import {
+  CustomWebsocketEvent,
+  NotificationAlertEvent,
+  SocketsStore,
+  defaultListeners,
+} from "../../ws";
 import Lobbies from "./entity/Lobbies";
-import prisma from "../../../prisma";
 import EventEmitter from "events";
 
 type GameLobbiesContext = ReturnType<ReturnType<typeof initializeGameLobbies>>;
@@ -17,16 +21,26 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
     async function (connection: SocketStream, request: FastifyRequest) {
       // TODO add userProfile in return object of handleConnection
       const context = handleConnection(connection, request);
-      context.socket.emit("lobbies::restore", context.lobbies.state);
-      if (!context.user.id) {
-        return console.log("FAST RETURN: NO USER_ID");
+      if (!context.user?.id) {
+        context.socket.send(
+          new NotificationAlertEvent(
+            new Error(
+              "Не удалось получить данный игровых лобби. \n" +
+                "Войдите в свой аккаунт или отчистите файлы cookie для данного сайта",
+            ),
+          ).asString,
+        );
+        return request.server.log.error({ request }, "No user.id found");
       }
+      context.socket.send(
+        new GameLobbiesStateRestoreEvent(context.lobbies).asString,
+      );
       context.socket
         .on("lobby::add", ({ settings }: { settings: GameSettings }) =>
-          context.lobbies.pushNewLobby(settings, context.user),
+          context.lobbies.pushNewLobby({ initiator: context.user, settings }),
         )
         .on("lobby::remove", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-          context.lobbies.removeLobby(lobbyId, context.user),
+          context.lobbies.removeLobby({ initiator: context.user, lobbyId }),
         )
         .on(
           "lobby::user::join",
@@ -38,17 +52,20 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
             lobbyId: Lobby["id"];
             slotIndex: number;
           }) =>
-            await context.lobbies.addUserInLobby(
+            await context.lobbies.addUserInLobby({
+              user: context.user,
               lobbyId,
-              context.user,
               slotIndex,
-            ),
+            }),
         )
         .on("lobby::user::leave", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
           context.lobbies.removeUserFromLobby(lobbyId, context.user),
         )
         .on("lobby::upgrade", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-          context.lobbies.upgradeLobbyToNonStartedGame(lobbyId, context.user),
+          context.lobbies.upgradeLobbyToNonStartedGame({
+            initiator: context.user,
+            lobbyId,
+          }),
         )
         .on(
           "lobby::user::move",
@@ -76,42 +93,43 @@ function initializeGameLobbies() {
     request: FastifyRequest,
   ) {
     socketsStore.add(connection.socket);
-    socketsStore
-      .room(request.session.userProfile.userId)
-      .add(connection.socket);
+    socketsStore.room(request.session.user.id).add(connection.socket);
     connection.socket
       .addListener("message", defaultListeners.message)
       .addListener("socket", defaultListeners.socket)
       .addListener("everySocket", socketsStore.emitSockets);
-    return {
-      user: {
-        ...request.session.userProfile,
-        id: request.session.userProfile.userId,
-        userProfile: request.session.userProfile,
-        isAdmin: false,
+    // TODO
+    // ? can add lobby in session ?
+    // ? no need all this below ?
+    request.session.user.isLobbyAdmin = false;
+    request.session.isUserLobbyAdmin = false;
+    request.session.save().then(
+      () => {
+        request.server.log.info(
+          { requestId: request.id },
+          "save lobby related data in session",
+        );
       },
-      userId: request.session.userProfile.userId,
+      (error: unknown) => {
+        request.server.log.error(
+          { error, requestId: request.id },
+          "save lobby related data in session",
+        );
+      },
+    );
+    return {
+      user: request.session.user,
       socket: connection.socket,
       lobbies,
     };
   };
 }
 
-export async function getFirstTimeUser(userId: string) {
-  return {
-    ...(await prisma.userProfile.findUniqueOrThrow({
-      where: { userId },
-      select: {
-        connectStatus: true,
-        nickname: true,
-        photoUrl: true,
-        personalLink: true,
-      },
-    })),
-    id: userId,
-    isAdmin: false,
-  };
-}
+class GameLobbiesStateRestoreEvent extends CustomWebsocketEvent {
+  state;
 
-// TODO remove me
-export type LobbyUser = Awaited<ReturnType<typeof getFirstTimeUser>>;
+  constructor(lobbies: Lobbies) {
+    super("lobbies::restore");
+    this.state = [...lobbies];
+  }
+}

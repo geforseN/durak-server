@@ -1,33 +1,22 @@
 import Defender from "../../Player/Defender";
 import assert from "node:assert";
 import DefenderMove from "./DefenderMove";
+import DefaultBehavior from "../DefaultBehavior";
 
-export class DefenderMoveDefaultBehavior {
-  #value;
-  callTimeInUTC;
-  #move;
-  shouldBeCalled;
-  constructor(move: DefenderMove) {
-    this.#move = move;
-    this.callTimeInUTC = Date.now() + move.game.settings.moveTime;
-    this.#value = this.#_value_;
-    this.shouldBeCalled = true;
-  }
+export class DefenderMoveDefaultBehavior extends DefaultBehavior<DefenderMove /* TODO specify move type*/> {
+  value;
 
-  get #_value_() {
-    return setTimeout(async () => {
+  constructor(move: DefenderMove, shouldBeCalled = true) {
+    super(move);
+    this.value = setTimeout(async () => {
       if (!this.shouldBeCalled) return;
       console.log("TIMEOUT: defaultBehavior DEFENDER called");
       assert.ok(
-        this.#move.player instanceof Defender,
+        this.move.player instanceof Defender,
         "TIMEOUT: defaultBehavior DEFENDER BUG",
       );
       console.log("TIMEOUT: DEFENDER stopMove");
-      this.#move.player.stopMove(this.#move);
-    }, this.#move.game.settings.moveTime);
-  }
-
-  stop() {
-    clearTimeout(this.#value);
+      this.move.player.stopMove(this.move);
+    }, this.move.game.settings.moveTime);
   }
 }
