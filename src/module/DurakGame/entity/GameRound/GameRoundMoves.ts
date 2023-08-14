@@ -3,6 +3,10 @@ import {
   AttackerMove,
   DefenderGaveUpMove,
   DefenderMove,
+  InsertAttackCardMove,
+  InsertDefendCardMove,
+  StopAttackMove,
+  StopDefenseMove,
   TransferMove,
 } from "../GameMove";
 
@@ -21,15 +25,17 @@ export default class GameRoundMoves {
     return this.#value[this.#currentMoveIndex];
   }
 
-  set currentMove(certainMove: DefenderMove | AttackerMove) {
+  set currentMove(
+    certainMove:
+      | StopAttackMove
+      | StopDefenseMove
+      | InsertAttackCardMove
+      | InsertDefendCardMove
+      | TransferMove,
+  ) {
     this.currentMove.defaultBehavior.stop();
     this.#value[this.#currentMoveIndex] = certainMove;
     certainMove.emitOwnData();
-    assert.ok(
-      "handleAfterMoveIsDone" in certainMove &&
-        typeof certainMove.handleAfterMoveIsDone === "function",
-      "TypeScript",
-    );
     certainMove.handleAfterMoveIsDone();
   }
 

@@ -13,19 +13,14 @@ export default function initializeChat() {
   ) {
     socketsStore.add(connection.socket);
     socketsStore
-      .room(request.session.userProfile.userId)
+      .room(request.session.user.id)
       .add(connection.socket);
     connection.socket
       .addListener("everySocket", socketsStore.emitSockets)
       .addListener("socket", defaultListeners.socket)
       .addListener("message", defaultListeners.message);
     return {
-      sender: {
-        ...request.session.userProfile,
-        userProfile: request.session.userProfile,
-        id: request.session.userProfile.userId,
-      },
-      userId: request.session.userProfile.userId,
+      sender: request.session.user,
       socket: connection.socket,
       chat,
     };

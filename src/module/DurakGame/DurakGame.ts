@@ -31,7 +31,7 @@ export default class DurakGame {
   readonly isStarted: true;
   readonly logger = pino({
     transport: {
-      target: "pino-pretty",
+      target: "pino-pretty" as const,
     },
   });
 

@@ -2,8 +2,8 @@ import assert from "node:assert";
 import EmptySlot from "./EmptySlot";
 import FilledSlot from "./FilledSlot";
 import { raise } from "../../..";
-import { LobbyUser } from "../lobbies.namespace";
 import { InternalError } from "../../DurakGame/error";
+import LobbyUser from "./LobbyUser";
 
 export default class LobbySlots {
   readonly #value: (EmptySlot | FilledSlot)[];
@@ -80,9 +80,13 @@ export default class LobbySlots {
     this.#value[oldSlot.index] = new EmptySlot(oldSlot.index);
   }
 
-  insertUser(user: LobbyUser, slotIndex: number): number | never {
-    this.#value[slotIndex] = this.at(slotIndex).withInsertedUser(user);
-    return slotIndex;
+  insertUser(user: LobbyUser, slotIndex: number): FilledSlot {
+    this.#value[slotIndex] = this.isEmpty
+      ? this.at(slotIndex).withInsertedAdminUser(user)
+      : this.at(slotIndex).withInsertedUser(user);
+    const slot = this.#value[slotIndex];
+    assert.ok(slot instanceof FilledSlot);
+    return slot;
   }
 
   removeUser(userId: string): LobbyUser {
@@ -105,6 +109,8 @@ export default class LobbySlots {
         slotIndex >= 0 &&
         slotIndex < this.#value.length,
     );
+    console.log(this.#value[slotIndex].isEmpty);
+    console.log(this.#value[slotIndex].constructor.name);
     return this.#value[slotIndex];
   }
 

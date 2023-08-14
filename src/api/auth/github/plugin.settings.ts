@@ -1,5 +1,4 @@
-import oauthPlugin, { OAuth2Namespace } from "@fastify/oauth2";
-import { ConnectStatus, Prisma } from "@prisma/client";
+import oauthPlugin, { type OAuth2Namespace } from "@fastify/oauth2";
 
 export const GITHUB_AUTH_CALLBACK_URI = "/login/github/callback";
 export const authProviderKey = "githubId";
@@ -8,23 +7,6 @@ const NAMESPACE_NAME = "githubOAuth2";
 declare module "fastify" {
   interface FastifyInstance {
     [NAMESPACE_NAME]: OAuth2Namespace;
-  }
-
-  interface Session {
-    auth: {
-      provider: "github";
-      userId: string;
-      access_token: string;
-    };
-    userProfile: {
-      userId: string;
-      personalLink: string;
-      updatedAt: Date;
-      photoUrl: string | null;
-      nickname: string;
-      connectStatus: ConnectStatus;
-    };
-    isAnonymous: boolean;
   }
 }
 

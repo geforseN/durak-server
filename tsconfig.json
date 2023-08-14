@@ -15,7 +15,9 @@
     /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
     "lib": [
       "ES2023",
-      "dom"
+      "ES2023.Array",
+      "ESNext.Array",
+      "ESNext"
     ],
     /* Specify a set of bundled library declaration files that describe the target runtime environment. */
     // "jsx": "preserve",                                /* Specify what JSX code is generated. */

@@ -1,6 +1,6 @@
-import WebSocket from "ws";
+import type WebSocket from "ws";
 import assert from "node:assert";
-import { User } from "@prisma/client";
+import NotificationAlert from "../module/notification-alert";
 
 export const defaultListeners = {
   everySocket(this: WebSocket[], event: CustomWebsocketEvent) {
@@ -20,19 +20,11 @@ export const defaultListeners = {
   },
 };
 
-export function addUserSocketInRoom<
-  UserSockets extends Map<string, Set<WebSocket>>,
->(this: { userSockets: UserSockets }, socket: WebSocket, userId?: string) {
-  if (!userId) return;
-  if (!this.userSockets.has(userId)) {
-    this.userSockets.set(userId, new Set([socket]));
-  } else {
-    this.userSockets.get(userId)?.add(socket);
-  }
-}
-
 export class CustomWebsocketEvent {
-  constructor(public eventName: string) {}
+  readonly eventName;
+  constructor(eventName: string) {
+    this.eventName = eventName;
+  }
 
   get asString() {
     return JSON.stringify({
@@ -42,33 +34,43 @@ export class CustomWebsocketEvent {
   }
 }
 
+export class NotificationAlertEvent extends CustomWebsocketEvent {
+  notificationAlert;
+
+  constructor(error: Error) {
+    super("notification::push");
+    this.notificationAlert = new NotificationAlert(error);
+  }
+}
+
 export class SocketsStore {
   #value: Set<WebSocket>;
-  #userSockets: Map<User["id"], Set<WebSocket>>;
+  #userSockets: Map<string, Set<WebSocket>>;
 
   constructor() {
     this.#value = new Set<WebSocket>();
     this.emitSockets = this.emitSockets.bind(this);
-    this.#userSockets = new Map<User["id"], Set<WebSocket>>();
+    this.#userSockets = new Map<string, Set<WebSocket>>();
   }
 
   emitSockets(event: CustomWebsocketEvent) {
-    const message = event.asString;
-    this.#value.forEach((socket) => socket.send(message));
+    const data = event.asString;
+    this.#value.forEach((socket) => socket.send(data));
   }
 
   add(socket: WebSocket) {
     this.#value.add(socket);
   }
 
-  room(userId: string) {
-    if (!userId) return { add: () => {} };
+  room(roomName: string) {
+    if (!roomName) return { add: () => {} };
     return {
       add: (socket: WebSocket) => {
-        if (!this.#userSockets.has(userId)) {
-          this.#userSockets.set(userId, new Set([socket]));
+        const room = this.#userSockets.get(roomName);
+        if (room) {
+          room.add(socket);
         } else {
-          this.#userSockets.get(userId)?.add(socket);
+          this.#userSockets.set(roomName, new Set([socket]));
         }
       },
     };

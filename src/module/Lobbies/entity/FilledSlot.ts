@@ -1,6 +1,8 @@
-import { LobbyUser } from "../lobbies.namespace";
+import AdminSlot from "./AdminSlot";
 import EmptySlot from "./EmptySlot";
-class FilledSlot {
+import LobbyUser from "./LobbyUser";
+
+export class FilledSlot {
   constructor(public index: number, public value: LobbyUser) {}
 
   get isEmpty() {
@@ -14,6 +16,10 @@ class FilledSlot {
   withInsertedUser(user: LobbyUser) {
     this.value = user;
     return this;
+  }
+
+  withInsertedAdminUser() {
+    return new AdminSlot(this.index, this.value);
   }
 
   withRemovedUser() {

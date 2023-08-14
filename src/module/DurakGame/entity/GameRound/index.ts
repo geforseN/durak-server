@@ -17,6 +17,7 @@ export default class GameRound {
     this.number = !game.round ? 1 : game.round.number + 1;
     this.moves = new GameRoundMoves();
     this.giveAttackTo(game.players.attacker);
+    this.game.info.namespace.emit('round__number', this.number);
   }
 
   endWith(Defense: typeof FailedDefense | typeof SuccessfulDefense) {
