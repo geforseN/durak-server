@@ -45,7 +45,7 @@ model User {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserAuthInfo {
   userId   String  @id @unique
-  User     User    @relation(fields: [userId], references: [id])
+  User     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   hash     String?
   yandexId String? @unique
   githubId Int?    @unique
@@ -56,14 +56,14 @@ model UserAuthInfo {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserGamePlayer {
   durakGameNumber Int
-  DurakGame       DurakGame @relation(fields: [durakGameNumber], references: [number])
+  DurakGame       DurakGame     @relation(fields: [durakGameNumber], references: [number], onDelete: Cascade)
   userId          String
-  User            User      @relation(fields: [userId], references: [id])
+  User            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   index           Int
   result          GameEndResult
   winPlace        Int?
   winRoundNumber  Int?
-  hasLost         Boolean   @default(false)
+  hasLost         Boolean       @default(false)
 
   @@unique([durakGameNumber, index])
 }
@@ -71,7 +71,7 @@ model UserGamePlayer {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserGameStat {
   userId             String   @id @unique
-  User               User     @relation(fields: [userId], references: [id])
+  User               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   wonGamesCount      Int      @default(0)
   lostGamesCount     Int      @default(0)
   unstableGamesCount Int      @default(0)
@@ -81,7 +81,7 @@ model UserGameStat {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserProfile {
   userId        String        @id @unique
-  User          User          @relation(fields: [userId], references: [id])
+  User          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   personalLink  String        @unique @default(cuid())
   updatedAt     DateTime      @updatedAt
   photoUrl      String?
