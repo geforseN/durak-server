@@ -1,38 +1,62 @@
 import type { User, UserProfile } from "@prisma/client";
-import type EventEmitter from "events";
+import EventEmitter from "events";
 import { durakGames, raise } from "../../..";
-import { CustomWebsocketEvent } from "../../../ws";
+import { CustomWebsocketEvent, SocketsStore } from "../../../ws";
 import { FindLobbyError } from "../error";
 import type { GameSettings } from "./CorrectGameSettings";
-import Lobby from "./Lobby";
+import Lobby, {
+  LobbyAdminUpdateEvent,
+  LobbyUserJoinEvent,
+  LobbyUserMoveEvent,
+} from "./Lobby";
 import LobbyUser from "./LobbyUser";
 import assert from "node:assert";
 import { NonStartedDurakGame } from "../../DurakGame/NonStartedDurakGame";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;
-  readonly #map: Map<Lobby["id"], Lobby>;
+  readonly #store: Map<Lobby["id"], Lobby>;
 
-  constructor(emitter: EventEmitter, map = new Map<Lobby["id"], Lobby>()) {
-    this.#emitter = emitter;
-    this.#map = map;
-    this.#emitter
-      .on("lobby##remove", ({ lobbyId }) => {
-        this.#map.delete(lobbyId);
-        this.#emitter.emit("everySocket", new LobbyRemoveEvent(lobbyId));
+  constructor(socketsStore: SocketsStore, values: [Lobby["id"], Lobby][] = []) {
+    this.#store = new Map<Lobby["id"], Lobby>(values);
+    this.#emitter = new EventEmitter()
+      .on("lobby##remove", ({ lobby }) => {
+        this.#store.delete(lobby.id);
+        socketsStore.emit(new LobbyRemoveEvent(lobby.id));
       })
       .on("lobby##add", ({ lobby }) => {
-        this.#map.set(lobby.id, lobby);
-        this.#emitter.emit("everySocket", new LobbyAddEvent(lobby));
+        this.#store.set(lobby.id, lobby);
+        socketsStore.emit(new LobbyAddEvent(lobby));
       })
       .on("lobby##upgrade", ({ lobby }: { lobby: Lobby }) => {
         durakGames.set(lobby.id, new NonStartedDurakGame(lobby));
-        // TODO emit lobby users than lobby upgraded
+        const event = new LobbyUpgradeToNonStartedGameEvent(lobby);
+        lobby.userSlots.forEach((slot) => {
+          socketsStore.room(slot.user.id).emit(event);
+        });
+      })
+      .on("lobby##user##join", ({ lobby, slot }) => {
+        socketsStore.emit(new LobbyUserJoinEvent(lobby, slot));
+      })
+      .on("lobby##user##move", ({ lobby, newSlot, oldSlot }) => {
+        socketsStore.emit(new LobbyUserMoveEvent(lobby, newSlot, oldSlot));
+      })
+      .on("lobby##user##leave", ({ lobby, user }) => {
+        socketsStore.emit(new LobbyUserLeaveEvent(lobby, user));
+      })
+      .on("lobby##admin##update", ({ lobby }) => {
+        socketsStore.emit(new LobbyAdminUpdateEvent(lobby));
       });
   }
 
-  *[Symbol.iterator]() {
-    yield* [...this.#map.values()].map((lobby) => lobby.toString());
+  toJSON() {
+    return JSON.stringify([...this.#store.values()]);
+  }
+
+  getById(lobbyId: Lobby["id"]) {
+    const lobby = this.#store.get(lobbyId);
+    assert.ok(lobby);
+    return lobby;
   }
 
   // NOTE: IF user didn't send slotIndex (didn't specified slotIndex) THEN slotIndex === -1
@@ -48,7 +72,7 @@ export default class Lobbies {
   }) {
     const [pastLobby, desiredLobby] = [
       this.#findLobbyWithUser(user.id),
-      this.#map.get(lobbyId) || raise(new FindLobbyError()),
+      this.#store.get(lobbyId) || raise(new FindLobbyError()),
     ];
     if (!pastLobby) {
       return desiredLobby.insertUser(new LobbyUser(user), slotIndex);
@@ -75,7 +99,6 @@ export default class Lobbies {
     return lobby;
   }
 
-  // TODO in Vue: FOR not started game users UPDATE their state: SET gameId to lobbyId
   upgradeLobbyToNonStartedGame({
     initiator,
     lobbyId,
@@ -84,11 +107,10 @@ export default class Lobbies {
     initiator: User & { profile: UserProfile };
   }) {
     return this.#getLobby(initiator.id, lobbyId).upgradeToNonStartedGame(
-      initiator.id,
+      initiator,
     );
   }
 
-  // TODO in Vue: FOR deleted users UPDATE their state: SET lobbyId to null
   removeLobby({
     initiator,
     lobbyId,
@@ -99,20 +121,20 @@ export default class Lobbies {
     return this.#getLobby(initiator.id, lobbyId).deleteSelf(initiator.id);
   }
 
-  removeUserFromLobby(userId: User["id"], lobbyId?: Lobby["id"]) {
-    return this.#getLobby(userId, lobbyId).removeUser(userId);
+  removeUserFromLobby(leaver: User, lobbyId?: Lobby["id"]) {
+    return this.#getLobby(leaver.id, lobbyId).removeUser(leaver.id);
   }
 
   #getLobby(userId: User["id"], lobbyId?: Lobby["id"]) {
     return (
-      (lobbyId && this.#map.get(lobbyId)) ||
+      (lobbyId && this.#store.get(lobbyId)) ||
       this.#findLobbyWithUser(userId) ||
       raise(new FindLobbyError())
     );
   }
 
   #findLobbyWithUser(userId: User["id"]): Lobby | undefined {
-    for (const lobby of this.#map.values()) {
+    for (const lobby of this.#store.values()) {
       if (lobby.hasUser(userId)) return lobby;
     }
   }
@@ -123,16 +145,34 @@ class LobbyAddEvent extends CustomWebsocketEvent {
 
   constructor(lobby: Lobby) {
     super("lobby::add");
-    this.lobby = {
-      ...lobby,
-      slots: lobby.slots.value,
-      lobbiesEmitter: undefined,
-    };
+    // TODO: test if can remove toJSON call
+    // TODO just this.lobby = lobby
+    this.lobby = lobby.toJSON();
   }
 }
 
 class LobbyRemoveEvent extends CustomWebsocketEvent {
   constructor(public lobbyId: Lobby["id"]) {
     super("lobby::remove");
+  }
+}
+
+class LobbyUpgradeToNonStartedGameEvent extends CustomWebsocketEvent {
+  gameId;
+
+  constructor(lobby: Lobby) {
+    super("lobby::upgrade");
+    this.gameId = lobby.id;
+  }
+}
+
+class LobbyUserLeaveEvent extends CustomWebsocketEvent {
+  lobbyId;
+  userId;
+
+  constructor(lobby: Lobby, user: LobbyUser) {
+    super("lobby::user::leave");
+    this.lobbyId = lobby.id;
+    this.userId = user.id;
   }
 }

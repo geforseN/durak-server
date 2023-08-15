@@ -19,7 +19,11 @@ class EmptySlot {
   }
 
   withRemovedUser() {
-    return this;
+    return new EmptySlot(this.index);
+  }
+
+  toJSON() {
+    return null;
   }
 }
 
