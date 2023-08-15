@@ -11,6 +11,7 @@ export default async function chatPlugin(
   options: { path: string },
 ) {
   const getChatContext = initializeChat();
+
   return fastify.get(
     options.path,
     { websocket: true },
@@ -30,7 +31,6 @@ async function onMessageSendListener(
     this.chat.ensureCorrectLength(text);
     this.chat.addMessage(
       createMessage({ sender: this.sender, text, replyMessageId }),
-      this.socket, // TODO use SocketStore, not WebSocket as second arg
     );
   } catch (error) {
     if (!(error instanceof Error)) {
@@ -39,7 +39,6 @@ async function onMessageSendListener(
     this.socket.send(new NotificationAlertEvent(error).asString);
   }
 }
-
 
 export class ChatMessageEvent extends CustomWebsocketEvent {
   message;
