@@ -9,7 +9,6 @@ import {
   defaultListeners,
 } from "../../ws";
 import Lobbies from "./entity/Lobbies";
-import EventEmitter from "events";
 
 type GameLobbiesContext = ReturnType<ReturnType<typeof initializeGameLobbies>>;
 
@@ -59,7 +58,7 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
             }),
         )
         .on("lobby::user::leave", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-          context.lobbies.removeUserFromLobby(lobbyId, context.user),
+          context.lobbies.removeUserFromLobby(context.user, lobbyId),
         )
         .on("lobby::upgrade", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
           context.lobbies.upgradeLobbyToNonStartedGame({
@@ -85,9 +84,8 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
 
 function initializeGameLobbies() {
   const socketsStore = new SocketsStore();
-  const lobbies = new Lobbies(
-    new EventEmitter().addListener("everySocket", socketsStore.emitSockets),
-  );
+  const lobbies = new Lobbies(socketsStore);
+
   return function handleConnection(
     connection: SocketStream,
     request: FastifyRequest,
@@ -96,8 +94,7 @@ function initializeGameLobbies() {
     socketsStore.room(request.session.user.id).add(connection.socket);
     connection.socket
       .addListener("message", defaultListeners.message)
-      .addListener("socket", defaultListeners.socket)
-      .addListener("everySocket", socketsStore.emitSockets);
+      .addListener("socket", defaultListeners.socket);
     // TODO
     // ? can add lobby in session ?
     // ? no need all this below ?
@@ -130,6 +127,6 @@ class GameLobbiesStateRestoreEvent extends CustomWebsocketEvent {
 
   constructor(lobbies: Lobbies) {
     super("lobbies::restore");
-    this.state = [...lobbies];
+    this.state = lobbies;
   }
 }

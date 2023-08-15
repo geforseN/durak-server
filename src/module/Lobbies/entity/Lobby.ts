@@ -23,12 +23,12 @@ export default class Lobby {
     // TODO: this.users = new UsersOfLobby(this)
   }
 
-  toString() {
-    return JSON.stringify({
-      id: this.id,
-      settings: this.settings,
-      slots: this.slots.value,
-    });
+  toJSON() {
+    return JSON.stringify({ ...this });
+  }
+
+  get userSlots() {
+    return this.slots.userSlots;
   }
 
   get isEmpty() {
@@ -51,39 +51,42 @@ export default class Lobby {
     const finalSlotIndex =
       slotIndex === -1 ? this.slots.firstFoundEmptySlot.index : slotIndex;
     const filledSlot = this.slots.insertUser(user, finalSlotIndex);
-    this.#lobbiesEmitter.emit(
-      "everySocket",
-      new UserJoinEvent(this.id, filledSlot.user, filledSlot.index),
-    );
-    return true;
+    this.#lobbiesEmitter;
+    this.#lobbiesEmitter.emit("lobby##user##join", {
+      lobby: this,
+      slot: filledSlot,
+    });
   }
 
-  upgradeToNonStartedGame(upgradeInitiatorId: string): void {
-    assert.ok(this.admin.id === upgradeInitiatorId, new LobbyAccessError());
+  upgradeToNonStartedGame(initiator: LobbyUser): void {
+    assert.ok(this.admin.id === initiator.id, new LobbyAccessError());
+    assert.ok(this.isFull, "Каждый слот должен быть заполнен игроком");
     this.#lobbiesEmitter.emit("lobby##upgrade", { lobby: this });
   }
 
   removeUser(userId: string): LobbyUser {
+    if (this.admin.id === userId) {
+      if (this.slots.usersCount === 1) {
+        this.slots.admin.isAdmin = false;
+      } else {
+        this.slots.admin = this.slots.mostLeftSideNonAdminUser;
+        this.#lobbiesEmitter.emit("lobby##admin##update", { lobby: this });
+      }
+    }
     const removedUser = this.slots.removeUser(userId);
-    this.#lobbiesEmitter.emit("lobby::user::remove", {
-      lobbyId: this.id,
-      userId: removedUser.id,
+    this.#lobbiesEmitter.emit("lobby##user##leave", {
+      lobby: this,
+      user: removedUser,
     });
     if (this.isEmpty) {
       this.#lobbiesEmitter.emit("lobby##remove", {
-        lobbyId: this.id,
+        lobby: this,
       });
-    } else if (removedUser.isAdmin) {
-      this.slots.admin = this.slots.mostLeftSideNonAdminUser;
-      this.#lobbiesEmitter.emit(
-        "everySocket",
-        new UserAdminUpdate(this.id, this.admin.id),
-      );
     }
     return removedUser;
   }
 
-  moveUser(userId: string, newSlotIndex: number): number {
+  moveUser(userId: string, newSlotIndex: number) {
     assert.ok(newSlotIndex !== -1, "Вас следует указать определённый индекс");
     assert.ok(
       Number.isInteger(newSlotIndex) &&
@@ -95,15 +98,14 @@ export default class Lobby {
       this.slots.getEmptySlotAt(newSlotIndex),
       this.slots.getSlotOfUser(userId),
     ];
-    this.slots.swapValues(oldSlot, newSlot);
-    this.#lobbiesEmitter.emit(
-      "everySocket",
-      new UserMoveEvent(this.id, userId, newSlot.index, oldSlot.index),
-    );
-    return oldSlot.index;
+    this.slots.moveUser(oldSlot, newSlot);
+    this.#lobbiesEmitter.emit("lobby##user##move", {
+      lobby: this,
+      newSlot,
+      oldSlot,
+    });
   }
 
-  // TODO add emit decorator
   pickUserFrom(lobby: Lobby, userId: string, slotIndex: number) {
     const finalSlotIndex =
       slotIndex === -1 ? this.slots.firstFoundEmptySlot.index : slotIndex;
@@ -112,50 +114,49 @@ export default class Lobby {
       this.slots.at(finalSlotIndex).isEmpty,
       new LobbyAccessError("Желаемый слот занят"),
     );
+    // ? add own emit ?
     return this.insertUser(lobby.removeUser(userId), finalSlotIndex);
   }
 
   deleteSelf(initiatorId: string) {
     assert.ok(this.admin.id === initiatorId, new LobbyAccessError());
-    this.#lobbiesEmitter.emit("lobby##remove", { lobbyId: this.id });
+    this.#lobbiesEmitter.emit("lobby##remove", { lobby: this });
   }
 }
 
-class UserJoinEvent extends CustomWebsocketEvent {
+export class LobbyUserJoinEvent extends CustomWebsocketEvent {
   lobbyId;
   user;
   slotIndex;
 
-  constructor(lobbyId, user, slotIndex) {
+  constructor(lobby, slot) {
     super("lobby::user::join");
-    this.lobbyId = lobbyId;
-    this.user = user;
-    this.slotIndex = slotIndex;
+    this.lobbyId = lobby.id;
+    this.user = slot.user;
+    this.slotIndex = slot.index;
   }
 }
 
-class UserMoveEvent extends CustomWebsocketEvent {
+export class LobbyUserMoveEvent extends CustomWebsocketEvent {
   lobbyId;
-  userId;
   newSlotIndex;
   pastSlotIndex;
 
-  constructor(lobbyId, userId, newSlotIndex, oldSlotIndex) {
+  constructor(lobby, newSlot, oldSlot) {
     super("lobby::user::move");
-    this.lobbyId = lobbyId;
-    this.userId = userId;
-    this.newSlotIndex = newSlotIndex;
-    this.pastSlotIndex = oldSlotIndex;
+    this.lobbyId = lobby.id;
+    this.newSlotIndex = newSlot.index;
+    this.pastSlotIndex = oldSlot.index;
   }
 }
 
-class UserAdminUpdate extends CustomWebsocketEvent {
+export class LobbyAdminUpdateEvent extends CustomWebsocketEvent {
   lobbyId;
-  adminId;
+  newAdminId;
 
-  constructor(lobbyId, adminId) {
+  constructor(lobby) {
     super("lobby::admin::update");
-    this.lobbyId = lobbyId;
-    this.adminId = adminId;
+    this.lobbyId = lobby.id;
+    this.newAdminId = lobby.admin.id;
   }
 }

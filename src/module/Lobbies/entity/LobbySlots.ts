@@ -20,7 +20,11 @@ export default class LobbySlots {
     return this.#value.map((slot) => slot.value);
   }
 
-  get #userSlots() {
+  toJSON() {
+    return JSON.stringify(this.#value.map((slot) => slot.value));
+  }
+
+  get userSlots() {
     return this.#value.filter(
       (slot): slot is FilledSlot => slot instanceof FilledSlot,
     );
@@ -33,7 +37,7 @@ export default class LobbySlots {
   }
 
   get usersCount() {
-    return this.#userSlots.length;
+    return this.userSlots.length;
   }
 
   get isEmpty() {
@@ -50,7 +54,7 @@ export default class LobbySlots {
 
   get admin(): LobbyUser | never {
     return (
-      this.#userSlots.find((slot) => slot.user.isAdmin)?.user ||
+      this.userSlots.find((slot) => slot.user.isAdmin)?.user ||
       raise(new InternalError())
     );
   }
@@ -62,7 +66,7 @@ export default class LobbySlots {
 
   get mostLeftSideNonAdminUser() {
     return (
-      this.#userSlots.find((slot) => slot.user !== this.admin)?.user ||
+      this.userSlots.find((slot) => !slot.user.isAdmin)?.user ||
       raise(
         new InternalError(
           "Не получилось обновить админа лобби: некому стать новым админом",
@@ -72,10 +76,10 @@ export default class LobbySlots {
   }
 
   hasUser(userId: string): boolean {
-    return this.#userSlots.some((slot) => slot.user.id === userId);
+    return this.userSlots.some((slot) => slot.user.id === userId);
   }
 
-  swapValues(oldSlot: FilledSlot, newSlot: EmptySlot) {
+  moveUser(oldSlot: FilledSlot, newSlot: EmptySlot) {
     this.#value[newSlot.index] = new FilledSlot(newSlot.index, oldSlot.value);
     this.#value[oldSlot.index] = new EmptySlot(oldSlot.index);
   }
@@ -85,7 +89,7 @@ export default class LobbySlots {
       ? this.at(slotIndex).withInsertedAdminUser(user)
       : this.at(slotIndex).withInsertedUser(user);
     const slot = this.#value[slotIndex];
-    assert.ok(slot instanceof FilledSlot);
+    assert.ok(slot instanceof FilledSlot, "TypeScript");
     return slot;
   }
 
@@ -109,8 +113,6 @@ export default class LobbySlots {
         slotIndex >= 0 &&
         slotIndex < this.#value.length,
     );
-    console.log(this.#value[slotIndex].isEmpty);
-    console.log(this.#value[slotIndex].constructor.name);
     return this.#value[slotIndex];
   }
 
@@ -123,8 +125,8 @@ export default class LobbySlots {
 
   getSlotOfUser(userId: string): FilledSlot | never {
     return (
-      this.#userSlots.find((userSlot) => userSlot.user.id === userId) ||
-      raise(/* ERROR */)
+      this.userSlots.find((userSlot) => userSlot.user.id === userId) ||
+      raise(new Error("Пользователь с переданным userId не был найден"))
     );
   }
 }
