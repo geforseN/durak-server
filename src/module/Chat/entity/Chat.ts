@@ -1,36 +1,39 @@
-import WebSocket from "ws";
 import ChatMessage from "./ChatMessage";
 import ChatReplyMessage from "./ChatReplyMessage";
 import { ChatMessageEvent } from "../chatPlugin";
+import { SocketsStore } from "../../../ws";
 
 export default class Chat {
   readonly #messages: ChatMessage[];
   readonly #maxMessages: number;
   readonly #maxMessageLength: number;
   readonly #minMessageLength: number;
+  readonly #socketsStore: SocketsStore;
 
   constructor({
     messages = [],
     maxMessages = 100,
     maxMessageLength = 128,
     minMessageLength = 1,
+    socketsStore,
   }: Partial<{
     messages: ChatMessage[];
     maxMessages: number;
     maxMessageLength: number;
     minMessageLength: number;
-  }> = {}) {
+  }> & { socketsStore: SocketsStore }) {
     this.#maxMessages = maxMessages;
     this.#messages = messages;
     this.#maxMessageLength = maxMessageLength;
     this.#minMessageLength = minMessageLength;
+    this.#socketsStore = socketsStore;
   }
 
   get cache() {
     return this.#messages.slice();
   }
 
-  addMessage(message: ChatMessage | ChatReplyMessage, socket: WebSocket) {
+  addMessage(message: ChatMessage | ChatReplyMessage) {
     if (message instanceof ChatReplyMessage) {
       this.#ensureSenderCanReply(message);
     }
@@ -38,10 +41,7 @@ export default class Chat {
       this.#messages.shift();
     }
     this.#messages.push(message);
-    ("socketStore");
-    ("emit");
-    ("everySocket");
-    socket.emit("everySocket", new ChatMessageEvent(message));
+    this.#socketsStore.emit(new ChatMessageEvent(message));
   }
 
   ensureCorrectLength(text: string) {
