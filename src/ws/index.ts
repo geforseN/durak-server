@@ -3,10 +3,6 @@ import assert from "node:assert";
 import NotificationAlert from "../module/notification-alert";
 
 export const defaultListeners = {
-  everySocket(this: WebSocket[], event: CustomWebsocketEvent) {
-    const message = event.asString;
-    this.forEach((socket) => socket.send(message));
-  },
   socket(this: WebSocket, event: CustomWebsocketEvent) {
     this.send(event.asString);
   },
@@ -44,40 +40,58 @@ export class NotificationAlertEvent extends CustomWebsocketEvent {
 }
 
 export class SocketsStore {
-  #value: Set<WebSocket>;
-  #userSockets: Map<string, Set<WebSocket>>;
+  #allSockets: Set<WebSocket>;
+  #rooms: Map<string, Set<WebSocket>>;
 
   constructor() {
-    this.#value = new Set<WebSocket>();
-    this.emitSockets = this.emitSockets.bind(this);
-    this.#userSockets = new Map<string, Set<WebSocket>>();
+    this.#allSockets = new Set<WebSocket>();
+    this.#rooms = new Map<string, Set<WebSocket>>();
+    this.emit = this.emit.bind(this);
   }
 
-  emitSockets(event: CustomWebsocketEvent) {
+  emit(event: CustomWebsocketEvent) {
     const data = event.asString;
-    this.#value.forEach((socket) => socket.send(data));
+    console.log({ data });
+    this.#allSockets.forEach((socket) => socket.send(data));
   }
 
   add(socket: WebSocket) {
-    this.#value.add(socket);
+    this.#allSockets.add(socket);
   }
 
   room(roomName: string) {
-    if (!roomName) return { add: () => {} };
     return {
+      isEmpty: this.#rooms.get(roomName)?.size === 0,
+      hasOneSocket: this.#rooms.get(roomName)?.size === 1,
       add: (socket: WebSocket) => {
-        const room = this.#userSockets.get(roomName);
+        const room = this.#rooms.get(roomName);
         if (room) {
           room.add(socket);
         } else {
-          this.#userSockets.set(roomName, new Set([socket]));
+          this.#rooms.set(roomName, new Set([socket]));
         }
+        return this.room(roomName);
+      },
+      emit: (event: CustomWebsocketEvent) => {
+        const room = this.#rooms.get(roomName);
+        const data = event.asString;
+        room?.forEach((socket) => socket.send(data));
+        return this.room(roomName);
+      },
+      remove: (socket: WebSocket) => {
+        const room = this.#rooms.get(roomName);
+        const isExisted = room?.delete(socket);
+        assert.ok(
+          isExisted,
+          `Provided socket wasn't found in room ${roomName}`,
+        );
+        return this.room(roomName);
       },
     };
   }
 
-  delete(socket: WebSocket) {
-    const isExisted = this.#value.delete(socket);
+  remove(socket: WebSocket) {
+    const isExisted = this.#allSockets.delete(socket);
     assert.ok(isExisted, "Provided socket wasn't found in store");
   }
 }
