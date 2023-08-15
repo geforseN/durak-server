@@ -1,5 +1,4 @@
-import { SocketStream } from "@fastify/websocket";
-import type WebSocket from "ws";
+import type { SocketStream } from "@fastify/websocket";
 import type {
   FastifyBaseLogger,
   FastifyInstance,
@@ -8,8 +7,7 @@ import type {
 import assert from "node:assert";
 import crypto from "node:crypto";
 import prisma from "../prisma";
-import { CustomWebsocketEvent, SocketsStore, defaultListeners } from "./ws";
-import { FastifySessionObject } from "@fastify/session";
+import { CustomWebsocketEvent, SocketsStore } from "./ws";
 
 declare module "fastify" {
   interface Session {
@@ -21,6 +19,7 @@ declare module "fastify" {
 
 export default async function indexPage(fastify: FastifyInstance) {
   const socketsStore = new SocketsStore();
+
   fastify.route({
     method: "GET",
     url: "/",
@@ -39,76 +38,78 @@ export default async function indexPage(fastify: FastifyInstance) {
     },
     wsHandler: async function wsHandler(connection, request) {
       socketsStore.add(connection.socket);
+      const userRoom = socketsStore
+        .room(request.session.user.id)
+        .add(connection.socket);
       const context = { requestId: request.id, session: request.session };
       const log = this.log.child(context);
       log.info("WebSocket: / NEW");
-      connection.socket.addListener(
-        "everySocket",
-        function (this: WebSocket, ...args: [CustomWebsocketEvent]) {
-          const event = args[0];
-          log.info({ event }, "WS / everySocket");
-          socketsStore.emitSockets.call(this, event);
-        },
-      );
-      connection.socket.addListener(
-        "socket",
-        function (this: WebSocket, event: CustomWebsocketEvent) {
-          log.info({ event }, "WS / socket");
-          defaultListeners.socket.call(this, event);
-        },
-      );
-      updateConnectionStatus(connection, request);
-      connection.socket.emit(
-        "socket",
-        new UserProfileRestoreEvent(request.session),
+      if (
+        userRoom.hasOneSocket &&
+        request.session.user.profile?.connectStatus === "OFFLINE"
+      ) {
+        makeUserOnline(connection, request);
+      }
+      connection.socket.send(
+        new UserProfileRestoreEvent(request.session).asString,
       );
       connection.socket.addListener("close", (_code, _reason) => {
-        socketsStore.delete(connection.socket);
-        if (request.session.userProfile.connectStatus === "ONLINE") {
-          setTimeout(makeUserOffline, 5_000, request);
+        socketsStore.remove(connection.socket);
+        userRoom.remove(connection.socket);
+        if (userRoom.isEmpty) {
+          makeUserOffline(request);
         }
       });
     },
   });
 }
 
-function updateConnectionStatus(
-  connection: SocketStream,
-  request: FastifyRequest,
-) {
-  if (request.session.userProfile?.connectStatus === "OFFLINE") {
-    request.session.userProfile.connectStatus = "ONLINE";
-    prisma.userProfile
-      .update({
-        where: {
-          userId: request.session.userProfile.userId,
-        },
-        data: {
-          connectStatus: "ONLINE",
-        },
-      })
-      .then((user) =>
-        connection.emit("socket", new UserConnectStatusUpdateEvent(user)),
-      )
-      .catch((error) => {
-        request.session.userProfile.connectStatus = "OFFLINE";
-        request.server.log.error("makeUserOnline", error);
-      });
-  }
-}
-
-async function makeUserOffline(request: FastifyRequest) {
+function makeUserOnline(connection: SocketStream, request: FastifyRequest) {
+  assert.ok(request.session.user.profile);
+  request.session.user.profile.connectStatus = "ONLINE";
+  // REVIEW - maybe userProfile should not contain connectStatus
+  // ? should connectStatus get removed from userProfile ?
   prisma.userProfile
     .update({
       where: {
-        userId: request.session.userProfile.userId,
+        userId: request.session.user.id,
+      },
+      data: {
+        connectStatus: "ONLINE",
+      },
+    })
+    .then((user) => {
+      request.session.save().then(console.log);
+      connection.emit("socket", new UserConnectStatusUpdateEvent(user));
+    })
+    .catch((error) => {
+      assert.ok(request.session.user.profile);
+      request.session.user.profile.connectStatus = "OFFLINE";
+      request.server.log.error({ error }, "makeUserOnline failed");
+    });
+}
+
+async function makeUserOffline(request: FastifyRequest) {
+  // NOTE: prisma.UserProfile will still be unchanged
+  //  ? should prisma.UserProfile contain connectStatus ?
+  //  ? maybe connectStatus should be session only ?
+  prisma.userProfile
+    .update({
+      where: {
+        userId: request.session.user.id,
       },
       data: {
         connectStatus: "OFFLINE",
       },
     })
-    .then((userProfile) => (request.session.userProfile = userProfile))
-    .catch((error) => request.server.log.error("makeUserOffline", error));
+    .then((userProfile) => {
+      if (userProfile.connectStatus !== "OFFLINE") {
+        console.error("after database update userProfile still !== OFFLINE");
+      }
+      request.session.user.profile?.connectStatus === "OFFLINE";
+      request.session.save().then(console.log, console.error);
+    })
+    .catch((error) => request.server.log.error({ error }, "makeUserOffline"));
 }
 
 async function createAnonymousUser(log?: FastifyBaseLogger) {
@@ -126,21 +127,20 @@ async function createAnonymousUser(log?: FastifyBaseLogger) {
           nickname: "Anonymous",
         },
       },
+      UserGameStat: { create: {} },
     },
     include: {
       UserProfile: true,
-      UserGameStat: true,
     },
   });
-  // assert.ok(profile && profile.photoUrl, "TypeScript");
-  // assert.ok(user.email === null && user.currentGameId === null);
+  assert.ok(profile && profile.photoUrl, "TypeScript");
+  assert.ok(user.email === null && user.currentGameId === null);
   log?.info({ userProfile: profile }, "end user creation");
   return { ...user, profile, isAnonymous: true };
 }
 
 class UserProfileRestoreEvent extends CustomWebsocketEvent {
-  // session: FastifySessionObject;
-  session;
+  user;
 
   constructor(
     session: Record<string, any>, // TODO better type,
@@ -162,19 +162,6 @@ class UserConnectStatusUpdateEvent extends CustomWebsocketEvent {
     this.connectStatus = userProfile.connectStatus;
   }
 }
-
-// function withBefore(
-//   decorator: Function,
-//   decoratedFunc: (...args: any[]) => void,
-// ) {
-//   decorator();
-//   return decoratedFunc;
-// }
-
-// function q(this: WebSocket, event: CustomWebsocketEvent) {
-//   log.info({ event }, "socket");
-//   defaultListers.socket.call(this, event);
-// }
 
 async function mutateSessionWith(
   user: Awaited<ReturnType<typeof createAnonymousUser>>,
