@@ -7,9 +7,10 @@ export abstract class RoundEnd {
 
   prepareBeforeNewGameRound() {
     if (this.game.talon.isEmpty) {
-      this.game.players = new Players(this.game.players);
-      if (this.game.players.count !== 1) return;
-      throw new Error("Game should be end");
+      this.game.players = new Players(this.game);
+      if (this.game.players.count === 1) {
+        throw new Error("One player remained. Game must be over");
+      }
     } else {
       new GameRoundDistributionQueue(this.game).makeDistribution();
     }

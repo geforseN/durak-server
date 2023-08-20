@@ -19,7 +19,7 @@ export default class Hand extends Deck {
     notFoundMessage = "Неверный индекс",
   ): number {
     const index = this.value.findIndex(cb);
-    assert.ok(index > 0, notFoundMessage);
+    assert.ok(index >= 0, notFoundMessage);
     return index;
   }
 
@@ -39,10 +39,6 @@ export default class Hand extends Deck {
 
   get randomCard() {
     return this.value[crypto.randomInt(this.count)];
-  }
-
-  get isEmpty(): boolean {
-    return this.count === 0;
   }
 }
 

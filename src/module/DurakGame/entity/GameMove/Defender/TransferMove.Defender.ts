@@ -38,21 +38,3 @@ export class TransferMove
     return this.game.round.giveDefendTo(this.player.left);
   }
 }
-// TODO CertainMoves constructor should be like:
-//  constructor(
-//     game: DurakGame,
-//     context: {
-//       card: Card;
-//       slotIndex: number;
-//       performer?: Player;
-//     },
-//   ) {
-//     super(game, { performer: context.performer || game.players.defender });
-//     this.card = this.performer.remove((card) => card === context.card);
-//     this.slotIndex = context.slotIndex;
-//     this.isInsertMove = true;
-//     this.game.desk.receiveCard({
-//       card: this.card,
-//       index: this.slotIndex,
-//       source: this.performer,
-//     });

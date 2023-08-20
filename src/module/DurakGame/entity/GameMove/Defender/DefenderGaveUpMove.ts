@@ -11,11 +11,4 @@ export class DefenderGaveUpMove extends DefenderMove implements AfterHandler {
     }
     return this.game.round.giveAttackTo(this.game.round.primalAttacker);
   }
-
-  override emitOwnData() {
-    super.emitOwnData();
-    this.game.info.namespace.emit("defender__gaveUp", {
-      defenderId: this.player.id,
-    });
-  }
 }

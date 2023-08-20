@@ -5,7 +5,9 @@ import GameRound from "../GameRound";
 
 export default abstract class SuperPlayer extends Player {
   remove(cb: (card: Card) => boolean): Card {
-    return this.hand.remove(cb);
+    const card = this.hand.remove(cb);
+    this.wsService?.removeCard({ player: this, card });
+    return card;
   }
 
   @logGetter()

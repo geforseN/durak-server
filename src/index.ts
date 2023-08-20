@@ -1,4 +1,3 @@
-import { instrument } from "@socket.io/admin-ui";
 import dotenv from "dotenv";
 import durakGameSocketHandler from "./module/DurakGame/socket/DurakGameSocket.handler";
 import DurakGame from "./module/DurakGame/DurakGame";
@@ -17,9 +16,9 @@ import { PrismaClient } from "@prisma/client";
 import GithubAuth from "./api/auth/github";
 import VkAuth from "./api/auth/vk";
 import getUserProfile from "./api/profile/[personalLink].get";
-import indexPage from "./indexPage";
+import indexPage, { handler } from "./indexPage";
 import chatPlugin from "./module/Chat/chatPlugin";
-import { NonStartedDurakGame } from "./module/DurakGame/NonStartedDurakGame";
+import NonStartedDurakGame from "./module/DurakGame/NonStartedDurakGame";
 import { z } from "zod";
 import { parseEnv } from "znv";
 import path from "node:path";
@@ -31,27 +30,15 @@ import {
   validatorCompiler,
 } from "fastify-type-provider-zod";
 import getMe from "./api/me";
+import DurakGamesStore from "./DurakGamesStore";
+import { Server } from "socket.io";
+import { parse } from "node:querystring";
 
 dotenv.config();
 
-const uuidRegex =
-  /[\da-fA-F]{8}\b-[\da-fA-F]{4}\b-[\da-fA-F]{4}\b-[\da-fA-F]{4}\b-[\da-fA-F]{12}$/;
+// TODO remove process.env from codebase
 export const durakGames = new Map<string, NonStartedDurakGame | DurakGame>();
-class DurakGamesStore {
-  #value: (NonStartedDurakGame | DurakGame)[];
-
-  constructor() {
-    this.#value = [];
-  }
-
-  get value() {
-    return 1;
-  }
-
-  add() {}
-
-  remove() {}
-}
+export const durakGamesStore = new DurakGamesStore();
 export const env = parseEnv(process.env, {
   DATABASE_URL: z.string(),
   FASTIFY_PORT: z.number().default(3000),
@@ -77,13 +64,13 @@ const fastify = Fastify({
   },
 }).withTypeProvider<ZodTypeProvider>();
 export type FastifyInstance = typeof fastify;
-
 export const store: SessionStore = new PrismaSessionStore(new PrismaClient(), {
   checkPeriod: env.SESSION_STORE_CHECK_PERIOD,
   loggerLevel: ["log", "warn", "error"],
 });
 
 fastify
+  .decorate("prisma", new PrismaClient())
   .setValidatorCompiler(validatorCompiler)
   .setSerializerCompiler(serializerCompiler)
   .register(fastifyStatic, { root: path.join(__dirname, "../static") })
@@ -91,6 +78,12 @@ fastify
   .register(fastifyHelmet, {
     contentSecurityPolicy: {
       directives: {
+        connectSrc: [
+          "'self'",
+          "http://127.0.0.1:3001",
+          "ws://127.0.0.1:3001",
+          "http://127.0.0.1:3000",
+        ],
         defaultSrc: ["'self'"],
         imgSrc: [
           "'self'",
@@ -131,18 +124,13 @@ fastify
   .register(getUserProfile)
   .register(chatPlugin, { path: "/global-chat" })
   .register(gameLobbiesPlugin)
+  .setNotFoundHandler(function (this: typeof fastify, request, reply) {
+    this.log.error("setNotFoundHandler before");
+    handler.call(this, request, reply);
+    this.log.error("setNotFoundHandler after");
+  })
   .ready()
-  .then(
-    function (this: typeof fastify) {
-      instrument(this.io, { auth: false, mode: "development" });
-      const durakGame: DurakGameSocket.Namespace = this.io.of(
-        new RegExp("game/" + uuidRegex),
-      );
-      fastify.log.info("durak game io", this.io.path(), durakGame.name);
-      setUserProfileIntoSocketData.call(this, durakGame);
-      durakGame.on("connect", durakGameSocketHandler);
-    }.bind(fastify),
-  );
+  .then(function (this: typeof fastify) {}.bind(fastify));
 
 (async () => {
   try {
@@ -157,47 +145,46 @@ export function raise(err: Error | string = new Error()): never {
   throw typeof err === "string" ? new Error(err) : err;
 }
 
-function _decorator_example<This, Args extends unknown[], Return>(
-  target: (this: This, ...args: Args) => Return,
-  __context__: ClassMethodDecoratorContext<
-    This,
-    (this: This, ...args: Args) => Return
-  >,
-) {
-  return function (this: This, ...args: Args): Return {
-    return target.apply(this, args);
-  };
-}
+const gamesNamespace: DurakGameSocket.Namespace = new Server(3001, {
+  cors: {
+    origin: [
+      ...env.CORS_ORIGIN,
+      "http://127.0.0.1:3001",
+      "http://127.0.0.1:3000",
+    ],
+    credentials: true,
+  },
+}).of(
+  /^\/game\/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/,
+);
+gamesNamespace.use(mutateSocketData);
 
-function setUserProfileIntoSocketData(
-  this: FastifyInstance,
-  durakGame: DurakGameSocket.Namespace,
-) {
-  durakGame.use(
-    // Вопрос: Что делать с обычным пользователем, не являющимся игроком данной игры?
-    // Ответ: Просто пропустим пользователя далее, однако
-    // далее его сообщения к серверу игнорируются
-    // он может только получить данные игры и
-    // он не имеет права хода в игре
-    // NOTE: для пропуска пользователя далее просто вызываем в middleware next без аргументов
-    (socket, next) => {
-      if (!socket.handshake.headers.cookie) return next();
-      const cookie = this.parseCookie(socket.handshake.headers.cookie);
-      const sessionId = cookie[env.SESSION_COOKIE_NAME];
-      if (!sessionId) return next();
-      socket.data.sessionId = sessionId;
-      store.get(sessionId, (error, session) => {
-        if (error || !session) {
-          this.log.error("store couldn't get session data", {
-            error,
-            session,
-          });
-          return next();
-        }
-        socket.data.user = session.user;
-        socket.data.userProfile = session.userProfile ?? raise();
-        return next();
-      });
-    },
-  );
+function mutateSocketData(socket: DurakGameSocket.Socket, next: (err?: Error) => void) {
+  if (!socket.handshake.headers.cookie) return next();
+  const cookie = parse(socket.handshake.headers.cookie);
+  console.log({ cookie });
+  const sessionId = cookie["sessionId"];
+  console.log({ sessionId });
+  if (!sessionId || Array.isArray(sessionId)) return next();
+  const sid = sessionId.split(".")[0];
+  console.log({ sid });
+  store.get(sid, (error, session) => {
+    if (error || !session) {
+      console.log(
+        {
+          error,
+          session,
+        },
+        "store couldn't get session data",
+      );
+      return next();
+    }
+    socket.data.sessionId = sessionId;
+    socket.data.sid = sid;
+    socket.data.user = session.user;
+    socket.data.userProfile = session.userProfile ?? raise();
+    return next();
+  });
 }
+gamesNamespace.on("connection", durakGameSocketHandler);
+// instrument("<TODO>", { auth: false, mode: "development" });

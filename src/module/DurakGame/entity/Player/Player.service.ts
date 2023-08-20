@@ -1,4 +1,4 @@
-import { Player, PlayerKind, playerKinds } from "./index";
+import { Player, PlayerKind, isPlayerKind, playerKinds } from "./index";
 import Card from "../Card";
 import CardDTO from "../../DTO/Card.dto";
 import { DurakGameSocket } from "../../socket/DurakGameSocket.types";
@@ -8,38 +8,53 @@ export default class GamePlayerWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
 
   receiveCards({ player, cards }: { player: Player; cards: Card[] }) {
-    this.namespace.to(player.id).emit(
-      "player__receiveCards",
-      cards.map((card) => new CardDTO(card)),
-    );
-    this.namespace
-      .except(player.id)
-      .emit("player__changeCardCount", player.id, player.hand.count);
+    this.namespace.to(player.id).emit("player::receiveCards", {
+      player: {
+        addedCards: cards.map((card) => new CardDTO(card)),
+        handCount: player.hand.count,
+      },
+    });
+    this.namespace.except(player.id).emit("player::receiveCards", {
+      player: {
+        id: player.id,
+        addedCardsCount: cards.length,
+        handCount: player.hand.count,
+      },
+    });
   }
 
   removeCard({ player, card }: { player: Player; card: Card }) {
-    this.namespace
-      .to(player.id)
-      .emit("superPlayer__removeCard", new CardDTO(card));
-    this.namespace
-      .except(player.id)
-      .emit("player__changeCardCount", player.id, player.hand.count);
+    this.namespace.to(player.id).emit("player::removeCard", {
+      player: { newCardsCount: player.hand.count },
+      card: new CardDTO(card),
+    });
+    this.namespace.except(player.id).emit("player::removeCard", {
+      player: {
+        id: player.id,
+        newCardsCount: player.hand.count,
+      },
+    });
   }
 
   emitOwnKind(player: Player) {
     assert.ok(isPlayerKind(player.constructor.name));
-    this.namespace.emit(
-      "player__changeKind",
-      player.constructor.name,
-      player.id,
-    );
+    this.namespace.to(player.id).emit("player::changedKind", {
+      player: {
+        newKind: player.constructor.name,
+      },
+    });
+    this.namespace.except(player.id).emit("player::changedKind", {
+      player: {
+        id: player.id,
+        newKind: player.constructor.name,
+      },
+    });
   }
 
   exitGame(player: Player) {
-    this.namespace.emit("player__exitGame", player.id);
+    this.namespace.to(player.id).emit("player::leftGame");
+    this.namespace
+      .except(player.id)
+      .emit("player::leftGame", { player: { id: player.id } });
   }
-}
-
-function isPlayerKind(kind: string | PlayerKind): kind is PlayerKind {
-  return playerKinds.includes(kind as PlayerKind);
 }

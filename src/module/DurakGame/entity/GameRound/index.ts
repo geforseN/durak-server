@@ -1,11 +1,17 @@
 import { Player } from "../Player";
-import { AttackerMove, DefenderMove } from "../GameMove";
+import {
+  AttackerMove,
+  DefenderMove,
+  InsertAttackCardMove,
+  InsertDefendCardMove,
+  StopAttackMove,
+  StopDefenseMove,
+  TransferMove,
+} from "../GameMove";
 import type DurakGame from "../../DurakGame";
 import GameRoundMoves from "./GameRoundMoves";
-import { AfterHandler } from "../GameMove/GameMove.abstract";
-import FailedDefense from "../DefenseEnding/FailedDefense";
-import SuccessfulDefense from "../DefenseEnding/SuccessfulDefense";
-import { raise } from "../../../..";
+import type FailedDefense from "../DefenseEnding/FailedDefense";
+import type SuccessfulDefense from "../DefenseEnding/SuccessfulDefense";
 
 export default class GameRound {
   readonly number: number;
@@ -14,25 +20,30 @@ export default class GameRound {
 
   constructor(game: DurakGame) {
     this.game = game;
-    this.number = !game.round ? 1 : game.round.number + 1;
+    this.number = (game.round?.number || 0) + 1;
     this.moves = new GameRoundMoves();
+    this.game.info.namespace.emit("round::new", {
+      roundNumber: this.number,
+    });
     this.giveAttackTo(game.players.attacker);
-    this.game.info.namespace.emit('round__number', this.number);
   }
 
   endWith(Defense: typeof FailedDefense | typeof SuccessfulDefense) {
-    this.game.round =
-      new Defense(this.game).newGameRound || raise("Update round error");
+    const newRound = new Defense(this.game).newGameRound;
+    if (!newRound) {
+      return this.game.end();
+    }
+    this.game.round = newRound;
   }
 
   giveAttackTo(player: Player) {
-    this.game.round.moves.nextMove = new AttackerMove(this.game, {
+    this.moves.nextMove = new AttackerMove(this.game, {
       performer: player,
     });
   }
 
   giveDefendTo(player: Player) {
-    this.game.round.moves.nextMove = new DefenderMove(this.game, {
+    this.moves.nextMove = new DefenderMove(this.game, {
       performer: player,
     });
   }
@@ -41,8 +52,15 @@ export default class GameRound {
     return this.moves.currentMove;
   }
 
-  set currentMove(move: (DefenderMove | AttackerMove) & AfterHandler) {
-    this.moves.currentMove = move;
+  set currentMove(
+    certainMove:
+      | StopAttackMove
+      | StopDefenseMove
+      | InsertAttackCardMove
+      | InsertDefendCardMove
+      | TransferMove,
+  ) {
+    this.moves.currentMove = certainMove;
   }
 
   get primalAttacker(): Player | never {

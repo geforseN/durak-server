@@ -1,7 +1,7 @@
 import Deck from "../Deck.abstract";
-import Card from "../../Card";
-import { CanReceiveCards } from "../../../DurakGame";
-import GameDiscardWebsocketService from "./Discard.service";
+import type Card from "../../Card";
+import { type CanReceiveCards } from "../../../DurakGame";
+import type GameDiscardWebsocketService from "./Discard.service";
 
 export default class Discard extends Deck implements CanReceiveCards {
   readonly #wsService: GameDiscardWebsocketService;
@@ -12,15 +12,11 @@ export default class Discard extends Deck implements CanReceiveCards {
   }
 
   receiveCards(...cards: Card[]): void {
-    this.#receive(cards);
-    this.#wsService?.emitReceivedCards(cards);
-  }
-
-  #receive(cards: Card[]) {
-    const previousCardCount = this.value.length;
+    const hasBeenEmptyBeforeReceive = this.isEmpty;
     const newCardCount = this.value.push(...cards);
-    if (!previousCardCount && newCardCount) {
+    if (hasBeenEmptyBeforeReceive && newCardCount) {
       this.#wsService.emitReceivedFirstCards();
     }
+    this.#wsService?.emitReceivedCards(this, cards);
   }
 }

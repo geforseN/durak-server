@@ -1,6 +1,6 @@
 export type Suit = (typeof Card.suits)[number];
 export type Rank = (typeof Card.ranks)[number];
-export type Power = number;
+export type Power = (typeof Card.powers)[keyof typeof Card.powers];
 export type CardConstructor = { suit: Suit; rank: Rank };
 
 export default class Card {
@@ -26,6 +26,10 @@ export default class Card {
 
   toString() {
     return this.suit + this.rank.at(-1) + " isTrump: " + this.isTrump;
+  }
+
+  toJSON() {
+    return JSON.stringify({ rank: this.rank, suit: this.suit });
   }
 
   static suits = ["♠", "♦", "♥", "♣"] as const;
@@ -65,7 +69,7 @@ export class TrumpCard extends Card {
   isTrump: boolean = true;
 }
 
-// TODO: add methods to class or delete class   
+// TODO: add methods to class or delete class
 class DefendCard {
   canBeat(attackCard: AttackCard) {}
 }

@@ -14,10 +14,10 @@ export default abstract class DeskSlot {
 
   abstract ensureCanBeAttacked(card: Card): Promise<Card> | never;
 
-  ensureAllowsTransfer(card: Card): Promise<Card> | never {
+  async ensureAllowsTransfer(card: Card): Promise<Card> {
     if (!this.attackCard?.hasSame({ rank: card.rank })) {
-      return Promise.reject(new Error("Нельзя перевести: нет схожего ранга"));
+      throw new Error("Нельзя перевести: нет схожего ранга");
     }
-    return Promise.resolve(card);
+    return card;
   }
 }

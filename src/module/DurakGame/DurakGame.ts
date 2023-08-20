@@ -10,7 +10,7 @@ import {
 import GameRoundDistributionQueue from "./entity/GameRoundDistributionQueue";
 import { type DurakGameSocket } from "./socket/DurakGameSocket.types";
 import { type GameSettings } from "../Lobbies/entity/CorrectGameSettings";
-import { type NonStartedDurakGame } from "./NonStartedDurakGame";
+import type NonStartedDurakGame from "./NonStartedDurakGame";
 import pino from "pino";
 
 export default class DurakGame {
@@ -34,24 +34,32 @@ export default class DurakGame {
       target: "pino-pretty" as const,
     },
   });
+  isEnded = false;
+  readonly initialPlayers: {
+    id: string;
+    place: number | null;
+    roundLeftNumber: number | null;
+    index: number;
+  }[];
+  leftPlayersCount: number;
 
   constructor(
-    NonStartedGame: NonStartedDurakGame,
+    nonStartedGame: NonStartedDurakGame,
     namespace: DurakGameSocket.Namespace,
   ) {
-    this.info = { ...NonStartedGame.info, namespace, isStarted: true };
-    this.settings = { ...NonStartedGame.settings, moveTime: 90_000 };
+    this.info = { ...nonStartedGame.info, namespace, isStarted: true };
+    this.settings = { ...nonStartedGame.settings, moveTime: 90_000 };
     this.players = new Players(
-      NonStartedGame.players,
+      nonStartedGame.players,
       new GamePlayerWebsocketService(namespace),
     );
     this.talon = new Talon(
-      NonStartedGame.settings,
+      nonStartedGame.settings,
       new GameTalonWebsocketService(namespace),
     );
     this.discard = new Discard(new GameDiscardWebsocketService(namespace));
     this.desk = new Desk(
-      NonStartedGame.settings.desk,
+      nonStartedGame.settings.desk,
       new GameDeskWebsocketService(namespace),
     );
     this.#wsService = new DurakGameWebsocketService(namespace);
@@ -59,11 +67,17 @@ export default class DurakGame {
     this.#makeInitialSuperPlayersStrategy();
     this.round = new GameRound(this);
     this.isStarted = true;
+    this.initialPlayers = this.players.value.map((player, index) => ({
+      id: player.id,
+      place: null,
+      roundLeftNumber: null,
+      index,
+    }));
+    this.leftPlayersCount = 0;
   }
 
-  // TODO: remove playerId param when socket.data will contain playerId
-  restoreState(socket: DurakGameSocket.Socket, playerId: string) {
-    this.#wsService.restoreState({ socket, game: this, playerId });
+  restoreState(socket: DurakGameSocket.Socket) {
+    this.#wsService.restoreState(this, socket);
   }
 
   #makeInitialSuperPlayersStrategy() {
@@ -73,6 +87,13 @@ export default class DurakGame {
     );
     this.players.attacker = desiredAttacker;
     this.players.defender = this.players.attacker.left;
+  }
+
+  end() {
+    this.isEnded = true;
+    const [durakPlayer] = this.players;
+    this.info.durakId = durakPlayer.id;
+    this.#wsService.end(this);
   }
 }
 

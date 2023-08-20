@@ -43,7 +43,7 @@ export default class DeskSlots {
       this.#value.map((slot) => slot.ensureAllowsTransfer(card)),
     ).then(
       (_cards) => true,
-      (_errorWithReason) => false,
+      (_error) => false,
     );
   }
 

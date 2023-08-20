@@ -17,7 +17,7 @@ export class AttackerMoveDefaultBehavior extends DefaultBehavior<AttackerMove /*
       );
       console.log("TIMEOUT: ATTACKER insertRandomCard");
       await this.move.player.putCardOnDesk(
-        this.move,
+        this.move.game.round,
         this.move.player.randomCard,
         this.move.game.desk.randomEmptySlotIndex,
       );

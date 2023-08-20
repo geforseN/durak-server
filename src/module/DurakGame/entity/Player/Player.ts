@@ -1,4 +1,6 @@
-import type { LobbyUser } from "../../../Lobbies/lobbies.namespace";
+import assert from "node:assert";
+import LobbyUser from "../../../Lobbies/entity/LobbyUser";
+import DurakGame from "../../DurakGame";
 import type Card from "../Card";
 import { Hand } from "../Deck";
 import GamePlayerWebsocketService from "./Player.service";
@@ -17,45 +19,35 @@ export default class Player {
   right!: Player;
   protected readonly wsService?: GamePlayerWebsocketService;
 
+  // TODO rework constructor, code is hard to understand
+  // can create another classes (NonStartedGamePlayer, NonLinkedPlayer)
   constructor(lobbyUser: LobbyUser);
   constructor(player: Player);
   constructor(player: Player, wsService: GamePlayerWebsocketService);
-  constructor(player: Player, index: number, players: Player[]);
   constructor(
     playerOrLobbyUser: LobbyUser | Player,
     wsServiceOrIndex?: GamePlayerWebsocketService | number,
-    players?: Player[],
   ) {
     if (!(playerOrLobbyUser instanceof Player)) {
       const lobbyUser = playerOrLobbyUser;
       this.hand = new Hand();
       this.info = lobbyUser;
-    } else {
-      const player = playerOrLobbyUser;
-      if (wsServiceOrIndex instanceof GamePlayerWebsocketService) {
-        this.info = player.info;
-        this.hand = player.hand;
-        const wsService = wsServiceOrIndex;
-        this.wsService = wsService;
-      } else if (wsServiceOrIndex && players) {
-        this.hand = player.hand;
-        this.info = player.info;
-        this.wsService = player.wsService;
-        const index = wsServiceOrIndex;
-        const indexes = new SidePlayersIndexes(index, players.length);
-        this.left = players[indexes.leftPlayerIndex];
-        this.right = players[indexes.rightPlayerIndex];
-      } else {
-        this.info = player.info;
-        this.hand = player.hand;
-        this.left = player.left;
-        this.right = player.right;
-        this.wsService = player.wsService;
-        this.left.right = this;
-        this.right.left = this;
-        this.wsService?.emitOwnKind(this);
-      }
+      return; // NonStartedPlayer got constructed, can return
     }
+    const player = playerOrLobbyUser;
+    this.info = player.info;
+    this.hand = player.hand;
+    if (wsServiceOrIndex instanceof GamePlayerWebsocketService) {
+      const wsService = wsServiceOrIndex;
+      this.wsService = wsService;
+      return;
+    }
+    this.wsService = player.wsService;
+    this.left = player.left;
+    this.right = player.right;
+    this.left.right = this;
+    this.right.left = this;
+    this.wsService?.emitOwnKind(this);
   }
 
   receiveCards(...cards: Card[]): void {
@@ -90,9 +82,14 @@ export default class Player {
     return this.isAttacker || this.isDefender;
   }
 
-  exitGame() {
+  exitGame(game: DurakGame) {
     this.left.right = this.right;
     this.right.left = this.left;
+    const me = game.initialPlayers.find((player) => player.id === this.id);
+    if (me) {
+      me.roundLeftNumber = game.round.number;
+      me.place = ++game.leftPlayersCount;
+    }
     return this.wsService?.exitGame(this);
   }
 }
