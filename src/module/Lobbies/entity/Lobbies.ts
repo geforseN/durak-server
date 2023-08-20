@@ -1,6 +1,6 @@
 import type { User, UserProfile } from "@prisma/client";
 import EventEmitter from "events";
-import { durakGames, raise } from "../../..";
+import { durakGamesStore, raise } from "../../..";
 import { CustomWebsocketEvent, SocketsStore } from "../../../ws";
 import { FindLobbyError } from "../error";
 import type { GameSettings } from "./CorrectGameSettings";
@@ -11,7 +11,6 @@ import Lobby, {
 } from "./Lobby";
 import LobbyUser from "./LobbyUser";
 import assert from "node:assert";
-import { NonStartedDurakGame } from "../../DurakGame/NonStartedDurakGame";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;
@@ -22,14 +21,15 @@ export default class Lobbies {
     this.#emitter = new EventEmitter()
       .on("lobby##remove", ({ lobby }) => {
         this.#store.delete(lobby.id);
-        socketsStore.emit(new LobbyRemoveEvent(lobby.id));
+        socketsStore.emit(new LobbyRemoveEvent(lobby));
       })
       .on("lobby##add", ({ lobby }) => {
         this.#store.set(lobby.id, lobby);
         socketsStore.emit(new LobbyAddEvent(lobby));
       })
       .on("lobby##upgrade", ({ lobby }: { lobby: Lobby }) => {
-        durakGames.set(lobby.id, new NonStartedDurakGame(lobby));
+        this.#emitter.emit("lobby##remove", { lobby });
+        durakGamesStore.updateLobbyToNonStartedGame(lobby);
         const event = new LobbyUpgradeToNonStartedGameEvent(lobby);
         lobby.userSlots.forEach((slot) => {
           socketsStore.room(slot.user.id).emit(event);
@@ -152,8 +152,11 @@ class LobbyAddEvent extends CustomWebsocketEvent {
 }
 
 class LobbyRemoveEvent extends CustomWebsocketEvent {
-  constructor(public lobbyId: Lobby["id"]) {
+  lobbyId;
+
+  constructor(lobby: Lobby) {
     super("lobby::remove");
+    this.lobbyId = lobby.id;
   }
 }
 
