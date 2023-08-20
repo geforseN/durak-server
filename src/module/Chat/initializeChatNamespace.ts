@@ -1,14 +1,26 @@
 import { FastifyRequest } from "fastify";
 import { SocketStream } from "@fastify/websocket";
 import { Chat } from "./entity";
-import { SocketsStore, defaultListeners } from "../../ws";
+import { CustomWebsocketEvent, SocketsStore, defaultListeners } from "../../ws";
+import { WebSocket } from "ws";
+
+export interface AdditionalListeners {
+  addListener(
+    event: "socket",
+    listener: (this: WebSocket, event: CustomWebsocketEvent) => void,
+  ): this;
+  on(
+    event: "socket",
+    listener: (this: WebSocket, event: CustomWebsocketEvent) => void,
+  ): this;
+}
 
 export default function initializeChat() {
   const socketsStore = new SocketsStore();
   const chat = new Chat({ socketsStore });
 
   return function getChatContext(
-    connection: SocketStream,
+    connection: SocketStream & { socket: WebSocket & AdditionalListeners },
     request: FastifyRequest,
   ) {
     socketsStore.add(connection.socket);
