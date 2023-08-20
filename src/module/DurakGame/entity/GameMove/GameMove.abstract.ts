@@ -25,18 +25,14 @@ export abstract class GameMove {
     return this.game.players.get((player) => player.id === this.performer.id);
   }
 
-  emitOwnData() {
-    this.game.info.namespace.emit("game::move::new", {
-      name: this.constructor.name,
-      allowedPlayerId: this.player.id,
-    });
-  }
-
-  emitContext() {
-    this.game.info.namespace.emit("player__allowedToMove", {
-      allowedPlayerId: this.player.id,
-      moveEndTimeInUTC: this.defaultBehavior.callTime.UTC,
-      moveTimeInSeconds: this.game.settings.moveTime,
+  emitContextToPlayers() {
+    this.game.info.namespace.emit("move::new", {
+      move: {
+        allowedPlayer: { id: this.player.id },
+        name: this.constructor.name,
+        endTime: { UTC: this.defaultBehavior.callTime.UTC },
+        timeToMove: this.game.settings.moveTime,
+      },
     });
   }
 
@@ -52,7 +48,7 @@ export abstract class GameMove {
     // TODO: fix type of context
     // | { performer: Player }
     // | { performer: Player; card: Card; slotIndex: number },
-    context?: Record<string, never> | { card: Card; slotIndex: number },
+    context: void | Record<string, never> | { card: Card; slotIndex: number },
   ): void {
     this.defaultBehavior.stop();
     this.game.round.currentMove = new Move(this.game, context);

@@ -14,8 +14,7 @@ export class FilledSlot {
   }
 
   withInsertedUser(user: LobbyUser) {
-    this.value = user;
-    return this;
+    return new FilledSlot(this.index, user);
   }
 
   withInsertedAdminUser() {
@@ -24,6 +23,10 @@ export class FilledSlot {
 
   withRemovedUser() {
     return new EmptySlot(this.index);
+  }
+
+  toJSON() {
+    return JSON.stringify(this.user);
   }
 }
 

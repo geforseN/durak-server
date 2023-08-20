@@ -30,13 +30,13 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
   provideCards(player: Player, count = player.missingNumberOfCards) {
     if (count === 0) return;
     const cards = this.#pop(count);
+    this.#wsService.provideCardsAnimation(this, player, cards);
     player.receiveCards(...cards);
-    this.#wsService.provideCardsAnimation({ player, cards, talon: this });
   }
 
-  #pop(count = 1): Card[] {
-    if (count < 0) {
-      throw new Error("count must be positive number");
+  #pop(count: number): Card[] {
+    if (count <= 0) {
+      throw new Error("first argument must be positive number");
     }
     const startIndex = this.count - count;
     if (startIndex <= 0) {

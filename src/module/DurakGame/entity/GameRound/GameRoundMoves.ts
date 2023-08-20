@@ -35,7 +35,7 @@ export default class GameRoundMoves {
   ) {
     this.currentMove.defaultBehavior.stop();
     this.#value[this.#currentMoveIndex] = certainMove;
-    certainMove.emitOwnData();
+    certainMove.emitContextToPlayers();
     certainMove.handleAfterMoveIsDone();
   }
 
@@ -50,7 +50,7 @@ export default class GameRoundMoves {
   set nextMove(uncertainMove: DefenderMove | AttackerMove) {
     this.currentMove?.defaultBehavior.stop();
     this.#value.push(uncertainMove);
-    uncertainMove.emitContext();
+    uncertainMove.emitContextToPlayers();
   }
 
   get firstDefenderMove(): DefenderMove | never {

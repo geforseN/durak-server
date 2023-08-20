@@ -18,10 +18,10 @@ export default abstract class Deck {
   }
 
   get isEmpty() {
-    return this.value.length === 1;
+    return this.value.length === 0;
   }
 
-  #avalableRanks(rankCount: number) {
+  #availableRanks(rankCount: number) {
     return [...Card.ranks]
       .reverse()
       .filter((_rank, index) => index < rankCount);
@@ -30,9 +30,9 @@ export default abstract class Deck {
   #buildDeck(size?: CardCount): Card[] {
     if (!size) return [];
     const rankCount = Math.floor(size / Card.suits.length);
-    const avalableRanks = this.#avalableRanks(rankCount);
+    const availableRanks = this.#availableRanks(rankCount);
     return Card.suits.flatMap((suit) =>
-      avalableRanks.map((rank) => new Card({ rank, suit })),
+      availableRanks.map((rank) => new Card({ rank, suit })),
     );
   }
 }

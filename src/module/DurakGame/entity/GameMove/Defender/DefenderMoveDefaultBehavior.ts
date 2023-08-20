@@ -16,7 +16,7 @@ export class DefenderMoveDefaultBehavior extends DefaultBehavior<DefenderMove /*
         "TIMEOUT: defaultBehavior DEFENDER BUG",
       );
       console.log("TIMEOUT: DEFENDER stopMove");
-      this.move.player.stopMove(this.move);
+      this.move.player.stopMove(move.game.round);
     }, this.move.game.settings.moveTime);
   }
 }

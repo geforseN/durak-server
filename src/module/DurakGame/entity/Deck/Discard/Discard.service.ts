@@ -1,15 +1,18 @@
-import { DurakGameSocket } from "../../../socket/DurakGameSocket.types";
-import Card from "../../Card";
+import type Discard from ".";
+import { type DurakGameSocket } from "../../../socket/DurakGameSocket.types";
+import type Card from "../../Card";
 
 export default class GameDiscardWebsocketService {
-  constructor(private namespace: DurakGameSocket.Namespace) {
-  }
+  constructor(private namespace: DurakGameSocket.Namespace) {}
 
-  emitReceivedCards(cards: Card[]) {
-    this.namespace.emit("discard__receiveCards", cards.length);
+  emitReceivedCards(discard: Discard, cards: Card[]) {
+    this.namespace.emit("discard::receivedCards", {
+      addedCardsCount: cards.length,
+      totalCardsCount: discard.count,
+    });
   }
 
   emitReceivedFirstCards() {
-    this.namespace.emit("discard__setIsNotEmpty");
+    this.namespace.emit("discard::becameFilled");
   }
 }

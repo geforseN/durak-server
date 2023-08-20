@@ -15,8 +15,8 @@ export default class Attacker extends SuperPlayer {
     { rank, suit }: CardDTO,
     slotIndex: number,
   ): Promise<void> {
-    "TODO ensure can't make transfer move" &&
-      Promise.reject(new Error("Атакующий не может перевести карту"));
+    // TODO ensure can't make transfer move
+    // WTF is comment above even mean
     assert.ok(this === round.currentMove.player);
     const card = this.hand.get((card) => card.hasSame({ rank, suit }));
     await round.game.desk.ensureCanAttack(card, slotIndex);

@@ -11,14 +11,14 @@ export default class EmptySlot extends DeskSlot {
   }
 
   override async ensureCanBeAttacked(card: Card) {
-    return Promise.resolve(card);
+    return card;
   }
 
   override ensureCanBeDefended() {
     return Promise.reject(new Error("Нет от чего защищаться"));
   }
 
-  override ensureAllowsTransfer(card: Card) {
-    return Promise.resolve(card);
+  override async ensureAllowsTransfer(card: Card) {
+    return card;
   }
 }

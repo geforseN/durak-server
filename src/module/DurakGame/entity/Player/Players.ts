@@ -1,24 +1,27 @@
 import assert from "node:assert";
 import GamePlayerWebsocketService from "./Player.service";
 import { Attacker, Defender, Player, SuperPlayer } from "./index";
+import SidePlayersIndexes from "./SidePlayersIndexes";
+import DurakGame from "../../DurakGame";
 
 export default class Players {
-  readonly #value: Player[];
+  readonly value: Player[];
 
   constructor(
-    unstartedGamePlayers: Player[],
+    nonStartedGamePlayers: Player[],
     wsPlayerService: GamePlayerWebsocketService,
   );
-  constructor(players: Players);
+  constructor(game: DurakGame);
   constructor(
-    players: Players | Player[],
+    playersOrGame: DurakGame | Player[],
     wsPlayerService?: GamePlayerWebsocketService,
   ) {
-    if (players instanceof Players) {
-      this.#value = players.#value.reduce(
+    if (playersOrGame instanceof DurakGame) {
+      const game = playersOrGame;
+      this.value = game.players.value.reduce(
         (nonEmptyPlayers: Player[], player) => {
           if (player.hand.isEmpty) {
-            player.exitGame();
+            player.exitGame(game);
           } else {
             nonEmptyPlayers.push(player);
           }
@@ -26,25 +29,30 @@ export default class Players {
         },
         [],
       );
-    } else if (wsPlayerService) {
-      const unstartedGamePlayers = players;
-      this.#value = unstartedGamePlayers.map(
+    } else if (
+      Array.isArray(playersOrGame) &&
+      wsPlayerService instanceof GamePlayerWebsocketService
+    ) {
+      const nonStartedGamePlayers = playersOrGame;
+      this.value = nonStartedGamePlayers.map(
         (player) => new Player(player, wsPlayerService),
       );
-      this.#value = this.#value.map(
-        (player, index, players) => new Player(player, index, players),
-      );
+      this.value.forEach((player, index, players) => {
+        const indexes = new SidePlayersIndexes(index, players.length);
+        player.left = players[indexes.leftPlayerIndex];
+        player.right = players[indexes.rightPlayerIndex];
+      });
     } else {
       throw new Error("Players constructor failure");
     }
   }
 
   *[Symbol.iterator]() {
-    yield* this.#value;
+    yield* this.value;
   }
 
   get count() {
-    return this.#value.length;
+    return this.value.length;
   }
 
   get attacker(): Attacker {
@@ -70,28 +78,28 @@ export default class Players {
   }
 
   #changeKind(
-    targetOfKindChange: Player,
+    target: Player,
     ParticularKind: { new (...args: any): Player | SuperPlayer },
   ) {
-    if (targetOfKindChange.constructor === ParticularKind) return;
-    const particularSuperKind = this.#value.find(
+    if (target.constructor === ParticularKind) return;
+    const particularSuperKind = this.value.find(
       (player): player is SuperPlayer =>
         player instanceof ParticularKind && player.constructor !== Player,
     );
     if (particularSuperKind) {
       this.#update(particularSuperKind, Player);
     }
-    this.#update(targetOfKindChange, ParticularKind);
+    this.#update(target, ParticularKind);
   }
 
   #update<OldPlayerKind extends Player>(
-    targetOfUpdate: OldPlayerKind,
+    target: OldPlayerKind,
     ParticularKind: { new (...args: any): Player | SuperPlayer },
   ) {
-    const playerIndex = this.#value.indexOf(targetOfUpdate);
-    assert.ok(playerIndex > 0);
-    const updatedTarget = new ParticularKind(targetOfUpdate);
-    this.#value.splice(playerIndex, 1, updatedTarget);
+    const playerIndex = this.value.indexOf(target);
+    assert.ok(playerIndex >= 0);
+    const updatedTarget = new ParticularKind(target);
+    this.value.splice(playerIndex, 1, updatedTarget);
   }
 
   get(cb: (player: Player) => boolean, notFoundMessage?: string): Player;
@@ -103,16 +111,20 @@ export default class Players {
     cb: (player: Player) => boolean,
     notFoundMessage = "Игрок не найден",
   ): Player {
-    const player = this.#value.find(cb);
+    const player = this.value.find(cb);
     assert.ok(player, notFoundMessage);
     return player;
   }
 
-  remove(cb: (player: Player) => boolean, notRemovedMessage?: string): Player {
-    const playerIndex = this.#value.findIndex(cb);
+  remove(
+    cb: (player: Player) => boolean,
+    game: DurakGame,
+    notRemovedMessage?: string,
+  ): Player {
+    const playerIndex = this.value.findIndex(cb);
     assert.ok(playerIndex, notRemovedMessage);
-    const [player] = this.#value.splice(playerIndex, 1);
-    player.exitGame();
+    const [player] = this.value.splice(playerIndex, 1);
+    player.exitGame(game);
     return player;
   }
 }

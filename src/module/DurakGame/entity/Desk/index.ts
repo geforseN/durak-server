@@ -8,7 +8,6 @@ import DeskSlots, {
   FilledSlots,
   UnbeatenSlots,
 } from "../DeskSlots";
-import { raise } from "../../../..";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
   #slots: DeskSlots;

@@ -1,12 +1,18 @@
-import {
+import type {
   Namespace as SocketIONamespace,
   Socket as SocketIOSocket,
 } from "socket.io";
-import NotificationAlert from "../../notification-alert";
-import { CardDTO, DurakGameStateDTO } from "../DTO";
-import { PlayerKind } from "../entity/Player";
-import { env } from "../../..";
-import { ConnectStatus } from "@prisma/client";
+import type NotificationAlert from "../../notification-alert";
+import type { CardDTO, DurakGameStateDTO } from "../DTO";
+import type { Player, PlayerKind } from "../entity/Player";
+import type {
+  ConnectStatus,
+  DurakGame,
+  User,
+  UserGamePlayer,
+  UserProfile,
+} from "@prisma/client";
+import { BetterDurakGameState } from "../DTO/DurakGameState.dto";
 
 export namespace DurakGameSocket {
   export type ClientToServerEvents = {
@@ -14,56 +20,144 @@ export namespace DurakGameSocket {
     superPlayer__stopMove: () => void;
     superPlayer__putCardOnDesk: (card: CardDTO, slotIndex: number) => void;
   };
+
   export type ServerToClientEvents = {
-    notification__send: (notification: NotificationAlert) => void;
-    game__restoreState: (state: DurakGameStateDTO) => void;
-    game__over: () => void;
-    game__currentId: (gameId: string) => void;
-    player__allowedToMove: (payload: {
-      allowedPlayerId: string;
-      moveEndTimeInUTC: number;
-      moveTimeInSeconds: number;
+    "nonStartedGame::details": (payload: {
+      joinedPlayersIds: Player["id"][];
     }) => void;
-    "game::move::new": ({
-      name,
-      allowedPlayerId,
-    }: {
-      name: string;
-      allowedPlayerId: string;
+    "nonStartedGame::playerJoined": (payload: {
+      player: { id: Player["id"] };
     }) => void;
-    player__changeCardCount: (playerId: string, cardCount: number) => void;
-    player__changeKind: (kind: PlayerKind, playerId: string) => void;
-    player__exitGame: (playerId: string) => void;
-    player__receiveCards: (cards: CardDTO[]) => void;
-    defender__gaveUp: (payload: { defenderId: string }) => void;
-    defender__lostRound: (id: string, roundNumber: number) => void;
-    defender__wonRound: (id: string, roundNumber: number) => void;
-    superPlayer__removeCard: (card: CardDTO) => void;
-    desk__clear: () => void;
-    desk__cardReceive: (
-      card: CardDTO,
-      slotIndex: number,
-      whoId: string,
+    "finishedGame::restore": (
+      game: DurakGame & { players: UserGamePlayer[] },
     ) => void;
-    talon__distributeCardsTo: (playerId: string, cardCount: number) => void;
-    talon__keepOnlyTrumpCard: () => void;
-    talon__moveTrumpCardTo: (playerId: string) => void;
-    discard__receiveCards: (cardCount: number) => void;
-    discard__setIsNotEmpty: () => void;
+    "finishedGame::notFound": () => void;
+    "notification::push": (notification: NotificationAlert) => void;
+    "game::state::restore": (payload: {
+      _state: DurakGameStateDTO;
+      state: BetterDurakGameState;
+    }) => void;
+    // TODO add more payload data to 'game::over' event
+    "game::over": (payload: { durak: { id: Player["id"] } }) => void;
+  } & DeskServerToClientEvents &
+    DiscardServerToClientEvents &
+    MoveServerToClientEvents &
+    PlayerServerToClientEvents &
+    RoundServerToClientEvents &
+    TalonServerToClientEvents;
+
+  type DeskServerToClientEvents = {
+    "desk::becameClear": () => void;
+    "desk::receivedCard": (payload: {
+      card: CardDTO;
+      slot: { index: number };
+      source: { id: Player["id"] };
+    }) => void;
+  };
+
+  type DiscardServerToClientEvents = {
+    "discard::receivedCards": (payload: {
+      addedCardsCount: number;
+      // NOTE: it is not best idea to emit count of discard cards
+      // discard cards count can be used for cheating
+      // user always can inject JavaScript code
+      totalCardsCount?: number;
+    }) => void;
+    "discard::becameFilled": () => void;
+  };
+
+  type MoveServerToClientEvents = {
+    "move::new": (payload: {
+      move: {
+        name: string;
+        allowedPlayer: { id: string };
+        endTime: { UTC: number };
+        timeToMove?: number;
+      };
+    }) => void;
+  };
+
+  type PlayerServerToClientEvents = {
+    "player::receiveCards": (payload: {
+      player:
+        | {
+            id: Player["id"];
+            addedCardsCount: number;
+            handCount?: number;
+          }
+        | {
+            addedCards: CardDTO[];
+            handCount?: number;
+          };
+    }) => void;
+    "player::removeCard": (
+      payload:
+        | {
+            player: {
+              id: Player["id"];
+              newCardsCount?: number;
+            };
+          }
+        | {
+            player?: { newCardsCount: number };
+            card: CardDTO;
+          },
+    ) => void;
+    "player::changedKind": (payload: {
+      player:
+        | {
+            id: Player["id"];
+            newKind: PlayerKind;
+          }
+        | {
+            newKind: PlayerKind;
+          };
+    }) => void;
+    "player::leftGame": (
+      payload: { player: { id: Player["id"] } } | void,
+    ) => void;
+  };
+
+  type RoundServerToClientEvents = {
+    "round::new": (payload: { roundNumber: number }) => void;
+    "round::becameEnded": (payload: {
+      round: {
+        number: number;
+        defender: {
+          // NOTE: frontend should know who is defender
+          // so data about defender id can be omitted
+          id?: Player["id"];
+          isSuccessfullyDefended: boolean;
+        };
+      };
+    }) => void;
+  };
+
+  type TalonServerToClientEvents = {
+    "talon::madeDistribution": (payload: {
+      receiver: {
+        id: Player["id"];
+      };
+      distributionCards: {
+        count: number;
+        isMainTrumpCardIncluded: boolean;
+      };
+      talon: {
+        // NOTE: it is not best idea to emit card count of talon
+        // talon card count can be used for cheating
+        // user always can inject JavaScript code
+        cardCount?: number;
+        isOnlyTrumpCardRemained: boolean;
+      };
+    }) => void;
   };
 
   export type InterServerEvents = Record<string, never>;
 
   export type SocketData = {
     sessionId: string;
-    userProfile: {
-      userId: string;
-      personalLink: string;
-      updatedAt: Date;
-      photoUrl: string | null;
-      nickname: string;
-      connectStatus: ConnectStatus;
-    };
+    userProfile: UserProfile;
+    user: User;
   };
 
   export type Socket = SocketIOSocket<

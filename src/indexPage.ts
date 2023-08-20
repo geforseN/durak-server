@@ -1,9 +1,6 @@
 import type { SocketStream } from "@fastify/websocket";
-import type {
-  FastifyBaseLogger,
-  FastifyInstance,
-  FastifyRequest,
-} from "fastify";
+import type { FastifyBaseLogger, FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyInstance } from ".";
 import assert from "node:assert";
 import crypto from "node:crypto";
 import prisma from "../prisma";
@@ -17,25 +14,30 @@ declare module "fastify" {
   }
 }
 
+export async function handler(
+  this: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const context = { requestId: request.id, session: request.session };
+  const log = this.log.child(context);
+  this.log.info({ isSessionModified: request.session.isModified });
+  if (!request.session.isAnonymous) {
+    await mutateSessionWith(await createAnonymousUser(log), request, log);
+  } else {
+    this.log.info("session exist in store");
+  }
+  this.log.info("sendFile index.html");
+  return reply.type("text/html").sendFile("index.html");
+}
+
 export default async function indexPage(fastify: FastifyInstance) {
   const socketsStore = new SocketsStore();
 
   fastify.route({
     method: "GET",
     url: "/",
-    handler: async function handler(request, reply) {
-      const context = { requestId: request.id, session: request.session };
-      const log = this.log.child(context);
-      log.info("HTTP: GET /");
-      log.info({ isSessionModified: request.session.isModified });
-      if (!request.session.isAnonymous) {
-        await mutateSessionWith(await createAnonymousUser(log), request, log);
-      } else {
-        log.info("session exist in store");
-      }
-      log.info("sendFile index.html");
-      return reply.type("text/html").sendFile("index.html");
-    },
+    handler,
     wsHandler: async function wsHandler(connection, request) {
       socketsStore.add(connection.socket);
       const userRoom = socketsStore
@@ -43,7 +45,7 @@ export default async function indexPage(fastify: FastifyInstance) {
         .add(connection.socket);
       const context = { requestId: request.id, session: request.session };
       const log = this.log.child(context);
-      log.info("WebSocket: / NEW");
+      this.log.info("WebSocket: / NEW");
       if (
         userRoom.hasOneSocket &&
         request.session.user.profile?.connectStatus === "OFFLINE"

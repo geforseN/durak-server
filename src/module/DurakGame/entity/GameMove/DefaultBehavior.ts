@@ -3,7 +3,7 @@ import GameMove from "./GameMove.abstract";
 export default abstract class DefaultBehavior<Move extends GameMove> {
   protected abstract value: NodeJS.Timeout;
   protected readonly move: Move;
-  public readonly shouldBeCalled: boolean;
+  public shouldBeCalled: boolean;
   public readonly callTime: { UTC: number };
 
   constructor(move: Move) {

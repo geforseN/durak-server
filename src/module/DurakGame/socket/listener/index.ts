@@ -12,7 +12,7 @@ export function stopMoveListener(this: { game: DurakGame; playerId: string }) {
     assert.ok(error instanceof Error);
     this.game.info.namespace
       .to(this.playerId)
-      .emit("notification__send", new NotificationAlert(error));
+      .emit("notification::push", new NotificationAlert(error));
   }
 }
 
@@ -27,6 +27,6 @@ export async function cardPlaceListener(
     assert.ok(error instanceof Error);
     this.game.info.namespace
       .to(this.playerId)
-      .emit("notification__send", new NotificationAlert(error));
+      .emit("notification::push", new NotificationAlert(error));
   }
 }
