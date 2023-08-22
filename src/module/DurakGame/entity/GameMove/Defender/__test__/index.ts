@@ -1,73 +1,149 @@
 import test from "node:test";
 import assert from "node:assert";
 import Card, { Suit, TrumpCard } from "../../../Card";
-import getDefenseStrategy from "../getDefenseStrategy";
+import getDefenseStrategy, {
+  cardsSort,
+  slotsSort,
+} from "../getDefenseStrategy";
+
+let TRUMP_SUIT: Suit = "♠" as const;
+let WEAK_SUITS: Record<
+  Exclude<Suit, typeof TRUMP_SUIT>,
+  Exclude<Suit, typeof TRUMP_SUIT>
+> = {
+  "♣": "♣",
+  "♦": "♦",
+  "♥": "♥",
+};
+let logger: Console | undefined = undefined && console;
 
 test.describe("trump cards check", () => {
-  const suit: Suit = "♠";
   test.it("throw when defender has weaker trump cards", () => {
     assert.throws(
       () => {
         getDefenseStrategy(
           [
-            new TrumpCard({ rank: "10", suit }),
-            new TrumpCard({ rank: "4", suit }),
+            new TrumpCard({ rank: "10", suit: TRUMP_SUIT }),
+            new TrumpCard({ rank: "4", suit: TRUMP_SUIT }),
           ],
           [
-            new TrumpCard({ rank: "J", suit }),
-            new TrumpCard({ rank: "2", suit }),
+            new TrumpCard({ rank: "J", suit: TRUMP_SUIT }),
+            new TrumpCard({ rank: "2", suit: TRUMP_SUIT }),
           ],
-          suit,
         );
       },
       { message: "Defender trump card could not defend desk trump card" },
     );
   });
+  test.describe("defense of trump unbeaten cards with best trump cards", () => {
+    assert.doesNotThrow(() => {
+      const { defenseStrategy, remainingDefenderTrumpCards } =
+        getDefenseStrategy(
+          [
+            new TrumpCard({ rank: "J", suit: TRUMP_SUIT }),
+            new TrumpCard({ rank: "6", suit: TRUMP_SUIT }),
+            new TrumpCard({ rank: "9", suit: TRUMP_SUIT }),
+            new TrumpCard({ rank: "K", suit: TRUMP_SUIT }),
+            new TrumpCard({ rank: "A", suit: TRUMP_SUIT }),
+          ],
+          [
+            new TrumpCard({ rank: "Q", suit: TRUMP_SUIT }),
+            new TrumpCard({ rank: "8", suit: TRUMP_SUIT }),
+          ],
+        );
 
+      test.it("correct remained defender trump cards count", () => {
+        assert.strictEqual(remainingDefenderTrumpCards.length, 3);
+      });
+
+      test.it("remained defender trump cards are best", () => {
+        assert.deepStrictEqual(
+          remainingDefenderTrumpCards.sort(cardsSort),
+          [
+            new TrumpCard({ rank: "A", suit: TRUMP_SUIT }),
+            new TrumpCard({ rank: "6", suit: TRUMP_SUIT }),
+            new TrumpCard({ rank: "J", suit: TRUMP_SUIT }),
+          ].sort(cardsSort),
+        );
+      });
+
+      test.it("defense strategy contains best cards", () => {
+        assert.deepStrictEqual(defenseStrategy, [
+          {
+            attackCard: new TrumpCard({ rank: "Q", suit: TRUMP_SUIT }),
+            defendCard: new TrumpCard({ rank: "K", suit: TRUMP_SUIT }),
+          },
+          {
+            attackCard: new TrumpCard({ rank: "8", suit: TRUMP_SUIT }),
+            defendCard: new TrumpCard({ rank: "9", suit: TRUMP_SUIT }),
+          },
+        ]);
+      });
+    });
+  });
+});
+
+test.describe("throw on wrong data", () => {
   test.todo(
     "throw when there is no unbeaten v cards" +
       "(when no unbeaten cards, then find player who can put card on desk." +
       "if no one found then defender won defense",
     () => {
       assert.doesNotThrow(() => {
-        getDefenseStrategy([], [], suit);
+        getDefenseStrategy([], []);
       });
     },
   );
+});
 
-  test.it("defend with lowest trump cards", () => {
-    assert.doesNotThrow(() => {
-      const { defenseStrategy, remainingDefenderTrumpCards } =
-        getDefenseStrategy(
-          [
-            new TrumpCard({ rank: "J", suit }),
-            new TrumpCard({ rank: "6", suit }),
-            new TrumpCard({ rank: "9", suit }),
-            new TrumpCard({ rank: "K", suit }),
-            new TrumpCard({ rank: "A", suit }),
-          ],
-          [
-            new TrumpCard({ rank: "Q", suit }),
-            new TrumpCard({ rank: "8", suit }),
-          ],
-          suit,
-        );
-      assert.strictEqual(remainingDefenderTrumpCards.length, 3);
-      assert.notDeepStrictEqual(remainingDefenderTrumpCards, [
-        new TrumpCard({ rank: "A", suit }),
-        new TrumpCard({ rank: "6", suit }),
-        new TrumpCard({ rank: "J", suit }),
-      ]);
-      assert.deepStrictEqual(defenseStrategy, [
+test.describe("bsd", () => {
+  const { defenseStrategy, remainingDefenderTrumpCards } = getDefenseStrategy(
+    [
+      new TrumpCard({ rank: "Q", suit: TRUMP_SUIT }),
+      new TrumpCard({ rank: "9", suit: TRUMP_SUIT }),
+      new TrumpCard({ rank: "K", suit: TRUMP_SUIT }),
+      new Card({ rank: "J", suit: WEAK_SUITS["♦"] }),
+      new Card({ rank: "K", suit: WEAK_SUITS["♥"] }),
+    ],
+    [
+      new TrumpCard({ rank: "10", suit: TRUMP_SUIT }),
+      new TrumpCard({ rank: "8", suit: TRUMP_SUIT }),
+      new Card({ rank: "A", suit: WEAK_SUITS["♥"] }),
+      new Card({ rank: "10", suit: WEAK_SUITS["♦"] }),
+      new Card({ rank: "Q", suit: WEAK_SUITS["♥"] }),
+    ],
+    logger,
+  );
+
+  test.it("correct remained defender trump cards count", () => {
+    assert.strictEqual(remainingDefenderTrumpCards.length, 0);
+  });
+
+  test.it("defense strategy contains best cards", () => {
+    assert.deepStrictEqual(
+      [...defenseStrategy].sort(slotsSort),
+      [
         {
-          deskCard: new TrumpCard({ rank: "Q", suit: suit }),
-          defenderCard: new TrumpCard({ rank: "K", suit }),
+          attackCard: new Card({ rank: "Q", suit: WEAK_SUITS["♥"] }),
+          defendCard: new Card({ rank: "K", suit: WEAK_SUITS["♥"] }),
         },
         {
-          deskCard: new TrumpCard({ rank: "8", suit: suit }),
-          defenderCard: new TrumpCard({ rank: "9", suit }),
+          attackCard: new Card({ rank: "A", suit: WEAK_SUITS["♥"] }),
+          defendCard: new TrumpCard({ rank: "K", suit: TRUMP_SUIT }),
         },
-      ]);
-    });
+        {
+          attackCard: new TrumpCard({ rank: "10", suit: TRUMP_SUIT }),
+          defendCard: new TrumpCard({ rank: "Q", suit: TRUMP_SUIT }),
+        },
+        {
+          attackCard: new TrumpCard({ rank: "8", suit: TRUMP_SUIT }),
+          defendCard: new TrumpCard({ rank: "9", suit: TRUMP_SUIT }),
+        },
+        {
+          attackCard: new Card({ rank: "10", suit: WEAK_SUITS["♦"] }),
+          defendCard: new Card({ rank: "J", suit: WEAK_SUITS["♦"] }),
+        },
+      ].sort(slotsSort),
+    );
   });
 });
