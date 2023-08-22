@@ -1,9 +1,10 @@
 import Card, { Suit } from "../../Card";
+import { FilledDeskSlotBase } from "../../DeskSlot/DeskSlot.abstract";
 
 export default function getDefenseStrategy(
   defenderCards: Card[],
   unbeatenDeskCards: Card[],
-  trumpSuit?: Suit,
+  logger?: { log: Function },
 ) {
   if (unbeatenDeskCards.length > defenderCards.length) {
     throw new Error("Too many cards, can not defend it");
@@ -17,11 +18,25 @@ export default function getDefenseStrategy(
   if (deskTrumpCards.length > defenderTrumpCards.length) {
     throw new Error("Too many trump cards, can not defend it");
   }
-  const defenseStrategy: { defenderCard: Card; deskCard: Card }[] = [];
+  const defenseStrategy: FilledDeskSlotBase[] = [];
+  defenseStrategy.toString = function () {
+    return this.map((slot) => `${slot.attackCard} ${slot.defendCard}`).join("");
+  };
+  Object.defineProperty(defenseStrategy, "toString", {
+    enumerable: false,
+    writable: false,
+    configurable: false,
+    value() {
+      return (this as Array<FilledDeskSlotBase>)
+        .map((slot) => `[${slot.attackCard}, ${slot.defendCard}] \n`)
+        .join();
+    },
+  });
   const remainingDefenderTrumpCards = defendDeskTrumpCards(
     defenderTrumpCards.slice(),
     deskTrumpCards,
     defenseStrategy,
+    logger,
   );
   // NOTE: Weak suit is a suit, which is not trump suit (WeakSuit !== TrumpSuit)
   // NOTE: Weak card is a card, which suit is not trump suit (WeakCard.suit !== TrumpSuit)
@@ -63,74 +78,97 @@ export default function getDefenseStrategy(
         ],
     ),
   );
-  const _minRequiredTrumpCards = ensureHasMinimalRequiredTrumpCards(
+  ensureHasMinimalRequiredTrumpCards(
     remainingDefenderTrumpCards,
     weakSuitGropedUnbeatenCards,
     weakSuitGropedDefenderCards,
   );
+  logger?.log({ remainingDefenderTrumpCards });
   for (const [weakSuit, unbeatenWeakSuitCards] of weakSuitGropedUnbeatenCards) {
     const defenderWeakCards = weakSuitGropedDefenderCards.get(weakSuit);
     if (!defenderWeakCards) {
-      if (!remainingDefenderTrumpCards.length) {
-        throw new Error(
-          `Can not defend, no trump cards and no defender cards with suit=${weakSuit}`,
-        );
-      }
-      if (unbeatenWeakSuitCards.length > remainingDefenderTrumpCards.length) {
-        throw new Error(
-          `Can not defend, not enough trump cards to defend all cards with suit=${weakSuit}`,
-        );
-      }
       defenseStrategy.push(
-        ...unbeatenWeakSuitCards.map((weakSuitCard) => {
-          const [firstDefenderTrumpCard] = remainingDefenderTrumpCards.splice(
-            0,
-            1,
-          );
-          return {
-            deskCard: weakSuitCard,
-            defenderCard: firstDefenderTrumpCard,
-          };
-        }),
+        ...defendWithTrumpCards(unbeatenDeskCards, remainingDefenderTrumpCards),
       );
     } else {
-      let highPowerUnbeatenWeakSuitCard = [];
+      logger?.log({ defenderWeakCards, unbeatenWeakSuitCards });
+      const highPowerUnbeatenWeakSuitCards = [];
       for (const unbeatenWeakSuitCard of unbeatenWeakSuitCards) {
         const strongerCardOfDefender = defenderWeakCards.find(
           (card) => card.power > unbeatenWeakSuitCard.power,
         );
         if (!strongerCardOfDefender) {
-          highPowerUnbeatenWeakSuitCard.push(unbeatenWeakSuitCard);
+          highPowerUnbeatenWeakSuitCards.push(unbeatenWeakSuitCard);
         } else {
+          logger?.log({
+            strongerCardOfDefender,
+            defendCard: strongerCardOfDefender,
+            attackCard: unbeatenWeakSuitCard,
+          });
           defenseStrategy.push({
-            defenderCard: strongerCardOfDefender,
-            deskCard: unbeatenWeakSuitCard,
+            defendCard: strongerCardOfDefender,
+            attackCard: unbeatenWeakSuitCard,
           });
         }
-        if (
-          highPowerUnbeatenWeakSuitCard.length >
-          remainingDefenderTrumpCards.length
-        ) {
-          throw new Error(
-            `Can not defend, not enough trump cards to defend highest cards with suit=${weakSuit}`,
-          );
-        } else {
-          defenseStrategy.push(
-            ...highPowerUnbeatenWeakSuitCard.map((weakSuitCard) => {
-              const [firstDefenderTrumpCard] =
-                remainingDefenderTrumpCards.splice(0, 1);
-              return {
-                deskCard: weakSuitCard,
-                defenderCard: firstDefenderTrumpCard,
-              };
-            }),
-          );
-        }
       }
+      if (
+        highPowerUnbeatenWeakSuitCards.length >
+        remainingDefenderTrumpCards.length
+      ) {
+        console.log({
+          defenseStrategy: defenseStrategy.toString(),
+          remainingDefenderTrumpCards,
+          highPowerUnbeatenWeakSuitCards,
+        });
+        throw new Error(
+          `Can not defend, not enough trump cards to defend highest cards with suit=${weakSuit}`,
+        );
+      }
+      if (!highPowerUnbeatenWeakSuitCards.length) continue;
+      defenseStrategy.push(
+        ...highPowerUnbeatenWeakSuitCards.map((weakSuitCard) => {
+          const [firstDefenderTrumpCard] = remainingDefenderTrumpCards.splice(
+            0,
+            1,
+          );
+          logger?.log({
+            attackCard: weakSuitCard,
+            defendCard: firstDefenderTrumpCard,
+          });
+          return {
+            attackCard: weakSuitCard,
+            defendCard: firstDefenderTrumpCard,
+          };
+        }),
+      );
     }
   }
 
   return { defenseStrategy, remainingDefenderTrumpCards };
+}
+
+function defendWithTrumpCards(cards: Card[], trumpCards: Card[]) {
+  if (!trumpCards.length) {
+    throw new Error(
+      `Can not defend, no trump cards and no defender cards with suit=${
+        cards.at(0)?.suit
+      }`,
+    );
+  }
+  if (cards.length > trumpCards.length) {
+    throw new Error(
+      `Can not defend, not enough trump cards to defend all cards with suit=${
+        cards.at(0)?.suit
+      }`,
+    );
+  }
+  return cards.map((weakSuitCard) => {
+    const [firstDefenderTrumpCard] = trumpCards.splice(0, 1);
+    return {
+      attackCard: weakSuitCard,
+      defendCard: firstDefenderTrumpCard,
+    };
+  });
 }
 
 function ensureHasMinimalRequiredTrumpCards(
@@ -158,23 +196,39 @@ function ensureHasMinimalRequiredTrumpCards(
 function defendDeskTrumpCards(
   defenderTrumpCards: Card[],
   deskTrumpCards: Card[],
-  defenseStrategy: { defenderCard: Card; deskCard: Card }[],
+  defenseStrategy: FilledDeskSlotBase[],
+  logger?: { log: Function },
 ) {
   for (const deskTrumpCard of deskTrumpCards) {
-    const strongerDefenderTrumpCard = defenderTrumpCards.find(
+    const strongerDefenderTrumpCardIndex = defenderTrumpCards.findIndex(
       (card) => card.power > deskTrumpCard.power,
     );
-    if (!strongerDefenderTrumpCard) {
+    if (strongerDefenderTrumpCardIndex < 0) {
       throw new Error("Defender trump card could not defend desk trump card");
     }
-    defenseStrategy.push({
-      deskCard: deskTrumpCard,
-      defenderCard: strongerDefenderTrumpCard,
+    const [card] = defenderTrumpCards.splice(strongerDefenderTrumpCardIndex, 1);
+    logger?.log({
+      attackCard: deskTrumpCard,
+      defendCard: card,
     });
-    defenderTrumpCards.splice(
-      defenderTrumpCards.indexOf(strongerDefenderTrumpCard),
-      1,
-    );
+    defenseStrategy.push({
+      attackCard: deskTrumpCard,
+      defendCard: card,
+    });
   }
   return defenderTrumpCards;
+}
+
+export function slotsSort<T extends FilledDeskSlotBase>(a: T, b: T) {
+  return (
+    a.attackCard.power * (a.attackCard.isTrump ? 10 : 1) -
+    b.attackCard.power * (b.attackCard.isTrump ? 10 : 1)
+  );
+}
+export function slotAsString<T extends FilledDeskSlotBase>(a: T) {
+  return `[${a.attackCard}, ${a.defendCard}]`;
+}
+
+export function cardsSort<T extends Card>(a: T, b: T) {
+  return a.power * (a.isTrump ? 10 : 1) - b.power * (b.isTrump ? 10 : 1);
 }
