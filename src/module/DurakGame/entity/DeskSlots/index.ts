@@ -1,7 +1,7 @@
-import { DefendedSlot, DeskSlot, EmptySlot, UnbeatenSlot } from "./DeskSlot";
-import Card, { Rank } from "./Card";
+import { DeskSlot, EmptySlot } from "../DeskSlot";
+import Card, { Rank } from "../Card";
 import { randomInt } from "node:crypto";
-import { raise } from "../../..";
+import { raise } from "../../../..";
 
 export default class DeskSlots {
   readonly #value: DeskSlot[];
@@ -11,7 +11,7 @@ export default class DeskSlots {
   }
 
   get isEverySlotEmpty(): boolean {
-    return this.#value.every((slot) => slot instanceof EmptySlot);
+    return this.#value.every((slot) => slot.isEmpty());
   }
 
   *[Symbol.iterator]() {
@@ -65,44 +65,5 @@ export default class DeskSlots {
       [],
     );
     return emptySlotsIndexes[randomInt(emptySlotsIndexes.length)];
-  }
-}
-
-abstract class Slots<S> {
-  constructor(protected value: S[]) {}
-
-  get count() {
-    return this.value.length;
-  }
-}
-
-export class UnbeatenSlots extends Slots<UnbeatenSlot> {
-  constructor(allSlots: DeskSlot[]) {
-    super(allSlots.filter((slot): slot is UnbeatenSlot => slot.isUnbeaten()));
-  }
-
-  get cardCount() {
-    return this.count;
-  }
-
-  get cards() {
-    return this.value.map((slot) => slot.attackCard);
-  }
-}
-
-export class FilledSlots extends Slots<UnbeatenSlot | DefendedSlot> {
-  constructor(allSlots: DeskSlot[]) {
-    super(
-      allSlots.filter(
-        (slot): slot is UnbeatenSlot | DefendedSlot =>
-          slot.isUnbeaten() || slot.isDefended(),
-      ),
-    );
-  }
-}
-
-export class DefendedSlots extends Slots<DefendedSlot> {
-  constructor(allSlots: DeskSlot[]) {
-    super(allSlots.filter((slot): slot is DefendedSlot => slot.isDefended()));
   }
 }
