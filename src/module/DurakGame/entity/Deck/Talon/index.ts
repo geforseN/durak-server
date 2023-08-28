@@ -5,21 +5,18 @@ import Card, { TrumpCard } from "../../Card";
 import { type Player } from "../../Player";
 import { type CanProvideCards } from "../../../DurakGame";
 import type GameTalonWebsocketService from "./Talon.service";
+import { buildTalon } from "./buildDeck";
 
 export default class Talon extends Deck implements CanProvideCards<Player> {
   readonly #wsService: GameTalonWebsocketService;
   readonly trumpCard: Card;
 
   constructor(
-    settings: { cardCount: CardCount },
+    { cardCount }: { cardCount: CardCount },
     wsService: GameTalonWebsocketService,
   ) {
-    super(settings.cardCount);
-    this.#shuffle().#shuffle().#shuffle().#shuffle().#shuffle();
+    super(buildTalon(cardCount));
     this.trumpCard = new TrumpCard(this.value[0]);
-    this.value = this.value.map((card) =>
-      card.suit === this.trumpCard.suit ? new TrumpCard(card) : card,
-    );
     this.#wsService = wsService;
   }
 
@@ -49,17 +46,5 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
     const lastCards = this.value.splice(0, this.count);
     assert.ok(this.isEmpty);
     return lastCards;
-  }
-
-  // TODO refactor algorithm
-  #shuffle(): this {
-    for (let currentIndex = 0; currentIndex < this.count; currentIndex++) {
-      this.#swapCards(currentIndex, crypto.randomInt(this.count));
-    }
-    return this;
-  }
-
-  #swapCards(i: number, k: number) {
-    [this.value[k], this.value[i]] = [this.value[i], this.value[k]];
   }
 }
