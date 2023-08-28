@@ -1,6 +1,6 @@
 import { GameRound } from ".";
 import type DurakGame from "../DurakGame";
-import { NonEmptyPlayers } from "./Player/Players";
+import { NonEmptyPlayers } from "./Player/NonEmptyPlayers";
 
 export abstract class RoundEnd {
   constructor(protected game: DurakGame) {}
