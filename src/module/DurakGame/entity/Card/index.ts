@@ -25,7 +25,7 @@ export default class Card {
   }
 
   toString() {
-    return this.suit + this.rank.at(-1) + " isTrump: " + this.isTrump;
+    return `${this.suit}${this.rank.at(-1)}${this.isTrump ? "+" : "-"}`;
   }
 
   toJSON() {

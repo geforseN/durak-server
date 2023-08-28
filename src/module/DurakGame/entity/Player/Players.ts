@@ -1,50 +1,15 @@
 import assert from "node:assert";
-import GamePlayerWebsocketService from "./Player.service";
-import { Attacker, Defender, Player, SuperPlayer } from "./index";
+import type DurakGame from "../../DurakGame";
+import { NonLinkedGamePlayer, NonStartedGameUser } from "./Player";
+import type GamePlayerWebsocketService from "./Player.service";
 import SidePlayersIndexes from "./SidePlayersIndexes";
-import DurakGame from "../../DurakGame";
+import { Attacker, Defender, Player, SuperPlayer } from "./index";
 
-export default class Players {
+export default abstract class Players {
   readonly value: Player[];
 
-  constructor(
-    nonStartedGamePlayers: Player[],
-    wsPlayerService: GamePlayerWebsocketService,
-  );
-  constructor(game: DurakGame);
-  constructor(
-    playersOrGame: DurakGame | Player[],
-    wsPlayerService?: GamePlayerWebsocketService,
-  ) {
-    if (playersOrGame instanceof DurakGame) {
-      const game = playersOrGame;
-      this.value = game.players.value.reduce(
-        (nonEmptyPlayers: Player[], player) => {
-          if (player.hand.isEmpty) {
-            player.exitGame(game);
-          } else {
-            nonEmptyPlayers.push(player);
-          }
-          return nonEmptyPlayers;
-        },
-        [],
-      );
-    } else if (
-      Array.isArray(playersOrGame) &&
-      wsPlayerService instanceof GamePlayerWebsocketService
-    ) {
-      const nonStartedGamePlayers = playersOrGame;
-      this.value = nonStartedGamePlayers.map(
-        (player) => new Player(player, wsPlayerService),
-      );
-      this.value.forEach((player, index, players) => {
-        const indexes = new SidePlayersIndexes(index, players.length);
-        player.left = players[indexes.leftPlayerIndex];
-        player.right = players[indexes.rightPlayerIndex];
-      });
-    } else {
-      throw new Error("Players constructor failure");
-    }
+  constructor(value: Player[]) {
+    this.value = value;
   }
 
   *[Symbol.iterator]() {
@@ -57,45 +22,33 @@ export default class Players {
 
   get attacker(): Attacker {
     return this.get<Attacker>(
-      (player): player is Attacker => player instanceof Attacker,
+      (player): player is Attacker => player.isAttacker(),
       "Атакующий не найден",
     );
   }
 
   get defender(): Defender {
     return this.get<Defender>(
-      (player): player is Defender => player instanceof Defender,
+      (player): player is Defender => player.isDefender(),
       "Защищающийся не найден",
     );
   }
 
   set defender(player: Player) {
-    this.#changeKind(player, Defender);
+    if (player.isDefender()) return;
+    const defender = this.value.find((player) => player.isDefender());
+    if (defender) this.#update(defender, Player);
+    this.#update(player, Defender);
   }
 
-  set attacker(player: Player) {
-    this.#changeKind(player, Attacker);
+  set attacker(player: Player | SuperPlayer) {
+    if (player.isAttacker()) return;
+    const attacker = this.value.find((player) => player.isAttacker());
+    if (attacker) this.#update(attacker, Player);
+    this.#update(player, Attacker);
   }
 
-  #changeKind(
-    target: Player,
-    ParticularKind: { new (...args: any): Player | SuperPlayer },
-  ) {
-    if (target.constructor === ParticularKind) return;
-    const particularSuperKind = this.value.find(
-      (player): player is SuperPlayer =>
-        player instanceof ParticularKind && player.constructor !== Player,
-    );
-    if (particularSuperKind) {
-      this.#update(particularSuperKind, Player);
-    }
-    this.#update(target, ParticularKind);
-  }
-
-  #update<OldPlayerKind extends Player>(
-    target: OldPlayerKind,
-    ParticularKind: { new (...args: any): Player | SuperPlayer },
-  ) {
+  #update(target: Player, ParticularKind: typeof Player) {
     const playerIndex = this.value.indexOf(target);
     assert.ok(playerIndex >= 0);
     const updatedTarget = new ParticularKind(target);
@@ -126,5 +79,40 @@ export default class Players {
     const [player] = this.value.splice(playerIndex, 1);
     player.exitGame(game);
     return player;
+  }
+}
+
+export class NonEmptyPlayers extends Players {
+  constructor(game: DurakGame) {
+    super(
+      game.players.value.reduce((nonEmptyPlayers: Player[], player) => {
+        if (player.hand.isEmpty) {
+          player.exitGame(game);
+        } else {
+          nonEmptyPlayers.push(player);
+        }
+        return nonEmptyPlayers;
+      }, []),
+    );
+  }
+}
+
+// ! Player#left & Player#right is buggy, should add test !
+// TODO: add test
+export class StartedDurakGamePlayers extends Players {
+  constructor(
+    nonStartedGameUsers: NonStartedGameUser[],
+    wsPlayerService: GamePlayerWebsocketService,
+  ) {
+    super(
+      nonStartedGameUsers
+        .map((player) => new NonLinkedGamePlayer(player, wsPlayerService))
+        .map((player) => new Player(player)),
+    );
+    this.value.forEach((player, index, players) => {
+      const indexes = new SidePlayersIndexes(index, players.length);
+      player.left = players[indexes.leftPlayerIndex];
+      player.right = players[indexes.rightPlayerIndex];
+    });
   }
 }

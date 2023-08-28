@@ -1,11 +1,14 @@
 import assert from "node:assert";
 import crypto from "node:crypto";
 import type EventEmitter from "node:events";
-import CorrectGameSettings, { type GameSettings } from "./CorrectGameSettings";
+import CorrectGameSettings  from "./CorrectGameSettings";
+import type { GameSettings } from "@durak-game/durak-dts";
 import LobbySlots from "./LobbySlots";
 import { LobbyAccessError } from "../error";
 import { CustomWebsocketEvent } from "../../../ws";
 import LobbyUser from "./LobbyUser";
+import { FilledSlot } from "./FilledSlot";
+import EmptySlot from "./EmptySlot";
 
 export default class Lobby {
   id: string;
@@ -19,8 +22,8 @@ export default class Lobby {
     this.id = crypto.randomUUID();
     this.slots = new LobbySlots(settings.userCount);
     this.#lobbiesEmitter.emit("lobby##add", { lobby: this });
-    // TODO: this.emptySlots = new EmptySlotsOfLobby(this)
-    // TODO: this.users = new UsersOfLobby(this)
+    // TODO: this.emptySlots = new EmptySlots(this)
+    // TODO: this.userSlots = new UsersSlots(this)
   }
 
   toJSON() {
@@ -51,7 +54,6 @@ export default class Lobby {
     const finalSlotIndex =
       slotIndex === -1 ? this.slots.firstFoundEmptySlot.index : slotIndex;
     const filledSlot = this.slots.insertUser(user, finalSlotIndex);
-    this.#lobbiesEmitter;
     this.#lobbiesEmitter.emit("lobby##user##join", {
       lobby: this,
       slot: filledSlot,
@@ -94,11 +96,10 @@ export default class Lobby {
         newSlotIndex < this.settings.userCount,
     );
     assert.ok(!this.isFull, new LobbyAccessError("Лобби полностью занято"));
-    const [newSlot, oldSlot] = [
-      this.slots.getEmptySlotAt(newSlotIndex),
+    const [newSlot, oldSlot] = this.slots.moveUser(
       this.slots.getSlotOfUser(userId),
-    ];
-    this.slots.moveUser(oldSlot, newSlot);
+      this.slots.getEmptySlotAt(newSlotIndex),
+    );
     this.#lobbiesEmitter.emit("lobby##user##move", {
       lobby: this,
       newSlot,
@@ -111,10 +112,10 @@ export default class Lobby {
       slotIndex === -1 ? this.slots.firstFoundEmptySlot.index : slotIndex;
     assert.ok(!this.isFull, new LobbyAccessError("Лобби полностью занято"));
     assert.ok(
-      this.slots.at(finalSlotIndex).isEmpty,
+      this.slots.at(finalSlotIndex).isEmpty(),
       new LobbyAccessError("Желаемый слот занят"),
     );
-    // ? add own emit ?
+    // NOTE - ? add own emit ?
     return this.insertUser(lobby.removeUser(userId), finalSlotIndex);
   }
 
@@ -129,7 +130,7 @@ export class LobbyUserJoinEvent extends CustomWebsocketEvent {
   user;
   slotIndex;
 
-  constructor(lobby, slot) {
+  constructor(lobby: Lobby, slot: FilledSlot) {
     super("lobby::user::join");
     this.lobbyId = lobby.id;
     this.user = slot.user;
@@ -142,7 +143,7 @@ export class LobbyUserMoveEvent extends CustomWebsocketEvent {
   newSlotIndex;
   pastSlotIndex;
 
-  constructor(lobby, newSlot, oldSlot) {
+  constructor(lobby: Lobby, newSlot: FilledSlot, oldSlot: EmptySlot) {
     super("lobby::user::move");
     this.lobbyId = lobby.id;
     this.newSlotIndex = newSlot.index;
@@ -154,7 +155,7 @@ export class LobbyAdminUpdateEvent extends CustomWebsocketEvent {
   lobbyId;
   newAdminId;
 
-  constructor(lobby) {
+  constructor(lobby: Lobby) {
     super("lobby::admin::update");
     this.lobbyId = lobby.id;
     this.newAdminId = lobby.admin.id;

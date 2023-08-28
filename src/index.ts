@@ -1,7 +1,5 @@
 import dotenv from "dotenv";
 import durakGameSocketHandler from "./module/DurakGame/socket/DurakGameSocket.handler";
-import DurakGame from "./module/DurakGame/DurakGame";
-import { DurakGameSocket } from "./module/DurakGame/socket/DurakGameSocket.types";
 import Fastify from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
 import fastifyCors from "@fastify/cors";
@@ -13,12 +11,9 @@ import fastifyStatic from "@fastify/static";
 import pretty from "pino-pretty";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import { PrismaClient } from "@prisma/client";
-import GithubAuth from "./api/auth/github";
-import VkAuth from "./api/auth/vk";
 import getUserProfile from "./api/profile/[personalLink].get";
-import indexPage, { handler } from "./indexPage";
+import indexPage from "./indexPage";
 import chatPlugin from "./module/Chat/chatPlugin";
-import NonStartedDurakGame from "./module/DurakGame/NonStartedDurakGame";
 import { z } from "zod";
 import { parseEnv } from "znv";
 import path from "node:path";
@@ -33,12 +28,11 @@ import getMe from "./api/me";
 import DurakGamesStore from "./DurakGamesStore";
 import { Server } from "socket.io";
 import { parse } from "node:querystring";
+import { instrument } from "@socket.io/admin-ui";
+import { DurakGameSocket } from "@durak-game/durak-dts";
 
 dotenv.config();
-
 // TODO remove process.env from codebase
-export const durakGames = new Map<string, NonStartedDurakGame | DurakGame>();
-export const durakGamesStore = new DurakGamesStore();
 export const env = parseEnv(process.env, {
   DATABASE_URL: z.string(),
   FASTIFY_PORT: z.number().default(3000),
@@ -63,7 +57,9 @@ const fastify = Fastify({
     stream: pretty({ colorize: true }),
   },
 }).withTypeProvider<ZodTypeProvider>();
-export type FastifyInstance = typeof fastify;
+export type SingletonFastifyInstance = typeof fastify;
+
+export const durakGamesStore = new DurakGamesStore();
 export const store: SessionStore = new PrismaSessionStore(new PrismaClient(), {
   checkPeriod: env.SESSION_STORE_CHECK_PERIOD,
   loggerLevel: ["log", "warn", "error"],
@@ -89,6 +85,7 @@ fastify
           "'self'",
           "https://xsgames.co/randomusers/assets/avatars/pixel/",
           "https://cdn.7tv.app/emote/6306876cbe8c19d70f9d6b22/4x.webp",
+          "https://deckofcardsapi.com/static/img/",
         ],
       },
     },
@@ -98,6 +95,7 @@ fastify
     cookieName: env.SESSION_COOKIE_NAME,
     secret: env.SESSION_SECRET,
     cookie: {
+      domain: "localhost",
       secure: env.IS_SESSION_SECURE,
       sameSite: "lax",
       maxAge: env.SESSION_MAX_AGE,
@@ -117,17 +115,17 @@ fastify
       },
     },
   })
-  .register(VkAuth)
-  .register(GithubAuth)
+  // TODO rework plugins which are commented (because they are does not work properly)
+  // .register(VkAuth)
+  // .register(GithubAuth)
   .register(indexPage)
   .register(getMe)
   .register(getUserProfile)
   .register(chatPlugin, { path: "/global-chat" })
   .register(gameLobbiesPlugin)
-  .setNotFoundHandler(function (this: typeof fastify, request, reply) {
+  .setNotFoundHandler(async function (this: typeof fastify, _request, reply) {
     this.log.error("setNotFoundHandler before");
-    handler.call(this, request, reply);
-    this.log.error("setNotFoundHandler after");
+    return reply.type("text/html").sendFile("index.html");
   })
   .ready()
   .then(function (this: typeof fastify) {}.bind(fastify));
@@ -144,8 +142,7 @@ fastify
 export function raise(err: Error | string = new Error()): never {
   throw typeof err === "string" ? new Error(err) : err;
 }
-
-const gamesNamespace: DurakGameSocket.Namespace = new Server(3001, {
+const io = new Server(3001, {
   cors: {
     origin: [
       ...env.CORS_ORIGIN,
@@ -154,20 +151,17 @@ const gamesNamespace: DurakGameSocket.Namespace = new Server(3001, {
     ],
     credentials: true,
   },
-}).of(
+});
+const gamesNamespace: DurakGameSocket.Namespace = io.of(
   /^\/game\/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/,
 );
 gamesNamespace.use(mutateSocketData);
-
-function mutateSocketData(socket: DurakGameSocket.Socket, next: (err?: Error) => void) {
-  if (!socket.handshake.headers.cookie) return next();
-  const cookie = parse(socket.handshake.headers.cookie);
-  console.log({ cookie });
-  const sessionId = cookie["sessionId"];
-  console.log({ sessionId });
-  if (!sessionId || Array.isArray(sessionId)) return next();
-  const sid = sessionId.split(".")[0];
-  console.log({ sid });
+function mutateSocketData(
+  socket: DurakGameSocket.Socket,
+  next: (err?: Error) => void,
+) {
+  const sid = getSid(socket, next, console);
+  if (!sid) return next();
   store.get(sid, (error, session) => {
     if (error || !session) {
       console.log(
@@ -179,12 +173,27 @@ function mutateSocketData(socket: DurakGameSocket.Socket, next: (err?: Error) =>
       );
       return next();
     }
-    socket.data.sessionId = sessionId;
     socket.data.sid = sid;
     socket.data.user = session.user;
-    socket.data.userProfile = session.userProfile ?? raise();
     return next();
   });
 }
+
+function getSid(
+  socket: DurakGameSocket.Socket,
+  next: (err?: Error) => void,
+  logger?: { log: Function },
+) {
+  if (!socket.handshake.headers.cookie) return next();
+  const cookie = parse(socket.handshake.headers.cookie);
+  logger?.log({ cookie });
+  const sessionId = cookie["sessionId"];
+  logger?.log({ sessionId });
+  if (!sessionId || Array.isArray(sessionId)) return next();
+  const sid = sessionId.split(".")[0];
+  logger?.log({ sid });
+  return sid;
+}
+
 gamesNamespace.on("connection", durakGameSocketHandler);
-// instrument("<TODO>", { auth: false, mode: "development" });
+instrument(io, { auth: false, mode: "development" });

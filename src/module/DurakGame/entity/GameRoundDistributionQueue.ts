@@ -2,7 +2,7 @@ import assert from "node:assert";
 import type DurakGame from "../DurakGame";
 import { Player } from "./Player";
 
-export default class GameRoundDistributionQueue {
+export default class GameRoundDistribution {
   game: DurakGame;
 
   constructor(game: DurakGame) {
@@ -23,19 +23,21 @@ export default class GameRoundDistributionQueue {
 
   makeDistribution() {
     for (const player of this.playersQueue()) {
-      if (this.game.talon.isEmpty) return;
+      if (this.game.talon.isEmpty) return this;
       this.game.talon.provideCards(player);
     }
+    return this;
   }
 
   makeInitialDistribution() {
     const { finalCardCount, cardCountPerIteration } =
       this.game.settings.initialDistribution;
-    const numberOfIterations = finalCardCount / cardCountPerIteration;
+    const numberOfIterations =
+      (finalCardCount / cardCountPerIteration) * this.game.players.count;
     let [player] = this.game.players;
-    assert.ok(player);
     for (let i = 0; i < numberOfIterations; i++, player = player.left) {
       this.game.talon.provideCards(player, cardCountPerIteration);
     }
+    return this;
   }
 }

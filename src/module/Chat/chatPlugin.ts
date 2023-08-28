@@ -11,7 +11,6 @@ export default async function chatPlugin(
   options: { path: string },
 ) {
   const getChatContext = initializeChat();
-
   return fastify.get(
     options.path,
     { websocket: true },

@@ -1,5 +1,5 @@
 import Card, { Suit } from "../../Card";
-import { FilledDeskSlotBase } from "../../DeskSlot/DeskSlot.abstract";
+import { DefendedDeskSlotBase } from "../../DeskSlot/DeskSlot.abstract";
 
 export default function getDefenseStrategy(
   defenderCards: Card[],
@@ -18,20 +18,10 @@ export default function getDefenseStrategy(
   if (deskTrumpCards.length > defenderTrumpCards.length) {
     throw new Error("Too many trump cards, can not defend it");
   }
-  const defenseStrategy: FilledDeskSlotBase[] = [];
+  const defenseStrategy: DefendedDeskSlotBase[] = [];
   defenseStrategy.toString = function () {
-    return this.map((slot) => `${slot.attackCard} ${slot.defendCard}`).join("");
+    return this.map(slotAsString).join();
   };
-  Object.defineProperty(defenseStrategy, "toString", {
-    enumerable: false,
-    writable: false,
-    configurable: false,
-    value() {
-      return (this as Array<FilledDeskSlotBase>)
-        .map((slot) => `[${slot.attackCard}, ${slot.defendCard}] \n`)
-        .join();
-    },
-  });
   const remainingDefenderTrumpCards = defendDeskTrumpCards(
     defenderTrumpCards.slice(),
     deskTrumpCards,
@@ -196,7 +186,7 @@ function ensureHasMinimalRequiredTrumpCards(
 function defendDeskTrumpCards(
   defenderTrumpCards: Card[],
   deskTrumpCards: Card[],
-  defenseStrategy: FilledDeskSlotBase[],
+  defenseStrategy: DefendedDeskSlotBase[],
   logger?: { log: Function },
 ) {
   for (const deskTrumpCard of deskTrumpCards) {
@@ -219,16 +209,15 @@ function defendDeskTrumpCards(
   return defenderTrumpCards;
 }
 
-export function slotsSort<T extends FilledDeskSlotBase>(a: T, b: T) {
+export function slotsSort<T extends DefendedDeskSlotBase>(a: T, b: T) {
   return (
     a.attackCard.power * (a.attackCard.isTrump ? 10 : 1) -
     b.attackCard.power * (b.attackCard.isTrump ? 10 : 1)
   );
 }
-export function slotAsString<T extends FilledDeskSlotBase>(a: T) {
+export function slotAsString<T extends DefendedDeskSlotBase>(a: T) {
   return `[${a.attackCard}, ${a.defendCard}]`;
 }
-
 export function cardsSort<T extends Card>(a: T, b: T) {
   return a.power * (a.isTrump ? 10 : 1) - b.power * (b.isTrump ? 10 : 1);
 }

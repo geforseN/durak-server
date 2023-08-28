@@ -6,8 +6,12 @@ class EmptySlot {
   value = null;
   constructor(public index: number) {}
 
-  get isEmpty() {
+  isEmpty(): this is EmptySlot {
     return true;
+  }
+
+  isFilled(): this is FilledSlot {
+    return false;
   }
 
   withInsertedUser(user: LobbyUser) {

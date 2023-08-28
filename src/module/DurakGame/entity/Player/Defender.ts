@@ -9,8 +9,20 @@ import {
 import { CardDTO } from "../../DTO";
 import GameRound from "../GameRound";
 import Card from "../Card";
+import type Player from "./Player";
 
 export default class Defender extends SuperPlayer implements CanReceiveCards {
+  isGaveUp: boolean;
+
+  constructor(player: Player) {
+    super(player);
+    this.isGaveUp = false;
+  }
+
+  override isDefender() {
+    return true;
+  }
+
   async putCardOnDesk(
     round: GameRound,
     { rank, suit }: CardDTO,
@@ -19,18 +31,21 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
     assert.ok(this === round.currentMove.player);
     const card = this.hand.get((card) => card.hasSame({ rank, suit }));
     if (await this.canMakeTransferMove(round, card, slotIndex)) {
-      return round.currentMove.updateTo(TransferMove, { card, slotIndex });
+      return round.currentMove.updateTo(TransferMove, this, { card, slotIndex });
     }
     await round.game.desk.slotAt(slotIndex).ensureCanBeDefended(card);
-    return round.currentMove.updateTo(InsertDefendCardMove, {
+    return round.currentMove.updateTo(InsertDefendCardMove, this, {
       card,
-      slotIndex
+      slotIndex,
     });
   }
 
+  // TODO add ensureCanDefend(unbeatenDeskCards)
+  // TODO add ensureCanMakeTransferMove(desk)
+
   stopMove(round: GameRound) {
     assert.ok(this === round.currentMove.player);
-    round.currentMove.updateTo(StopDefenseMove);
+    round.currentMove.updateTo(StopDefenseMove, this, {});
   }
 
   canDefend(cardCount: number) {
@@ -57,9 +72,5 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
       this.left.canTakeMore(round.game.desk.cardsCount) &&
       round.game.desk.allowsTransferMove(card, slotIndex)
     );
-  }
-
-  override get isDefender() {
-    return true;
   }
 }

@@ -14,10 +14,10 @@ let WEAK_SUITS: Record<
   "♣": "♣",
   "♦": "♦",
   "♥": "♥",
-};
+} as const;
 let logger: Console | undefined = undefined && console;
 
-test.describe("trump cards check", () => {
+test.describe("trump cards check", { concurrency: true }, () => {
   test.it("throw when defender has weaker trump cards", () => {
     assert.throws(
       () => {
@@ -58,7 +58,7 @@ test.describe("trump cards check", () => {
 
       test.it("remained defender trump cards are best", () => {
         assert.deepStrictEqual(
-          remainingDefenderTrumpCards.sort(cardsSort),
+          [...remainingDefenderTrumpCards].sort(cardsSort),
           [
             new TrumpCard({ rank: "A", suit: TRUMP_SUIT }),
             new TrumpCard({ rank: "6", suit: TRUMP_SUIT }),
@@ -68,16 +68,19 @@ test.describe("trump cards check", () => {
       });
 
       test.it("defense strategy contains best cards", () => {
-        assert.deepStrictEqual(defenseStrategy, [
-          {
-            attackCard: new TrumpCard({ rank: "Q", suit: TRUMP_SUIT }),
-            defendCard: new TrumpCard({ rank: "K", suit: TRUMP_SUIT }),
-          },
-          {
-            attackCard: new TrumpCard({ rank: "8", suit: TRUMP_SUIT }),
-            defendCard: new TrumpCard({ rank: "9", suit: TRUMP_SUIT }),
-          },
-        ]);
+        assert.deepStrictEqual(
+          [...defenseStrategy].sort(slotsSort),
+          [
+            {
+              attackCard: new TrumpCard({ rank: "Q", suit: TRUMP_SUIT }),
+              defendCard: new TrumpCard({ rank: "K", suit: TRUMP_SUIT }),
+            },
+            {
+              attackCard: new TrumpCard({ rank: "8", suit: TRUMP_SUIT }),
+              defendCard: new TrumpCard({ rank: "9", suit: TRUMP_SUIT }),
+            },
+          ].sort(slotsSort),
+        );
       });
     });
   });
@@ -96,7 +99,7 @@ test.describe("throw on wrong data", () => {
   );
 });
 
-test.describe("bsd", () => {
+test.describe("bsd", { concurrency: true }, () => {
   const { defenseStrategy, remainingDefenderTrumpCards } = getDefenseStrategy(
     [
       new TrumpCard({ rank: "Q", suit: TRUMP_SUIT }),

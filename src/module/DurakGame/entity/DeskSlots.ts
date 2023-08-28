@@ -1,7 +1,6 @@
 import { DefendedSlot, DeskSlot, EmptySlot, UnbeatenSlot } from "./DeskSlot";
 import Card, { Rank } from "./Card";
 import { randomInt } from "node:crypto";
-import NextDeskSlot from "./DeskSlot/NextDeskSlot";
 import { raise } from "../../..";
 
 export default class DeskSlots {
@@ -32,11 +31,11 @@ export default class DeskSlots {
   }
 
   updateSlot({ at: index, with: card }: { at: number; with: Card }) {
-    this.#value[index] = new NextDeskSlot(this.#value[index], card).correctSlot;
+    this.#value[index] = this.#value[index].nextDeskSlot(card);
   }
 
   async allowsTransferMove(card: Card, slotIndex: number): Promise<boolean> {
-    if (this.at(slotIndex) instanceof EmptySlot) {
+    if (!this.at(slotIndex).isEmpty()) {
       return Promise.reject(false);
     }
     return Promise.all(
@@ -69,35 +68,49 @@ export default class DeskSlots {
   }
 }
 
-abstract class Slots {
-  value: DeskSlot[] = [];
+abstract class Slots<S> {
+  constructor(protected value: S[]) {}
 
   get count() {
     return this.value.length;
   }
 }
 
-export class UnbeatenSlots extends Slots {
+export class UnbeatenSlots extends Slots<UnbeatenSlot> {
   constructor(allSlots: DeskSlot[]) {
-    super();
-    this.value = allSlots.filter((slot) => slot instanceof UnbeatenSlot);
+    super(
+      allSlots.filter(
+        (slot): slot is UnbeatenSlot => slot instanceof UnbeatenSlot,
+      ),
+    );
   }
 
   get cardCount() {
     return this.count;
   }
-}
 
-export class FilledSlots extends Slots {
-  constructor(allSlots: DeskSlot[]) {
-    super();
-    this.value = allSlots.filter((slot) => !(slot instanceof EmptySlot));
+  get cards() {
+    return this.value.map((slot) => slot.attackCard);
   }
 }
 
-export class DefendedSlots extends Slots {
+export class FilledSlots extends Slots<UnbeatenSlot | DefendedSlot> {
   constructor(allSlots: DeskSlot[]) {
-    super();
-    this.value = allSlots.filter((slot) => slot instanceof DefendedSlot);
+    super(
+      allSlots.filter(
+        (slot): slot is UnbeatenSlot | DefendedSlot =>
+          slot instanceof UnbeatenSlot || slot instanceof DefendedSlot,
+      ),
+    );
+  }
+}
+
+export class DefendedSlots extends Slots<DefendedSlot> {
+  constructor(allSlots: DeskSlot[]) {
+    super(
+      allSlots.filter(
+        (slot): slot is DefendedSlot => slot instanceof DefendedSlot,
+      ),
+    );
   }
 }

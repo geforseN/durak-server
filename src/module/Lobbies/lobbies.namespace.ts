@@ -1,7 +1,6 @@
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { GameSettings } from "@durak-game/durak-dts";
 import type { SocketStream } from "@fastify/websocket";
-import type { GameSettings } from "./entity/CorrectGameSettings";
-import type Lobby from "./entity/Lobby";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import {
   CustomWebsocketEvent,
   NotificationAlertEvent,
@@ -9,6 +8,7 @@ import {
   defaultListeners,
 } from "../../ws";
 import Lobbies from "./entity/Lobbies";
+import type Lobby from "./entity/Lobby";
 
 type GameLobbiesContext = ReturnType<ReturnType<typeof initializeGameLobbies>>;
 
@@ -18,7 +18,6 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
     "/game-lobbies",
     { websocket: true },
     async function (connection: SocketStream, request: FastifyRequest) {
-      // TODO add userProfile in return object of handleConnection
       const context = handleConnection(connection, request);
       if (!context.user?.id) {
         context.socket.send(
@@ -43,7 +42,6 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
         )
         .on(
           "lobby::user::join",
-          // TODO in lobbies.addUserInLobby instead of userId use userProfile as first param
           async ({
             lobbyId,
             slotIndex = -1,
@@ -95,25 +93,6 @@ function initializeGameLobbies() {
     connection.socket
       .addListener("message", defaultListeners.message)
       .addListener("socket", defaultListeners.socket);
-    // TODO
-    // ? can add lobby in session ?
-    // ? no need all this below ?
-    request.session.user.isLobbyAdmin = false;
-    request.session.isUserLobbyAdmin = false;
-    request.session.save().then(
-      () => {
-        request.server.log.info(
-          { requestId: request.id },
-          "save lobby related data in session",
-        );
-      },
-      (error: unknown) => {
-        request.server.log.error(
-          { error, requestId: request.id },
-          "save lobby related data in session",
-        );
-      },
-    );
     return {
       user: request.session.user,
       socket: connection.socket,

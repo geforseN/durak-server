@@ -1,7 +1,8 @@
-import { Player, PlayerKind, isPlayerKind, playerKinds } from "./index";
+import { Player } from "./index";
 import Card from "../Card";
 import CardDTO from "../../DTO/Card.dto";
-import { DurakGameSocket } from "../../socket/DurakGameSocket.types";
+import type { DurakGameSocket } from "@durak-game/durak-dts";
+import { isPlayerKind } from "@durak-game/durak-dts";
 import assert from "node:assert";
 
 export default class GamePlayerWebsocketService {

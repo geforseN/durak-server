@@ -1,5 +1,5 @@
 import Card from "../Card";
-import { DeskSlot } from "./index";
+import { DefendedSlot, DeskSlot } from "./index";
 
 export default class UnbeatenSlot extends DeskSlot {
   constructor(public attackCard: Card) {
@@ -10,20 +10,28 @@ export default class UnbeatenSlot extends DeskSlot {
     return [this.attackCard];
   }
 
-  override ensureCanBeAttacked() {
-    return Promise.reject(new Error("Слот занят"));
+  override isUnbeaten(): this is UnbeatenSlot {
+    return true;
   }
 
-  override ensureCanBeDefended(card: Card) {
+  override async ensureCanBeAttacked() {
+    throw new Error("Слот занят");
+  }
+
+  override async ensureCanBeDefended(card: Card) {
     if (card.isTrump) {
-      return Promise.resolve(card);
+      return card;
     }
     if (this.attackCard.suit !== card.suit) {
-      return Promise.reject(new Error("Вы кинули неверную масть"));
+      throw new Error("Вы кинули неверную масть");
     }
     if (this.attackCard.power > card.power) {
-      return Promise.reject(new Error("Вы кинули слабую карту"));
+      throw new Error("Вы кинули слабую карту");
     }
-    return Promise.resolve(card);
+    return card;
+  }
+
+  override nextDeskSlot(card: Card): DefendedSlot {
+    return new DefendedSlot(this.attackCard, card);
   }
 }

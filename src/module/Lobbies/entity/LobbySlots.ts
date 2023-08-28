@@ -25,15 +25,11 @@ export default class LobbySlots {
   }
 
   get userSlots() {
-    return this.#value.filter(
-      (slot): slot is FilledSlot => slot instanceof FilledSlot,
-    );
+    return this.#value.filter((slot): slot is FilledSlot => slot.isFilled());
   }
 
   get #emptySlots() {
-    return this.#value.filter(
-      (slot): slot is EmptySlot => slot instanceof EmptySlot,
-    );
+    return this.#value.filter((slot): slot is EmptySlot => slot.isEmpty());
   }
 
   get usersCount() {
@@ -79,9 +75,14 @@ export default class LobbySlots {
     return this.userSlots.some((slot) => slot.user.id === userId);
   }
 
-  moveUser(oldSlot: FilledSlot, newSlot: EmptySlot) {
+  moveUser(oldSlot: FilledSlot, newSlot: EmptySlot): [FilledSlot, EmptySlot] {
     this.#value[newSlot.index] = new FilledSlot(newSlot.index, oldSlot.value);
     this.#value[oldSlot.index] = new EmptySlot(oldSlot.index);
+    const filledSlot = this.#value[newSlot.index];
+    assert.ok(filledSlot.isFilled(), "TypeScript");
+    const emptySlot = this.#value[oldSlot.index];
+    assert.ok(emptySlot.isEmpty(), "TypeScript");
+    return [filledSlot, emptySlot];
   }
 
   insertUser(user: LobbyUser, slotIndex: number): FilledSlot {
@@ -89,7 +90,7 @@ export default class LobbySlots {
       ? this.at(slotIndex).withInsertedAdminUser(user)
       : this.at(slotIndex).withInsertedUser(user);
     const slot = this.#value[slotIndex];
-    assert.ok(slot instanceof FilledSlot, "TypeScript");
+    assert.ok(slot.isFilled(), "TypeScript");
     return slot;
   }
 
@@ -101,9 +102,7 @@ export default class LobbySlots {
 
   get firstFoundEmptySlot(): EmptySlot | never {
     return (
-      this.#value.find(
-        (slot): slot is EmptySlot => slot instanceof EmptySlot,
-      ) || raise()
+      this.#value.find((slot): slot is EmptySlot => slot.isEmpty()) || raise()
     );
   }
 

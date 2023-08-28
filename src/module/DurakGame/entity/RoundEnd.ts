@@ -1,18 +1,18 @@
-import { GameRound, Players } from ".";
-import GameRoundDistributionQueue from "./GameRoundDistributionQueue";
+import { GameRound } from ".";
 import type DurakGame from "../DurakGame";
+import { NonEmptyPlayers } from "./Player/Players";
 
 export abstract class RoundEnd {
   constructor(protected game: DurakGame) {}
 
   prepareBeforeNewGameRound() {
     if (this.game.talon.isEmpty) {
-      this.game.players = new Players(this.game);
+      this.game.players = new NonEmptyPlayers(this.game);
       if (this.game.players.count === 1) {
         throw new Error("One player remained. Game must be over");
       }
     } else {
-      new GameRoundDistributionQueue(this.game).makeDistribution();
+      this.game.distribution.makeDistribution();
     }
   }
 
