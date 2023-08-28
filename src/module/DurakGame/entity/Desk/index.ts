@@ -2,11 +2,8 @@ import type { AllowedMissingCardCount } from "@durak-game/durak-dts";
 import { type CanProvideCards } from "../../DurakGame";
 import type Card from "../Card";
 import { type Discard } from "../Deck";
-import DeskSlots, {
-  DefendedSlots,
-  FilledSlots,
-  UnbeatenSlots,
-} from "../DeskSlots";
+import DeskSlots from "../DeskSlots";
+import { DefendedSlots, FilledSlots, UnbeatenSlots } from "../DeskSlots/Slots";
 import type { Defender, SuperPlayer } from "../Player";
 import type GameDeskWebsocketService from "./Desk.service";
 
