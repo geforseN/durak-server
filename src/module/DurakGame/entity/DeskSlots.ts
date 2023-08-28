@@ -7,7 +7,7 @@ export default class DeskSlots {
   readonly #value: DeskSlot[];
 
   constructor(length: number) {
-    this.#value = Array.from({ length }, () => new EmptySlot());
+    this.#value = Array.from({ length }, (_, index) => new EmptySlot(index));
   }
 
   get isEverySlotEmpty(): boolean {
@@ -78,11 +78,7 @@ abstract class Slots<S> {
 
 export class UnbeatenSlots extends Slots<UnbeatenSlot> {
   constructor(allSlots: DeskSlot[]) {
-    super(
-      allSlots.filter(
-        (slot): slot is UnbeatenSlot => slot instanceof UnbeatenSlot,
-      ),
-    );
+    super(allSlots.filter((slot): slot is UnbeatenSlot => slot.isUnbeaten()));
   }
 
   get cardCount() {
@@ -99,7 +95,7 @@ export class FilledSlots extends Slots<UnbeatenSlot | DefendedSlot> {
     super(
       allSlots.filter(
         (slot): slot is UnbeatenSlot | DefendedSlot =>
-          slot instanceof UnbeatenSlot || slot instanceof DefendedSlot,
+          slot.isUnbeaten() || slot.isDefended(),
       ),
     );
   }
@@ -107,10 +103,6 @@ export class FilledSlots extends Slots<UnbeatenSlot | DefendedSlot> {
 
 export class DefendedSlots extends Slots<DefendedSlot> {
   constructor(allSlots: DeskSlot[]) {
-    super(
-      allSlots.filter(
-        (slot): slot is DefendedSlot => slot instanceof DefendedSlot,
-      ),
-    );
+    super(allSlots.filter((slot): slot is DefendedSlot => slot.isDefended()));
   }
 }
