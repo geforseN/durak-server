@@ -2,8 +2,8 @@ import Card from "../Card";
 import { UnbeatenSlot } from "./index";
 
 export default class UnbeatenTrumpSlot extends UnbeatenSlot {
-  constructor(public attackCard: Card) {
-    super(attackCard);
+  constructor(index: number, public attackCard: Card) {
+    super(index, attackCard);
   }
 
   override async ensureCanBeDefended(card: Card) {

@@ -10,6 +10,7 @@ export type DefendedDeskSlotBase = Required<
 export default abstract class DeskSlot {
   attackCard?: Card;
   defendCard?: Card;
+  constructor(public index: number) {}
 
   isEmpty(): this is EmptySlot {
     return false;

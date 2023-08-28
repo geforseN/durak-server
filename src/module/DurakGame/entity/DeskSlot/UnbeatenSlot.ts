@@ -2,8 +2,8 @@ import Card from "../Card";
 import { DefendedSlot, DeskSlot } from "./index";
 
 export default class UnbeatenSlot extends DeskSlot {
-  constructor(public attackCard: Card) {
-    super();
+  constructor(index: number, public attackCard: Card) {
+    super(index);
   }
 
   get value() {
@@ -32,6 +32,6 @@ export default class UnbeatenSlot extends DeskSlot {
   }
 
   override nextDeskSlot(card: Card): DefendedSlot {
-    return new DefendedSlot(this.attackCard, card);
+    return new DefendedSlot(this.index, this.attackCard, card);
   }
 }
