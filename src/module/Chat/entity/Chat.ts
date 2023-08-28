@@ -1,7 +1,7 @@
-import ChatMessage from "./ChatMessage";
-import ChatReplyMessage from "./ChatReplyMessage";
+import type { SocketsStore } from "../../../ws";
 import { ChatMessageEvent } from "../chatPlugin";
-import { SocketsStore } from "../../../ws";
+import type ChatMessage from "./ChatMessage";
+import type ChatReplyMessage from "./ChatReplyMessage";
 
 export default class Chat {
   readonly #messages: ChatMessage[];
@@ -34,7 +34,7 @@ export default class Chat {
   }
 
   addMessage(message: ChatMessage | ChatReplyMessage) {
-    if (message instanceof ChatReplyMessage) {
+    if (message.isReplyMessage()) {
       this.#ensureSenderCanReply(message);
     }
     if (this.#messages.length === this.#maxMessages) {
