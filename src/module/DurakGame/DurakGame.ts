@@ -12,7 +12,7 @@ import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
 import type NonStartedDurakGame from "./NonStartedDurakGame";
 import pino from "pino";
 import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSocket.handler";
-import { StartedDurakGamePlayers } from "./entity/Player/Players";
+import { StartedDurakGamePlayers } from "./entity/Player/StartedDurakGamePlayers";
 import GameRoundMoves from "./entity/GameRound/GameRoundMoves";
 
 export default class DurakGame {
