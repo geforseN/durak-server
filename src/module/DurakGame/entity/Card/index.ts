@@ -29,7 +29,7 @@ export default class Card {
   }
 
   toJSON() {
-    return JSON.stringify({ rank: this.rank, suit: this.suit });
+    return { rank: this.rank, suit: this.suit };
   }
 
   static suits = ["♠", "♦", "♥", "♣"] as const;

@@ -4,6 +4,8 @@ import EnemyDTO from "./Enemy.dto";
 import OrderedPlayerEnemies from "../entity/Player/OrderedPlayerEnemies";
 import type { Player } from "../entity/Player";
 import { isPlayerKind } from "@durak-game/durak-dts";
+import assert from "node:assert";
+
 export default class DurakGameStateDto {
   self;
   enemies;
@@ -29,7 +31,7 @@ export default class DurakGameStateDto {
       hasOneCard: game.talon.hasOneCard,
     };
     this.discard = { isEmpty: game.discard.isEmpty };
-    isPlayerKind(game.round.currentMove.constructor.name);
+    assert.ok(isPlayerKind(game.round.currentMove.constructor.name));
     this.round = {
       number: game.round.number,
       currentMove: {
