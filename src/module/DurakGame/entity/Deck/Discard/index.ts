@@ -13,10 +13,7 @@ export default class Discard extends Deck implements CanReceiveCards {
 
   receiveCards(...cards: Card[]): void {
     const hasBeenEmptyBeforeReceive = this.isEmpty;
-    const newCardCount = this.value.push(...cards);
-    if (hasBeenEmptyBeforeReceive && newCardCount) {
-      this.#wsService.emitReceivedFirstCards();
-    }
-    this.#wsService?.emitReceivedCards(this, cards);
+    this.value.push(...cards);
+    this.#wsService?.emitReceivedCards(this, cards, hasBeenEmptyBeforeReceive);
   }
 }
