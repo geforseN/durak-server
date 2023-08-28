@@ -1,11 +1,10 @@
-import crypto from "node:crypto";
 import assert from "node:assert";
 import Deck from "../Deck.abstract";
 import Card from "../../Card";
 
 export default class Hand extends Deck {
-  constructor() {
-    super();
+  constructor(cards: Card[] = []) {
+    super(cards);
   }
 
   get(cb: (card: Card) => boolean, notFoundMessage = "У вас нет такой карты") {
@@ -14,41 +13,7 @@ export default class Hand extends Deck {
     return card;
   }
 
-  #getIndex(
-    cb: (card: Card) => boolean,
-    notFoundMessage = "Неверный индекс",
-  ): number {
-    const index = this.value.findIndex(cb);
-    assert.ok(index >= 0, notFoundMessage);
-    return index;
-  }
-
   receive(...cards: Card[]): void {
     this.value.push(...cards);
-  }
-
-  remove(
-    cb: (card: Card) => boolean,
-    notRemovedMessage = "Не получилось убрать свою карту",
-  ) {
-    const index = this.#getIndex(cb);
-    const [removedCard] = this.value.splice(index, 1);
-    assert.ok(removedCard, notRemovedMessage);
-    return removedCard;
-  }
-
-  get randomCard() {
-    return this.value[crypto.randomInt(this.count)];
-  }
-}
-
-// TODO: work with class or delete class
-class SuperHand extends Hand {
-  override remove(cb: (card: Card) => boolean): Card {
-    return super.remove(cb);
-  }
-
-  override get randomCard() {
-    return super.randomCard;
   }
 }
