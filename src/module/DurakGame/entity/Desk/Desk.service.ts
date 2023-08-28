@@ -1,6 +1,5 @@
 import type { DurakGameSocket } from "@durak-game/durak-dts";
-import CardDTO from "../../DTO/Card.dto";
-import Card from "../Card";
+import type Card from "../Card";
 import type { SuperPlayer } from "../Player";
 
 export default class GameDeskWebsocketService {
@@ -20,7 +19,7 @@ export default class GameDeskWebsocketService {
     source: SuperPlayer;
   }) {
     this.namespace.emit("desk::receivedCard", {
-      card: new CardDTO(card),
+      card: card.toJSON(),
       slot: { index },
       source: { id: source.id },
     });
