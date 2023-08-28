@@ -1,4 +1,6 @@
-import { Player } from "../Player";
+import type DurakGame from "../../DurakGame";
+import type FailedDefense from "../DefenseEnding/FailedDefense";
+import type SuccessfulDefense from "../DefenseEnding/SuccessfulDefense";
 import {
   AttackerMove,
   DefenderMove,
@@ -8,20 +10,18 @@ import {
   StopDefenseMove,
   TransferMove,
 } from "../GameMove";
-import type DurakGame from "../../DurakGame";
+import type { Player } from "../Player";
 import GameRoundMoves from "./GameRoundMoves";
-import type FailedDefense from "../DefenseEnding/FailedDefense";
-import type SuccessfulDefense from "../DefenseEnding/SuccessfulDefense";
 
 export default class GameRound {
   readonly number: number;
   readonly moves: GameRoundMoves;
   readonly game: DurakGame;
 
-  constructor(game: DurakGame) {
+  constructor(game: DurakGame, moves = new GameRoundMoves()) {
     this.game = game;
     this.number = (game.round?.number || 0) + 1;
-    this.moves = new GameRoundMoves();
+    this.moves = moves;
     this.game.info.namespace.emit("round::new", {
       roundNumber: this.number,
     });

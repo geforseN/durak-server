@@ -3,7 +3,6 @@ import EventEmitter from "events";
 import { durakGamesStore, raise } from "../../..";
 import { CustomWebsocketEvent, SocketsStore } from "../../../ws";
 import { FindLobbyError } from "../error";
-import type { GameSettings } from "./CorrectGameSettings";
 import Lobby, {
   LobbyAdminUpdateEvent,
   LobbyUserJoinEvent,
@@ -11,6 +10,7 @@ import Lobby, {
 } from "./Lobby";
 import LobbyUser from "./LobbyUser";
 import assert from "node:assert";
+import type { GameSettings } from "@durak-game/durak-dts";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;

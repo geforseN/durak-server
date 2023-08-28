@@ -1,13 +1,14 @@
-import type { Defender, SuperPlayer, AllowedMissingCardCount } from "../Player";
-import type Card from "../Card";
+import type { AllowedMissingCardCount } from "@durak-game/durak-dts";
 import { type CanProvideCards } from "../../DurakGame";
+import type Card from "../Card";
 import { type Discard } from "../Deck";
-import type GameDeskWebsocketService from "./Desk.service";
 import DeskSlots, {
   DefendedSlots,
   FilledSlots,
   UnbeatenSlots,
 } from "../DeskSlots";
+import type { Defender, SuperPlayer } from "../Player";
+import type GameDeskWebsocketService from "./Desk.service";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
   #slots: DeskSlots;
@@ -36,6 +37,10 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
 
   get allowsMoves() {
     return this.allowedFilledSlotCount > this.filledSlots.count;
+  }
+
+  get ranks() {
+    return new Set(this.#slots.cards.map((card) => card.rank));
   }
 
   get unbeatenSlots() {

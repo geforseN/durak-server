@@ -1,8 +1,8 @@
-import { FastifyInstance } from "../..";
+import { SingletonFastifyInstance } from "../..";
 import prisma from "../../../prisma";
 import z from "zod";
 
-export default function getUserProfile(fastify: FastifyInstance) {
+export default function getUserProfile(fastify: SingletonFastifyInstance) {
   return fastify.route({
     method: "GET",
     url: "/profile",

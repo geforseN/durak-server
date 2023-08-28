@@ -10,7 +10,7 @@ export class AttackerMove extends GameMove {
 
   constructor(
     game: DurakGame,
-    { performer = game.players.attacker }: { performer: Player },
+    { performer = game.players.attacker }: { performer?: Player } = {},
   ) {
     super(game);
     this.game.players.attacker = performer;

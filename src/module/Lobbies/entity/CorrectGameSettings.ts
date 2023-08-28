@@ -1,27 +1,11 @@
 import assert from "node:assert";
-import {
-  AllowedMissingCardCount,
-  GOOD_CARD_AMOUNT,
-} from "../../DurakGame/entity/Player/Player";
-
-export type UserCount = 2 | 3 | 4 | 5 | 6;
-export type GameType = "basic" | "perevodnoy";
-export type CardCount = 24 | 36 | 52;
-
-export type GameSettings = {
-  userCount: UserCount;
-  gameType: GameType;
-  cardCount: CardCount;
-  moveTime: number;
-  initialDistribution: {
-    finalCardCount: AllowedMissingCardCount;
-    cardCountPerIteration: AllowedMissingCardCount;
-  };
-  desk: {
-    allowedFilledSlotCount: AllowedMissingCardCount;
-    slotCount: AllowedMissingCardCount;
-  };
-};
+import { GOOD_CARD_AMOUNT } from "../../DurakGame/entity/Player/Player";
+import type {
+  UserCount,
+  GameType,
+  CardCount,
+  GameSettings,
+} from "@durak-game/durak-dts";
 
 export default class CorrectGameSettings {
   userCount: GameSettings["userCount"];
@@ -54,32 +38,17 @@ export default class CorrectGameSettings {
 
   #ensureCorrectUserCount(userCount: number): asserts userCount is UserCount {
     assert.ok(
-      this.#allowedUserCount.includes(userCount),
+      [2, 3, 4, 5, 6].includes(userCount),
       "Нельзя создать лобби из менее двух или более шести игроков",
     );
   }
 
-  get #allowedUserCount() {
-    return [2, 3, 4, 5, 6];
-  }
-
   #ensureCorrectCardCount(cardCount: number): asserts cardCount is CardCount {
-    assert.ok(
-      this.#allowedCardCount.includes(cardCount),
-      "Неверное количество карт",
-    );
-  }
-
-  get #allowedCardCount() {
-    return [24, 36, 52];
+    assert.ok([24, 36, 52].includes(cardCount), "Неверное количество карт");
   }
 
   #ensureCorrectGameType(gameType: string): asserts gameType is GameType {
-    assert.ok(this.#allowedGameType.includes(gameType), "Неверный тип игры");
-  }
-
-  get #allowedGameType() {
-    return ["basic", "perevodnoy"];
+    assert.ok(["basic", "perevodnoy"].includes(gameType), "Неверный тип игры");
   }
 
   ensureEnoughCardsForUsers(cardCount: number, userCount: number) {

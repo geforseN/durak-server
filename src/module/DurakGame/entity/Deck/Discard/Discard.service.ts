@@ -1,5 +1,5 @@
 import type Discard from ".";
-import { type DurakGameSocket } from "../../../socket/DurakGameSocket.types";
+import { DurakGameSocket } from "@durak-game/durak-dts";
 import type Card from "../../Card";
 
 export default class GameDiscardWebsocketService {

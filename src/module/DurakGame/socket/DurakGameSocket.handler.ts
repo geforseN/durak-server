@@ -1,9 +1,9 @@
-import { DurakGameSocket } from "./DurakGameSocket.types";
+import { DurakGameSocket } from "@durak-game/durak-dts";
 import { durakGamesStore, raise } from "../../../index";
 import { cardPlaceListener, stopMoveListener } from "./listener";
 import DurakGame from "../DurakGame";
 import prisma from "../../../../prisma";
-import NotificationAlert from "../../notification-alert";
+import NotificationAlert from "../../NotificationAlert";
 
 export function addListenersWhichAreNeededForStartedGame(
   this: DurakGameSocket.Socket,
@@ -18,7 +18,7 @@ export function addListenersWhichAreNeededForStartedGame(
   );
   this.on("superPlayer__stopMove", stopMoveListener.bind({ game, playerId }));
   // TODO player__exitGame handler must not only remove player
-  // handler also must handle if left player attacker or defender
+  // handler also must handle if left player attacker or defender and more stuff ...
   this.on("player__exitGame", () => {
     try {
       game.players.remove((player) => player.id === playerId, game);
@@ -26,35 +26,33 @@ export function addListenersWhichAreNeededForStartedGame(
       console.log(error);
     }
   });
+  this.on("disconnect", (_reason, _description) => {
+    this.leave(playerId);
+  });
 }
 
-// TODO IF could not create game THEN send to socket THAT the game could get started
+// TODO add logic for NonStartedGame graceful remove
+// IF could not create game THEN send to socket THAT the game could get started
+// NOTE: game can be non started if user have not redirected to game page for some time (like 20 seconds or so)
 export default function durakGameSocketHandler(
   this: DurakGameSocket.Namespace,
   socket: DurakGameSocket.Socket,
 ) {
   const {
-    nsp: { name },
+    nsp: namespace,
     data: { user: player },
   } = socket;
-  const gameId = name.replace("/game/", "");
-  console.log({ isSame: socket.nsp === this, gameId });
-  if (!player?.id) return handleNotAuthorized(socket);
+  const gameId = namespace.name.replace("/game/", "");
+  console.assert(namespace === this);
+  if (!player?.id) {
+    return handleNotAuthorized(socket);
+  }
   socket.onAny((eventName: string, ...args) => console.log(eventName, args));
   const game = durakGamesStore.getGameWithId(gameId);
   if (!game) {
     return handleNoSuchGameOnline(socket, gameId);
   }
-  if (!game.isStarted) {
-    game.addPlayerConnection(socket, this);
-    if (!game.isAllPlayersConnected) {
-      game.emitSocketWithLoadingDetails(socket);
-    } else {
-      durakGamesStore.updateNonStartedGameToStarted(game, this);
-    }
-  } else {
-    addListenersWhichAreNeededForStartedGame.call(socket, game);
-  }
+  game.handleSocketConnection(socket, namespace);
 }
 
 function handleNoSuchGameOnline(
@@ -66,7 +64,7 @@ function handleNoSuchGameOnline(
     .findFirstOrThrow({ where: { uuid: gameId }, include: { players: true } })
     .then(
       (game) => {
-        socket.emit("finishedGame::restore", game);
+        socket.emit("finishedGame::restore", { state: game });
       },
       () => {
         socket.emit("finishedGame::notFound");

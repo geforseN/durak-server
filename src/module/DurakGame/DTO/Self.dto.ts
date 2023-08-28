@@ -1,16 +1,19 @@
-import { Player, PlayerKind } from "../entity/Player";
+import type { PlayerKind } from "@durak-game/durak-dts";
+import { isPlayerKind } from "@durak-game/durak-dts";
+import { Player } from "../entity/Player";
+import CardDTO from "./Card.dto";
 
 export default class SelfDTO {
-  cards: Player['hand'];
-  info: Player['info'];
+  cards: CardDTO[];
+  info: Player["info"];
   kind: PlayerKind;
   id: string;
 
   constructor(player: Player) {
-    // NOTE: if bug happened here than Hand#toJSON did not work correctly
-    this.cards = player.hand;
+    this.cards = [...player.hand].map((card) => new CardDTO(card));
     this.info = player.info;
-    this.kind = player.constructor.name as PlayerKind;
+    isPlayerKind(player.constructor.name);
+    this.kind = player.constructor.name;
     this.id = player.id;
   }
 }

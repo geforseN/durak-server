@@ -10,7 +10,6 @@ export default abstract class SuperPlayer extends Player {
     return card;
   }
 
-  @logGetter()
   get randomCard() {
     return this.hand.randomCard;
   }
@@ -21,19 +20,4 @@ export default abstract class SuperPlayer extends Player {
     card: CardDTO,
     slotIndex: number,
   ): Promise<void>;
-}
-
-function logGetter(headMessage = "LOG:") {
-  return function <This, Return>(
-    target: (this: This) => Return,
-    context: ClassGetterDecoratorContext<This, Return>,
-  ) {
-    return function (this: This): Return {
-      const returnValue = target.call(this);
-      console.log(
-        `${headMessage}: ${context.name.toString()} => ${returnValue}'.`,
-      );
-      return returnValue;
-    };
-  };
 }

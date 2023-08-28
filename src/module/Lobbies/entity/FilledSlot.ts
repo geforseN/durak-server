@@ -5,8 +5,12 @@ import LobbyUser from "./LobbyUser";
 export class FilledSlot {
   constructor(public index: number, public value: LobbyUser) {}
 
-  get isEmpty() {
+  isEmpty(): this is EmptySlot {
     return false;
+  }
+
+  isFilled(): this is FilledSlot {
+    return true;
   }
 
   get user() {

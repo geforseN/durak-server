@@ -1,6 +1,6 @@
 import type DurakGame from "../../DurakGame";
 import { type CardDTO } from "../../DTO";
-import { Attacker, Defender, type SuperPlayer } from "../../entity/Player";
+import { type SuperPlayer } from "../../entity/Player";
 
 export default async function handlePutCardOnDesk(
   this: { game: DurakGame; playerId: string },
@@ -9,13 +9,11 @@ export default async function handlePutCardOnDesk(
 ) {
   this.game.round.currentMove.defaultBehavior.shouldBeCalled = false;
   try {
-    // TODO remove излишнее instanceof check
     await this.game.players
       .get<SuperPlayer>(
         (player): player is SuperPlayer =>
           player.id === this.playerId &&
-          this.game.round.currentMove.player === player &&
-          (player instanceof Attacker || player instanceof Defender),
+          this.game.round.currentMove.player === player,
         "У вас нет права хода",
       )
       .putCardOnDesk(this.game.round, cardDTO, slotIndex);

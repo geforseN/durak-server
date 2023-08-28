@@ -43,10 +43,6 @@ export default class GameRoundMoves {
     return this.#value.length - 1;
   }
 
-  get isDefenderGaveUp() {
-    return !!this.#value.findLast((move) => move instanceof DefenderGaveUpMove);
-  }
-
   set nextMove(uncertainMove: DefenderMove | AttackerMove) {
     this.currentMove?.defaultBehavior.stop();
     this.#value.push(uncertainMove);

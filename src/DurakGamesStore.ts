@@ -1,8 +1,8 @@
 import DurakGame from "./module/DurakGame/DurakGame";
 import NonStartedDurakGame from "./module/DurakGame/NonStartedDurakGame";
 import assert from "node:assert";
-import { DurakGameSocket } from "./module/DurakGame/socket/DurakGameSocket.types";
 import Lobby from "./module/Lobbies/entity/Lobby";
+import { DurakGameSocket } from "@durak-game/durak-dts";
 
 export default class DurakGamesStore<
   Game extends NonStartedDurakGame | DurakGame,
@@ -34,10 +34,6 @@ export default class DurakGamesStore<
     this.values.set(startedGame.info.id, startedGame);
     nonStartedGame.emitEverySocketWithStartedGameDetails(startedGame);
     return startedGame;
-  }
-
-  endStartedGame(game: DurakGame) {
-    this.values.delete(game.info.id);
   }
 
   removeStartedGame(game: DurakGame) {

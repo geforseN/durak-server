@@ -1,5 +1,3 @@
-import type Player from "../Player/Player";
-import type DurakGame from "../../DurakGame";
 import type {
   InsertAttackCardMove,
   InsertDefendCardMove,
@@ -7,18 +5,30 @@ import type {
   StopDefenseMove,
   TransferMove,
 } from ".";
-import Card from "../Card";
-import DefaultBehavior from "./DefaultBehavior";
+import type DurakGame from "../../DurakGame";
+import type Card from "../Card";
+import { CardInsert } from "../GameRound/CardInsert.interface";
+import { Attacker, Defender } from "../Player";
+import type Player from "../Player/Player";
+import type DefaultBehavior from "./DefaultBehavior";
 
 export abstract class GameMove {
   game: DurakGame;
   abstract performer: Player;
   abstract defaultBehavior: DefaultBehavior<GameMove>;
   isInsertMove: boolean;
+  abstract insertCardOnDesk?: Function;
 
   protected constructor(game: DurakGame) {
     this.game = game;
     this.isInsertMove = false;
+  }
+
+  _isInsertMove(): this is CardInsert {
+    return (
+      Object.hasOwn(this, "insertCardOnDesk") &&
+      typeof this.insertCardOnDesk == "function"
+    );
   }
 
   get player() {
@@ -45,13 +55,23 @@ export abstract class GameMove {
       | typeof TransferMove,
   >(
     Move: CertainMove,
-    // TODO: fix type of context
-    // | { performer: Player }
-    // | { performer: Player; card: Card; slotIndex: number },
-    context: void | Record<string, never> | { card: Card; slotIndex: number },
+    performer: CertainMove extends
+      | typeof StopAttackMove
+      | typeof InsertAttackCardMove
+      ? Attacker
+      : Defender,
+    context: CertainMove extends
+      | typeof InsertAttackCardMove
+      | typeof TransferMove
+      | typeof InsertDefendCardMove
+      ? { card: Card; slotIndex: number }
+      : Record<string, never>,
   ): void {
     this.defaultBehavior.stop();
-    this.game.round.currentMove = new Move(this.game, context);
+    this.game.round.currentMove = new Move(this.game, {
+      performer,
+      ...context,
+    });
   }
 }
 

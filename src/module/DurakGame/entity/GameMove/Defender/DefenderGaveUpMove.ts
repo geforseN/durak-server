@@ -1,9 +1,13 @@
 import DefenderMove from "./DefenderMove";
 import { type AfterHandler } from "../GameMove.abstract";
 import FailedDefense from "../../DefenseEnding/FailedDefense";
+import type DurakGame from "../../../DurakGame";
 
 export class DefenderGaveUpMove extends DefenderMove implements AfterHandler {
-  // TODO in ctor: this.game.players.defender.isGaveUp = true
+  constructor(game: DurakGame) {
+    super(game);
+    this.performer.isGaveUp = true;
+  }
 
   handleAfterMoveIsDone() {
     if (!this.game.desk.allowsMoves) {

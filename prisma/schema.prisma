@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../../durak-dts/generated/client"
 }
 
 datasource db {
@@ -59,10 +60,11 @@ model UserGamePlayer {
   DurakGame       DurakGame     @relation(fields: [durakGameNumber], references: [number], onDelete: Cascade)
   userId          String
   User            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stat            UserGameStat  @relation(fields: [userId], references: [userId], map: "userGameStatId", onDelete: Cascade)
   index           Int
   result          GameEndResult
-  winPlace        Int?
-  winRoundNumber  Int?
+  place           Int
+  roundLeftNumber Int
   hasLost         Boolean       @default(false)
 
   @@unique([durakGameNumber, index])
@@ -70,12 +72,13 @@ model UserGamePlayer {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserGameStat {
-  userId             String   @id @unique
-  User               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  wonGamesCount      Int      @default(0)
-  lostGamesCount     Int      @default(0)
-  unstableGamesCount Int      @default(0)
-  createdAt          DateTime @default(now())
+  userId             String           @id @unique
+  User               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wonGamesCount      Int              @default(0)
+  lostGamesCount     Int              @default(0)
+  unstableGamesCount Int              @default(0)
+  createdAt          DateTime         @default(now())
+  UserGamePlayer     UserGamePlayer[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.

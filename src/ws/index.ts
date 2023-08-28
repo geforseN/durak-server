@@ -1,6 +1,6 @@
 import type WebSocket from "ws";
 import assert from "node:assert";
-import NotificationAlert from "../module/notification-alert";
+import NotificationAlert from "../module/NotificationAlert";
 
 export const defaultListeners = {
   socket(this: WebSocket, event: CustomWebsocketEvent) {

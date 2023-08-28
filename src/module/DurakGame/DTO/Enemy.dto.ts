@@ -1,5 +1,7 @@
-import { LobbyUser } from "../../Lobbies/lobbies.namespace";
-import { Player, PlayerKind } from "../entity/Player";
+import type { PlayerKind } from "@durak-game/durak-dts";
+import { isPlayerKind } from "@durak-game/durak-dts";
+import LobbyUser from "../../Lobbies/entity/LobbyUser";
+import { Player } from "../entity/Player";
 
 export default class EnemyDTO {
   cardCount: number;
@@ -10,7 +12,8 @@ export default class EnemyDTO {
   constructor(player: Player) {
     this.cardCount = player.hand.count;
     this.info = player.info;
-    this.kind = player.constructor.name as PlayerKind;
+    isPlayerKind(player.constructor.name);
+    this.kind = player.constructor.name;
     this.id = player.id;
   }
 }

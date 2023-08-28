@@ -7,11 +7,13 @@ import {
   GameTalonWebsocketService,
   GameDiscardWebsocketService,
 } from "./socket/service";
-import GameRoundDistributionQueue from "./entity/GameRoundDistributionQueue";
-import { type DurakGameSocket } from "./socket/DurakGameSocket.types";
-import { type GameSettings } from "../Lobbies/entity/CorrectGameSettings";
+import GameRoundDistribution from "./entity/GameRoundDistributionQueue";
+import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
 import type NonStartedDurakGame from "./NonStartedDurakGame";
 import pino from "pino";
+import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSocket.handler";
+import { StartedDurakGamePlayers } from "./entity/Player/Players";
+import GameRoundMoves from "./entity/GameRound/GameRoundMoves";
 
 export default class DurakGame {
   readonly info: {
@@ -28,6 +30,7 @@ export default class DurakGame {
   readonly #wsService: DurakGameWebsocketService;
   players: Players;
   round: GameRound;
+  readonly distribution: GameRoundDistribution;
   readonly isStarted: true;
   readonly logger = pino({
     transport: {
@@ -48,9 +51,12 @@ export default class DurakGame {
     namespace: DurakGameSocket.Namespace,
   ) {
     this.info = { ...nonStartedGame.info, namespace, isStarted: true };
-    this.settings = { ...nonStartedGame.settings, moveTime: 90_000 };
-    this.players = new Players(
-      nonStartedGame.players,
+    this.settings = {
+      ...nonStartedGame.settings,
+      moveTime: nonStartedGame.settings.moveTime * 1000,
+    };
+    this.players = new StartedDurakGamePlayers(
+      nonStartedGame.users,
       new GamePlayerWebsocketService(namespace),
     );
     this.talon = new Talon(
@@ -63,9 +69,11 @@ export default class DurakGame {
       new GameDeskWebsocketService(namespace),
     );
     this.#wsService = new DurakGameWebsocketService(namespace);
-    new GameRoundDistributionQueue(this).makeInitialDistribution();
+    this.distribution = new GameRoundDistribution(
+      this,
+    ).makeInitialDistribution();
     this.#makeInitialSuperPlayersStrategy();
-    this.round = new GameRound(this);
+    this.round = new GameRound(this, new GameRoundMoves());
     this.isStarted = true;
     this.initialPlayers = this.players.value.map((player, index) => ({
       id: player.id,
@@ -78,6 +86,13 @@ export default class DurakGame {
 
   restoreState(socket: DurakGameSocket.Socket) {
     this.#wsService.restoreState(this, socket);
+  }
+
+  handleSocketConnection(
+    socket: DurakGameSocket.Socket,
+    namespace: DurakGameSocket.Namespace,
+  ) {
+    addListenersWhichAreNeededForStartedGame.call(socket, this);
   }
 
   #makeInitialSuperPlayersStrategy() {

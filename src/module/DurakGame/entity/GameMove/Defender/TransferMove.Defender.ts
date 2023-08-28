@@ -2,14 +2,13 @@ import type DurakGame from "../../../DurakGame";
 import type Card from "../../Card";
 import { type CardInsert } from "../../GameRound/CardInsert.interface";
 import { type AfterHandler } from "../GameMove.abstract";
+import InsertMove from "../InsertMove";
 import DefenderMove from "./DefenderMove";
 
-export class TransferMove
-  extends DefenderMove
-  implements AfterHandler, CardInsert
-{
+export class TransferMove extends DefenderMove implements AfterHandler, CardInsert {
   card: Card;
   slotIndex: number;
+  insert: InsertMove;
 
   constructor(
     game: DurakGame,
@@ -19,6 +18,7 @@ export class TransferMove
     },
   ) {
     super(game, { performer: game.players.defender });
+    this.insert = new InsertMove(context.card, context.slotIndex, game.desk);
     this.card = this.performer.remove((card) => card === context.card);
     this.slotIndex = context.slotIndex;
     this.isInsertMove = true;
