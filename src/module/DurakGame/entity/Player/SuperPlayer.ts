@@ -1,7 +1,13 @@
+import type { CardDTO } from "../../DTO";
+import type Card from "../Card";
+import SuperHand from "../Deck/Hand/SuperHand";
+import type GameRound from "../GameRound";
 import Player from "./Player";
-import Card from "../Card";
-import { CardDTO } from "../../DTO";
-import GameRound from "../GameRound";
+
+export default abstract class SuperPlayer extends Player<SuperHand> {
+  constructor(player: Player) {
+    super(player, { hand: new SuperHand([...player.hand]) });
+  }
 
 export default abstract class SuperPlayer extends Player {
   remove(cb: (card: Card) => boolean): Card {
