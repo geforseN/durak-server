@@ -2,10 +2,6 @@ import Card from "../Card";
 import { DeskSlot, UnbeatenSlot, UnbeatenTrumpSlot } from "./index";
 
 export default class EmptySlot extends DeskSlot {
-  constructor() {
-    super();
-  }
-
   get value(): [] {
     return [];
   }
@@ -27,6 +23,8 @@ export default class EmptySlot extends DeskSlot {
   }
 
   override nextDeskSlot(card: Card): UnbeatenSlot | UnbeatenTrumpSlot {
-    return card.isTrump ? new UnbeatenTrumpSlot(card) : new UnbeatenSlot(card);
+    return card.isTrump
+      ? new UnbeatenTrumpSlot(this.index, card)
+      : new UnbeatenSlot(this.index, card);
   }
 }

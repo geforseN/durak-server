@@ -2,8 +2,8 @@ import Card from "../Card";
 import { DeskSlot } from "./index";
 
 export default class DefendedSlot extends DeskSlot {
-  constructor(public attackCard: Card, public defendCard: Card) {
-    super();
+  constructor(index: number, public attackCard: Card, public defendCard: Card) {
+    super(index);
   }
 
   get value(): [Card, Card] {
