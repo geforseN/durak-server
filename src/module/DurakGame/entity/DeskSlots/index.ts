@@ -55,15 +55,9 @@ export default class DeskSlots {
   }
 
   get randomEmptySlotIndex(): number {
-    const emptySlotsIndexes = this.#value.reduce(
-      (indexesOfEmptySlots: number[], slot, index) => {
-        if (slot instanceof EmptySlot) {
-          indexesOfEmptySlots.push(index);
-        }
-        return indexesOfEmptySlots;
-      },
-      [],
-    );
+    const emptySlotsIndexes = this.#value
+      .filter((slot) => slot.isEmpty())
+      .map((slot) => slot.index);
     return emptySlotsIndexes[randomInt(emptySlotsIndexes.length)];
   }
 }
