@@ -1,8 +1,5 @@
 import assert from "node:assert";
 import type DurakGame from "../../DurakGame";
-import { NonLinkedGamePlayer, NonStartedGameUser } from "./Player";
-import type GamePlayerWebsocketService from "./Player.service";
-import SidePlayersIndexes from "./SidePlayersIndexes";
 import { Attacker, Defender, Player, SuperPlayer } from "./index";
 
 export default abstract class Players {
@@ -79,40 +76,5 @@ export default abstract class Players {
     const [player] = this.value.splice(playerIndex, 1);
     player.exitGame(game);
     return player;
-  }
-}
-
-export class NonEmptyPlayers extends Players {
-  constructor(game: DurakGame) {
-    super(
-      game.players.value.reduce((nonEmptyPlayers: Player[], player) => {
-        if (player.hand.isEmpty) {
-          player.exitGame(game);
-        } else {
-          nonEmptyPlayers.push(player);
-        }
-        return nonEmptyPlayers;
-      }, []),
-    );
-  }
-}
-
-// ! Player#left & Player#right is buggy, should add test !
-// TODO: add test
-export class StartedDurakGamePlayers extends Players {
-  constructor(
-    nonStartedGameUsers: NonStartedGameUser[],
-    wsPlayerService: GamePlayerWebsocketService,
-  ) {
-    super(
-      nonStartedGameUsers
-        .map((player) => new NonLinkedGamePlayer(player, wsPlayerService))
-        .map((player) => new Player(player)),
-    );
-    this.value.forEach((player, index, players) => {
-      const indexes = new SidePlayersIndexes(index, players.length);
-      player.left = players[indexes.leftPlayerIndex];
-      player.right = players[indexes.rightPlayerIndex];
-    });
   }
 }
