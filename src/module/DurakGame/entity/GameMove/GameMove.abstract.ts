@@ -1,82 +1,55 @@
-import type {
-  InsertAttackCardMove,
-  InsertDefendCardMove,
-  StopAttackMove,
-  StopDefenseMove,
-  TransferMove,
-} from ".";
 import type DurakGame from "../../DurakGame";
-import type Card from "../Card";
-import { CardInsert } from "../GameRound/CardInsert.interface";
-import { Attacker, Defender } from "../Player";
 import type Player from "../Player/Player";
-import type DefaultBehavior from "./DefaultBehavior";
+import type DefaultBehavior from "./DefaultBehavior/DefaultBehavior";
 
-export abstract class GameMove {
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO maybe call it calculateNewMove
+// method should return base move or ... idk
+export interface AfterHandler {
+  handleAfterMoveIsDone(): void;
+}
+
+export interface CardInsert {}
+
+export default abstract class GameMove<Performer extends Player> {
   game: DurakGame;
-  abstract performer: Player;
-  abstract defaultBehavior: DefaultBehavior<GameMove>;
-  isInsertMove: boolean;
-  abstract insertCardOnDesk?: Function;
+  performer: Performer;
+  abstract defaultBehavior: DefaultBehavior<Performer>;
 
-  protected constructor(game: DurakGame) {
+  protected constructor(game: DurakGame, performer: Performer) {
     this.game = game;
-    this.isInsertMove = false;
+    this.performer = performer;
   }
 
-  _isInsertMove(): this is CardInsert {
-    return (
-      Object.hasOwn(this, "insertCardOnDesk") &&
-      typeof this.insertCardOnDesk == "function"
-    );
+  abstract isInsertMove(): this is CardInsert;
+  abstract isBaseMove(): boolean;
+  isNotBase(): this is AfterHandler {
+    return !this.isBaseMove();
   }
 
-  get player() {
+  get latestPerformer() {
     return this.game.players.get((player) => player.id === this.performer.id);
   }
 
   emitContextToPlayers() {
+    // TODO
+    // TODO
+    // TODO emit without allowedPlayerId data
+    this.game.info.namespace.to(this.latestPerformer.id).emit();
+    // TODO above
     this.game.info.namespace.emit("move::new", {
       move: {
-        allowedPlayer: { id: this.player.id },
+        allowedPlayer: { id: this.latestPerformer.id },
         name: this.constructor.name,
         endTime: { UTC: this.defaultBehavior.callTime.UTC },
         timeToMove: this.game.settings.moveTime,
       },
     });
   }
-
-  updateTo<
-    CertainMove extends
-      | typeof StopAttackMove
-      | typeof StopDefenseMove
-      | typeof InsertAttackCardMove
-      | typeof InsertDefendCardMove
-      | typeof TransferMove,
-  >(
-    Move: CertainMove,
-    performer: CertainMove extends
-      | typeof StopAttackMove
-      | typeof InsertAttackCardMove
-      ? Attacker
-      : Defender,
-    context: CertainMove extends
-      | typeof InsertAttackCardMove
-      | typeof TransferMove
-      | typeof InsertDefendCardMove
-      ? { card: Card; slotIndex: number }
-      : Record<string, never>,
-  ): void {
-    this.defaultBehavior.stop();
-    this.game.round.currentMove = new Move(this.game, {
-      performer,
-      ...context,
-    });
-  }
 }
-
-export interface AfterHandler {
-  handleAfterMoveIsDone(): void;
-}
-
-export default GameMove;

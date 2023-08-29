@@ -12,7 +12,4 @@ export default class InsertMove {
     this.slotIndex = slotIndex;
     this.desk = desk;
   }
-
-
-
 }

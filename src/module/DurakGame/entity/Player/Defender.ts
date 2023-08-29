@@ -1,52 +1,31 @@
-import assert from "node:assert";
-import { type CanReceiveCards } from "../../DurakGame";
+import DurakGame, { type CanReceiveCards } from "../../DurakGame";
 import SuperPlayer from "./SuperPlayer";
-import {
-  InsertDefendCardMove,
-  StopDefenseMove,
-  TransferMove,
-} from "../GameMove";
-import { CardDTO } from "../../DTO";
 import GameRound from "../GameRound";
-import Card from "../Card";
 import type Player from "./Player";
+import AllowedToMoveDefender from "./AllowedToMoveDefender";
 
 export default class Defender extends SuperPlayer implements CanReceiveCards {
-  isGaveUp: boolean;
+  readonly isSurrendered: boolean;
 
-  constructor(player: Player) {
+  constructor(player: Player, isSurrendered = false) {
     super(player);
-    this.isGaveUp = false;
+    this.isSurrendered = isSurrendered;
   }
 
   override isDefender() {
     return true;
   }
 
-  async putCardOnDesk(
-    round: GameRound,
-    { rank, suit }: CardDTO,
-    slotIndex: number,
-  ) {
-    assert.ok(this === round.currentMove.player);
-    const card = this.hand.get((card) => card.hasSame({ rank, suit }));
-    if (await this.canMakeTransferMove(round, card, slotIndex)) {
-      return round.currentMove.updateTo(TransferMove, this, { card, slotIndex });
-    }
-    await round.game.desk.slotAt(slotIndex).ensureCanBeDefended(card);
-    return round.currentMove.updateTo(InsertDefendCardMove, this, {
-      card,
-      slotIndex,
-    });
+  asSurrenderedDefender() {
+    return new Defender(this, true);
+  }
+
+  asAllowedToMakeMove(game: DurakGame) {
+    return new AllowedToMoveDefender(this, game);
   }
 
   // TODO add ensureCanDefend(unbeatenDeskCards)
   // TODO add ensureCanMakeTransferMove(desk)
-
-  stopMove(round: GameRound) {
-    assert.ok(this === round.currentMove.player);
-    round.currentMove.updateTo(StopDefenseMove, this, {});
-  }
 
   canDefend(cardCount: number) {
     return this.canTakeMore(cardCount);
@@ -62,15 +41,10 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
         // below statement is for more than 2 players game
         round.game.players.attacker.left === round.primalAttacker
       );
-    } catch {
+    } catch (error) {
+      // TODO if (error instanceof NoPrimalAttackerError) {}
+      // TODO else throw error
       return false;
     }
-  }
-
-  async canMakeTransferMove(round: GameRound, card: Card, slotIndex: number) {
-    return (
-      this.left.canTakeMore(round.game.desk.cardsCount) &&
-      round.game.desk.allowsTransferMove(card, slotIndex)
-    );
   }
 }

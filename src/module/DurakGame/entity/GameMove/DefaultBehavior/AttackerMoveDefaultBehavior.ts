@@ -1,16 +1,14 @@
 import assert from "node:assert";
-import { AttackerMove } from "./AttackerMove";
-import DefaultBehavior from "../DefaultBehavior";
+import DefaultBehavior from "./DefaultBehavior";
+import GameMove from "../GameMove.abstract";
+import AllowedToMoveAttacker from "../../Player/AllowedToMoveAttacker";
 
-export class AttackerMoveDefaultBehavior extends DefaultBehavior<AttackerMove /* TODO specify move type*/> {
-  value: NodeJS.Timeout;
+export class AttackerMoveDefaultBehavior extends DefaultBehavior<AllowedToMoveAttacker /* TODO specify move type*/> {
+  callback: () => Promise<void>;
 
-  constructor(move: AttackerMove, shouldBeCalled = true) {
+  constructor(move: GameMove<AllowedToMoveAttacker>, shouldBeCalled = true) {
     super(move, shouldBeCalled);
-    this.value = setTimeout(
-      this.#value.bind(this),
-      this.move.game.settings.moveTime,
-    );
+    this.callback = this.#value.bind(this);
   }
 
   async #value() {

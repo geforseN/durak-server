@@ -96,12 +96,10 @@ export default class DurakGame {
   }
 
   #makeInitialSuperPlayersStrategy() {
-    assert.ok(this.info.adminId, "AdminId not found");
-    const desiredAttacker = this.players.get(
-      (player) => player.id === this.info.adminId,
-    );
-    this.players.attacker = desiredAttacker;
-    this.players.defender = this.players.attacker.left;
+    const admin = this.players.get((player) => player.info.isAdmin);
+    const adminAsAllowedAttacker = admin.asAttacker().asAllowedToMakeMove(this);
+    this.players.setAttacker(admin.asAttacker().asAllowedToMakeMove(this));
+    this.players.setDefender(adminAsAllowedAttacker.left.asDefender());
   }
 
   end() {
