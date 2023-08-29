@@ -1,17 +1,14 @@
 import assert from "node:assert";
-import DefenderMove from "./DefenderMove";
-import DefaultBehavior from "../DefaultBehavior";
-import getDefenseStrategy from "./getDefenseStrategy";
+import DefaultBehavior from "./DefaultBehavior";
+import GameMove from "../GameMove.abstract";
+import AllowedToMoveDefender from "../../Player/AllowedToMoveDefender";
 
-export class DefenderMoveDefaultBehavior extends DefaultBehavior<DefenderMove /* TODO specify move type*/> {
-  value;
+export class DefenderMoveDefaultBehavior extends DefaultBehavior<AllowedToMoveDefender /* TODO specify move type*/> {
+  callback;
 
-  constructor(move: DefenderMove, shouldBeCalled = true) {
+  constructor(move: GameMove<AllowedToMoveDefender>, shouldBeCalled = true) {
     super(move, shouldBeCalled);
-    this.value = setTimeout(
-      this.#value.bind(this),
-      this.move.game.settings.moveTime,
-    );
+    this.callback = this.#value.bind(this);
   }
 
   async #value() {

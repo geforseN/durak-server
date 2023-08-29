@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import type DurakGame from "../../DurakGame";
 import { Attacker, Defender, Player, SuperPlayer } from "./index";
+import { CanMakeMove } from "./Player";
 
 export default abstract class Players {
   readonly value: Player[];
@@ -15,6 +16,14 @@ export default abstract class Players {
 
   get count() {
     return this.value.length;
+  }
+
+  get allowedToMovePlayer() {
+    return this.get<SuperPlayer & CanMakeMove>(
+      (player): player is SuperPlayer & CanMakeMove =>
+        player.isSuperPlayer() && player.isAllowedToMove(),
+      "Разрешенный игрок не найден",
+    );
   }
 
   get attacker(): Attacker {
@@ -36,6 +45,30 @@ export default abstract class Players {
     const defender = this.value.find((player) => player.isDefender());
     if (defender) this.#update(defender, Player);
     this.#update(player, Defender);
+  }
+
+  setPlayer<P extends Player>(player: P) {
+    const pastPlayerIndex = this.value.findIndex(
+      (player_) => player_.id === player.id,
+    );
+    assert.ok(pastPlayerIndex >= 0);
+    this.value.splice(pastPlayerIndex, 1, player);
+  }
+
+  setAttacker(attacker: Attacker) {
+    const pastPlayerIndex = this.value.findIndex(
+      (player) => player.id === attacker.id,
+    );
+    assert.ok(pastPlayerIndex >= 0);
+    this.value.splice(pastPlayerIndex, 1, attacker);
+  }
+
+  setDefender(defender: Defender) {
+    const pastPlayerIndex = this.value.findIndex(
+      (player) => player.id === defender.id,
+    );
+    assert.ok(pastPlayerIndex >= 0);
+    this.value.splice(pastPlayerIndex, 1, defender);
   }
 
   set attacker(player: Player | SuperPlayer) {

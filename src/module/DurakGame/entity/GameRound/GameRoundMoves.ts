@@ -1,27 +1,27 @@
 import assert from "node:assert";
 import {
-  AttackerMove,
+  BaseAttackerMove,
   DefenderGaveUpMove,
-  DefenderMove,
+  BaseDefenderMove,
   InsertAttackCardMove,
   InsertDefendCardMove,
   StopAttackMove,
   StopDefenseMove,
-  TransferMove,
+  DefenderTransferMove,
 } from "../GameMove";
 
 export default class GameRoundMoves {
-  #value: (DefenderMove | AttackerMove)[];
+  #value: (BaseDefenderMove | BaseAttackerMove)[];
 
   constructor(value = []) {
     this.#value = value;
   }
 
-  get previousMove(): DefenderMove | AttackerMove {
+  get previousMove(): BaseDefenderMove | BaseAttackerMove {
     return this.#value[this.#currentMoveIndex - 1];
   }
 
-  get currentMove(): DefenderMove | AttackerMove {
+  get currentMove(): BaseDefenderMove | BaseAttackerMove {
     return this.#value[this.#currentMoveIndex];
   }
 
@@ -31,9 +31,9 @@ export default class GameRoundMoves {
       | StopDefenseMove
       | InsertAttackCardMove
       | InsertDefendCardMove
-      | TransferMove,
+      | DefenderTransferMove,
   ) {
-    this.currentMove.defaultBehavior.stop();
+    this.currentMove.defaultBehavior.clearTimeout();
     this.#value[this.#currentMoveIndex] = certainMove;
     certainMove.emitContextToPlayers();
     certainMove.handleAfterMoveIsDone();
@@ -43,16 +43,17 @@ export default class GameRoundMoves {
     return this.#value.length - 1;
   }
 
-  set nextMove(uncertainMove: DefenderMove | AttackerMove) {
-    this.currentMove?.defaultBehavior.stop();
-    this.#value.push(uncertainMove);
-    uncertainMove.emitContextToPlayers();
+  set nextMove(baseMove: BaseDefenderMove | BaseAttackerMove) {
+    this.currentMove?.defaultBehavior.clearTimeout();
+    this.#value.push(baseMove);
+    baseMove.defaultBehavior.setTimeout();
+    baseMove.emitContextToPlayers();
   }
 
-  get firstDefenderMove(): DefenderMove | never {
+  get firstDefenderMove(): BaseDefenderMove | never {
     const firstDefenderMove = this.#value.find(
-      (move): move is DefenderMove =>
-        move instanceof DefenderMove && !(move instanceof TransferMove),
+      (move): move is BaseDefenderMove =>
+        move instanceof BaseDefenderMove && !(move instanceof DefenderTransferMove),
     );
     assert.ok(firstDefenderMove, "Нет защищающегося хода");
     return firstDefenderMove;

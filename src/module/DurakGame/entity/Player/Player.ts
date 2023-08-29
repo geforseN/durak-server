@@ -3,12 +3,13 @@ import type LobbyUser from "../../../Lobbies/entity/LobbyUser";
 import type DurakGame from "../../DurakGame";
 import type Card from "../Card";
 import type { Hand } from "../Deck";
-import type Attacker from "./Attacker";
-import type Defender from "./Defender";
+import Attacker from "./Attacker";
+import Defender from "./Defender";
 import type GamePlayerWebsocketService from "./Player.service";
 import type SuperPlayer from "./SuperPlayer";
 import { NonStartedGameUser } from "./NonStartedGameUser";
 import { raise } from "../../../..";
+import { GameMove } from "../GameMove";
 
 export const GOOD_CARD_AMOUNT = 6 as const;
 
@@ -81,4 +82,35 @@ export default class Player<H extends Hand = Hand> {
     }
     return this.wsService?.exitGame(this);
   }
+
+  isAllowedToMove(): this is CanMakeMove {
+    return false;
+  }
+
+  asDefender() {
+    return new Defender(this);
+  }
+
+  asAttacker() {
+    return new Attacker(this);
+  }
+
+  asPlayer() {
+    return new Player(this);
+  }
+}
+
+export interface CanMakeMove extends CanMakeBaseMove, CanMakeUpdateMove {}
+
+interface CanMakeBaseMove {
+  makeBaseMove(): GameMove;
+}
+
+interface CanMakeUpdateMove {
+  makeInsertMove(...args: any[]): Promise<GameMove>;
+  makeStopMove(...args: any[]): GameMove;
+}
+
+export interface CanMakeTransferMove {
+  makeTransferMove(card: Card, slotIndex: number): GameMove;
 }

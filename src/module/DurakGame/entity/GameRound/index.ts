@@ -1,17 +1,20 @@
+import assert from "node:assert";
 import type DurakGame from "../../DurakGame";
 import type FailedDefense from "../DefenseEnding/FailedDefense";
 import type SuccessfulDefense from "../DefenseEnding/SuccessfulDefense";
 import {
-  AttackerMove,
-  DefenderMove,
+  BaseAttackerMove,
+  BaseDefenderMove,
   InsertAttackCardMove,
   InsertDefendCardMove,
   StopAttackMove,
   StopDefenseMove,
-  TransferMove,
+  DefenderTransferMove,
 } from "../GameMove";
-import type { Player } from "../Player";
+import type { Player, SuperPlayer } from "../Player";
 import GameRoundMoves from "./GameRoundMoves";
+import { InternalGameLogicError } from "../../DurakGame";
+import { CanMakeMove } from "../Player/Player";
 
 export default class GameRound {
   readonly number: number;
@@ -25,7 +28,7 @@ export default class GameRound {
     this.game.info.namespace.emit("round::new", {
       roundNumber: this.number,
     });
-    this.giveAttackTo(game.players.attacker);
+    this.letPushMoveToAllowedPlayer();
   }
 
   endWith(Defense: typeof FailedDefense | typeof SuccessfulDefense) {
@@ -37,18 +40,24 @@ export default class GameRound {
   }
 
   giveAttackTo(player: Player) {
-    this.moves.nextMove = new AttackerMove(this.game, {
+    this.moves.nextMove = new BaseAttackerMove(this.game, {
       performer: player,
     });
+    return this;
   }
 
   giveDefendTo(player: Player) {
-    this.moves.nextMove = new DefenderMove(this.game, {
+    this.moves.nextMove = new BaseDefenderMove(this.game, {
       performer: player,
     });
+    return this;
   }
 
-  get currentMove(): DefenderMove | AttackerMove {
+  letPushMoveToAllowedPlayer() {
+    this.moves.nextMove = this.game.players.allowedToMovePlayer.makeBaseMove();
+  }
+
+  get currentMove(): BaseDefenderMove | BaseAttackerMove {
     return this.moves.currentMove;
   }
 
@@ -58,7 +67,7 @@ export default class GameRound {
       | StopDefenseMove
       | InsertAttackCardMove
       | InsertDefendCardMove
-      | TransferMove,
+      | DefenderTransferMove,
   ) {
     this.moves.currentMove = certainMove;
   }

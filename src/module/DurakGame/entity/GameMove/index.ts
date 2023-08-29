@@ -1,21 +1,26 @@
-import { AttackerMove } from "./Attacker/AttackerMove";
-import DefenderMove from "./Defender/DefenderMove";
-import { GameMove } from "./GameMove.abstract";
-import { InsertAttackCardMove } from "./Attacker/InsertAttackCardMove";
-import { InsertDefendCardMove } from "./Defender/InsertDefendCardMove";
-import { StopAttackMove } from "./Attacker/StopAttackMove";
-import { StopDefenseMove } from "./Defender/StopDefenseMove";
-import { TransferMove } from "./Defender/TransferMove.Defender";
-import { DefenderGaveUpMove } from "./Defender/DefenderGaveUpMove";
+import GameMove, {
+  type AfterHandler,
+  type CardInsert,
+} from "./GameMove.abstract";
+import BaseAttackerMove from "./BaseAttackerMove";
+import BaseDefenderMove from "./BaseDefenderMove";
+import InsertAttackCardMove from "./InsertAttackCardMove";
+import InsertDefendCardMove from "./InsertDefendCardMove";
+import StopAttackMove from "./StopAttackMove";
+import StopDefenseMove from "./StopDefenseMove";
+import DefenderTransferMove from "./DefenderTransferMove";
+import DefenderGaveUpMove from "./DefenderGaveUpMove";
 
 export {
-  AttackerMove,
-  DefenderMove,
+  type AfterHandler,
+  type CardInsert,
+  BaseAttackerMove,
+  BaseDefenderMove,
   DefenderGaveUpMove,
   GameMove,
   InsertAttackCardMove,
   InsertDefendCardMove,
   StopAttackMove,
   StopDefenseMove,
-  TransferMove,
+  DefenderTransferMove,
 };
