@@ -40,6 +40,10 @@ export default class Player<H extends Hand = Hand> {
     this.wsService.emitOwnKind(this);
   }
 
+  get kind(): "Player" | "Attacker" | "Defender" {
+    return "Player" as const;
+  }
+
   receiveCards(...cards: Card[]): void {
     this.hand.receive(...cards);
     this.wsService?.receiveCards({ player: this, cards });

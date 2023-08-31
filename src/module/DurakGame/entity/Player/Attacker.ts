@@ -9,6 +9,10 @@ export default class Attacker extends SuperPlayer {
     super(player);
   }
 
+  override get kind() {
+    return "Attacker" as const;
+  }
+
   override isAttacker() {
     return true;
   }
@@ -20,7 +24,7 @@ export default class Attacker extends SuperPlayer {
   hasPutLastCard(round: GameRound): boolean {
     return (
       round.moves.previousMove.isInsertMove() &&
-      round.moves.previousMove.player.id === this.id
+      round.moves.previousMove.performer.id === this.id
     );
   }
 }

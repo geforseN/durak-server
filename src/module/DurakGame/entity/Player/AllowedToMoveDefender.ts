@@ -21,6 +21,8 @@ export default class AllowedToMoveDefender
   __defendSlot = undefined;
   __giveUp = undefined;
 
+  __defaultBehavior__ = undefined
+
   // NOTE: AllowedDefender should have methods:
   // - putCardOnDesk;
   // - stopMove

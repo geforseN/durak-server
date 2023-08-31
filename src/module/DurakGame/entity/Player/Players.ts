@@ -47,6 +47,9 @@ export default abstract class Players {
     this.#update(player, Defender);
   }
 
+  setAllowedPlayer() {}
+
+
   setPlayer<P extends Player>(player: P) {
     const pastPlayerIndex = this.value.findIndex(
       (player_) => player_.id === player.id,

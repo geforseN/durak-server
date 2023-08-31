@@ -15,11 +15,11 @@ export default class StopDefenseMove
     this.defaultBehavior = new DefenderMoveDefaultBehavior(this);
   }
 
-  isInsertMove(): boolean {
+  override isBaseMove(): boolean {
     return false;
   }
 
-  isBaseMove(): boolean {
+  override isInsertMove(): boolean {
     return false;
   }
 

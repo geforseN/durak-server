@@ -20,12 +20,12 @@ export default class InsertDefendCardMove
     this.defaultBehavior = new DefenderMoveDefaultBehavior(this);
   }
 
-  isInsertMove(): this is CardInsert {
-    return true;
+  override isBaseMove(): boolean {
+    return false;
   }
 
-  isBaseMove(): boolean {
-    return false;
+  override isInsertMove(): this is CardInsert {
+    return true;
   }
 
   handleAfterMoveIsDone() {

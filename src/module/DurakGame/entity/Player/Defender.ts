@@ -12,6 +12,10 @@ export default class Defender extends SuperPlayer implements CanReceiveCards {
     this.isSurrendered = isSurrendered;
   }
 
+  override get kind() {
+    return "Defender" as const;
+  }
+
   override isDefender() {
     return true;
   }
