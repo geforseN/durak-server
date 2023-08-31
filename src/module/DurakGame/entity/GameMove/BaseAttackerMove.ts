@@ -11,11 +11,11 @@ export default class BaseAttackerMove extends GameMove<AllowedToMoveAttacker> {
     this.defaultBehavior = new AttackerMoveDefaultBehavior(this);
   }
 
-  isInsertMove(): boolean {
-    return false;
+  override isBaseMove(): boolean {
+    return true;
   }
 
-  isBaseMove(): boolean {
-    return true;
+  override isInsertMove(): boolean {
+    return false;
   }
 }

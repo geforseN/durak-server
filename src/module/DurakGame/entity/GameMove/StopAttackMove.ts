@@ -9,18 +9,18 @@ export default class StopAttackMove
   extends GameMove<AllowedToMoveAttacker>
   implements AfterHandler
 {
-  defaultBehavior;
+  defaultBehavior: AttackerMoveDefaultBehavior;
 
   constructor(game: DurakGame, performer: AllowedToMoveAttacker) {
     super(game, performer);
     this.defaultBehavior = new AttackerMoveDefaultBehavior(this);
   }
 
-  isInsertMove(): this is CardInsert {
-    return true;
+  override isBaseMove(): boolean {
+    return false;
   }
 
-  isBaseMove(): boolean {
+  override isInsertMove(): this is CardInsert {
     return false;
   }
 

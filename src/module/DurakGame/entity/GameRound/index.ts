@@ -1,4 +1,3 @@
-import assert from "node:assert";
 import type DurakGame from "../../DurakGame";
 import type FailedDefense from "../DefenseEnding/FailedDefense";
 import type SuccessfulDefense from "../DefenseEnding/SuccessfulDefense";
@@ -11,10 +10,8 @@ import {
   StopDefenseMove,
   DefenderTransferMove,
 } from "../GameMove";
-import type { Player, SuperPlayer } from "../Player";
+import type { Player } from "../Player";
 import GameRoundMoves from "./GameRoundMoves";
-import { InternalGameLogicError } from "../../DurakGame";
-import { CanMakeMove } from "../Player/Player";
 
 export default class GameRound {
   readonly number: number;

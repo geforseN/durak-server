@@ -28,12 +28,12 @@ export default class InsertAttackCardMove
     this.defaultBehavior = new AttackerMoveDefaultBehavior(this);
   }
 
-  isInsertMove(): this is CardInsert {
-    return true;
+  override isBaseMove(): boolean {
+    return false;
   }
 
-  isBaseMove(): boolean {
-    return false;
+  override isInsertMove(): this is CardInsert {
+    return true;
   }
 
   handleAfterMoveIsDone() {

@@ -27,8 +27,8 @@ export default abstract class GameMove<Performer extends Player> {
     this.performer = performer;
   }
 
-  abstract isInsertMove(): this is CardInsert;
   abstract isBaseMove(): boolean;
+  abstract isInsertMove(): this is CardInsert;
   isNotBase(): this is AfterHandler {
     return !this.isBaseMove();
   }

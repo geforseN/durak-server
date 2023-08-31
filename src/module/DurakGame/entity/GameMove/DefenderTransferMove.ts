@@ -25,7 +25,7 @@ export default class TransferMove
     this.defaultBehavior = new DefenderMoveDefaultBehavior(this);
   }
 
-  isBaseMove(): boolean {
+  override isBaseMove(): boolean {
     return false;
   }
 
@@ -38,7 +38,12 @@ export default class TransferMove
   // when this.player become Attacker (code line below)
   // or should just clearInterval(this.defaultBehavior)
   handleAfterMoveIsDone() {
-    this.game.players.attacker = this.performer;
-    return this.game.round.giveDefendTo(this.player.left);
+    this.game.players.setPlayer(this.game.players.attacker);
+    // NOTE: line above made players without attacker
+    // after line above only defender exist
+    this.game.players.setAttacker(
+      this.performer.asAttacker().asAllowedToMakeMove(this.game),
+    );
+    this.game.players.setDefender(this.game.players.attacker.left.asDefender());
   }
 }
