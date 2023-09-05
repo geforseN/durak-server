@@ -1,8 +1,8 @@
-import { type CanCommandNextMove } from "./GameMove.abstract";
-import type Card from "../Card";
 import type DurakGame from "../../DurakGame";
-import type DeskSlot from "../DeskSlot";
 import { AllowedAttacker } from "../BestPlayer/AllowedAttacker";
+import type Card from "../Card";
+import type DeskSlot from "../DeskSlot";
+import { type CanCommandNextMove } from "./GameMove.abstract";
 import InsertGameMove from "./InsertGameMove.abstract";
 
 export default class InsertAttackCardMove
