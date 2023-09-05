@@ -1,51 +1,39 @@
-import GameMove, {
-  type CardInsert,
-  type AfterHandler,
-} from "./GameMove.abstract";
+import { type CanCommandNextMove } from "./GameMove.abstract";
 import type Card from "../Card";
 import type DurakGame from "../../DurakGame";
-import AllowedToMoveAttacker from "../Player/AllowedToMoveAttacker";
-import { AttackerMoveDefaultBehavior } from "./DefaultBehavior/AttackerMoveDefaultBehavior";
+import type DeskSlot from "../DeskSlot";
+import { AllowedAttacker } from "../BestPlayer/AllowedAttacker";
+import InsertGameMove from "./InsertGameMove.abstract";
 
 export default class InsertAttackCardMove
-  extends GameMove<AllowedToMoveAttacker>
-  implements AfterHandler, CardInsert
+  extends InsertGameMove<AllowedAttacker>
+  implements CanCommandNextMove
 {
-  defaultBehavior: AttackerMoveDefaultBehavior;
-
   constructor(
     game: DurakGame,
-    performer: AllowedToMoveAttacker,
-    {
-      card,
-      slotIndex,
-    }: {
+    performer: AllowedAttacker,
+    context: {
       card: Card;
-      slotIndex: number;
+      slot: DeskSlot;
     },
   ) {
-    super(game, performer);
-    this.defaultBehavior = new AttackerMoveDefaultBehavior(this);
+    super(game, performer, context);
   }
 
-  override isBaseMove(): boolean {
-    return false;
-  }
-
-  override isInsertMove(): this is CardInsert {
-    return true;
-  }
-
-  handleAfterMoveIsDone() {
+  calculateNextThingToDoInGame() {
     if (
       this.performer.hand.isEmpty ||
-      !this.game.players.defender.canDefend(
+      this.game.players.defender.canNotDefend(
         this.game.desk.unbeatenSlots.cardCount,
       ) ||
       !this.game.desk.allowsAttackerMove
     ) {
-      return this.game.round.giveDefendTo(this.game.players.defender);
+      this.game.players = this.game.players
+        .with(this.performer.asDisallowed())
+        .with(this.game.players.defender.asAllowed(this.game));
+      return this.game.players.defender;
     }
-    return this.game.round.giveAttackTo(this.game.players.attacker);
+    this.game.players = this.game.players.with(this.performer.asAllowedAgain());
+    return this.performer.asLatest;
   }
 }
