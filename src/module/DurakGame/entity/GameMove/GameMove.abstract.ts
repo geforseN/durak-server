@@ -1,36 +1,26 @@
 import type DurakGame from "../../DurakGame";
-import type Player from "../Player/Player";
-import type DefaultBehavior from "./DefaultBehavior/DefaultBehavior";
+import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract";
+import type { RoundEnd } from "../DefenseEnding";
+import InsertGameMove from "./InsertGameMove.abstract";
 
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO maybe call it calculateNewMove
-// method should return base move or ... idk
-export interface AfterHandler {
-  handleAfterMoveIsDone(): void;
+export interface CanCommandNextMove {
+  //                                                             TODO or not TODO ...
+  calculateNextThingToDoInGame(): AllowedSuperPlayer | RoundEnd; // | GameEnd;
 }
 
 export interface CardInsert {}
 
-export default abstract class GameMove<Performer extends Player> {
+export default abstract class GameMove<ASP extends AllowedSuperPlayer> {
   game: DurakGame;
-  performer: Performer;
-  abstract defaultBehavior: DefaultBehavior<Performer>;
+  performer: ASP;
 
-  protected constructor(game: DurakGame, performer: Performer) {
+  protected constructor(game: DurakGame, performer: ASP) {
     this.game = game;
     this.performer = performer;
   }
 
-  abstract isBaseMove(): boolean;
-  abstract isInsertMove(): this is CardInsert;
-  isNotBase(): this is AfterHandler {
-    return !this.isBaseMove();
+  isInsertMove(): this is InsertGameMove<ASP> {
+    return false;
   }
 
   get latestPerformer() {
@@ -41,13 +31,13 @@ export default abstract class GameMove<Performer extends Player> {
     // TODO
     // TODO
     // TODO emit without allowedPlayerId data
-    this.game.info.namespace.to(this.latestPerformer.id).emit();
+    this.game.info.namespace.to(this.performer.id).emit();
     // TODO above
     this.game.info.namespace.emit("move::new", {
       move: {
-        allowedPlayer: { id: this.latestPerformer.id },
+        allowedPlayer: { id: this.performer.id },
         name: this.constructor.name,
-        endTime: { UTC: this.defaultBehavior.callTime.UTC },
+        endTime: { UTC: this.performer.defaultBehavior.callTime?.UTC },
         timeToMove: this.game.settings.moveTime,
       },
     });

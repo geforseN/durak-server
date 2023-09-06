@@ -1,44 +1,47 @@
-import GameMove, { AfterHandler, CardInsert } from "./GameMove.abstract";
-import AllowedToMoveDefender from "../Player/AllowedToMoveDefender";
-import { DefenderMoveDefaultBehavior } from "./DefaultBehavior/DefenderMoveDefaultBehavior";
-import Card from "../Card";
-import DurakGame from "../../DurakGame";
+import assert from "node:assert";
+import type DurakGame from "../../DurakGame";
+import { AllowedDefender } from "../Player/AllowedDefender";
+import type Card from "../Card";
 import { SuccessfulDefense } from "../DefenseEnding";
+import type DeskSlot from "../DeskSlot";
+import { type CanCommandNextMove, type CardInsert } from "./GameMove.abstract";
+import InsertGameMove from "./InsertGameMove.abstract";
 
 export default class InsertDefendCardMove
-  extends GameMove<AllowedToMoveDefender>
-  implements AfterHandler, CardInsert
+  extends InsertGameMove<AllowedDefender>
+  implements CardInsert, CanCommandNextMove
 {
-  defaultBehavior: DefenderMoveDefaultBehavior;
-
   constructor(
     game: DurakGame,
-    performer: AllowedToMoveDefender,
-    { card, slotIndex }: { card: Card; slotIndex: number },
+    performer: AllowedDefender,
+    context: {
+      card: Card;
+      slot: DeskSlot;
+    },
   ) {
-    super(game, performer);
-    this.defaultBehavior = new DefenderMoveDefaultBehavior(this);
+    super(game, performer, context);
   }
 
-  override isBaseMove(): boolean {
-    return false;
-  }
-
-  override isInsertMove(): this is CardInsert {
-    return true;
-  }
-
-  handleAfterMoveIsDone() {
+  calculateNextThingToDoInGame() {
     if (!this.game.desk.isDefended) {
-      return this.game.round.giveDefendTo(this.game.players.defender);
+      this.game.players = this.game.players.with(
+        this.performer.asAllowedAgain(),
+      );
+      return this.performer.asLatest();
     }
-    if (this.performer.hand.isEmpty || !this.game.desk.allowsMoves) {
-      return this.game.round.endWith(SuccessfulDefense);
+    if (this.performer.hand.isEmpty || !this.game.desk.isAllowsMoves) {
+      return new SuccessfulDefense(this.game);
     }
     if (this.game.desk.allowsAttackerMove) {
-      return this.game.round.giveAttackTo(this.game.round.primalAttacker);
+      this.game.players = this.game.players
+        .with(this.performer.asDisallowed())
+        .with(this.game.round.primalAttacker.asAttacker().asAllowed(this.game));
+      assert.ok(this.game.players.attacker.isAllowed());
+      return this.game.players.attacker;
     }
+    // TODO understand cases when code will reach here
     console.log("look at me -> handleAfterCardInsert <- look at me");
-    return this.game.round.giveDefendTo(this.game.players.defender);
+    this.game.players = this.game.players.with(this.performer.asAllowedAgain());
+    return this.performer.asLatest();
   }
 }

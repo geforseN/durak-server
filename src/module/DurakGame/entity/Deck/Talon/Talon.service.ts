@@ -1,5 +1,5 @@
 import { DurakGameSocket } from "@durak-game/durak-dts";
-import { Player } from "../../Player";
+import { Player } from "../../__Player";
 import Card from "../../Card";
 import Talon from "./index";
 

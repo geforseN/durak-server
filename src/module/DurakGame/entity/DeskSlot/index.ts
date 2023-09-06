@@ -4,10 +4,5 @@ import UnbeatenSlot from "./UnbeatenSlot";
 import UnbeatenTrumpSlot from "./UnbeatenTrumpSlot";
 import DefendedSlot from "./DefendedSlot";
 
-export {
-  DeskSlot,
-  EmptySlot,
-  UnbeatenSlot,
-  UnbeatenTrumpSlot,
-  DefendedSlot,
-};
+export { DeskSlot, EmptySlot, UnbeatenSlot, UnbeatenTrumpSlot, DefendedSlot };
+export default DeskSlot;

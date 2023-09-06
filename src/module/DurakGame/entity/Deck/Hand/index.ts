@@ -3,8 +3,10 @@ import Deck from "../Deck.abstract";
 import Card from "../../Card";
 
 export default class Hand extends Deck {
-  constructor(cards: Card[] = []) {
-    super(cards);
+  constructor(cards: Card[]);
+  constructor(hand: Hand);
+  constructor(data: Card[] | Hand) {
+    super(data instanceof Hand ? data.value : data );
   }
 
   get(cb: (card: Card) => boolean, notFoundMessage = "У вас нет такой карты") {

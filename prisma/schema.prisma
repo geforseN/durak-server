@@ -1,8 +1,8 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../../durak-dts/generated/client"
 }
 
+// TODO https://github.com/prisma/prisma/issues/12735
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -17,8 +17,8 @@ model DurakGame {
   cardCount    Int
   gameType     GameType
   moveTime     Float
-  players      UserGamePlayer[]
   createdAt    DateTime         @default(now())
+  players      UserGamePlayer[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -46,26 +46,26 @@ model User {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserAuthInfo {
   userId   String  @id @unique
-  User     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   hash     String?
   yandexId String? @unique
   githubId Int?    @unique
   vkId     Int?    @unique
   twitchId String? @unique
+  User     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserGamePlayer {
-  durakGameNumber Int
-  DurakGame       DurakGame     @relation(fields: [durakGameNumber], references: [number], onDelete: Cascade)
-  userId          String
-  User            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stat            UserGameStat  @relation(fields: [userId], references: [userId], map: "userGameStatId", onDelete: Cascade)
   index           Int
+  hasLost         Boolean       @default(false)
+  durakGameNumber Int
+  userId          String
   result          GameEndResult
   place           Int
   roundLeftNumber Int
-  hasLost         Boolean       @default(false)
+  DurakGame       DurakGame     @relation(fields: [durakGameNumber], references: [number], onDelete: Cascade)
+  User            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  UserGameStat    UserGameStat  @relation(fields: [userId], references: [userId], onDelete: Cascade, map: "userGameStatId")
 
   @@unique([durakGameNumber, index])
 }
@@ -73,23 +73,23 @@ model UserGamePlayer {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserGameStat {
   userId             String           @id @unique
-  User               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   wonGamesCount      Int              @default(0)
   lostGamesCount     Int              @default(0)
   unstableGamesCount Int              @default(0)
   createdAt          DateTime         @default(now())
   UserGamePlayer     UserGamePlayer[]
+  User               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserProfile {
   userId        String        @id @unique
-  User          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   personalLink  String        @unique @default(cuid())
   updatedAt     DateTime      @updatedAt
   photoUrl      String?
   nickname      String        @default("Durak Player")
   connectStatus ConnectStatus @default(OFFLINE)
+  User          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum ConnectStatus {

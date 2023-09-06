@@ -1,49 +1,47 @@
-import DurakGame, { type CanReceiveCards } from "../../DurakGame";
-import SuperPlayer from "./SuperPlayer";
-import GameRound from "../GameRound";
-import type Player from "./Player";
-import AllowedToMoveDefender from "./AllowedToMoveDefender";
+import DurakGame from "../../DurakGame";
+import { AllowedDefender } from "./AllowedDefender";
+import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract";
+import { SuperPlayer } from "./SuperPlayer.abstract";
+import { SurrenderedDefender } from "./SurrenderedDefender";
 
-export default class Defender extends SuperPlayer implements CanReceiveCards {
-  readonly isSurrendered: boolean;
-
-  constructor(player: Player, isSurrendered = false) {
-    super(player);
-    this.isSurrendered = isSurrendered;
-  }
-
-  override get kind() {
+export class Defender extends SuperPlayer {
+  get kind() {
     return "Defender" as const;
   }
 
-  override isDefender() {
+  asAllowed(game: DurakGame): AllowedSuperPlayer {
+    return new AllowedDefender(this, game);
+  }
+
+  isDefender(): this is Defender {
     return true;
   }
 
-  asSurrenderedDefender() {
-    return new Defender(this, true);
+  canNotDefend(cardCount: number) {
+    return !this.canTakeMore(cardCount);
   }
 
-  asAllowedToMakeMove(game: DurakGame) {
-    return new AllowedToMoveDefender(this, game);
+  isSurrendered() {
+    return false;
   }
 
-  // TODO add ensureCanDefend(unbeatenDeskCards)
-  // TODO add ensureCanMakeTransferMove(desk)
-
-  canDefend(cardCount: number) {
-    return this.canTakeMore(cardCount);
+  asSurrendered() {
+    return new SurrenderedDefender(this);
   }
 
-  canWinDefense(round: GameRound) {
+  // TODO - rewrite
+  // REVIEW - code is smelly
+  canWinDefense(game: DurakGame) {
     try {
       return (
         //  below statement is for 2 players game:
         //  in 2 players game can be only one attacker
         //  IF attacker stop move THAN defender won
-        this.left === round.primalAttacker ||
+        (game.round.latestPrimalAttacker.isAllowed() &&
+          this.left === game.round.latestPrimalAttacker) ||
         // below statement is for more than 2 players game
-        round.game.players.attacker.left === round.primalAttacker
+        (game.players.attacker.isAllowed() &&
+          game.players.attacker.left === game.round.latestPrimalAttacker)
       );
     } catch (error) {
       // TODO if (error instanceof NoPrimalAttackerError) {}

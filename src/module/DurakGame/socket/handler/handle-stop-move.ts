@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import DurakGame from "../../DurakGame";
-import { SuperPlayer } from "../../entity/Player";
+import { SuperPlayer } from "../../entity/__Player";
 
 export default function handleStopMove(this: {
   game: DurakGame;

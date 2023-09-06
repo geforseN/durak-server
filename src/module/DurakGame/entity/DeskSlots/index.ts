@@ -34,8 +34,8 @@ export default class DeskSlots {
     this.#value[index] = this.#value[index].nextDeskSlot(card);
   }
 
-  async allowsTransferMove(card: Card, slotIndex: number): Promise<boolean> {
-    if (!this.at(slotIndex).isEmpty()) {
+  async allowsTransferMove(card: Card, slot: DeskSlot): Promise<boolean> {
+    if (!slot.isEmpty()) {
       return Promise.reject(false);
     }
     return Promise.all(
@@ -54,10 +54,8 @@ export default class DeskSlots {
     return this.#value.some((slot) => slot.has({ rank }));
   }
 
-  get randomEmptySlotIndex(): number {
-    const emptySlotsIndexes = this.#value
-      .filter((slot) => slot.isEmpty())
-      .map((slot) => slot.index);
-    return emptySlotsIndexes[randomInt(emptySlotsIndexes.length)];
+  get randomEmptySlot() {
+    const emptySlots = this.#value.filter((slot) => slot.isEmpty());
+    return emptySlots[randomInt(emptySlots.length)];
   }
 }

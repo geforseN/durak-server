@@ -1,8 +1,8 @@
 import type DurakGame from "../DurakGame";
 import SelfDTO from "./Self.dto";
 import EnemyDTO from "./Enemy.dto";
-import OrderedPlayerEnemies from "../entity/Player/OrderedPlayerEnemies";
-import type { Player } from "../entity/Player";
+import OrderedPlayerEnemies from "../entity/Players/OrderedPlayerEnemies";
+import type { Player } from "../entity/__Player";
 import { isPlayerKind } from "@durak-game/durak-dts";
 import assert from "node:assert";
 

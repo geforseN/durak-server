@@ -1,5 +1,5 @@
 import { GameRound } from "..";
-import { RoundEnd } from "../RoundEnd";
+import { RoundEnd } from "./RoundEnd";
 
 class FailedDefense extends RoundEnd {
   get newGameRound() {

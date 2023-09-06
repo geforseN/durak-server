@@ -1,7 +1,9 @@
+import DurakGame from "../../DurakGame";
 import { Hand } from "../Deck";
+import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract";
 import { BasePlayer } from "./BasePlayer.abstract";
 
-export class Player extends BasePlayer {
+export abstract class SuperPlayer extends BasePlayer {
   declare left: BasePlayer;
   declare right: BasePlayer;
   declare hand: Hand;
@@ -13,7 +15,5 @@ export class Player extends BasePlayer {
     this.hand = basePlayer.hand;
   }
 
-  get kind() {
-    return "Player" as const;
-  }
+  abstract asAllowed(game: DurakGame): AllowedSuperPlayer;
 }

@@ -1,35 +1,37 @@
+import assert from "node:assert";
 import type DurakGame from "../../DurakGame";
-import type AllowedToMoveDefender from "../Player/AllowedToMoveDefender";
-import { DefenderMoveDefaultBehavior } from "./DefaultBehavior/DefenderMoveDefaultBehavior";
-import DefenderGaveUpMove from "./DefenderGaveUpMove";
-import GameMove, { type AfterHandler } from "./GameMove.abstract";
+import { AllowedDefender } from "../Player/AllowedDefender";
+import { FailedDefense } from "../DefenseEnding";
+import GameMove, { type CanCommandNextMove } from "./GameMove.abstract";
 
 export default class StopDefenseMove
-  extends GameMove<AllowedToMoveDefender>
-  implements AfterHandler
+  extends GameMove<AllowedDefender>
+  implements CanCommandNextMove
 {
-  defaultBehavior: DefenderMoveDefaultBehavior;
-
-  constructor(game: DurakGame, performer: AllowedToMoveDefender) {
+  constructor(game: DurakGame, performer: AllowedDefender) {
     super(game, performer);
-    this.defaultBehavior = new DefenderMoveDefaultBehavior(this);
-  }
-
-  override isBaseMove(): boolean {
-    return false;
   }
 
   override isInsertMove(): boolean {
     return false;
   }
 
-  handleAfterMoveIsDone() {
+  // TODO TODO TODO
+  calculateNextThingToDoInGame() {
     if (this.game.desk.isDefended) {
-      return this.game.round.giveAttackTo(this.game.round.primalAttacker);
+      this.game.players = this.game.players
+        .with(this.performer.asDisallowed())
+        .with(this.game.round.primalAttacker.asAttacker().asAllowed(this.game));
+      assert.ok(this.game.players.attacker.isAllowed());
+      return this.game.players.attacker;
     }
-    return new DefenderGaveUpMove(
-      this.game,
-      this.performer.asSurrenderedDefender().asAllowedToMakeMove(this.game),
-    );
+    if (!this.game.desk.isAllowsMoves) {
+      return new FailedDefense(this.game);
+    }
+    this.game.players = this.game.players
+      .with(this.performer.asDisallowed().asSurrendered())
+      .with(this.game.round.primalAttacker.asAttacker().asAllowed(this.game));
+    assert.ok(this.game.players.attacker.isAllowed());
+    return this.game.players.attacker;
   }
 }

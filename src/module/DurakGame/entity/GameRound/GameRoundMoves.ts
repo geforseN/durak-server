@@ -1,60 +1,51 @@
 import assert from "node:assert";
 import {
-  BaseAttackerMove,
-  BaseDefenderMove,
   DefenderTransferMove,
   GameMove,
+  InsertAttackCardMove,
 } from "../GameMove";
-import AllowedToMoveAttacker from "../Player/AllowedToMoveAttacker";
-import AllowedToMoveDefender from "../Player/AllowedToMoveDefender";
-import { Defender } from "../Player";
+import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract";
+import { AllowedDefender } from "../Player/AllowedDefender";
+import { raise } from "../../../..";
+import { InternalError } from "../../error";
+import { AllowedAttacker } from "../Player/AllowedAttacker";
 
 export default class GameRoundMoves {
-  #value: GameMove<AllowedToMoveAttacker | AllowedToMoveDefender>[];
+  #value: GameMove<AllowedSuperPlayer>[];
 
-  constructor(
-    value: GameMove<AllowedToMoveAttacker | AllowedToMoveDefender>[] = [],
-  ) {
+  constructor(value: GameMove<AllowedSuperPlayer>[] = []) {
     this.#value = value;
   }
 
-  get previousMove() {
-    return this.#value[this.#currentMoveIndex - 1];
+  push(move: GameMove<AllowedSuperPlayer>) {
+    this.#value.push(move);
   }
 
-  get currentMove() {
-    return this.#value[this.#currentMoveIndex];
+  get latestDoneMove() {
+    return (
+      this.#value.at(-1) ||
+      raise(new InternalError("latestDoneMove was not found"))
+    );
   }
 
-  set currentMove(
-    certainMove: GameMove<AllowedToMoveAttacker | AllowedToMoveDefender>,
-  ) {
-    this.currentMove.defaultBehavior.clearTimeout();
-    this.#value[this.#currentMoveIndex] = certainMove;
-    certainMove.emitContextToPlayers();
-    if (certainMove.isNotBase()) {
-      certainMove.handleAfterMoveIsDone();
-    }
-  }
-
-  get #currentMoveIndex(): number {
-    return this.#value.length - 1;
-  }
-
-  set nextMove(baseMove: BaseDefenderMove | BaseAttackerMove) {
-    this.currentMove?.defaultBehavior.clearTimeout();
-    this.#value.push(baseMove);
-    baseMove.defaultBehavior.setTimeout();
-    baseMove.emitContextToPlayers();
-  }
-
-  get firstDefenderMove(): GameMove<AllowedToMoveDefender | Defender> | never {
+  get firstDefenderMove(): GameMove<AllowedDefender> | never {
     const firstDefenderMove = this.#value.find(
-      (move): move is BaseDefenderMove =>
-        move instanceof BaseDefenderMove &&
-        !(move instanceof DefenderTransferMove),
+      (move): move is GameMove<AllowedDefender> =>
+        move.performer.isDefender() && !(move instanceof DefenderTransferMove),
     );
     assert.ok(firstDefenderMove, "Нет защищающегося хода");
     return firstDefenderMove;
+  }
+
+  get primalAttackerMove(): GameMove<AllowedAttacker> {
+    const firstDefenderMoveIndex = this.#value.indexOf(this.firstDefenderMove);
+    assert.ok(firstDefenderMoveIndex >= 1);
+    const move = this.#value[firstDefenderMoveIndex - 1];
+    assert.ok(move instanceof InsertAttackCardMove);
+    return move;
+  }
+
+  get primalMove(): undefined {
+    return;
   }
 }

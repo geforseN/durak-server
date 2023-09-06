@@ -4,8 +4,8 @@ import assert from "node:assert";
 import crypto from "node:crypto";
 
 export default class SuperHand extends Hand {
-  constructor(cards: Card[]) {
-    super(cards);
+  constructor(hand: Hand) {
+    super(hand);
   }
 
   get randomCard() {

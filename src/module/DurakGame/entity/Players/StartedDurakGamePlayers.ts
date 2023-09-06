@@ -1,10 +1,10 @@
 import { Hand } from "../Deck";
-import NonLinkedGamePlayer from "./NonLinkedGamePlayer";
-import { NonStartedGameUser } from "./NonStartedGameUser";
-import type GamePlayerWebsocketService from "./Player.service";
-import Players from "./Players";
-import SidePlayersIndexes from "./SidePlayersIndexes";
-import { Player } from "./index";
+import NonLinkedGamePlayer from "../__Player/NonLinkedGamePlayer";
+import { NonStartedGameUser } from "../__Player/NonStartedGameUser";
+import type GamePlayerWebsocketService from "../__Player/Player.service";
+import {Players} from "./Players";
+import SidePlayersIndexes from "../__Player/SidePlayersIndexes";
+import { Player } from "../__Player/index";
 
 // ! Player#left & Player#right is buggy, should add test !
 // TODO: add test

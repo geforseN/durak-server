@@ -1,7 +1,6 @@
-import type { PlayerKind } from "@durak-game/durak-dts";
+import type { PlayerKind, Card as CardDTO } from "@durak-game/durak-dts";
 import { isPlayerKind } from "@durak-game/durak-dts";
-import { Player } from "../entity/Player";
-import CardDTO from "./Card.dto";
+import { Player } from "../entity/__Player";
 import assert from "node:assert";
 
 export default class SelfDTO {

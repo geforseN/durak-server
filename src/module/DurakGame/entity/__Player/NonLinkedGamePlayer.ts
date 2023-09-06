@@ -1,7 +1,7 @@
 import type { Hand } from "../Deck";
 import type GamePlayerWebsocketService from "./Player.service";
 import { NonStartedGameUser } from "./NonStartedGameUser";
-import Player from "./Player";
+import { Player } from "../Player/Player";
 
 export default class NonLinkedGamePlayer extends Player {
   constructor(

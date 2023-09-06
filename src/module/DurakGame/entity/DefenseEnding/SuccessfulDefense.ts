@@ -1,5 +1,5 @@
 import { GameRound } from "..";
-import { RoundEnd } from "../RoundEnd";
+import { RoundEnd } from "./RoundEnd";
 
 class SuccessfulDefense extends RoundEnd {
   get newGameRound() {
@@ -18,7 +18,7 @@ class SuccessfulDefense extends RoundEnd {
     } catch {
       return;
     }
-    this.game.players.attacker = this.game.players.defender;
+    this.game.players.__setAttacker(this.game.players.defender.asAttacker());
     this.game.players.defender = this.game.players.attacker.left;
     return new GameRound(this.game);
   }
