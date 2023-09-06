@@ -4,6 +4,7 @@ import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSock
 import type DurakGame from "./DurakGame";
 import { NonStartedGameUser } from "./entity/__Player/NonStartedGameUser";
 import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
+import LobbyUser from "../Lobbies/entity/LobbyUser";
 
 export default class NonStartedDurakGame {
   info: {
@@ -15,7 +16,7 @@ export default class NonStartedDurakGame {
   };
   sockets: Map<string, Set<DurakGameSocket.Socket>>;
   settings: GameSettings;
-  users: NonStartedGameUser[];
+  usersInfo: LobbyUser[];
   isStarted: false;
 
   constructor(lobby: Lobby) {
@@ -25,8 +26,8 @@ export default class NonStartedDurakGame {
       isStarted: false,
     };
     this.settings = lobby.settings;
-    this.users = lobby.userSlots.map(
-      (slot) => new NonStartedGameUser(slot.user),
+    this.usersInfo = lobby.userSlots.map(
+      (slot) => slot.user.toJSON(),
     );
     this.isStarted = false;
     this.sockets = new Map();

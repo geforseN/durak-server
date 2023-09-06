@@ -27,7 +27,7 @@ export default class Lobby {
   }
 
   toJSON() {
-    return JSON.stringify({ ...this });
+    return { ...this };
   }
 
   get userSlots() {

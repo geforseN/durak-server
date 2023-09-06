@@ -50,7 +50,7 @@ export default class Lobbies {
   }
 
   toJSON() {
-    return JSON.stringify([...this.#store.values()]);
+    return [...this.#store.values()];
   }
 
   getById(lobbyId: Lobby["id"]) {

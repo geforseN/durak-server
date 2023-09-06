@@ -30,7 +30,7 @@ export class FilledSlot {
   }
 
   toJSON() {
-    return JSON.stringify(this.user);
+    return { ...this.user };
   }
 }
 

@@ -62,7 +62,7 @@ export default class DurakGame {
       moveTime: nonStartedGame.settings.moveTime * 1000,
     };
     this.players = new StartedDurakGamePlayers(
-      nonStartedGame.users,
+      nonStartedGame.usersInfo,
       new GamePlayerWebsocketService(namespace),
     );
     this.talon = new Talon(

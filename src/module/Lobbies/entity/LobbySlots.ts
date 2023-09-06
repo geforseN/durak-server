@@ -21,7 +21,7 @@ export default class LobbySlots {
   }
 
   toJSON() {
-    return JSON.stringify(this.#value.map((slot) => slot.value));
+    return this.#value.map((slot) => slot.value);
   }
 
   get userSlots() {
