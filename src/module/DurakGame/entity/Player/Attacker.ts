@@ -1,30 +1,18 @@
-import type DurakGame from "../../DurakGame";
-import type GameRound from "../GameRound";
-import type Player from "./Player";
-import SuperPlayer from "./SuperPlayer";
-import AllowedToMoveAttacker from "./AllowedToMoveAttacker";
+import DurakGame from "../../DurakGame";
+import { AllowedAttacker } from "./AllowedAttacker";
+import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract";
+import { SuperPlayer } from "./SuperPlayer.abstract";
 
-export default class Attacker extends SuperPlayer {
-  constructor(player: Player) {
-    super(player);
-  }
-
-  override get kind() {
+export class Attacker extends SuperPlayer {
+  get kind() {
     return "Attacker" as const;
   }
 
-  override isAttacker() {
+  asAllowed(game: DurakGame): AllowedSuperPlayer {
+    return new AllowedAttacker(this, game);
+  }
+
+  isAttacker(): this is Attacker {
     return true;
-  }
-
-  asAllowedToMakeMove(game: DurakGame) {
-    return new AllowedToMoveAttacker(this, game);
-  }
-
-  hasPutLastCard(round: GameRound): boolean {
-    return (
-      round.moves.previousMove.isInsertMove() &&
-      round.moves.previousMove.performer.id === this.id
-    );
   }
 }

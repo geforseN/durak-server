@@ -1,7 +1,7 @@
 import type { PlayerKind } from "@durak-game/durak-dts";
 import { isPlayerKind } from "@durak-game/durak-dts";
 import LobbyUser from "../../Lobbies/entity/LobbyUser";
-import { Player } from "../entity/Player";
+import { Player } from "../entity/__Player";
 import assert from "node:assert";
 
 export default class EnemyDTO {

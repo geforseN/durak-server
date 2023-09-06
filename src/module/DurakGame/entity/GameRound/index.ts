@@ -1,16 +1,16 @@
 import type DurakGame from "../../DurakGame";
+import { AllowedAttacker } from "../Player/AllowedAttacker";
+import { BasePlayer } from "../Player/BasePlayer.abstract";
 import type FailedDefense from "../DefenseEnding/FailedDefense";
 import type SuccessfulDefense from "../DefenseEnding/SuccessfulDefense";
 import {
-  BaseAttackerMove,
-  BaseDefenderMove,
   InsertAttackCardMove,
   InsertDefendCardMove,
   StopAttackMove,
   StopDefenseMove,
   DefenderTransferMove,
 } from "../GameMove";
-import type { Player } from "../Player";
+import type { Player } from "../__Player";
 import GameRoundMoves from "./GameRoundMoves";
 
 export default class GameRound {
@@ -22,59 +22,36 @@ export default class GameRound {
     this.game = game;
     this.number = (game.round?.number || 0) + 1;
     this.moves = moves;
+    this.makeEmitAboutStart();
+  }
+
+  makeEmitAboutStart() {
     this.game.info.namespace.emit("round::new", {
       roundNumber: this.number,
     });
-    this.letPushMoveToAllowedPlayer();
-  }
-
-  endWith(Defense: typeof FailedDefense | typeof SuccessfulDefense) {
-    const newRound = new Defense(this.game).newGameRound;
-    if (!newRound) {
-      return this.game.end();
-    }
-    this.game.round = newRound;
-  }
-
-  giveAttackTo(player: Player) {
-    this.moves.nextMove = new BaseAttackerMove(this.game, {
-      performer: player,
-    });
     return this;
   }
 
-  giveDefendTo(player: Player) {
-    this.moves.nextMove = new BaseDefenderMove(this.game, {
-      performer: player,
-    });
-    return this;
+  // NOTE: primal attacker may not exist
+  // IF primal attacker does not exist THEN this.moves.primalAttackerMove will throw
+  // primal attacker may not exist because every move in game is transfer move (transfer can exist in perevodnoy durak)
+  // NOTE: primalAttacker actually can be not allowed for move in current time
+  // but in past time primalAttacker was allowed
+  // EXAMPLE:
+  // true => this.moves.primalAttackerMove.performer instanceof AllowedAttacker
+  // maybe => this.moves.primalAttackerMove.performer.asLatest() instanceof AllowedAttacker
+  // this is why type cast is used fro return value
+  // it is better to return super class than sub class
+  get primalAttacker(): BasePlayer | never {
+    return this.moves.primalAttackerMove.performer as BasePlayer;
   }
 
-  letPushMoveToAllowedPlayer() {
-    this.moves.nextMove = this.game.players.allowedToMovePlayer.makeBaseMove();
+  get latestPrimalAttacker(): BasePlayer {
+    return this.moves.primalAttackerMove.performer.asLatest();
   }
 
-  get currentMove(): BaseDefenderMove | BaseAttackerMove {
-    return this.moves.currentMove;
-  }
-
-  set currentMove(
-    certainMove:
-      | StopAttackMove
-      | StopDefenseMove
-      | InsertAttackCardMove
-      | InsertDefendCardMove
-      | DefenderTransferMove,
-  ) {
-    this.moves.currentMove = certainMove;
-  }
-
-  get primalAttacker(): Player | never {
-    return this.moves.firstDefenderMove.player.right;
-  }
-
-  get nextAttacker(): Player {
-    return this.game.players.attacker === this.primalAttacker
+  get nextAttacker(): BasePlayer {
+    return this.game.players.attacker.id === this.primalAttacker.id
       ? this.game.players.defender.left
       : this.game.players.attacker.left;
   }

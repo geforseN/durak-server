@@ -1,6 +1,6 @@
 import type { DurakGameSocket } from "@durak-game/durak-dts";
 import type Card from "../Card";
-import type { SuperPlayer } from "../Player";
+import type { SuperPlayer } from "../Player/SuperPlayer.abstract";
 
 export default class GameDeskWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}

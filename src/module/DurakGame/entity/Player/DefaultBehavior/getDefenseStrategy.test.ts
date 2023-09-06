@@ -1,13 +1,10 @@
 import test from "node:test";
 import assert from "node:assert";
-import Card, { Suit, TrumpCard } from "../../../Card";
-import getDefenseStrategy, {
-  cardsSort,
-  slotsSort,
-} from "../getDefenseStrategy";
+import Card, { Suit, TrumpCard } from "../../Card";
+import getDefenseStrategy, { cardsSort, slotsSort } from "./getDefenseStrategy";
 
-let TRUMP_SUIT: Suit = "♠" as const;
-let WEAK_SUITS: Record<
+const TRUMP_SUIT: Suit = "♠" as const;
+const WEAK_SUITS: Record<
   Exclude<Suit, typeof TRUMP_SUIT>,
   Exclude<Suit, typeof TRUMP_SUIT>
 > = {
@@ -15,7 +12,7 @@ let WEAK_SUITS: Record<
   "♦": "♦",
   "♥": "♥",
 } as const;
-let logger: Console | undefined = undefined && console;
+let logger: { log: Function } | undefined = undefined;
 
 test.describe("trump cards check", { concurrency: true }, () => {
   test.it("throw when defender has weaker trump cards", () => {

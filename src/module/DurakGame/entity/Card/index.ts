@@ -1,21 +1,22 @@
+import { Card as CardDTO } from "@durak-game/durak-dts";
+
 export type Suit = (typeof Card.suits)[number];
 export type Rank = (typeof Card.ranks)[number];
 export type Power = (typeof Card.powers)[keyof typeof Card.powers];
-export type CardConstructor = { suit: Suit; rank: Rank };
 
 export default class Card {
   readonly rank: Rank;
   readonly suit: Suit;
   readonly power: number;
-  isTrump: boolean = false;
+  readonly isTrump: boolean = false;
 
-  constructor({ rank, suit }: CardConstructor) {
+  constructor({ rank, suit }: CardDTO) {
     this.rank = rank;
     this.suit = suit;
     this.power = Card.powers[rank];
   }
 
-  hasSame(cardProperties: Partial<CardConstructor>): boolean {
+  hasSame(cardProperties: Partial<CardDTO>): boolean {
     return Object.entries(cardProperties).every(([key, value]) => {
       if (!Object.hasOwn(this, key)) {
         throw new Error("Нет такого поля");
@@ -66,7 +67,7 @@ export default class Card {
 }
 
 export class TrumpCard extends Card {
-  isTrump: boolean = true;
+  readonly isTrump: boolean = true;
 }
 
 // TODO: add methods to class or delete class

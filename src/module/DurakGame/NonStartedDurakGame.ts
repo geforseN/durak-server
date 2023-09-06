@@ -1,8 +1,8 @@
 import type Lobby from "../Lobbies/entity/Lobby";
 import { durakGamesStore, raise } from "../..";
 import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSocket.handler";
-import DurakGame from "./DurakGame";
-import { NonStartedGameUser } from "./entity/Player/NonStartedGameUser";
+import type DurakGame from "./DurakGame";
+import { NonStartedGameUser } from "./entity/__Player/NonStartedGameUser";
 import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
 
 export default class NonStartedDurakGame {

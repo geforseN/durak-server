@@ -1,5 +1,4 @@
-import Player from "./Player";
-
+import { Player } from "./Player";
 
 export default class StartedGamePlayer extends Player {
   /** TODO: make StartedGamePlayer works!

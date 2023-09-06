@@ -2,7 +2,7 @@ import assert from "node:assert";
 import crypto from "node:crypto";
 import Deck, { CardCount } from "../Deck.abstract";
 import Card, { TrumpCard } from "../../Card";
-import { type Player } from "../../Player";
+import { type Player } from "../../__Player";
 import { type CanProvideCards } from "../../../DurakGame";
 import type GameTalonWebsocketService from "./Talon.service";
 import { buildTalon } from "./buildDeck";

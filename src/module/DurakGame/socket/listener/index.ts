@@ -1,9 +1,9 @@
 import handlePutCardOnDesk from "../handler/handle-put-card-on-desk";
 import handleStopMove from "../handler/handle-stop-move";
 import DurakGame from "../../DurakGame";
-import { CardDTO } from "../../DTO";
 import NotificationAlert from "../../../NotificationAlert";
 import assert from "node:assert";
+import { Card as CardDTO } from "@durak-game/durak-dts";
 
 export function stopMoveListener(this: { game: DurakGame; playerId: string }) {
   try {

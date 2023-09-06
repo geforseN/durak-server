@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { GOOD_CARD_AMOUNT } from "../../DurakGame/entity/Player/Player";
+import { GOOD_CARD_AMOUNT } from "../../DurakGame/entity/Player/BasePlayer.abstract";
 import type {
   UserCount,
   GameType,

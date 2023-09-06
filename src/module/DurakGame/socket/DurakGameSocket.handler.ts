@@ -21,7 +21,7 @@ export function addListenersWhichAreNeededForStartedGame(
   // handler also must handle if left player attacker or defender and more stuff ...
   this.on("player__exitGame", () => {
     try {
-      game.players.remove((player) => player.id === playerId, game);
+      game.players.remove((player) => player.id === playerId).exitGame();
     } catch (error) {
       console.log(error);
     }

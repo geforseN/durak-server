@@ -4,8 +4,10 @@ import type Card from "../Card";
 import { type Discard } from "../Deck";
 import DeskSlots from "../DeskSlots";
 import { DefendedSlots, FilledSlots, UnbeatenSlots } from "../DeskSlots/Slots";
-import type { Defender, SuperPlayer } from "../Player";
+import type { Defender, SuperPlayer } from "../__Player";
 import type GameDeskWebsocketService from "./Desk.service";
+import { DeskSlot } from "../DeskSlot";
+
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
   #slots: DeskSlots;
@@ -32,7 +34,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return this.#slots.at(index);
   }
 
-  get allowsMoves() {
+  get isAllowsMoves() {
     return this.allowedFilledSlotCount > this.filledSlots.count;
   }
 
@@ -61,11 +63,15 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
   }
 
   get allowsAttackerMove(): boolean {
-    return this.allowsMoves;
+    return this.isAllowsMoves;
   }
 
   get shouldDefenderMove(): boolean {
-    return this.allowsMoves;
+    return this.isAllowsMoves;
+  }
+
+  updateSlot(slot: DeskSlot, card: Card) {
+    return this.#slots.updateSlot({ at: slot.index, with: card });
   }
 
   receiveCard({
@@ -87,20 +93,20 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     this.#wsService?.clear();
   }
 
-  async ensureCanAttack(card: Card, slotIndex: number): Promise<void> {
+  async ensureCanAttack(card: Card, slot: DeskSlot): Promise<void> {
     if (this.isEmpty) return;
-    await this.slotAt(slotIndex).ensureCanBeAttacked(card);
+    await slot.ensureCanBeAttacked(card);
     if (!this.#slots.someSlotHas({ rank: card.rank })) {
       throw new Error("Нет схожего ранга на доске");
     }
   }
 
-  async allowsTransferMove(card: Card, slotIndex: number) {
-    return this.#slots.allowsTransferMove(card, slotIndex);
+  async allowsTransferMove(card: Card, slot: DeskSlot) {
+    return this.#slots.allowsTransferMove(card, slot);
   }
 
-  get randomEmptySlotIndex() {
-    return this.#slots.randomEmptySlotIndex;
+  get randomEmptySlot() {
+    return this.#slots.randomEmptySlot;
   }
 
   get cardsCount() {

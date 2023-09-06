@@ -1,49 +1,40 @@
 import type DurakGame from "../../DurakGame";
 import type Card from "../Card";
-import GameMove, {
-  type CardInsert,
-  type AfterHandler,
-} from "./GameMove.abstract";
-import type AllowedToMoveDefender from "../Player/AllowedToMoveDefender";
-import { DefenderMoveDefaultBehavior } from "./DefaultBehavior/DefenderMoveDefaultBehavior";
+import { type CanCommandNextMove } from "./GameMove.abstract";
+import type DeskSlot from "../DeskSlot";
+import { AllowedDefender } from "../Player/AllowedDefender";
+import InsertGameMove from "./InsertGameMove.abstract";
+import assert from "node:assert";
 
 export default class TransferMove
-  extends GameMove<AllowedToMoveDefender>
-  implements AfterHandler, CardInsert
+  extends InsertGameMove<AllowedDefender>
+  implements CanCommandNextMove
 {
-  defaultBehavior: DefenderMoveDefaultBehavior;
-
   constructor(
     game: DurakGame,
-    performer: AllowedToMoveDefender,
+    performer: AllowedDefender,
     context: {
       card: Card;
-      slotIndex: number;
+      slot: DeskSlot;
     },
   ) {
-    super(game, performer);
-    this.defaultBehavior = new DefenderMoveDefaultBehavior(this);
+    super(game, performer, context);
   }
 
-  override isBaseMove(): boolean {
-    return false;
-  }
-
-  override isInsertMove() {
-    return true;
-  }
-
-  // TODO: fix hard to catch bug in this.#defaultBehavior
-  // should be this.#defaultBehavior redefined
-  // when this.player become Attacker (code line below)
-  // or should just clearInterval(this.defaultBehavior)
-  handleAfterMoveIsDone() {
-    this.game.players.setPlayer(this.game.players.attacker);
-    // NOTE: line above made players without attacker
-    // after line above only defender exist
-    this.game.players.setAttacker(
-      this.performer.asAttacker().asAllowedToMakeMove(this.game),
+  //  NOTE: Also, when transferring an attack, more than one card of the original rank can be added to the attack.
+  calculateNextThingToDoInGame() {
+    assert.ok(
+      this.performer.right.isAttacker() && !this.performer.right.isAllowed(),
     );
-    this.game.players.setDefender(this.game.players.attacker.left.asDefender());
+    //  TODO: add disallow to TransferMove if possible defender canTakeMore returns false
+    this.game.players = this.game.players
+      .with(this.performer.right.asPlayer())
+      .with(this.performer.left.asDefender())
+      .with(this.performer.asAttacker().asAllowed(this.game));
+    assert.ok(
+      this.performer.asLatest().isAttacker() &&
+        this.performer.asLatest().isAllowed(),
+    );
+    return this.performer.asLatest();
   }
 }
