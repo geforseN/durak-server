@@ -12,6 +12,6 @@ export default class LobbyUser {
   }
 
   toJSON() {
-    return JSON.stringify({ ...this });
+    return { ...this };
   }
 }
