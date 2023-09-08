@@ -1,5 +1,5 @@
-import Card from "../Card";
-import { DeskSlot } from "./index";
+import Card from "../Card/index.js";
+import { DeskSlot } from "./index.js";
 
 export default class DefendedSlot extends DeskSlot {
   constructor(index: number, public attackCard: Card, public defendCard: Card) {

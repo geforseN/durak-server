@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert";
-import Card, { Suit, TrumpCard } from "../../Card";
-import getDefenseStrategy, { cardsSort, slotsSort } from "./getDefenseStrategy";
+import Card, { Suit, TrumpCard } from "../../Card/index.js";
+import getDefenseStrategy, { cardsSort, slotsSort } from "./getDefenseStrategy.js";
 
 const TRUMP_SUIT: Suit = "♠" as const;
 const WEAK_SUITS: Record<

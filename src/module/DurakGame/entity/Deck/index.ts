@@ -1,4 +1,4 @@
-export { default as Hand } from "./Hand";
-export { default as Talon } from "./Talon";
-export { default as Discard } from "./Discard";
-export { CardCount } from "./Deck.abstract";
+export { default as Hand } from "./Hand/index.js";
+export { default as Talon } from "./Talon/index.js";
+export { default as Discard } from "./Discard/index.js";
+export { CardCount } from "./Deck.abstract.js";

@@ -1,11 +1,11 @@
-import FailedDefense from "../DefenseEnding/FailedDefense";
-import SuccessfulDefense from "../DefenseEnding/SuccessfulDefense";
-import GameMove, { type CanCommandNextMove } from "./GameMove.abstract";
-import type DurakGame from "../../DurakGame";
-import { AllowedAttacker } from "../Player/AllowedAttacker";
+import FailedDefense from "../DefenseEnding/FailedDefense.js";
+import SuccessfulDefense from "../DefenseEnding/SuccessfulDefense.js";
+import GameMove, { type CanCommandNextMove } from "./GameMove.abstract.js";
+import type DurakGame from "../../DurakGame.js";
+import { AllowedAttacker } from "../Player/AllowedAttacker.js";
 import assert from "node:assert";
-import { RoundEnd } from "../DefenseEnding";
-import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract";
+import { RoundEnd } from "../DefenseEnding/index.js";
+import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
 
 export default class StopAttackMove
   extends GameMove<AllowedAttacker>

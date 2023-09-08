@@ -9,3 +9,5 @@ export class InternalError extends Error {
     super(message);
   }
 }
+
+// TODO use

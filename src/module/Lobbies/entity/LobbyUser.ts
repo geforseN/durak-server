@@ -1,4 +1,4 @@
-import { User, UserProfile } from "@prisma/client";
+import type { User, UserProfile } from "@prisma/client";
 
 export default class LobbyUser {
   id: string;

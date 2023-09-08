@@ -1,13 +1,13 @@
 import type { AllowedMissingCardCount } from "@durak-game/durak-dts";
-import { type CanProvideCards } from "../../DurakGame";
-import type Card from "../Card";
-import { type Discard } from "../Deck";
-import type { DeskSlot } from "../DeskSlot";
-import DeskSlots from "../DeskSlots";
-import { DefendedSlots, FilledSlots, UnbeatenSlots } from "../DeskSlots/Slots";
-import type { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract";
-import type { Defender } from "../Player/Defender";
-import type GameDeskWebsocketService from "./Desk.service";
+import { type CanProvideCards } from "../../DurakGame.js";
+import type Card from "../Card/index.js";
+import { type Discard } from "../Deck/index.js";
+import type { DeskSlot } from "../DeskSlot/index.js";
+import DeskSlots from "../DeskSlots/index.js";
+import { DefendedSlots, FilledSlots, UnbeatenSlots } from "../DeskSlots/Slots.js";
+import type { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
+import type { Defender } from "../Player/Defender.js";
+import type GameDeskWebsocketService from "./Desk.service.js";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
   #slots: DeskSlots;

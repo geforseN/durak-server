@@ -3,13 +3,13 @@ import {
   PlayerInfo,
   PlayerKind,
 } from "@durak-game/durak-dts";
-import Card from "../Card";
-import { Hand } from "../Deck";
-import { type AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract";
-import { Attacker } from "./Attacker";
-import { Defender } from "./Defender";
-import { type SuperPlayer } from "./SuperPlayer.abstract";
-import { Player } from "./Player";
+import Card from "../Card/index.js";
+import { Hand } from "../Deck/index.js";
+import { type AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
+import { Attacker } from "./Attacker.js";
+import { Defender } from "./Defender.js";
+import { type SuperPlayer } from "./SuperPlayer.abstract.js";
+import { Player } from "./Player.js";
 
 export const GOOD_CARD_AMOUNT = 6;
 

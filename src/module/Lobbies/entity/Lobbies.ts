@@ -1,14 +1,14 @@
 import type { User, UserProfile } from "@prisma/client";
 import EventEmitter from "events";
-import { durakGamesStore, raise } from "../../..";
-import { CustomWebsocketEvent, SocketsStore } from "../../../ws";
-import { FindLobbyError } from "../error";
+import { durakGamesStore, raise } from "../../../index.js";
+import { CustomWebsocketEvent, SocketsStore } from "../../../ws/index.js";
+import { FindLobbyError } from "../error.js";
 import Lobby, {
   LobbyAdminUpdateEvent,
   LobbyUserJoinEvent,
   LobbyUserMoveEvent,
-} from "./Lobby";
-import LobbyUser from "./LobbyUser";
+} from "./Lobby.js";
+import LobbyUser from "./LobbyUser.js";
 import assert from "node:assert";
 import type { GameSettings } from "@durak-game/durak-dts";
 

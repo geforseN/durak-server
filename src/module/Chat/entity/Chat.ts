@@ -1,7 +1,7 @@
-import type { SocketsStore } from "../../../ws";
-import { ChatMessageEvent } from "../chatPlugin";
-import type ChatMessage from "./ChatMessage";
-import type ChatReplyMessage from "./ChatReplyMessage";
+import type { SocketsStore } from "../../../ws/index.js";
+import { ChatMessageEvent } from "../chatPlugin.js";
+import type ChatMessage from "./ChatMessage.js";
+import type ChatReplyMessage from "./ChatReplyMessage.js";
 
 export default class Chat {
   readonly #messages: ChatMessage[];

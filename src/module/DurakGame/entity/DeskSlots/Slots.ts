@@ -1,4 +1,4 @@
-import type { DefendedSlot, DeskSlot, UnbeatenSlot } from "../DeskSlot";
+import type { DefendedSlot, DeskSlot, UnbeatenSlot } from "../DeskSlot/index.js";
 
 export abstract class Slots<S> {
   constructor(protected value: S[]) { }

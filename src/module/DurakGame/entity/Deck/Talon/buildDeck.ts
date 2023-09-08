@@ -1,5 +1,5 @@
 import type { Suit } from "@durak-game/durak-dts";
-import Card, { TrumpCard } from "../../Card";
+import Card, { TrumpCard } from "../../Card/index.js";
 import crypto from "node:crypto";
 import assert from "node:assert";
 

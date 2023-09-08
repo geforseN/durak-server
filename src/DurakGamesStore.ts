@@ -1,8 +1,8 @@
-import DurakGame from "./module/DurakGame/DurakGame";
-import NonStartedDurakGame from "./module/DurakGame/NonStartedDurakGame";
+import type { DurakGameSocket } from "@durak-game/durak-dts";
 import assert from "node:assert";
-import Lobby from "./module/Lobbies/entity/Lobby";
-import { DurakGameSocket } from "@durak-game/durak-dts";
+import DurakGame from "./module/DurakGame/DurakGame.js";
+import NonStartedDurakGame from "./module/DurakGame/NonStartedDurakGame.js";
+import type Lobby from "./module/Lobbies/entity/Lobby.js";
 
 export default class DurakGamesStore<
   Game extends NonStartedDurakGame | DurakGame,

@@ -3,12 +3,12 @@ import {
   DefenderTransferMove,
   GameMove,
   InsertAttackCardMove,
-} from "../GameMove";
-import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract";
-import { AllowedDefender } from "../Player/AllowedDefender";
-import { raise } from "../../../..";
-import { InternalError } from "../../error";
-import { AllowedAttacker } from "../Player/AllowedAttacker";
+} from "../GameMove/index.js";
+import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
+import { AllowedDefender } from "../Player/AllowedDefender.js";
+import { raise } from "../../../../index.js";
+import { InternalError } from "../../error/index.js";
+import { AllowedAttacker } from "../Player/AllowedAttacker.js";
 
 export default class GameRoundMoves {
   #value: GameMove<AllowedSuperPlayer>[];

@@ -1,5 +1,5 @@
-import ChatMessage from "./ChatMessage";
-import { ChatContext } from "../chatPlugin";
+import { type ChatContext } from "../chatPlugin.js";
+import ChatMessage from "./ChatMessage.js";
 
 export default class ChatReplyMessage extends ChatMessage {
   replyMessageId: string;

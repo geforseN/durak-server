@@ -1,6 +1,6 @@
-import type DurakGame from "../../DurakGame";
-import { BasePlayer } from "../Player/BasePlayer.abstract";
-import GameRoundMoves from "./GameRoundMoves";
+import type DurakGame from "../../DurakGame.js";
+import { BasePlayer } from "../Player/BasePlayer.abstract.js";
+import GameRoundMoves from "./GameRoundMoves.js";
 
 export default class GameRound {
   readonly number: number;

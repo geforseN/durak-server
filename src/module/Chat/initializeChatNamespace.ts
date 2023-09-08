@@ -1,8 +1,12 @@
-import { FastifyRequest } from "fastify";
-import { SocketStream } from "@fastify/websocket";
-import { Chat } from "./entity";
-import { CustomWebsocketEvent, SocketsStore, defaultListeners } from "../../ws";
-import { WebSocket } from "ws";
+import type { SocketStream } from "@fastify/websocket";
+import type { FastifyRequest } from "fastify";
+import type { WebSocket } from "ws";
+import {
+  SocketsStore,
+  defaultListeners,
+  type CustomWebsocketEvent,
+} from "../../ws/index.js";
+import { Chat } from "./entity/index.js";
 
 export interface AdditionalListeners {
   addListener(

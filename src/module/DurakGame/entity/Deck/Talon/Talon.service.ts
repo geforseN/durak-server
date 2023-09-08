@@ -1,12 +1,12 @@
 import { DurakGameSocket } from "@durak-game/durak-dts";
-import { Player } from "../../__Player";
-import Card from "../../Card";
-import Talon from "./index";
+import { BasePlayer } from "../../Player/BasePlayer.abstract.js";
+import Card from "../../Card/index.js";
+import Talon from "./index.js";
 
 export default class GameTalonWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
 
-  provideCardsAnimation(talon: Talon, player: Player, cards: Card[]) {
+  provideCardsAnimation(talon: Talon, player: BasePlayer, cards: Card[]) {
     this.namespace.emit("talon::madeDistribution", {
       receiver: {
         id: player.id,

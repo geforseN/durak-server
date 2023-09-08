@@ -1,8 +1,8 @@
 import assert from "node:assert";
-import { BasePlayer } from "../Player/BasePlayer.abstract";
-import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract";
-import { type Attacker } from "../Player/Attacker";
-import { type Defender } from "../Player/Defender";
+import { BasePlayer } from "../Player/BasePlayer.abstract.js";
+import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
+import { type Attacker } from "../Player/Attacker.js";
+import { type Defender } from "../Player/Defender.js";
 
 export class Players {
   readonly value: BasePlayer[];

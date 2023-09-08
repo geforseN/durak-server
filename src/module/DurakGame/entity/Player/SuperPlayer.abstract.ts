@@ -1,7 +1,7 @@
-import DurakGame from "../../DurakGame";
-import { Hand } from "../Deck";
-import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract";
-import { BasePlayer } from "./BasePlayer.abstract";
+import DurakGame from "../../DurakGame.js";
+import { Hand } from "../Deck/index.js";
+import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
+import { BasePlayer } from "./BasePlayer.abstract.js";
 
 export abstract class SuperPlayer extends BasePlayer {
   declare left: BasePlayer;

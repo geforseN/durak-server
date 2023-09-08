@@ -1,10 +1,10 @@
 import type { SocketStream } from "@fastify/websocket";
 import type { FastifyBaseLogger, FastifyReply, FastifyRequest } from "fastify";
-import type { SingletonFastifyInstance } from ".";
+import type { SingletonFastifyInstance } from "./index.js";
 import assert from "node:assert";
 import crypto from "node:crypto";
-import prisma from "../prisma";
-import { CustomWebsocketEvent, SocketsStore } from "./ws";
+import prisma from "../prisma/index.js";
+import { CustomWebsocketEvent, SocketsStore } from "./ws/index.js";
 import { User, UserProfile } from "@prisma/client";
 
 declare module "fastify" {

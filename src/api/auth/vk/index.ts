@@ -1,9 +1,9 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
 import oauthPlugin from "@fastify/oauth2";
-import pluginSettings, { authProviderKey, VK_AUTH_CALLBACK_URI } from "./plugin.settings";
+import pluginSettings, { authProviderKey, VK_AUTH_CALLBACK_URI } from "./plugin.settings.js";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { findUserByEmail, findUserWithAuthProvider, getUpdatedUserWithNewAuthProvider } from "../index";
+import { findUserByEmail, findUserWithAuthProvider, getUpdatedUserWithNewAuthProvider } from "../index.js";
 
 const prisma = new PrismaClient();
 

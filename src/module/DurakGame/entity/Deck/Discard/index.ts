@@ -1,7 +1,7 @@
-import Deck from "../Deck.abstract";
-import type Card from "../../Card";
-import { type CanReceiveCards } from "../../../DurakGame";
-import type GameDiscardWebsocketService from "./Discard.service";
+import Deck from "../Deck.abstract.js";
+import type Card from "../../Card/index.js";
+import { type CanReceiveCards } from "../../../DurakGame.js";
+import type GameDiscardWebsocketService from "./Discard.service.js";
 
 export default class Discard extends Deck implements CanReceiveCards {
   readonly #wsService: GameDiscardWebsocketService;

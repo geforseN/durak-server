@@ -1,5 +1,5 @@
-import Card from "../Card";
-import { UnbeatenSlot } from "./index";
+import Card from "../Card/index.js";
+import { UnbeatenSlot } from "./index.js";
 
 export default class UnbeatenTrumpSlot extends UnbeatenSlot {
   constructor(index: number, public attackCard: Card) {

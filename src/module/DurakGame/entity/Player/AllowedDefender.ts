@@ -1,15 +1,15 @@
-import DurakGame from "../../DurakGame";
-import Card from "../Card";
-import DeskSlot from "../DeskSlot";
+import DurakGame from "../../DurakGame.js";
+import Card from "../Card/index.js";
+import DeskSlot from "../DeskSlot/index.js";
 import {
   DefenderTransferMove,
   InsertDefendCardMove,
   StopDefenseMove,
-} from "../GameMove";
-import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract";
-import { Defender } from "./Defender";
-import { type SuperPlayer } from "./SuperPlayer.abstract";
-import AllowedDefenderDefaultBehavior from "./DefaultBehavior/AllowedDefenderDefaultBehavior";
+} from "../GameMove/index.js";
+import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
+import { Defender } from "./Defender.js";
+import { type SuperPlayer } from "./SuperPlayer.abstract.js";
+import AllowedDefenderDefaultBehavior from "./DefaultBehavior/AllowedDefenderDefaultBehavior.js";
 
 export class AllowedDefender extends AllowedSuperPlayer {
   defaultBehavior: AllowedDefenderDefaultBehavior;

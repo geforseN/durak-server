@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
-import Lobbies from "../entity/Lobbies";
-import { SocketsStore } from "../../../ws";
+import Lobbies from "../entity/Lobbies.js";
+import { SocketsStore } from "../../../ws/index.js";
 
 describe("gameLobbies", (_suiteContext) => {
   const lobbies = new Lobbies(new SocketsStore());

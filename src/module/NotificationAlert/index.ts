@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { NotificationAlert as TNotificationAlert } from "@durak-game/durak-dts";
+import { type NotificationAlert as TNotificationAlert } from "@durak-game/durak-dts";
 
 export default class NotificationAlert {
   message;

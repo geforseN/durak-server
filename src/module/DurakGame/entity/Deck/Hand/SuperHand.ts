@@ -1,5 +1,5 @@
-import Card from "../../Card";
-import Hand from ".";
+import Card from "../../Card/index.js";
+import Hand from "./index.js";
 import assert from "node:assert";
 import crypto from "node:crypto";
 

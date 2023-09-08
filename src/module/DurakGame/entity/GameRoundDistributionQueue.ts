@@ -1,6 +1,6 @@
 import assert from "node:assert";
-import type DurakGame from "../DurakGame";
-import { BasePlayer } from "./Player/BasePlayer.abstract";
+import type DurakGame from "../DurakGame.js";
+import { BasePlayer } from "./Player/BasePlayer.abstract.js";
 
 export default class GameRoundDistribution {
   game: DurakGame;

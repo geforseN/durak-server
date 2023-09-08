@@ -1,7 +1,7 @@
-import DurakGameStateDto from "./DTO/DurakGameState.dto";
-import type DurakGame from "./DurakGame";
-import { durakGamesStore, raise } from "../..";
-import prisma from "../../../prisma";
+import DurakGameStateDto from "./DTO/DurakGameState.dto.js";
+import type DurakGame from "./DurakGame.js";
+import { durakGamesStore, raise } from "../../index.js";
+import prisma from "../../../prisma/index.js";
 import { GameType } from "@prisma/client";
 import assert from "node:assert";
 import { DurakGameSocket } from "@durak-game/durak-dts";

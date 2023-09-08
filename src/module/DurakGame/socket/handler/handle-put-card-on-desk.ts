@@ -1,6 +1,7 @@
-import type DurakGame from "../../DurakGame";
-import { type SuperPlayer } from "../../entity/__Player";
-import { CanMakeMove } from "../../entity/__Player/Player";
+import type DurakGame from "../../DurakGame.js";
+import { AllowedSuperPlayer } from "../../entity/Player/AllowedSuperPlayer.abstract.js";
+ import { type SuperPlayer } from "../../entity/Player/SuperPlayer.abstract.js";
+
 import type { Card as CardDTO } from "@durak-game/durak-dts";
 
 export default async function handlePutCardOnDesk(
@@ -11,8 +12,8 @@ export default async function handlePutCardOnDesk(
   this.game.round.currentMove.defaultBehavior.shouldBeCalled = false;
   try {
     await this.game.players
-      .get<SuperPlayer & CanMakeMove>(
-        (player): player is SuperPlayer & CanMakeMove =>
+      .get<AllowedSuperPlayer & {makeInsertMove: Function}>(
+        (player): player is AllowedSuperPlayer & {makeInsertMove: Function} =>
           player.id === this.playerId && player.isAllowed(),
         "У вас нет права хода",
       )

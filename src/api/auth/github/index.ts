@@ -1,16 +1,16 @@
-import { FastifyInstance, FastifyRequest } from "fastify";
 import oauthPlugin, { OAuth2Token } from "@fastify/oauth2";
 import { PrismaClient } from "@prisma/client";
+import { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
-import pluginSettings, {
-  authProviderKey,
-  GITHUB_AUTH_CALLBACK_URI,
-} from "./plugin.settings";
 import {
-  findUserWithAuthProvider,
   findUserByEmail,
+  findUserWithAuthProvider,
   getUpdatedUserWithNewAuthProvider,
-} from "../index";
+} from "../index.js";
+import pluginSettings, {
+  GITHUB_AUTH_CALLBACK_URI,
+  authProviderKey,
+} from "./plugin.settings.js";
 
 const prisma = new PrismaClient();
 

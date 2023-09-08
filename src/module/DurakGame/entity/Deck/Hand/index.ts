@@ -1,6 +1,6 @@
 import assert from "node:assert";
-import Deck from "../Deck.abstract";
-import Card from "../../Card";
+import Deck from "../Deck.abstract.js";
+import Card from "../../Card/index.js";
 
 export default class Hand extends Deck {
   constructor(cards: Card[]);

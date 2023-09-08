@@ -1,5 +1,5 @@
-import { Hand } from "../Deck";
-import { BasePlayer } from "./BasePlayer.abstract";
+import { Hand } from "../Deck/index.js";
+import { BasePlayer } from "./BasePlayer.abstract.js";
 
 export class Player extends BasePlayer {
   declare left: BasePlayer;
