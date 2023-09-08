@@ -16,4 +16,10 @@ export default class Discard extends Deck implements CanReceiveCards {
     this.value.push(...cards);
     this.#wsService?.emitReceivedCards(this, cards, hasBeenEmptyBeforeReceive);
   }
+
+  toJSON() {
+    return {
+      isEmpty: this.isEmpty,
+    };
+  }
 }
