@@ -1,15 +1,38 @@
 import type LobbyUser from "../../../Lobbies/entity/LobbyUser";
 
-// TODO: rework Player constructor, code is hard to understand
-// can create another classes (NonStartedGameUser, NonLinkedPlayer)
-// NOTE: do not forget about SuperPlayer & check Players#defender Players#attacker
-// ! NonStartedGameUser should not extends Player !
-
 export class NonStartedGameUser {
-  info;
+  info: LobbyUser;
+  index: number;
+  lobbySlotsCount: number;
 
-  constructor(lobbyUser: LobbyUser) {
-    this.info = lobbyUser;
+  constructor({
+    info,
+    index,
+    lobbySlotsCount,
+  }: {
+    info: LobbyUser;
+    index: number;
+    lobbySlotsCount: number;
+  }) {
+    this.info = info;
+    this.index = index;
+    this.lobbySlotsCount = lobbySlotsCount;
+  }
+
+  get #isFirstPlayer() {
+    return this.index === 0;
+  }
+
+  get #isLastPlayer() {
+    return this.index === this.lobbySlotsCount - 1;
+  }
+
+  get leftPlayerIndex() {
+    return this.#isLastPlayer ? 0 : this.index + 1;
+  }
+
+  get rightPlayerIndex() {
+    return this.#isFirstPlayer ? this.lobbySlotsCount - 1 : this.index - 1;
   }
 }
 
