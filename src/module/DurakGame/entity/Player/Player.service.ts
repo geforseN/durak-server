@@ -1,7 +1,6 @@
-import { isPlayerKind, type DurakGameSocket } from "@durak-game/durak-dts";
-import assert from "node:assert";
+import { type DurakGameSocket } from "@durak-game/durak-dts";
 import type Card from "../Card";
-import { type BasePlayer } from "../Player/BasePlayer.abstract";
+import { type BasePlayer } from "./BasePlayer.abstract";
 
 export default class GamePlayerWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
@@ -36,7 +35,7 @@ export default class GamePlayerWebsocketService {
   }
 
   emitOwnKind(player: BasePlayer) {
-     this.namespace.to(player.id).emit("player::changedKind", {
+    this.namespace.to(player.id).emit("player::changedKind", {
       player: {
         newKind: player.kind,
       },
