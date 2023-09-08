@@ -100,4 +100,14 @@ export abstract class BasePlayer {
       cards: [...this.hand].map((card) => card.toJSON()),
     };
   }
+
+  get enemies() {
+    const value = [];
+    let enemy = this.left;
+    while (enemy.id !== this.id) {
+      value.push(enemy.toEnemy());
+      enemy = enemy.left;
+    }
+    return value
+  }
 }
