@@ -1,13 +1,12 @@
 import assert from "node:assert";
-import crypto from "node:crypto";
 import Deck, { CardCount } from "../Deck.abstract";
 import Card, { TrumpCard } from "../../Card";
-import { type Player } from "../../__Player";
 import { type CanProvideCards } from "../../../DurakGame";
 import type GameTalonWebsocketService from "./Talon.service";
 import { buildTalon } from "./buildDeck";
+import { BasePlayer } from "../../Player/BasePlayer.abstract";
 
-export default class Talon extends Deck implements CanProvideCards<Player> {
+export default class Talon extends Deck implements CanProvideCards<BasePlayer> {
   readonly #wsService: GameTalonWebsocketService;
   readonly trumpCard: Card;
 
@@ -24,7 +23,7 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
     return this.count === 1;
   }
 
-  provideCards(player: Player, count = player.missingNumberOfCards) {
+  provideCards(player: BasePlayer, count = player.missingNumberOfCards) {
     if (count === 0) return;
     const cards = this.#pop(count);
     this.#wsService.provideCardsAnimation(this, player, cards);
@@ -46,5 +45,13 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
     const lastCards = this.value.splice(0, this.count);
     assert.ok(this.isEmpty);
     return lastCards;
+  }
+
+  toJSON() {
+    return {
+      trumpCard: this.trumpCard.toJSON(),
+      isEmpty: this.isEmpty,
+      hasOneCard: this.hasOneCard,
+    };
   }
 }

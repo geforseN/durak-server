@@ -1,16 +1,5 @@
 import type DurakGame from "../../DurakGame";
-import { AllowedAttacker } from "../Player/AllowedAttacker";
 import { BasePlayer } from "../Player/BasePlayer.abstract";
-import type FailedDefense from "../DefenseEnding/FailedDefense";
-import type SuccessfulDefense from "../DefenseEnding/SuccessfulDefense";
-import {
-  InsertAttackCardMove,
-  InsertDefendCardMove,
-  StopAttackMove,
-  StopDefenseMove,
-  DefenderTransferMove,
-} from "../GameMove";
-import type { Player } from "../__Player";
 import GameRoundMoves from "./GameRoundMoves";
 
 export default class GameRound {
@@ -40,8 +29,8 @@ export default class GameRound {
   // EXAMPLE:
   // true => this.moves.primalAttackerMove.performer instanceof AllowedAttacker
   // maybe => this.moves.primalAttackerMove.performer.asLatest() instanceof AllowedAttacker
-  // this is why type cast is used fro return value
-  // it is better to return super class than sub class
+  // this is why type cast is used for return value
+  // it is better to return a super class than a sub class
   get primalAttacker(): BasePlayer | never {
     return this.moves.primalAttackerMove.performer as BasePlayer;
   }
@@ -54,5 +43,16 @@ export default class GameRound {
     return this.game.players.attacker.id === this.primalAttacker.id
       ? this.game.players.defender.left
       : this.game.players.attacker.left;
+  }
+
+  toJSON() {
+    return {
+      number: this.number,
+      allowedPlayer: {
+        id: this.game.players.allowedPlayer.id,
+        whenCanBecomeDisallowed:
+          this.game.players.allowedPlayer.defaultBehavior.callTime,
+      },
+    };
   }
 }
