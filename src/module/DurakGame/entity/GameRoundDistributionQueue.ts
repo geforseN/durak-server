@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import type DurakGame from "../DurakGame";
-import { Player } from "./__Player";
+import { BasePlayer } from "./Player/BasePlayer.abstract";
 
 export default class GameRoundDistribution {
   game: DurakGame;
@@ -10,12 +10,12 @@ export default class GameRoundDistribution {
   }
 
   *playersQueue() {
-    const { primalAttacker } = this.game.round;
+    const { latestPrimalAttacker } = this.game.round;
     const { defender: defender } = this.game.players;
-    yield primalAttacker;
-    assert.strictEqual(primalAttacker.left, defender);
-    let player: Player = defender;
-    while ((player = player.left) !== primalAttacker) {
+    yield latestPrimalAttacker;
+    assert.strictEqual(latestPrimalAttacker.left, defender);
+    let player: BasePlayer = defender;
+    while ((player = player.left) !== latestPrimalAttacker) {
       yield player;
     }
     yield defender;

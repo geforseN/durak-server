@@ -19,22 +19,24 @@ export class Players {
     return this.value.length;
   }
 
-  with({ id }: BasePlayer) {
-    const player = this.get((player) => player.id === id);
+  with(updatedPlayer: BasePlayer) {
+    const player: BasePlayer | never = this.get(
+      (player) => player.id === updatedPlayer.id,
+    );
     const index = this.value.indexOf(player);
-    // TODO remove assert.ok, because this.get will throw anyway
-    assert.ok(index >= 0);
     return new Players(this.value.with(index, player));
   }
 
-  get __allowedToMovePlayer() {
+  get #allowedPlayer() {
     return this.get<AllowedSuperPlayer>(
       (player): player is AllowedSuperPlayer => player.isAllowed(),
       "Разрешенный игрок не найден",
     );
   }
 
-  get __allowedPlayer() {
+  // TODO change body of method to this.#allowedPlayer body
+  // should change it when this.allowedPlayer will never throw
+  get allowedPlayer() {
     const allowedPlayers = this.value.filter((player) => player.isAllowed());
     assert.ok(allowedPlayers.length === 1);
     const allowedPlayer = allowedPlayers[0];

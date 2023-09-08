@@ -11,18 +11,17 @@ export function buildTalon(cardCount: number) {
   assert.ok(Number.isInteger(maxCardsPerSuit));
   return Card.suits
     .flatMap(
-      // NOTE - get unshuffled deck
+      // NOTE - get non shuffled deck
       (suit) => getCardOfSuit(suit, maxCardsPerSuit),
     )
     .reduce(
-      // NOTE - get shuffled deck, where most bottom cards will be main trump card
-      // FIXME better shuffle cards, use index and cards for it
+      // NOTE - get shuffled deck, where most bottom card suit will be trump suit
       makeCardsShuffle,
       Array<Card>(),
     )
     .map(
       // NOTE - make card with trump suit TrumpCard, otherwise return same card
-      (card, _index, cards) =>
+      (card, _, cards) =>
         card.suit === cards[0].suit ? new TrumpCard(card) : card,
     );
 }
@@ -30,16 +29,14 @@ export function buildTalon(cardCount: number) {
 function getCardOfSuit(suit: Suit, maxCardsPerSuit: number) {
   return [...Card.ranks]
     .reverse()
-    .filter((_rank, index) => index < maxCardsPerSuit)
+    .filter((_, index) => index < maxCardsPerSuit)
     .map((rank) => new Card({ rank, suit }));
 }
 
-// FIXME better shuffle cards, use index and cards for it
+// FIXME better shuffle cards, use index and cards for it instead of just card
 function makeCardsShuffle(
   shuffledCards: Card[],
   card: Card,
-  _index: number,
-  _cards: Card[],
 ) {
   if (crypto.randomInt(10) > 4) {
     shuffledCards.push(card);
