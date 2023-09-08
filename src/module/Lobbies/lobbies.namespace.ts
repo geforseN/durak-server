@@ -6,9 +6,9 @@ import {
   NotificationAlertEvent,
   SocketsStore,
   defaultListeners,
-} from "../../ws";
-import Lobbies from "./entity/Lobbies";
-import type Lobby from "./entity/Lobby";
+} from "../../ws/index.js";
+import Lobbies from "./entity/Lobbies.js";
+import type Lobby from "./entity/Lobby.js";
 
 type GameLobbiesContext = ReturnType<ReturnType<typeof initializeGameLobbies>>;
 

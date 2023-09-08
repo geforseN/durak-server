@@ -1,18 +1,17 @@
-import { Discard, Desk, GameRound, Talon, Card, Players } from "./entity";
+import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
+import pino from "pino";
+import type NonStartedDurakGame from "./NonStartedDurakGame.js";
+import GameRoundMoves from "./entity/GameRound/GameRoundMoves.js";
+import GameRoundDistribution from "./entity/GameRoundDistributionQueue.js";
+import NonStartedGameUser from "./entity/__Player/NonStartedGameUser.js";
+import { Card, Desk, Discard, GameRound, Players, Talon } from "./entity/index.js";
+import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSocket.handler.js";
 import {
   DurakGameWebsocketService,
-  GamePlayerWebsocketService,
   GameDeskWebsocketService,
-  GameTalonWebsocketService,
   GameDiscardWebsocketService,
-} from "./socket/service";
-import GameRoundDistribution from "./entity/GameRoundDistributionQueue";
-import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
-import type NonStartedDurakGame from "./NonStartedDurakGame";
-import pino from "pino";
-import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSocket.handler";
-import { StartedDurakGamePlayers } from "./entity/Players/StartedDurakGamePlayers";
-import GameRoundMoves from "./entity/GameRound/GameRoundMoves";
+  GameTalonWebsocketService
+} from "./socket/service/index.js";
 
 export class InternalGameLogicError extends Error {}
 
@@ -61,9 +60,9 @@ export default class DurakGame {
       ...nonStartedGame.settings,
       moveTime: nonStartedGame.settings.moveTime * 1000,
     };
-    this.players = new StartedDurakGamePlayers(
-      nonStartedGame.usersInfo,
-      new GamePlayerWebsocketService(namespace),
+    this.players = nonStartedGame.usersInfo.map(
+      (info, index, array) =>
+        new NonStartedGameUser({ index, info, lobbySlotsCount: array.length }),
     );
     this.talon = new Talon(
       nonStartedGame.settings,
@@ -105,7 +104,7 @@ export default class DurakGame {
     this.players = this.players
       .with(this.players.get((player) => player.isAdmin).left.asDefender())
       .with(this.players.defender.right.asAttacker().asAllowed(this));
-    }
+  }
 
   end() {
     this.isEnded = true;

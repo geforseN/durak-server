@@ -1,5 +1,5 @@
-import Card, { Suit } from "../../Card";
-import { DefendedDeskSlotBase } from "../../DeskSlot/DeskSlot.abstract";
+import Card, { Suit } from "../../Card/index.js";
+import { DefendedDeskSlotBase } from "../../DeskSlot/DeskSlot.abstract.js";
 
 export default function getDefenseStrategy(
   defenderCards: Card[],

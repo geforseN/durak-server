@@ -1,4 +1,4 @@
-import { Defender } from "./Defender";
+import { Defender } from "./Defender.js";
 
 export class SurrenderedDefender extends Defender {
   constructor(defender: Defender) {

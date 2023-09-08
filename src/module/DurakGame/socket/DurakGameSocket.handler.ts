@@ -1,9 +1,9 @@
 import { DurakGameSocket } from "@durak-game/durak-dts";
-import { durakGamesStore, raise } from "../../../index";
-import { cardPlaceListener, stopMoveListener } from "./listener";
-import DurakGame from "../DurakGame";
-import prisma from "../../../../prisma";
-import NotificationAlert from "../../NotificationAlert";
+import { durakGamesStore, raise } from "../../../index.js";
+import { cardPlaceListener, stopMoveListener } from "./listener/index.js";
+import DurakGame from "../DurakGame.js";
+import prisma from "../../../../prisma/index.js";
+import NotificationAlert from "../../NotificationAlert/index.js";
 
 export function addListenersWhichAreNeededForStartedGame(
   this: DurakGameSocket.Socket,

@@ -1,3 +1,3 @@
-export { default as FailedDefense } from "./FailedDefense";
-export { default as SuccessfulDefense } from "./SuccessfulDefense";
-export type { RoundEnd } from "./RoundEnd";
+export { default as FailedDefense } from "./FailedDefense.js";
+export { default as SuccessfulDefense } from "./SuccessfulDefense.js";
+export type { RoundEnd } from "./RoundEnd.js";

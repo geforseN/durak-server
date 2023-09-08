@@ -1,5 +1,5 @@
-import Card from "../Card";
-import { DeskSlot, UnbeatenSlot, UnbeatenTrumpSlot } from "./index";
+import Card from "../Card/index.js";
+import { DeskSlot, UnbeatenSlot, UnbeatenTrumpSlot } from "./index.js";
 
 export default class EmptySlot extends DeskSlot {
   get value(): [] {

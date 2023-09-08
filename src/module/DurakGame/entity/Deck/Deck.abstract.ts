@@ -1,4 +1,4 @@
-import Card from "../Card";
+import Card from "../Card/index.js";
 
 export type CardCount = 24 | 36 | 52;
 

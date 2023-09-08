@@ -1,5 +1,5 @@
-import type DurakGame from "../DurakGame";
-import type { BasePlayer } from "../entity/Player/BasePlayer.abstract";
+import type DurakGame from "../DurakGame.js";
+import type { BasePlayer } from "../entity/Player/BasePlayer.abstract.js";
 
 export default class DurakGameStateDto {
   self;

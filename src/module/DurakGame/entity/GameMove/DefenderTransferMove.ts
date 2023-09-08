@@ -1,9 +1,9 @@
-import type DurakGame from "../../DurakGame";
-import type Card from "../Card";
-import { type CanCommandNextMove } from "./GameMove.abstract";
-import type DeskSlot from "../DeskSlot";
-import { AllowedDefender } from "../Player/AllowedDefender";
-import InsertGameMove from "./InsertGameMove.abstract";
+import type DurakGame from "../../DurakGame.js";
+import Card from "../Card/index.js";
+import { type CanCommandNextMove } from "./GameMove.abstract.js";
+import type DeskSlot from "../DeskSlot/index.js";
+import { AllowedDefender } from "../Player/AllowedDefender.js";
+import InsertGameMove from "./InsertGameMove.abstract.js";
 import assert from "node:assert";
 
 export default class TransferMove

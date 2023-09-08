@@ -1,6 +1,6 @@
 import assert from "node:assert";
-import DurakGame from "../../DurakGame";
-import { SuperPlayer } from "../../entity/__Player";
+import DurakGame from "../../DurakGame.js";
+ import { AllowedSuperPlayer } from "../../entity/Player/AllowedSuperPlayer.abstract.js";
 
 export default function handleStopMove(this: {
   game: DurakGame;
@@ -13,13 +13,13 @@ export default function handleStopMove(this: {
       "Нельзя закончить раунд с пустым столом",
     );
     this.game.players
-      .get<SuperPlayer>(
-        (player): player is SuperPlayer =>
+      .get<AllowedSuperPlayer & { makeStopMove: Function }>(
+        (player): player is AllowedSuperPlayer & { makeStopMove: Function } =>
           player.id === this.playerId &&
-          this.game.round.currentMove.player === player,
+          this.game.players.allowedPlayer.id === player.id,
         "Нет права закончить ход",
       )
-      .stopMove(this.game.round);
+      .makeStopMove();
   } catch (error) {
     this.game.round.currentMove.defaultBehavior.shouldBeCalled = true;
     throw error;

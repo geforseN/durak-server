@@ -1,8 +1,8 @@
-import DurakGame from "../../DurakGame";
-import { AllowedDefender } from "./AllowedDefender";
-import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract";
-import { SuperPlayer } from "./SuperPlayer.abstract";
-import { SurrenderedDefender } from "./SurrenderedDefender";
+import DurakGame from "../../DurakGame.js";
+import { AllowedDefender } from "./AllowedDefender.js";
+import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
+import { SuperPlayer } from "./SuperPlayer.abstract.js";
+import { SurrenderedDefender } from "./SurrenderedDefender.js";
 
 export class Defender extends SuperPlayer {
   get kind() {

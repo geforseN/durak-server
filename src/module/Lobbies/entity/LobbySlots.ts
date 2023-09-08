@@ -1,9 +1,9 @@
 import assert from "node:assert";
-import EmptySlot from "./EmptySlot";
-import FilledSlot from "./FilledSlot";
-import { raise } from "../../..";
-import { InternalError } from "../../DurakGame/error";
-import LobbyUser from "./LobbyUser";
+import EmptySlot from "./EmptySlot.js";
+import FilledSlot from "./FilledSlot.js";
+import { raise } from "../../../index.js";
+import { InternalError } from "../../DurakGame/error/index.js";
+import LobbyUser from "./LobbyUser.js";
 
 export default class LobbySlots {
   readonly #value: (EmptySlot | FilledSlot)[];

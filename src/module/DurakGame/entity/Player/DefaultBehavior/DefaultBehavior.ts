@@ -1,6 +1,6 @@
-import DurakGame from "../../../DurakGame";
-import { GameMove } from "../../GameMove";
-import { AllowedSuperPlayer } from "../AllowedSuperPlayer.abstract";
+import DurakGame from "../../../DurakGame.js";
+import { GameMove } from "../../GameMove/index.js";
+import { AllowedSuperPlayer } from "../AllowedSuperPlayer.abstract.js";
 
 export default abstract class DefaultBehavior<ASP extends AllowedSuperPlayer> {
   public shouldBeCalled: boolean;

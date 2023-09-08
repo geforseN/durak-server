@@ -1,14 +1,14 @@
 import assert from "node:assert";
 import crypto from "node:crypto";
 import type EventEmitter from "node:events";
-import CorrectGameSettings  from "./CorrectGameSettings";
+import CorrectGameSettings  from "./CorrectGameSettings.js";
 import type { GameSettings } from "@durak-game/durak-dts";
-import LobbySlots from "./LobbySlots";
-import { LobbyAccessError } from "../error";
-import { CustomWebsocketEvent } from "../../../ws";
-import LobbyUser from "./LobbyUser";
-import { FilledSlot } from "./FilledSlot";
-import EmptySlot from "./EmptySlot";
+import LobbySlots from "./LobbySlots.js";
+import { LobbyAccessError } from "../error.js";
+import { CustomWebsocketEvent } from "../../../ws/index.js";
+import LobbyUser from "./LobbyUser.js";
+import { FilledSlot } from "./FilledSlot.js";
+import EmptySlot from "./EmptySlot.js";
 
 export default class Lobby {
   id: string;

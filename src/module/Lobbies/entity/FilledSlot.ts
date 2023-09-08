@@ -1,6 +1,6 @@
-import AdminSlot from "./AdminSlot";
-import EmptySlot from "./EmptySlot";
-import LobbyUser from "./LobbyUser";
+import AdminSlot from "./AdminSlot.js";
+import EmptySlot from "./EmptySlot.js";
+import LobbyUser from "./LobbyUser.js";
 
 export class FilledSlot {
   constructor(public index: number, public value: LobbyUser) {}

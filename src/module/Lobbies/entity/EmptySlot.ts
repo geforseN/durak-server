@@ -1,6 +1,6 @@
-import AdminSlot from "./AdminSlot";
-import FilledSlot from "./FilledSlot";
-import LobbyUser from "./LobbyUser";
+import AdminSlot from "./AdminSlot.js";
+import FilledSlot from "./FilledSlot.js";
+import LobbyUser from "./LobbyUser.js";
 
 class EmptySlot {
   value = null;

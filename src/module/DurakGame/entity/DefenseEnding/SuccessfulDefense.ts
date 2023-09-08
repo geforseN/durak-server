@@ -1,5 +1,5 @@
-import { GameRound } from "..";
-import { RoundEnd } from "./RoundEnd";
+import { GameRound } from "../index.js";
+import { RoundEnd } from "./RoundEnd.js";
 
 class SuccessfulDefense extends RoundEnd {
   get newGameRound() {
@@ -18,8 +18,11 @@ class SuccessfulDefense extends RoundEnd {
     } catch {
       return;
     }
-    this.game.players.__setAttacker(this.game.players.defender.asAttacker());
-    this.game.players.defender = this.game.players.attacker.left;
+    this.game.players = this.game.players
+      .with(this.game.players.allowedPlayer.asDisallowed())
+      .with(this.game.players.attacker.asPlayer())
+      .with(this.game.players.defender.left.asDefender())
+      .with(this.game.players.defender.asAttacker().asAllowed(this.game));
     return new GameRound(this.game);
   }
 }

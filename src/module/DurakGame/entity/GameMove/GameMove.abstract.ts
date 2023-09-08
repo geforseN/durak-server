@@ -1,7 +1,7 @@
-import type DurakGame from "../../DurakGame";
-import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract";
-import type { RoundEnd } from "../DefenseEnding";
-import InsertGameMove from "./InsertGameMove.abstract";
+import type DurakGame from "../../DurakGame.js";
+import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
+import type { RoundEnd } from "../DefenseEnding/index.js";
+import InsertGameMove from "./InsertGameMove.abstract.js";
 
 export interface CanCommandNextMove {
   //                                                             TODO or not TODO ...

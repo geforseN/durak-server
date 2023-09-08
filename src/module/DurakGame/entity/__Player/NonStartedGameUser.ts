@@ -1,4 +1,4 @@
-import type LobbyUser from "../../../Lobbies/entity/LobbyUser";
+import type LobbyUser from "../../../Lobbies/entity/LobbyUser.js";
 
 export class NonStartedGameUser {
   info: LobbyUser;

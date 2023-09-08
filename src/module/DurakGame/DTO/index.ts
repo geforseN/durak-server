@@ -1,1 +1,1 @@
-export { default as DurakGameStateDTO } from "./DurakGameState.dto";
+export { default as DurakGameStateDTO } from "./DurakGameState.dto.js";

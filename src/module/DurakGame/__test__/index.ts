@@ -1,9 +1,8 @@
 import test from "node:test";
-import assert from "node:assert";
-import DurakGame from "../DurakGame";
-import NonStartedDurakGame from "../NonStartedDurakGame";
-import Lobby from "../../Lobbies/entity/Lobby";
-import { EventEmitter } from "ws";
+import DurakGame from "../DurakGame.js";
+import NonStartedDurakGame from "../NonStartedDurakGame.js";
+import Lobby from "../../Lobbies/entity/Lobby.js";
+import EventEmitter from "node:events";
 
 test.todo("asda", () => {
   const d = new DurakGame(

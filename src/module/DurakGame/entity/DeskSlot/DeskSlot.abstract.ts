@@ -1,7 +1,7 @@
-import Card, { Rank } from "../Card";
-import DefendedSlot from "./DefendedSlot";
-import EmptySlot from "./EmptySlot";
-import UnbeatenSlot from "./UnbeatenSlot";
+import Card, { Rank } from "../Card/index.js";
+import DefendedSlot from "./DefendedSlot.js";
+import EmptySlot from "./EmptySlot.js";
+import UnbeatenSlot from "./UnbeatenSlot.js";
 
 export type DefendedDeskSlotBase = Required<
   Pick<DefendedSlot, "attackCard" | "defendCard">

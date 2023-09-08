@@ -1,8 +1,8 @@
 import assert from "node:assert";
-import type DurakGame from "../../DurakGame";
-import { AllowedDefender } from "../Player/AllowedDefender";
-import { FailedDefense } from "../DefenseEnding";
-import GameMove, { type CanCommandNextMove } from "./GameMove.abstract";
+import type DurakGame from "../../DurakGame.js";
+import { AllowedDefender } from "../Player/AllowedDefender.js";
+import { FailedDefense } from "../DefenseEnding/index.js";
+import GameMove, { type CanCommandNextMove } from "./GameMove.abstract.js";
 
 export default class StopDefenseMove
   extends GameMove<AllowedDefender>

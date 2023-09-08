@@ -1,5 +1,5 @@
+import durakGameSocketHandler from "./module/DurakGame/socket/DurakGameSocket.handler.js";
 import dotenv from "dotenv";
-import durakGameSocketHandler from "./module/DurakGame/socket/DurakGameSocket.handler";
 import Fastify from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
 import fastifyCors from "@fastify/cors";
@@ -11,21 +11,21 @@ import fastifyStatic from "@fastify/static";
 import pretty from "pino-pretty";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import { PrismaClient } from "@prisma/client";
-import getUserProfile from "./api/profile/[personalLink].get";
-import indexPage from "./indexPage";
-import chatPlugin from "./module/Chat/chatPlugin";
+import getUserProfile from "./api/profile/[personalLink].get.js";
+import indexPage from "./indexPage.js";
+import chatPlugin from "./module/Chat/chatPlugin.js";
 import { z } from "zod";
 import { parseEnv } from "znv";
 import path from "node:path";
 import crypto from "node:crypto";
-import gameLobbiesPlugin from "./module/Lobbies/lobbies.namespace";
+import gameLobbiesPlugin from "./module/Lobbies/lobbies.namespace.js";
 import {
   ZodTypeProvider,
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
-import getMe from "./api/me";
-import DurakGamesStore from "./DurakGamesStore";
+import getMe from "./api/me.js";
+import DurakGamesStore from "./DurakGamesStore.js";
 import { Server } from "socket.io";
 import { parse } from "node:querystring";
 import { instrument } from "@socket.io/admin-ui";

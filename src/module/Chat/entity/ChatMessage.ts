@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
-import type { ChatContext } from "../chatPlugin";
-import type ChatReplyMessage from "./ChatReplyMessage";
+import type { ChatContext } from "../chatPlugin.js";
+import type ChatReplyMessage from "./ChatReplyMessage.js";
 
 export default class ChatMessage {
   sender: ChatContext["sender"];

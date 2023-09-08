@@ -1,7 +1,7 @@
-import { DeskSlot, EmptySlot } from "../DeskSlot";
-import Card, { Rank } from "../Card";
+import { DeskSlot, EmptySlot } from "../DeskSlot/index.js";
+import Card, { Rank } from "../Card/index.js";
 import { randomInt } from "node:crypto";
-import { raise } from "../../../..";
+import { raise } from "../../../../index.js";
 
 export default class DeskSlots {
   readonly #value: DeskSlot[];

@@ -1,12 +1,12 @@
 import GameMove, {
   type CanCommandNextMove,
   type CardInsert,
-} from "./GameMove.abstract";
-import InsertAttackCardMove from "./InsertAttackCardMove";
-import InsertDefendCardMove from "./InsertDefendCardMove";
-import StopAttackMove from "./StopAttackMove";
-import StopDefenseMove from "./StopDefenseMove";
-import DefenderTransferMove from "./DefenderTransferMove";
+} from "./GameMove.abstract.js";
+import InsertAttackCardMove from "./InsertAttackCardMove.js";
+import InsertDefendCardMove from "./InsertDefendCardMove.js";
+import StopAttackMove from "./StopAttackMove.js";
+import StopDefenseMove from "./StopDefenseMove.js";
+import DefenderTransferMove from "./DefenderTransferMove.js";
 
 export {
   type CanCommandNextMove,

@@ -1,8 +1,7 @@
 import assert from "node:assert";
-import timersPromises from "node:timers/promises";
-import getDefenseStrategy from "./getDefenseStrategy";
-import DefaultBehavior from "./DefaultBehavior";
-import { AllowedDefender } from "../AllowedDefender";
+import getDefenseStrategy from "./getDefenseStrategy.js";
+import DefaultBehavior from "./DefaultBehavior.js";
+import { AllowedDefender } from "../AllowedDefender.js";
 
 export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefender> {
   constructor(
@@ -15,9 +14,7 @@ export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefen
 
   setTimeout(delay = this.allowedPlayer.game.settings.moveTime) {
     // TODO make it work !
-    // this.timeout = setTimeout(this.callback.bind(this), delay);
-    timersPromises
-      .setTimeout(delay)
+    new Promise((resolve) => setTimeout(resolve, delay))
       .then(() => this.callback())
       .then((nextMove) => {
         if (!nextMove) {

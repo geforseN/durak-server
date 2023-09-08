@@ -1,8 +1,11 @@
 import { type FastifyInstance } from "fastify";
-import createMessage from "./createMessage";
-import { Chat, ChatMessage, ChatReplyMessage } from "./entity";
-import initializeChat from "./initializeChatNamespace";
-import { CustomWebsocketEvent, NotificationAlertEvent } from "../../ws";
+import {
+  CustomWebsocketEvent,
+  NotificationAlertEvent,
+} from "../../ws/index.js";
+import createMessage from "./createMessage.js";
+import type { Chat, ChatMessage, ChatReplyMessage } from "./entity/index.js";
+import initializeChat from "./initializeChatNamespace.js";
 
 export type ChatContext = ReturnType<ReturnType<typeof initializeChat>>;
 

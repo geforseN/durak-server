@@ -1,5 +1,5 @@
-import { SingletonFastifyInstance } from "../..";
-import prisma from "../../../prisma";
+import prisma from "../../../prisma/index.js";
+import { type SingletonFastifyInstance } from "../../index.js";
 import z from "zod";
 
 export default function getUserProfile(fastify: SingletonFastifyInstance) {

@@ -1,7 +1,6 @@
 import assert from "node:assert";
-import type { AllowedAttacker } from "../AllowedAttacker";
-import timersPromises from "node:timers/promises";
-import DefaultBehavior from "./DefaultBehavior";
+import type { AllowedAttacker } from "../AllowedAttacker.js";
+import DefaultBehavior from "./DefaultBehavior.js";
 
 export class AllowedAttackerDefaultBehavior extends DefaultBehavior<AllowedAttacker> {
   constructor(
@@ -14,8 +13,7 @@ export class AllowedAttackerDefaultBehavior extends DefaultBehavior<AllowedAttac
 
   setTimeout(delay = this.allowedPlayer.game.settings.moveTime) {
     // TODO make it work !
-    timersPromises
-      .setTimeout(delay)
+    new Promise((resolve) => setTimeout(resolve, delay))
       .then(() => this.callback())
       .then((nextMove) => {
         if (!nextMove) {
@@ -58,7 +56,7 @@ export class AllowedAttackerDefaultBehavior extends DefaultBehavior<AllowedAttac
   }
 
   async #putRandomCard() {
-    const { randomCard } = this.allowedPlayer.asBasePlayer;
+    const { randomCard } = this.allowedPlayer.hand;
     const { randomEmptySlot } = this.allowedPlayer.game.desk;
     console.log(
       "defaultBehavior ATTACKER: insertRandomCard " +
@@ -70,7 +68,7 @@ export class AllowedAttackerDefaultBehavior extends DefaultBehavior<AllowedAttac
 
   async #putCardWithDeskRank() {
     for (const rank of this.allowedPlayer.game.desk.ranks) {
-      const card = this.allowedPlayer.asBasePlayer.hand.get((card) =>
+      const card = this.allowedPlayer.hand.get((card) =>
         card.hasSame({ rank }),
       );
       if (!card) continue;

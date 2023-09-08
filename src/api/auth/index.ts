@@ -1,19 +1,19 @@
-import { UserAuthInfoPayload, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-type ReleasedAuthProviderKey = "githubId" | "vkId"
+type ReleasedAuthProviderKey = "githubId" | "vkId";
 
 export function getUpdatedUserWithNewAuthProvider<
-  ProviderName extends Pick<UserAuthInfoPayload["scalars"], ReleasedAuthProviderKey>
+  ProviderName extends any, // TODO fix type
 >({
-    userId,
-    authProviderIdValue,
-    authProviderKey,
-  }: {
-  userId: string,
-  authProviderIdValue: number | string // FIXME want to use like UserAuthInfoPayload["scalars"][ProviderName],
-  authProviderKey: keyof ProviderName
+  userId,
+  authProviderIdValue,
+  authProviderKey,
+}: {
+  userId: string;
+  authProviderIdValue: number | string; // FIXME want to use like UserAuthInfoPayload["scalars"][ProviderName],
+  authProviderKey: keyof ProviderName;
 }) {
   return prisma.user.update({
     where: { id: userId },
@@ -29,17 +29,20 @@ export function getUpdatedUserWithNewAuthProvider<
 }
 
 export function findUserByEmail(email: string) {
-  return prisma.user.findUnique({ where: { email }, include: { UserAuthInfo: true, UserProfile: true } });
+  return prisma.user.findUnique({
+    where: { email },
+    include: { UserAuthInfo: true, UserProfile: true },
+  });
 }
 
 export function findUserWithAuthProvider<
-  ProviderName extends Pick<UserAuthInfoPayload["scalars"], ReleasedAuthProviderKey>
+  ProviderName extends any, // TODO fix type
 >({
-    authProviderIdValue,
-    authProviderKey,
-  }: {
-  authProviderIdValue: number | string // FIXME want to use like UserAuthInfoPayload["scalars"][ProviderName],
-  authProviderKey: keyof ProviderName
+  authProviderIdValue,
+  authProviderKey,
+}: {
+  authProviderIdValue: number | string; // FIXME want to use like UserAuthInfoPayload["scalars"][ProviderName],
+  authProviderKey: keyof ProviderName;
 }) {
   return prisma.user.findFirst({
     where: {

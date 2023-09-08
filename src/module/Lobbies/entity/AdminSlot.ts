@@ -1,5 +1,5 @@
-import LobbyUser from "./LobbyUser";
-import { FilledSlot } from "./FilledSlot";
+import LobbyUser from "./LobbyUser.js";
+import { FilledSlot } from "./FilledSlot.js";
 
 class AdminSlot extends FilledSlot {
   constructor(index: number, value: LobbyUser) {

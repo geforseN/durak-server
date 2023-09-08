@@ -1,18 +1,29 @@
-import type DurakGame from "../../DurakGame";
-import type { Player } from "./index";
-import { Players } from "./Players";
+import type { BasePlayer } from "../Player/BasePlayer.abstract.js";
+import type DurakGame from "../../DurakGame.js";
 
-export class NonEmptyPlayers extends Players {
+export class NonEmptyPlayers {
+  value;
+
   constructor(game: DurakGame) {
-    super(
-      game.players.value.reduce((nonEmptyPlayers: Player[], player) => {
+    this.value = game.players.value.reduce(
+      (
+        obj: {
+          playersToLeave: BasePlayer[];
+          playersToStay: BasePlayer[];
+        },
+        player: BasePlayer,
+      ) => {
         if (player.hand.isEmpty) {
-          player.exitGame(game);
-          return nonEmptyPlayers;
+          obj.playersToLeave.push(player);
+        } else {
+          obj.playersToStay.push(player);
         }
-        nonEmptyPlayers.push(player);
-        return nonEmptyPlayers;
-      }, []),
+        return obj;
+      },
+      {
+        playersToLeave: [] as BasePlayer[],
+        playersToStay: [] as BasePlayer[],
+      },
     );
   }
 }
