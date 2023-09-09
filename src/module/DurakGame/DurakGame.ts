@@ -1,5 +1,4 @@
 import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
-import pino from "pino";
 import type NonStartedDurakGame from "./NonStartedDurakGame.js";
 import GameRoundMoves from "./entity/GameRound/GameRoundMoves.js";
 import GameRoundDistribution from "./entity/GameRoundDistributionQueue.js";
@@ -12,6 +11,7 @@ import {
   GameDiscardWebsocketService,
   GameTalonWebsocketService
 } from "./socket/service/index.js";
+import { pino } from "pino";
 
 export class InternalGameLogicError extends Error {}
 
