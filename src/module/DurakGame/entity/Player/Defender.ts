@@ -1,12 +1,19 @@
-import DurakGame from "../../DurakGame.js";
+import type DurakGame from "../../DurakGame.js";
 import { AllowedDefender } from "./AllowedDefender.js";
-import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
+import { type AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
+import { type BasePlayer } from "./BasePlayer.abstract.js";
 import { SuperPlayer } from "./SuperPlayer.abstract.js";
-import { SurrenderedDefender } from "./SurrenderedDefender.js";
 
 export class Defender extends SuperPlayer {
+  #isSurrendered: boolean
+
+  constructor(basePlayer: BasePlayer, isSurrendered = false) {
+    super(basePlayer);
+    this.#isSurrendered = isSurrendered;
+  }
+
   get kind() {
-    return "Defender" as const;
+    return this.#isSurrendered ? 'SurrenderedDefender' : "Defender" as const;
   }
 
   asAllowed(game: DurakGame): AllowedSuperPlayer {
@@ -22,11 +29,11 @@ export class Defender extends SuperPlayer {
   }
 
   isSurrendered() {
-    return false;
+    return this.#isSurrendered;
   }
 
   asSurrendered() {
-    return new SurrenderedDefender(this);
+    return new Defender(this, true);
   }
 
   // TODO - rewrite
