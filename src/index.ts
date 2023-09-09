@@ -1,5 +1,4 @@
 import durakGameSocketHandler from "./module/DurakGame/socket/DurakGameSocket.handler.js";
-import dotenv from "dotenv";
 import Fastify from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
 import fastifyCors from "@fastify/cors";
@@ -14,10 +13,6 @@ import { PrismaClient } from "@prisma/client";
 import getUserProfile from "./api/profile/[personalLink].get.js";
 import indexPage from "./indexPage.js";
 import chatPlugin from "./module/Chat/chatPlugin.js";
-import { z } from "zod";
-import { parseEnv } from "znv";
-import path from "node:path";
-import crypto from "node:crypto";
 import gameLobbiesPlugin from "./module/Lobbies/lobbies.namespace.js";
 import {
   ZodTypeProvider,
@@ -30,27 +25,7 @@ import { Server } from "socket.io";
 import { parse } from "node:querystring";
 import { instrument } from "@socket.io/admin-ui";
 import { DurakGameSocket } from "@durak-game/durak-dts";
-
-dotenv.config();
-// TODO remove process.env from codebase
-export const env = parseEnv(process.env, {
-  DATABASE_URL: z.string(),
-  FASTIFY_PORT: z.number().default(3000),
-  CORS_ORIGIN: z
-    .array(z.string())
-    .default([
-      "https://admin.socket.io",
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-    ]),
-  SESSION_SECRET: z
-    .string()
-    .default(crypto.randomBytes(64).toString("base64url")),
-  SESSION_COOKIE_NAME: z.string().default("sessionId"),
-  IS_SESSION_SECURE: z.boolean().default(false),
-  SESSION_MAX_AGE: z.number().default(864000000 /* 10 days */),
-  SESSION_STORE_CHECK_PERIOD: z.number().default(600000 /* 10 minutes */),
-});
+import { env, pathForStatic } from "./config/index.js";
 
 const fastify = Fastify({
   logger: {
@@ -69,7 +44,7 @@ fastify
   .decorate("prisma", new PrismaClient())
   .setValidatorCompiler(validatorCompiler)
   .setSerializerCompiler(serializerCompiler)
-  .register(fastifyStatic, { root: path.join(__dirname, "../static") })
+  .register(fastifyStatic, { root: pathForStatic })
   .register(fastifyCors, { origin: [...env.CORS_ORIGIN] })
   .register(fastifyHelmet, {
     contentSecurityPolicy: {
@@ -95,7 +70,6 @@ fastify
     cookieName: env.SESSION_COOKIE_NAME,
     secret: env.SESSION_SECRET,
     cookie: {
-      domain: "localhost",
       secure: env.IS_SESSION_SECURE,
       sameSite: "lax",
       maxAge: env.SESSION_MAX_AGE,
