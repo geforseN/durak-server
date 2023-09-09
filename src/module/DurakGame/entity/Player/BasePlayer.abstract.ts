@@ -1,15 +1,15 @@
-import {
+import type {
   AllowedMissingCardCount,
   PlayerInfo,
   PlayerKind,
 } from "@durak-game/durak-dts";
-import Card from "../Card/index.js";
-import { Hand } from "../Deck/index.js";
+import type Card from "../Card/index.js";
+import { type Hand } from "../Deck/index.js";
 import { type AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
-import { Attacker } from "./Attacker.js";
-import { Defender } from "./Defender.js";
+import { type Attacker } from "./Attacker.js";
+import { type Player } from "./Player.js";
+import { type Defender } from "./Defender.js";
 import { type SuperPlayer } from "./SuperPlayer.abstract.js";
-import { Player } from "./Player.js";
 
 export const GOOD_CARD_AMOUNT = 6;
 
@@ -18,6 +18,10 @@ export abstract class BasePlayer {
   abstract right: BasePlayer;
   abstract hand: Hand;
   private info: PlayerInfo;
+
+  static _Player: typeof Player;
+  static _Defender: typeof Defender;
+  static _Attacker: typeof Attacker;
 
   constructor(basePlayer: BasePlayer);
   constructor(basePlayer: BasePlayer) {
@@ -35,16 +39,15 @@ export abstract class BasePlayer {
   abstract get kind(): PlayerKind;
 
   asAttacker() {
-    return new Attacker(this);
+    return new BasePlayer._Attacker(this);
   }
 
   asDefender() {
-    return new Defender(this);
+    return new BasePlayer._Defender(this);
   }
 
   asPlayer() {
-    // return import("./Player.js").then(() => new Player(this));
-    return new Player(this);
+    return new BasePlayer._Player(this);
   }
 
   isDefender(): this is Defender {
@@ -108,6 +111,6 @@ export abstract class BasePlayer {
       value.push(enemy.toEnemy());
       enemy = enemy.left;
     }
-    return value
+    return value;
   }
 }

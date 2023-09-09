@@ -132,6 +132,20 @@ fastify
 
 (async () => {
   try {
+    const module = await import(
+      "./module/DurakGame/entity/Player/BasePlayer.abstract.js"
+    );
+    await Promise.all([
+      import("./module/DurakGame/entity/Player/Player.js").then((value) => {
+        module.BasePlayer._Player = value.Player;
+      }),
+      import("./module/DurakGame/entity/Player/Attacker.js").then((value) => {
+        module.BasePlayer._Attacker = value.Attacker;
+      }),
+      import("./module/DurakGame/entity/Player/Defender.js").then((value) => {
+        module.BasePlayer._Defender = value.Defender;
+      }),
+    ]);
     await fastify.listen({ port: env.FASTIFY_PORT });
   } catch (err) {
     fastify.log.error(err);

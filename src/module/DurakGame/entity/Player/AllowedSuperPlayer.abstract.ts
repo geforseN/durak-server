@@ -1,11 +1,11 @@
 import assert from "node:assert";
-import DurakGame from "../../DurakGame.js";
+import type DurakGame from "../../DurakGame.js";
 import SuperHand from "../Deck/Hand/SuperHand.js";
-import { Attacker } from "./Attacker.js";
-import { Defender } from "./Defender.js";
+import type { Hand } from "../Deck/index.js";
+import type { Attacker } from "./Attacker.js";
+import type DefaultBehavior from "./DefaultBehavior/DefaultBehavior.js";
+import type { Defender } from "./Defender.js";
 import { SuperPlayer } from "./SuperPlayer.abstract.js";
-import DefaultBehavior from "./DefaultBehavior/DefaultBehavior.js";
-import { Hand } from "../Deck/index.js";
 
 export abstract class AllowedSuperPlayer extends SuperPlayer {
   asSuperPlayer: SuperPlayer;
