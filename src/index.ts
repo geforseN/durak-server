@@ -3,7 +3,6 @@ import Fastify from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
 import fastifyCors from "@fastify/cors";
 import fastifyCookie from "@fastify/cookie";
-import fastifySocketIo from "fastify-socket.io";
 import { type SessionStore, fastifySession } from "@fastify/session";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyStatic from "@fastify/static";
@@ -34,6 +33,8 @@ const fastify = Fastify({
 }).withTypeProvider<ZodTypeProvider>();
 export type SingletonFastifyInstance = typeof fastify;
 
+const local = "http://localhost:3000/";
+
 export const durakGamesStore = new DurakGamesStore();
 export const store: SessionStore = new PrismaSessionStore(new PrismaClient(), {
   checkPeriod: env.SESSION_STORE_CHECK_PERIOD,
@@ -54,6 +55,8 @@ fastify
           "http://127.0.0.1:3001",
           "ws://127.0.0.1:3001",
           "http://127.0.0.1:3000",
+          local,
+          local.replace('3000', '5173')
         ],
         defaultSrc: ["'self'"],
         imgSrc: [
@@ -70,17 +73,13 @@ fastify
     cookieName: env.SESSION_COOKIE_NAME,
     secret: env.SESSION_SECRET,
     cookie: {
+      domain: "localhost",
       secure: env.IS_SESSION_SECURE,
       sameSite: "lax",
       maxAge: env.SESSION_MAX_AGE,
     },
     saveUninitialized: false,
     store,
-  })
-  .register(fastifySocketIo, {
-    cors: {
-      origin: [...env.CORS_ORIGIN],
-    },
   })
   .register(fastifyWebsocket, {
     options: {
@@ -97,8 +96,8 @@ fastify
   .register(getUserProfile)
   .register(chatPlugin, { path: "/global-chat" })
   .register(gameLobbiesPlugin)
-  .setNotFoundHandler(async function (this: typeof fastify, _request, reply) {
-    this.log.error("setNotFoundHandler before");
+  .setNotFoundHandler(async function (this: typeof fastify, _, reply) {
+    this.log.error("setNotFoundHandler");
     return reply.type("text/html").sendFile("index.html");
   })
   .ready()
