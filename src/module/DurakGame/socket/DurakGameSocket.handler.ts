@@ -52,6 +52,7 @@ export default function durakGameSocketHandler(
   if (!game) {
     return handleNoSuchGameOnline(socket, gameId);
   }
+  // NOTE: here game is instance of NonStartedGame or DurakGame
   game.handleSocketConnection(socket, namespace);
 }
 

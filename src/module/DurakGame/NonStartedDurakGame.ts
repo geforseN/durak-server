@@ -11,24 +11,20 @@ export default class NonStartedDurakGame {
     adminId: string;
     durakPlayerId?: string;
     namespace?: DurakGameSocket.Namespace;
-    isStarted: false;
+    status: "non started";
   };
   sockets: Map<string, Set<DurakGameSocket.Socket>>;
   settings: GameSettings;
   usersInfo: LobbyUser[];
-  isStarted: false;
 
   constructor(lobby: Lobby) {
     this.info = {
       id: lobby.id,
       adminId: lobby.slots.admin.id,
-      isStarted: false,
+      status: 'non started',
     };
     this.settings = lobby.settings;
-    this.usersInfo = lobby.userSlots.map(
-      (slot) => slot.user.toJSON(),
-    );
-    this.isStarted = false;
+    this.usersInfo = lobby.userSlots.map((slot) => slot.user.toJSON());
     this.sockets = new Map();
   }
 

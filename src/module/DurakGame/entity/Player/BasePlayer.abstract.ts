@@ -90,6 +90,18 @@ export abstract class BasePlayer {
     ) as AllowedMissingCardCount;
   }
 
+  toDebugJSON() {
+    return {
+      id: this.id,
+      info: this.info,
+      kind: this.kind,
+      isAllowedToMove: this.isAllowed(),
+      hand: this.hand,
+      leftId: this.left.id,
+      rightId: this.right.id,
+    };
+  }
+
   toJSON() {
     return {
       id: this.id,

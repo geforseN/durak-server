@@ -5,7 +5,7 @@ import { type BasePlayer } from "./BasePlayer.abstract.js";
 import { SuperPlayer } from "./SuperPlayer.abstract.js";
 
 export class Defender extends SuperPlayer {
-  #isSurrendered: boolean
+  #isSurrendered: boolean;
 
   constructor(basePlayer: BasePlayer, isSurrendered = false) {
     super(basePlayer);
@@ -13,7 +13,7 @@ export class Defender extends SuperPlayer {
   }
 
   get kind() {
-    return this.#isSurrendered ? 'SurrenderedDefender' : "Defender" as const;
+    return this.#isSurrendered ? "SurrenderedDefender" : "Defender";
   }
 
   asAllowed(game: DurakGame): AllowedSuperPlayer {

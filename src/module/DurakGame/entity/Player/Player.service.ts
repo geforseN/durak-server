@@ -1,5 +1,5 @@
 import { type DurakGameSocket } from "@durak-game/durak-dts";
-import Card from "../Card/index.js";
+import type Card from "../Card/index.js";
 import { type BasePlayer } from "./BasePlayer.abstract.js";
 
 export default class GamePlayerWebsocketService {
