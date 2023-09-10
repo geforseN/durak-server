@@ -1,4 +1,5 @@
-import { Hand } from "../Deck/index.js";
+import type { Hand } from "../Deck/index.js";
+import type NonStartedGameUser from "../__Player/NonStartedGameUser.js";
 import { BasePlayer } from "./BasePlayer.abstract.js";
 
 export class Player extends BasePlayer {
@@ -15,5 +16,19 @@ export class Player extends BasePlayer {
 
   get kind() {
     return "Player" as const;
+  }
+
+  static create(user: NonStartedGameUser): [number, Player, number] {
+    return [
+      user.leftPlayerIndex,
+      new Player({
+        hand: user.hand,
+        wsService: user.wsService,
+        left: undefined,
+        right: undefined,
+        info: user.info,
+      }),
+      user.rightPlayerIndex,
+    ];
   }
 }
