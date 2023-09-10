@@ -1,7 +1,6 @@
 import assert from "node:assert";
 import type DurakGame from "../../DurakGame.js";
 import SuperHand from "../Deck/Hand/SuperHand.js";
-import type { Hand } from "../Deck/index.js";
 import type { Attacker } from "./Attacker.js";
 import type DefaultBehavior from "./DefaultBehavior/DefaultBehavior.js";
 import type { Defender } from "./Defender.js";
@@ -10,21 +9,16 @@ import { SuperPlayer } from "./SuperPlayer.abstract.js";
 export abstract class AllowedSuperPlayer extends SuperPlayer {
   asSuperPlayer: SuperPlayer;
   game: DurakGame;
+  superHand: SuperHand;
+
   abstract defaultBehavior: DefaultBehavior<AllowedSuperPlayer>;
 
-  declare hand: SuperHand;
-  _basicHand: Hand;
-  _superHand: SuperHand;
-
+  // REVIEW ctor, may have bugs
   constructor(superPlayer: SuperPlayer, game: DurakGame) {
     super(superPlayer);
     this.asSuperPlayer = superPlayer;
     this.game = game;
-    // TODO when allowed downgrade then change superHand to just hand
-    // or maybe should use composition (this.hand and this.superHand)
-    this._superHand = new SuperHand(superPlayer.hand);
-    this.hand = new SuperHand(superPlayer.hand);
-    this._basicHand = superPlayer.hand;
+    this.superHand = new SuperHand(superPlayer.hand);
   }
 
   asLatest() {

@@ -3,9 +3,9 @@ import Deck from "../Deck.abstract.js";
 import Card from "../../Card/index.js";
 
 export default class Hand extends Deck {
-  constructor(cards: Card[]);
-  constructor(hand: Hand);
-  constructor(data: Card[] | Hand) {
+  constructor(cards?: Card[]);
+  constructor(hand?: Hand);
+  constructor(data?: Card[] | Hand) {
     super(data instanceof Hand ? data.value : data );
   }
 
