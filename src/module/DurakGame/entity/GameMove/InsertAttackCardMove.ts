@@ -29,13 +29,13 @@ export default class InsertAttackCardMove
       ) ||
       !this.game.desk.allowsAttackerMove
     ) {
-      this.game.players = this.game.players
-        .with(this.performer.asDisallowed())
-        .with(this.game.players.defender.asAllowed(this.game));
+      this.game.players
+        .mutateWith(this.performer.asDisallowed())
+        .mutateWith(this.game.players.defender.asAllowed(this.game));
       assert.ok(this.game.players.defender.isAllowed());
       return this.game.players.defender;
     }
-    this.game.players = this.game.players.with(this.performer.asAllowedAgain());
+    this.game.players.mutateWith(this.performer.asAllowedAgain());
     return this.performer.asLatest();
   }
 }

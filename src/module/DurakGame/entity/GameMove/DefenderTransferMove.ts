@@ -27,10 +27,10 @@ export default class TransferMove
       this.performer.right.isAttacker() && !this.performer.right.isAllowed(),
     );
     //  TODO: add disallow to TransferMove if possible defender canTakeMore returns false
-    this.game.players = this.game.players
-      .with(this.performer.right.asPlayer())
-      .with(this.performer.left.asDefender())
-      .with(this.performer.asAttacker().asAllowed(this.game));
+    this.game.players
+      .mutateWith(this.performer.right.asPlayer())
+      .mutateWith(this.performer.left.asDefender())
+      .mutateWith(this.performer.asAttacker().asAllowed(this.game));
     assert.ok(
       this.performer.asLatest().isAttacker() &&
         this.performer.asLatest().isAllowed(),

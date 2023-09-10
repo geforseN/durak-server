@@ -18,11 +18,11 @@ class SuccessfulDefense extends RoundEnd {
     } catch {
       return;
     }
-    this.game.players = this.game.players
-      .with(this.game.players.allowedPlayer.asDisallowed())
-      .with(this.game.players.attacker.asPlayer())
-      .with(this.game.players.defender.left.asDefender())
-      .with(this.game.players.defender.asAttacker().asAllowed(this.game));
+    this.game.players
+      .mutateWith(this.game.players.allowedPlayer.asDisallowed())
+      .mutateWith(this.game.players.attacker.asPlayer())
+      .mutateWith(this.game.players.defender.left.asDefender())
+      .mutateWith(this.game.players.defender.asAttacker().asAllowed(this.game));
     return new GameRound(this.game);
   }
 }
