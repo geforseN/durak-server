@@ -1,6 +1,5 @@
-import { DurakGameSocket } from "@durak-game/durak-dts";
 import type LobbyUser from "../../../Lobbies/entity/LobbyUser.js";
-import GamePlayerWebsocketService from "../Player/Player.service.js";
+import GamePlayerWebsocketService from "./Player.service.js";
 import { Hand } from "../Deck/index.js";
 
 export class NonStartedGameUser {

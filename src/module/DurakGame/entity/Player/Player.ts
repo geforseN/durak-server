@@ -1,5 +1,5 @@
 import type { Hand } from "../Deck/index.js";
-import type NonStartedGameUser from "../__Player/NonStartedGameUser.js";
+import type NonStartedGameUser from "./NonStartedGameUser.js";
 import { BasePlayer } from "./BasePlayer.abstract.js";
 
 export class Player extends BasePlayer {
