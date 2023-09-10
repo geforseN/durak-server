@@ -46,13 +46,6 @@ export default class GameRound {
   }
 
   toJSON() {
-    return {
-      number: this.number,
-      allowedPlayer: {
-        id: this.game.players.allowedPlayer.id,
-        whenCanBecomeDisallowed:
-          this.game.players.allowedPlayer.defaultBehavior.callTime,
-      },
-    };
+    return { number: this.number };
   }
 }
