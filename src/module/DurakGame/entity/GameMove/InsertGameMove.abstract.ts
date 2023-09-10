@@ -24,10 +24,10 @@ export default abstract class InsertGameMove<
     return true;
   }
 
-  makeTransferFromAllowedSuperPlayerToDesk() {
+  makeCardTransfer() {
     // NOTE: cb can be overwritten to (card) => card.hasSame({ suit: this.suit, rank: this.rank })
-    const card = this.performer.hand.remove((card) => card === this.card);
-    // NOTE second param can be this.card, because card (from hand remove) === this.card
+    const card = this.performer.superHand.remove((card) => card === this.card);
+    // NOTE: second param can be this.card, because card (from hand remove) === this.card
     this.game.desk.updateSlot(this.slot, card);
   }
 }

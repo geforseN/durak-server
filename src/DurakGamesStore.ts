@@ -29,7 +29,7 @@ export default class DurakGamesStore<
     nonStartedGame: NonStartedDurakGame,
     namespace: DurakGameSocket.Namespace,
   ) {
-    assert.ok(nonStartedGame && !nonStartedGame.isStarted);
+    assert.ok(nonStartedGame && nonStartedGame.info.status === 'non started');
     const startedGame = new DurakGame(nonStartedGame, namespace);
     this.values.set(startedGame.info.id, startedGame);
     nonStartedGame.emitEverySocketWithStartedGameDetails(startedGame);

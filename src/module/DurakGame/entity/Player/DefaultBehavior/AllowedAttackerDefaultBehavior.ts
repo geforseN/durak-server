@@ -56,7 +56,7 @@ export class AllowedAttackerDefaultBehavior extends DefaultBehavior<AllowedAttac
   }
 
   async #putRandomCard() {
-    const { randomCard } = this.allowedPlayer.hand;
+    const { randomCard } = this.allowedPlayer.superHand;
     const { randomEmptySlot } = this.allowedPlayer.game.desk;
     console.log(
       "defaultBehavior ATTACKER: insertRandomCard " +
