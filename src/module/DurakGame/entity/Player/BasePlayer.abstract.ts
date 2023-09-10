@@ -10,14 +10,16 @@ import { type Attacker } from "./Attacker.js";
 import { type Player } from "./Player.js";
 import { type Defender } from "./Defender.js";
 import { type SuperPlayer } from "./SuperPlayer.abstract.js";
+import GamePlayerWebsocketService from "./Player.service.js";
 
 export const GOOD_CARD_AMOUNT = 6;
 
 export abstract class BasePlayer {
-  abstract left: BasePlayer;
-  abstract right: BasePlayer;
-  abstract hand: Hand;
-  private info: PlayerInfo;
+  left: BasePlayer;
+  right: BasePlayer;
+  hand: Hand;
+  info: PlayerInfo;
+  wsService: GamePlayerWebsocketService;
 
   static _Player: typeof Player;
   static _Defender: typeof Defender;
@@ -26,6 +28,12 @@ export abstract class BasePlayer {
   constructor(basePlayer: BasePlayer);
   constructor(basePlayer: BasePlayer) {
     this.info = basePlayer.info;
+    this.left = basePlayer.left;
+    this.right = basePlayer.right;
+    this.hand = basePlayer.hand;
+    this.wsService = basePlayer.wsService;
+    if (this.left) this.left.right = this;
+    if (this.right) this.right.left = this;
   }
 
   get id() {
@@ -72,7 +80,7 @@ export abstract class BasePlayer {
 
   receiveCards(...cards: Card[]): void {
     this.hand.receive(...cards);
-    this.wsService?.receiveCards({ player: this, cards });
+    this.wsService.receiveCards({ player: this, cards });
   }
 
   get missingNumberOfCards(): AllowedMissingCardCount {
@@ -87,6 +95,7 @@ export abstract class BasePlayer {
       id: this.id,
       info: this.info,
       kind: this.kind,
+      isAllowedToMove: this.isAllowed(),
     };
   }
 
