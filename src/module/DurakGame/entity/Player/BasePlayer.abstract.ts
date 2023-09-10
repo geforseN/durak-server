@@ -10,7 +10,7 @@ import { type Attacker } from "./Attacker.js";
 import { type Player } from "./Player.js";
 import { type Defender } from "./Defender.js";
 import { type SuperPlayer } from "./SuperPlayer.abstract.js";
-import GamePlayerWebsocketService from "./Player.service.js";
+import type GamePlayerWebsocketService from "./Player.service.js";
 
 export const GOOD_CARD_AMOUNT = 6;
 
@@ -24,6 +24,20 @@ export abstract class BasePlayer {
   static _Player: typeof Player;
   static _Defender: typeof Defender;
   static _Attacker: typeof Attacker;
+
+  static async configureDependencies() {
+    await Promise.all([
+      import("./Player.js").then(
+        (value) => (BasePlayer._Player = value.Player),
+      ),
+      import("./Attacker.js").then(
+        (value) => (BasePlayer._Attacker = value.Attacker),
+      ),
+      import("./Defender.js").then(
+        (value) => (BasePlayer._Defender = value.Defender),
+      ),
+    ]);
+  }
 
   constructor(basePlayer: BasePlayer);
   constructor(basePlayer: BasePlayer) {
