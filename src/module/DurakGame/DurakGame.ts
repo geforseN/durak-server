@@ -2,7 +2,7 @@ import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
 import type NonStartedDurakGame from "./NonStartedDurakGame.js";
 import GameRoundMoves from "./entity/GameRound/GameRoundMoves.js";
 import GameRoundDistribution from "./entity/GameRoundDistributionQueue.js";
-import NonStartedGameUser from "./entity/__Player/NonStartedGameUser.js";
+import NonStartedGameUser from "./entity/Player/NonStartedGameUser.js";
 import {
   Card,
   Desk,
