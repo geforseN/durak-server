@@ -19,18 +19,18 @@ export default class StopDefenseMove
   // TODO TODO TODO
   calculateNextThingToDoInGame() {
     if (this.game.desk.isDefended) {
-      this.game.players = this.game.players
-        .with(this.performer.asDisallowed())
-        .with(this.game.round.primalAttacker.asAttacker().asAllowed(this.game));
+      this.game.players
+        .mutateWith(this.performer.asDisallowed())
+        .mutateWith(this.game.round.primalAttacker.asAttacker().asAllowed(this.game));
       assert.ok(this.game.players.attacker.isAllowed());
       return this.game.players.attacker;
     }
     if (!this.game.desk.isAllowsMoves) {
       return new FailedDefense(this.game);
     }
-    this.game.players = this.game.players
-      .with(this.performer.asDisallowed().asSurrendered())
-      .with(this.game.round.primalAttacker.asAttacker().asAllowed(this.game));
+    this.game.players
+      .mutateWith(this.performer.asDisallowed().asSurrendered())
+      .mutateWith(this.game.round.primalAttacker.asAttacker().asAllowed(this.game));
     assert.ok(this.game.players.attacker.isAllowed());
     return this.game.players.attacker;
   }

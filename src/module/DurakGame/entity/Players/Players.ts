@@ -5,7 +5,7 @@ import { type Attacker } from "../Player/Attacker.js";
 import { type Defender } from "../Player/Defender.js";
 
 export class Players {
-  readonly value: BasePlayer[];
+  value: BasePlayer[];
 
   constructor(value: BasePlayer[]) {
     this.value = value;
@@ -19,12 +19,13 @@ export class Players {
     return this.value.length;
   }
 
-  with(updatedPlayer: BasePlayer) {
+  mutateWith(updatedPlayer: BasePlayer) {
     const player: BasePlayer | never = this.get(
       (player) => player.id === updatedPlayer.id,
     );
     const index = this.value.indexOf(player);
-    return new Players(this.value.with(index, player));
+    this.value = this.value.with(index, updatedPlayer);
+    return this;
   }
 
   get #allowedPlayer() {

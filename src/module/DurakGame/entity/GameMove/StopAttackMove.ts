@@ -24,18 +24,18 @@ export default class StopAttackMove
     // TODO
     // TODO add check if defender canNotTakeMore
     if (this.performer.didLatestMove) {
-      this.game.players = this.game.players
-        .with(this.performer.asDisallowed())
-        .with(this.game.players.defender.asAllowed(this.game));
+      this.game.players
+        .mutateWith(this.performer.asDisallowed())
+        .mutateWith(this.game.players.defender.asAllowed(this.game));
       assert.ok(this.game.players.defender.isAllowed());
       return this.game.players.defender;
     }
     if (this.game.players.defender.canWinDefense(this.game)) {
       return new SuccessfulDefense(this.game);
     }
-    this.game.players = this.game.players
-      .with(this.performer.asDisallowed())
-      .with(this.game.round.nextAttacker.asAttacker().asAllowed(this.game));
+    this.game.players
+      .mutateWith(this.performer.asDisallowed())
+      .mutateWith(this.game.round.nextAttacker.asAttacker().asAllowed(this.game));
     assert.ok(this.game.players.attacker.isAllowed());
     return this.game.players.attacker;
   }
@@ -51,9 +51,9 @@ export default class StopAttackMove
       return new FailedDefense(this.game);
     }
 
-    this.game.players = this.game.players
-      .with(this.performer.asDisallowed())
-      .with(this.game.round.nextAttacker.asAttacker().asAllowed(this.game));
+    this.game.players
+      .mutateWith(this.performer.asDisallowed())
+      .mutateWith(this.game.round.nextAttacker.asAttacker().asAllowed(this.game));
     assert.ok(this.game.players.attacker.isAllowed());
     return this.game.players.attacker;
   }
