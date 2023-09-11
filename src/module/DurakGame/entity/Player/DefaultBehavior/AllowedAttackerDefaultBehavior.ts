@@ -11,36 +11,11 @@ export class AllowedAttackerDefaultBehavior extends DefaultBehavior<AllowedAttac
     super(allowedAttacker, game, shouldBeCalled);
   }
 
-  setTimeout(delay = this.allowedPlayer.game.settings.moveTime) {
-    // TODO make it work !
-    new Promise((resolve) => setTimeout(resolve, delay))
-      .then(() => this.callback())
-      .then((nextMove) => {
-        if (!nextMove) {
-          // TODO
-          // game should end or some mistake happened here
-          return;
-        }
-        this.allowedPlayer.game.round.moves.push(nextMove);
-        const nextThing = nextMove.calculateNextThingToDoInGame();
-        if (nextThing.kind == "RoundEnd") {
-        } else if (
-          nextThing.kind === "Attacker" ||
-          nextThing.kind === "Defender"
-        ) {
-          nextThing.kind;
-        } else throw new Error("Never should be here");
-      })
-      .catch(() => {
-        /* TODO */
-      });
-  }
-
   clearTimeout() {
     clearTimeout(this.timeout);
   }
 
-  async callback() {
+  async calculateNextThingToDoInGame() {
     if (!this.shouldBeCalled) {
       return console.log("defaultBehavior ATTACKER: fast return");
     }
