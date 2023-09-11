@@ -118,6 +118,7 @@ fastify
 export function raise(err: Error | string = new Error()): never {
   throw typeof err === "string" ? new Error(err) : err;
 }
+
 const io = new Server(3001, {
   cors: {
     origin: [

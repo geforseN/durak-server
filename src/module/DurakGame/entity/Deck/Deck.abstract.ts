@@ -1,7 +1,5 @@
 import Card from "../Card/index.js";
 
-export type CardCount = 24 | 36 | 52;
-
 export default abstract class Deck {
   protected value: Card[];
 

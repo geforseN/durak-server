@@ -32,15 +32,23 @@ export default class GameRound {
   // this is why type cast is used for return value
   // it is better to return a super class than a sub class
   get primalAttacker(): BasePlayer | never {
-    return this.moves.primalAttackerMove.performer as BasePlayer;
+    return this.moves.primalMove.performer as BasePlayer;
   }
 
+  // so, because primal attacker incapsulated DurakGame instance on it is creation
+  // than now  primal attacker can get own latest instance in incapsulated game
   get latestPrimalAttacker(): BasePlayer {
-    return this.moves.primalAttackerMove.performer.asLatest();
+    return this.moves.primalMove.performer.asLatest();
   }
 
   get nextAttacker(): BasePlayer {
     return this.game.players.attacker.id === this.primalAttacker.id
+      ? this.game.players.defender.left
+      : this.game.players.attacker.left;
+  }
+
+  get betterNextAttacker() {
+    return this.latestPrimalAttacker.isAttacker()
       ? this.game.players.defender.left
       : this.game.players.attacker.left;
   }
