@@ -1,10 +1,11 @@
 import assert from "node:assert";
-import Deck, { CardCount } from "../Deck.abstract.js";
-import Card, { TrumpCard } from "../../Card/index.js";
+import Deck from "../Deck.abstract.js";
+import { type default as Card, TrumpCard } from "../../Card/index.js";
 import { type CanProvideCards } from "../../../DurakGame.js";
 import type GameTalonWebsocketService from "./Talon.service.js";
 import { buildTalon } from "./buildDeck.js";
-import { BasePlayer } from "../../Player/BasePlayer.abstract.js";
+import type { BasePlayer } from "../../Player/BasePlayer.abstract.js";
+import type { CardCount } from "@durak-game/durak-dts";
 
 export default class Talon extends Deck implements CanProvideCards<BasePlayer> {
   readonly #wsService: GameTalonWebsocketService;
