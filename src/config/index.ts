@@ -4,11 +4,11 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { raise } from "../index.js";
 
-// TODO remove process.env from codebase
 export const env = z
   .object({
     DATABASE_URL: z.string(),
     FASTIFY_PORT: z.string().default("3000").transform(Number),
+    SOCKET_IO_PORT: z.string().default("3001").transform(Number),
     CORS_ORIGIN: z
       .string()
       .default(
