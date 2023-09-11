@@ -4,7 +4,11 @@ import type Card from "../Card/index.js";
 import { type Discard } from "../Deck/index.js";
 import type { DeskSlot } from "../DeskSlot/index.js";
 import DeskSlots from "../DeskSlots/index.js";
-import { DefendedSlots, FilledSlots, UnbeatenSlots } from "../DeskSlots/Slots.js";
+import {
+  DefendedSlots,
+  FilledSlots,
+  UnbeatenSlots,
+} from "../DeskSlots/Slots.js";
 import type { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
 import type { Defender } from "../Player/Defender.js";
 import type GameDeskWebsocketService from "./Desk.service.js";
@@ -32,7 +36,9 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
   }
 
   slotAt(index: number) {
-    return this.#slots.at(index) || raise(`Slot with index=${index} does not exist`);
+    return (
+      this.#slots.at(index) || raise(`Slot with index=${index} does not exist`)
+    );
   }
 
   get isAllowsMoves() {
@@ -71,21 +77,9 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return this.isAllowsMoves;
   }
 
-  updateSlot(slot: DeskSlot, card: Card) {
-    return this.#slots.updateSlot({ at: slot.index, with: card });
-  }
-
-  receiveCard({
-    card,
-    index,
-    source,
-  }: {
-    card: Card;
-    index: number;
-    source: AllowedSuperPlayer;
-  }) {
-    this.#slots.updateSlot({ at: index, with: card });
-    this.#wsService?.receiveCard({ card, index, source });
+  update(slot: DeskSlot, card: Card, performer: AllowedSuperPlayer) {
+    this.#slots.update(slot, card);
+    this.#wsService?.updateSlot({ card, slot, performer });
   }
 
   provideCards<Target extends Defender | Discard>(target: Target) {

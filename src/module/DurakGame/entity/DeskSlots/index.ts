@@ -30,8 +30,8 @@ export default class DeskSlots {
     return this.cards.length;
   }
 
-  updateSlot({ at: index, with: card }: { at: number; with: Card }) {
-    this.#value[index] = this.#value[index].nextDeskSlot(card);
+  update(slot: DeskSlot, card: Card) {
+    this.#value[slot.index] = slot.nextDeskSlot(card);
   }
 
   async allowsTransferMove(card: Card, slot: DeskSlot): Promise<boolean> {

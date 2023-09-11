@@ -25,9 +25,7 @@ export default abstract class InsertGameMove<
   }
 
   makeCardTransfer() {
-    // NOTE: cb can be overwritten to (card) => card.hasSame({ suit: this.suit, rank: this.rank })
-    const card = this.performer.superHand.remove((card) => card === this.card);
-    // NOTE: second param can be this.card, because card (from hand remove) === this.card
-    this.game.desk.updateSlot(this.slot, card);
+    this.performer.remove((card) => card === this.card);
+    this.game.desk.update(this.slot, this.card, this.performer);
   }
 }

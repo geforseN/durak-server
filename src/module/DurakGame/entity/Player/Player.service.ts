@@ -1,6 +1,7 @@
 import { type DurakGameSocket } from "@durak-game/durak-dts";
 import type Card from "../Card/index.js";
 import { type BasePlayer } from "./BasePlayer.abstract.js";
+import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
 
 export default class GamePlayerWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
@@ -21,15 +22,15 @@ export default class GamePlayerWebsocketService {
     });
   }
 
-  removeCard({ player, card }: { player: BasePlayer; card: Card }) {
-    this.namespace.to(player.id).emit("player::removeCard", {
-      player: { newCardsCount: player.hand.count },
+  remove(card: Card, performer: AllowedSuperPlayer) {
+    this.namespace.to(performer.id).emit("player::removeCard", {
+      player: { newCardsCount: performer.hand.count },
       card: card.toJSON(),
     });
-    this.namespace.except(player.id).emit("player::removeCard", {
+    this.namespace.except(performer.id).emit("player::removeCard", {
       player: {
-        id: player.id,
-        newCardsCount: player.hand.count,
+        id: performer.id,
+        newCardsCount: performer.hand.count,
       },
     });
   }

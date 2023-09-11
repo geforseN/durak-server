@@ -46,6 +46,12 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
 
   abstract asDisallowed(): SuperPlayer;
 
+  remove(cb: (card: Card) => boolean) {
+    const card = this.superHand.remove(cb);
+    this.wsService.remove(card, this);
+    return card;
+  }
+
   toJSON() {
     return {
       ...super.toJSON(),
