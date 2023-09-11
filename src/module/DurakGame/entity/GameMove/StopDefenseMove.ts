@@ -16,7 +16,6 @@ export default class StopDefenseMove
     return false;
   }
 
-  // TODO TODO TODO
   calculateNextThingToDoInGame() {
     if (this.game.desk.isDefended) {
       this.game.players

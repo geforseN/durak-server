@@ -145,8 +145,6 @@ class LobbyAddEvent extends CustomWebsocketEvent {
 
   constructor(lobby: Lobby) {
     super("lobby::add");
-    // TODO: test if can remove toJSON call
-    // TODO just this.lobby = lobby
     this.lobby = lobby.toJSON();
   }
 }

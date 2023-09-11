@@ -12,7 +12,7 @@ import { PrismaClient } from "@prisma/client";
 import getUserProfile from "./api/profile/[personalLink].get.js";
 import indexPage from "./indexPage.js";
 import chatPlugin from "./module/Chat/chatPlugin.js";
-import gameLobbiesPlugin from "./module/Lobbies/lobbies.namespace.js";
+import gameLobbiesPlugin from "./module/Lobbies/lobbies.plugin.js";
 import {
   ZodTypeProvider,
   serializerCompiler,
@@ -21,7 +21,6 @@ import {
 import getMe from "./api/me.js";
 import DurakGamesStore from "./DurakGamesStore.js";
 import { Server } from "socket.io";
-import { parse } from "node:querystring";
 import { instrument } from "@socket.io/admin-ui";
 import { DurakGameSocket } from "@durak-game/durak-dts";
 import { env, pathForStatic } from "./config/index.js";
@@ -89,9 +88,6 @@ fastify
       },
     },
   })
-  // TODO rework plugins which are commented (because they are does not work properly)
-  // .register(VkAuth)
-  // .register(GithubAuth)
   .register(indexPage)
   .register(getMe)
   .register(getUserProfile)
