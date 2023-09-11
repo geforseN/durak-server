@@ -25,6 +25,7 @@ import { parse } from "node:querystring";
 import { instrument } from "@socket.io/admin-ui";
 import { DurakGameSocket } from "@durak-game/durak-dts";
 import { env, pathForStatic } from "./config/index.js";
+import { mutateSocketData } from "./module/DurakGame/socket/mutateSocketData.js";
 
 const fastify = Fastify({
   logger: {
@@ -133,44 +134,5 @@ const gamesNamespace: DurakGameSocket.Namespace = io.of(
   /^\/game\/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/,
 );
 gamesNamespace.use(mutateSocketData);
-function mutateSocketData(
-  socket: DurakGameSocket.Socket,
-  next: (err?: Error) => void,
-) {
-  const sid = getSid(socket, next, console);
-  if (!sid) return next();
-  store.get(sid, (error, session) => {
-    if (error || !session) {
-      console.log(
-        {
-          error,
-          session,
-        },
-        "store couldn't get session data",
-      );
-      return next();
-    }
-    socket.data.sid = sid;
-    socket.data.user = session.user;
-    return next();
-  });
-}
-
-function getSid(
-  socket: DurakGameSocket.Socket,
-  next: (err?: Error) => void,
-  logger?: { log: Function },
-) {
-  if (!socket.handshake.headers.cookie) return next();
-  const cookie = parse(socket.handshake.headers.cookie);
-  logger?.log({ cookie });
-  const sessionId = cookie["sessionId"];
-  logger?.log({ sessionId });
-  if (!sessionId || Array.isArray(sessionId)) return next();
-  const sid = sessionId.split(".")[0];
-  logger?.log({ sid });
-  return sid;
-}
-
 gamesNamespace.on("connection", durakGameSocketHandler);
 instrument(io, { auth: false, mode: "development" });
