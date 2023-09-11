@@ -63,18 +63,6 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
             initiator: context.user,
             lobbyId,
           }),
-        )
-        .on(
-          "lobby::user::move",
-          ({
-            slotIndex,
-            lobbyId,
-          }: {
-            slotIndex: number;
-            lobbyId?: Lobby["id"];
-          }) => {
-            // CHECK slotIndex !== IS valid AND slotIndex !== -1
-          },
         );
     },
   );
