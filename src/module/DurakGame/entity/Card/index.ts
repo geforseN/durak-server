@@ -65,5 +65,3 @@ export default class Card {
     A: 13,
   } as const;
 }
-
-
