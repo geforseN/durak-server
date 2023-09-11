@@ -1,6 +1,5 @@
 import { GameRound, Players } from "../index.js";
 import type DurakGame from "../../DurakGame.js";
-import { NonEmptyPlayers } from "../Players/NonEmptyPlayers.js";
 import { BasePlayer } from "../Player/BasePlayer.abstract.js";
 
 export abstract class RoundEnd {
@@ -8,7 +7,7 @@ export abstract class RoundEnd {
 
   kind = "RoundEnd" as const;
 
-  prepareBeforeNewGameRound() {
+  protected prepareBeforeNewGameRound() {
     if (this.game.talon.isEmpty) {
       const groupedPlayers = this.game.players.value.reduce(
         (

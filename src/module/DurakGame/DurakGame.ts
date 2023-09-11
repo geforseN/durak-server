@@ -132,7 +132,8 @@ export default class DurakGame {
   end() {
     this.info.status = "ended";
     const [durakPlayer] = this.players;
-    this.info.durakId = durakPlayer.id;
+    // NOTE: durakPlayer may not exist if game ended with draw
+    this.info.durakId = durakPlayer?.id;
     this.#wsService.end(this);
   }
 }

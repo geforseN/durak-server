@@ -8,6 +8,7 @@ import { DefendedSlots, FilledSlots, UnbeatenSlots } from "../DeskSlots/Slots.js
 import type { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
 import type { Defender } from "../Player/Defender.js";
 import type GameDeskWebsocketService from "./Desk.service.js";
+import { raise } from "../../../../index.js";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
   #slots: DeskSlots;
@@ -31,7 +32,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
   }
 
   slotAt(index: number) {
-    return this.#slots.at(index);
+    return this.#slots.at(index) || raise(`Slot with index=${index} does not exist`);
   }
 
   get isAllowsMoves() {

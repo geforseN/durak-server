@@ -4,7 +4,7 @@ import { AllowedDefender } from "../Player/AllowedDefender.js";
 import type Card from "../Card/index.js";
 import { SuccessfulDefense } from "../DefenseEnding/index.js";
 import type DeskSlot from "../DeskSlot/index.js";
-import { type CanCommandNextMove, type CardInsert } from "./GameMove.abstract.js";
+import { type CanCommandNextMove } from "./GameMove.abstract.js";
 import InsertGameMove from "./InsertGameMove.abstract.js";
 
 export default class InsertDefendCardMove
@@ -24,9 +24,7 @@ export default class InsertDefendCardMove
 
   calculateNextThingToDoInGame() {
     if (!this.game.desk.isDefended) {
-      this.game.players.mutateWith(
-        this.performer.asAllowedAgain(),
-      );
+      this.game.players.mutateWith(this.performer.asAllowedAgain());
       return this.performer.asLatest();
     }
     if (this.performer.hand.isEmpty || !this.game.desk.isAllowsMoves) {
@@ -35,7 +33,9 @@ export default class InsertDefendCardMove
     if (this.game.desk.allowsAttackerMove) {
       this.game.players
         .mutateWith(this.performer.asDisallowed())
-        .mutateWith(this.game.round.primalAttacker.asAttacker().asAllowed(this.game));
+        .mutateWith(
+          this.game.round.primalAttacker.asAttacker().asAllowed(this.game),
+        );
       assert.ok(this.game.players.attacker.isAllowed());
       return this.game.players.attacker;
     }
