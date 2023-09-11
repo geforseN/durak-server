@@ -1,6 +1,9 @@
 import assert from "node:assert";
 import type DurakGame from "../../DurakGame.js";
+import type Card from "../Card/index.js";
 import SuperHand from "../Deck/Hand/SuperHand.js";
+import type DeskSlot from "../DeskSlot/index.js";
+import type GameMove from "../GameMove/GameMove.abstract.js";
 import type { Attacker } from "./Attacker.js";
 import type DefaultBehavior from "./DefaultBehavior/DefaultBehavior.js";
 import type { Defender } from "./Defender.js";
@@ -49,4 +52,11 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
       whenMayBecomeDisallowed: { UTC: this.defaultBehavior.callTime?.UTC },
     };
   }
+
+  abstract makeInsertMove(
+    card: Card,
+    slot: DeskSlot,
+  ): Promise<GameMove<AllowedSuperPlayer>>;
+
+  abstract makeStopMove(): GameMove<AllowedSuperPlayer>;
 }
