@@ -19,6 +19,9 @@ export default class GameRoundMoves {
 
   push(move: GameMove<AllowedSuperPlayer>) {
     this.#value.push(move);
+    if (move.isInsertMove()) {
+      move.makeCardTransfer();
+    }
   }
 
   get latestDoneMove() {
@@ -28,7 +31,7 @@ export default class GameRoundMoves {
     );
   }
 
-  get firstDefenderMove(): GameMove<AllowedDefender> | never {
+  get #firstDefenderMove(): GameMove<AllowedDefender> | never {
     const firstDefenderMove = this.#value.find(
       (move): move is GameMove<AllowedDefender> =>
         move.performer.isDefender() && !(move instanceof DefenderTransferMove),
@@ -37,15 +40,11 @@ export default class GameRoundMoves {
     return firstDefenderMove;
   }
 
-  get primalAttackerMove(): GameMove<AllowedAttacker> {
-    const firstDefenderMoveIndex = this.#value.indexOf(this.firstDefenderMove);
+  get primalMove(): GameMove<AllowedAttacker> {
+    const firstDefenderMoveIndex = this.#value.indexOf(this.#firstDefenderMove);
     assert.ok(firstDefenderMoveIndex >= 1);
     const move = this.#value[firstDefenderMoveIndex - 1];
     assert.ok(move instanceof InsertAttackCardMove);
     return move;
-  }
-
-  get primalMove(): undefined {
-    return;
   }
 }
