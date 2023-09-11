@@ -69,11 +69,3 @@ export default class Card {
 export class TrumpCard extends Card {
   readonly isTrump: boolean = true;
 }
-
-// TODO: add methods to class or delete class
-class DefendCard {
-  canBeat(attackCard: AttackCard) {}
-}
-
-// TODO: add methods to class or delete class
-class AttackCard {}
