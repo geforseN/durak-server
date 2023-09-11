@@ -24,7 +24,7 @@ export class Players {
       (player) => player.id === updatedPlayer.id,
     );
     const index = this.value.indexOf(player);
-    this.value = this.value.with(index, updatedPlayer);
+    this.value[index] = updatedPlayer;
     return this;
   }
 
