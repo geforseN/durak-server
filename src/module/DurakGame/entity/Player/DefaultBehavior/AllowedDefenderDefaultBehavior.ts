@@ -12,39 +12,7 @@ export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefen
     super(allowedDefender, game, shouldBeCalled);
   }
 
-  setTimeout(delay = this.allowedPlayer.game.settings.moveTime) {
-    // TODO make it work !
-    new Promise((resolve) => setTimeout(resolve, delay))
-      .then(() => this.callback())
-      .then((nextMove) => {
-        if (!nextMove) {
-          // TODO
-          // game should end or some mistake happened here
-          return;
-        }
-        this.allowedPlayer.game.round.moves.push(nextMove);
-        const nextThing = nextMove.calculateNextThingToDoInGame();
-        switch (nextThing.kind) {
-          case "RoundEnd": {
-            return;
-          }
-          // TODO maybe not just Attacker or Defender,
-          // maybe AllowedAttacker & AllowedDefender
-          case "Attacker":
-          case "Defender": {
-            return;
-          }
-          default: {
-            throw new Error("Should not be here");
-          }
-        }
-      })
-      .catch(() => {
-        /* TODO */
-      });
-  }
-
-  async callback() {
+  async calculateNextThingToDoInGame() {
     if (!this.shouldBeCalled) {
       return console.log("defaultBehavior DEFENDER: fast return");
     }

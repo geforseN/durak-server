@@ -1,7 +1,9 @@
+import assert from "node:assert";
 import type DurakGame from "../../DurakGame.js";
 import { AllowedSuperPlayer } from "../../entity/Player/AllowedSuperPlayer.abstract.js";
 
 import type { Card as CardDTO } from "@durak-game/durak-dts";
+import { makeMagic } from "./makeMagic.js";
 
 export default async function handlePutCardOnDesk(
   this: { game: DurakGame; playerId: string },
@@ -9,14 +11,19 @@ export default async function handlePutCardOnDesk(
   slotIndex: number,
 ) {
   try {
-    await this.game.players
-      .get<AllowedSuperPlayer & {makeInsertMove: Function}>(
-        (player): player is AllowedSuperPlayer & {makeInsertMove: Function} =>
-          player.id === this.playerId && player.isAllowed(),
-        "У вас нет права хода",
-      )
-      .makeInsertMove(cardDTO, slotIndex);
+    const player = this.game.players.get<AllowedSuperPlayer>(
+      (player): player is AllowedSuperPlayer =>
+        player.id === this.playerId && player.isAllowed(),
+      "У вас нет права хода",
+    );
+    const card = player.hand.get((card) =>
+      card.hasSame({ rank: cardDTO.rank, suit: cardDTO.suit }),
+    );
+    const slot = this.game.desk.slotAt(slotIndex);
+    makeMagic.call(this, await player.makeInsertMove(card, slot));
   } catch (error) {
     throw error;
   }
 }
+
+
