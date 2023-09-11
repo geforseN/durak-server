@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert";
-import Card, { Suit, TrumpCard } from "../../Card/index.js";
+import Card, { Suit } from "../../Card/index.js";
+import { TrumpCard } from "../../Card/TrumpCard.js";
 import getDefenseStrategy, { cardsSort, slotsSort } from "./getDefenseStrategy.js";
 
 const TRUMP_SUIT: Suit = "♠" as const;

@@ -66,6 +66,4 @@ export default class Card {
   } as const;
 }
 
-export class TrumpCard extends Card {
-  readonly isTrump: boolean = true;
-}
+
