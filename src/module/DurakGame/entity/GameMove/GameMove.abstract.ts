@@ -8,9 +8,7 @@ export interface CanCommandNextMove {
   calculateNextThingToDoInGame(): AllowedSuperPlayer | RoundEnd; // | GameEnd;
 }
 
-export interface CardInsert {}
-
-export default abstract class GameMove<ASP extends AllowedSuperPlayer> {
+export default abstract class GameMove<ASP extends AllowedSuperPlayer> implements CanCommandNextMove {
   game: DurakGame;
   performer: ASP;
 
@@ -42,4 +40,6 @@ export default abstract class GameMove<ASP extends AllowedSuperPlayer> {
       },
     });
   }
+
+  abstract calculateNextThingToDoInGame(): AllowedSuperPlayer | RoundEnd;
 }

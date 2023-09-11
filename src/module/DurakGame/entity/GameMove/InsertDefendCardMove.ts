@@ -9,7 +9,7 @@ import InsertGameMove from "./InsertGameMove.abstract.js";
 
 export default class InsertDefendCardMove
   extends InsertGameMove<AllowedDefender>
-  implements CardInsert, CanCommandNextMove
+  implements CanCommandNextMove
 {
   constructor(
     game: DurakGame,
