@@ -1,6 +1,7 @@
 import type { DurakGameSocket } from "@durak-game/durak-dts";
 import type Card from "../Card/index.js";
-import type { SuperPlayer } from "../Player/SuperPlayer.abstract.js";
+import type { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
+import type DeskSlot from "../DeskSlot/DeskSlot.abstract.js";
 
 export default class GameDeskWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
@@ -9,19 +10,19 @@ export default class GameDeskWebsocketService {
     this.namespace.emit("desk::becameClear");
   }
 
-  receiveCard({
+  updateSlot({
     card,
-    index,
-    source,
+    slot,
+    performer,
   }: {
     card: Card;
-    index: number;
-    source: SuperPlayer;
+    slot: DeskSlot;
+    performer: AllowedSuperPlayer;
   }) {
     this.namespace.emit("desk::receivedCard", {
       card: card.toJSON(),
-      slot: { index },
-      source: { id: source.id },
+      slot: { index: slot.index },
+      source: { id: performer.id },
     });
   }
 }
