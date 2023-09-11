@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import Deck from "../Deck.abstract.js";
-import { type default as Card, TrumpCard } from "../../Card/index.js";
+import { type default as Card } from "../../Card/index.js";
+import { TrumpCard } from "../../Card/TrumpCard.js";
 import { type CanProvideCards } from "../../../DurakGame.js";
 import type GameTalonWebsocketService from "./Talon.service.js";
 import { buildTalon } from "./buildDeck.js";
