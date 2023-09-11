@@ -21,12 +21,10 @@ export default class TransferMove
     super(game, performer, context);
   }
 
-  //  NOTE: Also, when transferring an attack, more than one card of the original rank can be added to the attack.
   calculateNextThingToDoInGame() {
     assert.ok(
       this.performer.right.isAttacker() && !this.performer.right.isAllowed(),
     );
-    //  TODO: add disallow to TransferMove if possible defender canTakeMore returns false
     this.game.players
       .mutateWith(this.performer.right.asPlayer())
       .mutateWith(this.performer.left.asDefender())
@@ -35,6 +33,11 @@ export default class TransferMove
       this.performer.asLatest().isAttacker() &&
         this.performer.asLatest().isAllowed(),
     );
+    //  NOTE: When transferring an attack, more than one card
+    // of the original rank can be added to the attack.
+    // So in next move performed can
+    // - put another card (but kind of player will be 'AllowedAttacker', not 'AllowedDefender')
+    // - simply make stop attack move
     return this.performer.asLatest();
   }
 }

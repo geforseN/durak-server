@@ -53,7 +53,6 @@ export class AllowedAttacker extends AllowedSuperPlayer {
 
   get didLatestMove(): boolean {
     return (
-      // REVIEW - can work incorrect
       this.game.round.moves.latestDoneMove.isInsertMove() &&
       this.game.round.moves.latestDoneMove.performer.id === this.id
     );
