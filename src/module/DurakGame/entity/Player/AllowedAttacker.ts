@@ -36,6 +36,8 @@ export class AllowedAttacker extends AllowedSuperPlayer {
   }
 
   asDisallowed(): Attacker {
+    this.defaultBehavior.shouldBeCalled = false;
+    this.defaultBehavior.clearTimeout();
     return new Attacker(this);
   }
 

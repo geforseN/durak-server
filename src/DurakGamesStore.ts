@@ -13,6 +13,15 @@ export default class DurakGamesStore<
     this.values = new Map();
   }
 
+  get startedGamesState() {
+    return [...this.values.values()]
+      .filter((game): game is DurakGame => game.info.status !== "ended")
+      .map((game) => ({
+        ...game,
+        players: game.players.value.map((player) => player.toJSON()),
+      }));
+  }
+
   hasGameWithId(gameId: Game["info"]["id"]) {
     return this.values.has(gameId);
   }
@@ -29,7 +38,7 @@ export default class DurakGamesStore<
     nonStartedGame: NonStartedDurakGame,
     namespace: DurakGameSocket.Namespace,
   ) {
-    assert.ok(nonStartedGame && nonStartedGame.info.status === 'non started');
+    assert.ok(nonStartedGame && nonStartedGame.info.status === "non started");
     const startedGame = new DurakGame(nonStartedGame, namespace);
     this.values.set(startedGame.info.id, startedGame);
     nonStartedGame.emitEverySocketWithStartedGameDetails(startedGame);

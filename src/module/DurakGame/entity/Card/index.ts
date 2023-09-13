@@ -1,8 +1,7 @@
-import { Card as CardDTO } from "@durak-game/durak-dts";
+import { suits, ranks, powers } from "@durak-game/durak-dts";
+import type { Card as CardDTO, Suit, Rank, Power } from "@durak-game/durak-dts";
 
-export type Suit = (typeof Card.suits)[number];
-export type Rank = (typeof Card.ranks)[number];
-export type Power = (typeof Card.powers)[keyof typeof Card.powers];
+export type { Suit, Rank, Power };
 
 export default class Card {
   readonly rank: Rank;
@@ -33,35 +32,7 @@ export default class Card {
     return { rank: this.rank, suit: this.suit };
   }
 
-  static suits = ["♠", "♦", "♥", "♣"] as const;
-  static ranks = [
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-    "J",
-    "Q",
-    "K",
-    "A",
-  ] as const;
-  static powers: Record<Rank, number> = {
-    "2": 1,
-    "3": 2,
-    "4": 3,
-    "5": 4,
-    "6": 5,
-    "7": 6,
-    "8": 7,
-    "9": 8,
-    "10": 9,
-    J: 10,
-    Q: 11,
-    K: 12,
-    A: 13,
-  } as const;
+  static suits = suits;
+  static ranks = ranks;
+  static powers = powers;
 }

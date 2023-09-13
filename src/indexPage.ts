@@ -1,6 +1,6 @@
 import type { SocketStream } from "@fastify/websocket";
 import type { FastifyBaseLogger, FastifyReply, FastifyRequest } from "fastify";
-import type { SingletonFastifyInstance } from "./index.js";
+import { durakGamesStore, type SingletonFastifyInstance } from "./index.js";
 import assert from "node:assert";
 import crypto from "node:crypto";
 import prisma from "../prisma/index.js";
@@ -53,6 +53,7 @@ export default async function indexPage(fastify: SingletonFastifyInstance) {
       connection.socket.send(
         new UserRestoreEvent(request.session.user).asString,
       );
+      connection.socket.send(new DurakGameStateRestoreEvent().asString);
       connection.socket.addListener("close", (_code, _reason) => {
         socketsStore.remove(connection.socket);
         userRoom.remove(connection.socket);
@@ -188,4 +189,13 @@ async function mutateSessionWith(
   log?.debug("session saved in RAM, start session save is store");
   await request.session.save();
   log?.debug("session saved is store");
+}
+
+class DurakGameStateRestoreEvent extends CustomWebsocketEvent {
+  startedGames;
+
+  constructor() {
+    super("durakGames::restore");
+    this.startedGames = durakGamesStore.startedGammakeesState;
+  }
 }

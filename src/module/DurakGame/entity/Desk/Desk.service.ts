@@ -10,19 +10,15 @@ export default class GameDeskWebsocketService {
     this.namespace.emit("desk::becameClear");
   }
 
-  updateSlot({
-    card,
-    slot,
-    performer,
-  }: {
-    card: Card;
-    slot: DeskSlot;
-    performer: AllowedSuperPlayer;
-  }) {
+  update(
+    slot: DeskSlot,
+    card: Card,
+    performer: AllowedSuperPlayer,
+  ) {
     this.namespace.emit("desk::receivedCard", {
       card: card.toJSON(),
       slot: { index: slot.index },
-      source: { id: performer.id },
+      performer: { id: performer.id },
     });
   }
 }

@@ -79,7 +79,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
 
   update(slot: DeskSlot, card: Card, performer: AllowedSuperPlayer) {
     this.#slots.update(slot, card);
-    this.#wsService?.updateSlot({ card, slot, performer });
+    this.#wsService?.update(slot, card, performer);
   }
 
   provideCards<Target extends Defender | Discard>(target: Target) {
