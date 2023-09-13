@@ -15,7 +15,7 @@ export default class Hand extends Deck {
     return card;
   }
 
-  receive(...cards: Card[]): void {
+  receive(cards: Card[]): void {
     this.value.push(...cards);
   }
 }

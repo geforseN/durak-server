@@ -1,9 +1,9 @@
-import { DurakGameSocket } from "@durak-game/durak-dts";
+import type { DurakGameSocket } from "@durak-game/durak-dts";
 import { durakGamesStore, raise } from "../../../index.js";
 import { cardPlaceListener, stopMoveListener } from "./listener/index.js";
-import DurakGame from "../DurakGame.js";
-import prisma from "../../../../prisma/index.js";
+import type DurakGame from "../DurakGame.js";
 import NotificationAlert from "../../NotificationAlert/index.js";
+import prisma from "../../../../prisma/index.js";
 
 export function addListenersWhichAreNeededForStartedGame(
   this: DurakGameSocket.Socket,
@@ -12,11 +12,12 @@ export function addListenersWhichAreNeededForStartedGame(
   const playerId = this.data.user?.id || raise();
   this.join(playerId);
   game.restoreState(this);
-  this.on(
-    "superPlayer__putCardOnDesk",
-    cardPlaceListener.bind({ game, playerId }),
-  );
-  this.on("superPlayer__stopMove", stopMoveListener.bind({ game, playerId }));
+  this.on("superPlayer__putCardOnDesk", (cardDTO, slotIndex) => {
+    cardPlaceListener.call({ game, playerId }, cardDTO, slotIndex);
+  });
+  this.on("superPlayer__stopMove", () => {
+    stopMoveListener.call({ game, playerId });
+  });
   // TODO player__exitGame handler must not only remove player
   // handler also must handle if left player attacker or defender and more stuff ...
   this.on("player__exitGame", () => {

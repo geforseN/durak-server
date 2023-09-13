@@ -6,7 +6,7 @@ import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
 export default class GamePlayerWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
 
-  receiveCards({ player, cards }: { player: BasePlayer; cards: Card[] }) {
+  receiveCards(cards: Card[], player: BasePlayer) {
     this.namespace.to(player.id).emit("player::receiveCards", {
       player: {
         addedCards: cards.map((card) => card.toJSON()),
@@ -39,12 +39,16 @@ export default class GamePlayerWebsocketService {
     this.namespace.to(player.id).emit("player::changedKind", {
       player: {
         newKind: player.kind,
+        // TODO fully remove isAllowed if do not need this
+        // because isAllowed will be true if kind includes 'Allowed'
+        // isAllowed: player.isAllowed(),
       },
     });
     this.namespace.except(player.id).emit("player::changedKind", {
       player: {
         id: player.id,
         newKind: player.kind,
+        // isAllowed: player.isAllowed(),
       },
     });
   }

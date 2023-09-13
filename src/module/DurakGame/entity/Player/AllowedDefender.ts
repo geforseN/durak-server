@@ -32,6 +32,8 @@ export class AllowedDefender extends AllowedSuperPlayer {
   }
 
   asDisallowed(): Defender {
+    this.defaultBehavior.shouldBeCalled = false;
+    this.defaultBehavior.clearTimeout();
     return new Defender(this);
   }
 

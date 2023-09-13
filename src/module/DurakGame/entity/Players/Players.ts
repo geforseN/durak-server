@@ -25,6 +25,7 @@ export class Players {
     );
     const index = this.value.indexOf(player);
     this.value[index] = updatedPlayer;
+    updatedPlayer.emitKind();
     return this;
   }
 

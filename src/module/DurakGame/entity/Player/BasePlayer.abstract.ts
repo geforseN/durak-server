@@ -17,9 +17,9 @@ export const GOOD_CARD_AMOUNT = 6;
 export abstract class BasePlayer {
   left: BasePlayer;
   right: BasePlayer;
-  hand: Hand;
-  info: PlayerInfo;
-  wsService: GamePlayerWebsocketService;
+  readonly hand: Hand;
+  readonly info: PlayerInfo;
+  readonly wsService: GamePlayerWebsocketService;
 
   static _Player: typeof Player;
   static _Defender: typeof Defender;
@@ -39,7 +39,6 @@ export abstract class BasePlayer {
     ]);
   }
 
-  constructor(basePlayer: BasePlayer);
   constructor(basePlayer: BasePlayer) {
     this.info = basePlayer.info;
     this.left = basePlayer.left;
@@ -88,13 +87,17 @@ export abstract class BasePlayer {
     return false;
   }
 
+  emitKind() {
+    this.wsService.emitOwnKind(this);
+  }
+
   canTakeMore(cardCount: number) {
     return this.hand.count > cardCount;
   }
 
   receiveCards(...cards: Card[]): void {
-    this.hand.receive(...cards);
-    this.wsService.receiveCards({ player: this, cards });
+    this.hand.receive(cards);
+    this.wsService.receiveCards(cards, this);
   }
 
   get missingNumberOfCards(): AllowedMissingCardCount {
@@ -109,7 +112,7 @@ export abstract class BasePlayer {
       id: this.id,
       info: this.info,
       kind: this.kind,
-      isAllowedToMove: this.isAllowed(),
+      isAllowed: this.isAllowed(),
       hand: this.hand,
       leftId: this.left.id,
       rightId: this.right.id,
@@ -141,10 +144,9 @@ export abstract class BasePlayer {
 
   get enemies() {
     const value = [];
-    let enemy = this.left;
-    while (enemy.id !== this.id) {
-      value.push(enemy.toEnemy());
-      enemy = enemy.left;
+    let player: BasePlayer = this;
+    while ((player = player.left) !== this) {
+      value.push(player.toEnemy());
     }
     return value;
   }

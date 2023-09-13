@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import crypto from "node:crypto";
 import type EventEmitter from "node:events";
-import CorrectGameSettings  from "./CorrectGameSettings.js";
+import CorrectGameSettings from "./CorrectGameSettings.js";
 import type { GameSettings } from "@durak-game/durak-dts";
 import LobbySlots from "./LobbySlots.js";
 import { LobbyAccessError } from "../error.js";
@@ -89,11 +89,15 @@ export default class Lobby {
   }
 
   moveUser(userId: string, newSlotIndex: number) {
-    assert.ok(newSlotIndex !== -1, "Вас следует указать определённый индекс");
+    assert.ok(
+      newSlotIndex !== -1,
+      new RangeError("Вас следует указать определённый индекс"),
+    );
     assert.ok(
       Number.isInteger(newSlotIndex) &&
         newSlotIndex >= 0 &&
         newSlotIndex < this.settings.userCount,
+      new RangeError("Неверный индекс"),
     );
     assert.ok(!this.isFull, new LobbyAccessError("Лобби полностью занято"));
     const [newSlot, oldSlot] = this.slots.moveUser(
