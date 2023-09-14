@@ -15,7 +15,7 @@ export class AllowedAttackerDefaultBehavior extends DefaultBehavior<AllowedAttac
     clearTimeout(this.timeout);
   }
 
-  async calculateNextThingToDoInGame() {
+  async makeMove() {
     if (!this.shouldBeCalled) {
       return console.log("defaultBehavior ATTACKER: fast return");
     }

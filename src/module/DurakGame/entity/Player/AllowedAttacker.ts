@@ -28,6 +28,8 @@ export class AllowedAttacker extends AllowedSuperPlayer {
   }
 
   asAllowedAgain(): AllowedAttacker {
+    this.defaultBehavior.shouldBeCalled = false;
+    this.defaultBehavior.clearTimeout();
     return new AllowedAttacker(this, this.game);
   }
 
@@ -46,7 +48,10 @@ export class AllowedAttacker extends AllowedSuperPlayer {
   }
 
   async makeInsertMove(card: Card, slot: DeskSlot) {
-    await this.game.desk.ensureCanAttack(card, slot);
+    if (!this.game.desk.isEmpty) {
+      await slot.ensureCanBeAttacked();
+      await this.game.desk.ensureIncludesRank(card.rank);
+    }
     return new InsertAttackCardMove(this.game, this, {
       card,
       slot,

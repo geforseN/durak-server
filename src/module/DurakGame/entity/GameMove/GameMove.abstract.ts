@@ -2,13 +2,17 @@ import type DurakGame from "../../DurakGame.js";
 import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
 import type { RoundEnd } from "../DefenseEnding/index.js";
 import InsertGameMove from "./InsertGameMove.abstract.js";
+import type { AllowedAttacker } from "../Player/AllowedAttacker.js";
+import { AllowedDefender } from "../Player/AllowedDefender.js";
 
 export interface CanCommandNextMove {
   //                                                             TODO or not TODO ...
   calculateNextThingToDoInGame(): AllowedSuperPlayer | RoundEnd; // | GameEnd;
 }
 
-export default abstract class GameMove<ASP extends AllowedSuperPlayer> implements CanCommandNextMove {
+export default abstract class GameMove<ASP extends AllowedSuperPlayer>
+  implements CanCommandNextMove
+{
   game: DurakGame;
   performer: ASP;
 
@@ -21,22 +25,32 @@ export default abstract class GameMove<ASP extends AllowedSuperPlayer> implement
     return false;
   }
 
+  isTransferMove() {
+    return false;
+  }
+
+  isDoneByAttacker(): this is GameMove<AllowedAttacker> {
+    return this.performer.isAllowedAttacker();
+  }
+
+  isDoneByDefender(): this is GameMove<AllowedDefender> {
+    return this.performer.isAllowedDefender();
+  }
+
   get latestPerformer() {
     return this.game.players.get((player) => player.id === this.performer.id);
   }
 
   emitContextToPlayers() {
-    // TODO
-    // TODO
-    // TODO emit without allowedPlayerId data
-    this.game.info.namespace.to(this.performer.id).emit();
-    // TODO above
-    this.game.info.namespace.emit("move::new", {
+    this.game.info.namespace.to(this.performer.id).emit("move::new", {
       move: {
-        allowedPlayer: { id: this.performer.id },
         name: this.constructor.name,
-        endTime: { UTC: this.performer.defaultBehavior.callTime?.UTC },
-        timeToMove: this.game.settings.moveTime,
+      },
+    });
+    this.game.info.namespace.except(this.performer.id).emit("move::new", {
+      move: {
+        performer: { id: this.performer.id },
+        name: this.constructor.name,
       },
     });
   }

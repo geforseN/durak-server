@@ -1,3 +1,4 @@
+import { GameLogicError, asNotificationAlert } from "../../error/index.js";
 import Card from "../Card/index.js";
 import { DeskSlot } from "./index.js";
 
@@ -15,14 +16,20 @@ export default class DefendedSlot extends DeskSlot {
   }
 
   override async ensureCanBeAttacked() {
-    throw new Error("Слот полностью занят");
+    throw new GameLogicError(
+      "Cannot perform an attack because the slot is completely filled",
+    );
   }
 
   override async ensureCanBeDefended() {
-    throw new Error("Карта уже побита");
+    throw new GameLogicError(
+      "Cannot perform a defense because the slot is defended",
+    );
   }
 
-  override nextDeskSlot(_card: Card): DeskSlot | never {
-    throw new Error("Can not update slot, slot is defended");
+  override nextDeskSlot(_: Card): never {
+    throw new GameLogicError(
+      "The slot can not be used for a move because it is defended",
+    );
   }
 }

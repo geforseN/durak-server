@@ -1,3 +1,4 @@
+import { asNotificationAlert } from "../../error/index.js";
 import Card, { Rank } from "../Card/index.js";
 import DefendedSlot from "./DefendedSlot.js";
 import EmptySlot from "./EmptySlot.js";
@@ -24,7 +25,7 @@ export default abstract class DeskSlot {
     return false;
   }
 
-  abstract nextDeskSlot(card: Card): DeskSlot
+  abstract nextDeskSlot(card: Card): DeskSlot | never;
 
   abstract get value(): Card[];
 
@@ -32,14 +33,15 @@ export default abstract class DeskSlot {
     return this.value.some((card) => card.hasSame({ rank }));
   }
 
-  abstract ensureCanBeDefended(card: Card): Promise<Card | void>
+  abstract ensureCanBeDefended(card: Card): Promise<void>;
 
-  abstract ensureCanBeAttacked(card: Card): Promise<Card | void>
+  abstract ensureCanBeAttacked(): Promise<void>;
 
-  async ensureAllowsTransfer(card: Card): Promise<Card | void> {
+  async ensureAllowsTransfer(card: Card): Promise<void> {
     if (!this.attackCard?.hasSame({ rank: card.rank })) {
-      throw new Error("Нельзя перевести: нет схожего ранга");
+      throw asNotificationAlert(
+        new Error("Нельзя перевести: нет схожего ранга"),
+      );
     }
-    return card;
   }
 }

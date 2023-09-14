@@ -2,6 +2,7 @@ import assert from "node:assert";
 import getDefenseStrategy from "./getDefenseStrategy.js";
 import DefaultBehavior from "./DefaultBehavior.js";
 import { AllowedDefender } from "../AllowedDefender.js";
+import { type Card } from "../../index.js";
 
 export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefender> {
   constructor(
@@ -12,7 +13,7 @@ export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefen
     super(allowedDefender, game, shouldBeCalled);
   }
 
-  async calculateNextThingToDoInGame() {
+  async makeMove() {
     if (!this.shouldBeCalled) {
       return console.log("defaultBehavior DEFENDER: fast return");
     }
@@ -21,14 +22,15 @@ export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefen
     try {
       try {
         const card = await Promise.any(
-          [...this.allowedPlayer.hand].map(async (card) => {
-            const canMake = await this.allowedPlayer.canMakeTransferMove(
-              card,
-              this.game.desk.randomEmptySlot,
-            );
-            assert.ok(canMake);
-            return card;
-          }),
+          [...this.allowedPlayer.hand].map<Promise<Card>>(
+            async (card: Card) => {
+              await this.allowedPlayer.ensureCanMakeTransferMove(
+                card,
+                this.game.desk.randomEmptySlot,
+              );
+              return card;
+            },
+          ),
         );
         assert.ok(card);
         return await this.allowedPlayer.makeInsertMove(

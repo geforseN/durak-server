@@ -28,4 +28,18 @@ export default abstract class InsertGameMove<
     this.performer.remove((card) => card === this.card);
     this.game.desk.update(this.slot, this.card, this.performer);
   }
+
+  override emitContextToPlayers() {
+    this.game.info.namespace.to(this.performer.id).emit("move::new", {
+      move: {
+        name: this.constructor.name,
+      },
+    });
+    this.game.info.namespace.except(this.performer.id).emit("move::new", {
+      move: {
+        performer: { id: this.performer.id },
+        name: this.constructor.name,
+      },
+    });
+  }
 }
