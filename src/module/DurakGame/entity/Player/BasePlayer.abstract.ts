@@ -5,12 +5,14 @@ import type {
 } from "@durak-game/durak-dts";
 import type Card from "../Card/index.js";
 import { type Hand } from "../Deck/index.js";
+import { type AllowedAttacker } from "./AllowedAttacker.js";
+import { type AllowedDefender } from "./AllowedDefender.js";
 import { type AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
 import { type Attacker } from "./Attacker.js";
-import { type Player } from "./Player.js";
 import { type Defender } from "./Defender.js";
-import { type SuperPlayer } from "./SuperPlayer.abstract.js";
+import { type Player } from "./Player.js";
 import type GamePlayerWebsocketService from "./Player.service.js";
+import { type SuperPlayer } from "./SuperPlayer.abstract.js";
 
 export const GOOD_CARD_AMOUNT = 6;
 
@@ -85,6 +87,14 @@ export abstract class BasePlayer {
 
   isAllowed(): this is AllowedSuperPlayer {
     return false;
+  }
+
+  isAllowedAttacker(): this is AllowedAttacker {
+    return this.isAttacker() && this.isAllowed();
+  }
+
+  isAllowedDefender(): this is AllowedDefender {
+    return this.isDefender() && this.isAllowed();
   }
 
   emitKind() {

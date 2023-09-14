@@ -21,13 +21,13 @@ export default abstract class DefaultBehavior<ASP extends AllowedSuperPlayer> {
     this.shouldBeCalled = shouldBeCalled;
   }
 
-  protected abstract calculateNextThingToDoInGame(): Promise<void | GameMove<ASP>>;
+  protected abstract makeMove(): Promise<void | GameMove<ASP>>;
 
   setTimeout(delay = this.game.settings.moveTime) {
     this.callTime = { UTC: Date.now() + this.game.settings.moveTime };
     this.timeout = setTimeout(async () => {
-      const move = await this.calculateNextThingToDoInGame();
-      assert.ok(move, "this.calculateNextThingToDoInGame returned falsy value");
+      const move = await this.makeMove();
+      assert.ok(move, "this.makeMove returned falsy value");
       makeMagic.call({ game: this.game }, move);
     }, delay);
   }

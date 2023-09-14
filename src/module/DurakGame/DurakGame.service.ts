@@ -11,8 +11,18 @@ export default class DurakGameWebsocketService {
 
   restoreState(game: DurakGame, socket: DurakGameSocket.Socket) {
     const playerId = socket.data.user?.id || raise();
+    const player = game.players.get((player) => player.id === playerId);
     socket.emit("game::state::restore", {
-      state: new DurakGameStateDto(game, playerId),
+      state: {
+        self: player.toSelf(),
+        enemies: player.enemies,
+        settings: game.settings,
+        status: game.info.status,
+        desk: game.desk.toJSON(),
+        talon: game.talon.toJSON(),
+        discard: game.discard.toJSON(),
+        round: game.round.toJSON(),
+      },
     });
   }
 

@@ -7,9 +7,9 @@ export function makeMagic(
   this: { game: DurakGame },
   move: GameMove<AllowedSuperPlayer>,
 ) {
-  this.game.round.moves.push(move);
   const nextThing = move.calculateNextThingToDoInGame();
   move.emitContextToPlayers();
+  this.game.round.moves.push(move);
   if (nextThing.kind === "RoundEnd") {
     const { newGameRound } = nextThing;
     if (!newGameRound) {

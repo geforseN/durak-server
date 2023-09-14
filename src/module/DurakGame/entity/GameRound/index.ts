@@ -53,6 +53,15 @@ export default class GameRound {
       : this.game.players.attacker.left;
   }
 
+  get isAllowsTransferMove() {
+    try {
+      this.moves.firstRealDefenderMove;
+      return false;
+    } catch {
+      return true;
+    }
+  }
+
   toJSON() {
     return { number: this.number };
   }

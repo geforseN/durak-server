@@ -13,6 +13,6 @@ export default class UnbeatenTrumpSlot extends UnbeatenSlot {
     if (this.attackCard.power > card.power) {
       throw new Error("Вы кинули слабую карту");
     }
-    return card;
+    return;
   }
 }

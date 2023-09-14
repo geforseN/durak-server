@@ -10,16 +10,16 @@ export default class EmptySlot extends DeskSlot {
     return true;
   }
 
-  override async ensureCanBeAttacked(card: Card) {
-    return card;
+  override async ensureCanBeAttacked() {
+    return;
   }
 
   override async ensureCanBeDefended() {
     throw new Error("Нет от чего защищаться");
   }
 
-  override async ensureAllowsTransfer(card: Card) {
-    return card;
+  override async ensureAllowsTransfer(_: Card) {
+    return;
   }
 
   override nextDeskSlot(card: Card): UnbeatenSlot | UnbeatenTrumpSlot {

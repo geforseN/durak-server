@@ -13,9 +13,10 @@ import type { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.j
 import type { Defender } from "../Player/Defender.js";
 import type GameDeskWebsocketService from "./Desk.service.js";
 import { raise } from "../../../../index.js";
+import { GameLogicError } from "../../error/index.js";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
-  #slots: DeskSlots;
+  #slots: Readonly<DeskSlots>;
   readonly allowedFilledSlotCount: number;
   readonly #wsService: GameDeskWebsocketService;
 
@@ -84,20 +85,19 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
 
   provideCards<Target extends Defender | Discard>(target: Target) {
     target.receiveCards(...this.#slots.cards);
-    this.#slots = new DeskSlots(this.#slots.count);
+    this.#slots = this.#slots.toEmpty();
     this.#wsService?.clear();
   }
 
-  async ensureCanAttack(card: Card, slot: DeskSlot): Promise<void> {
-    if (this.isEmpty) return;
-    await slot.ensureCanBeAttacked(card);
-    if (!this.#slots.someSlotHas({ rank: card.rank })) {
-      throw new Error("Нет схожего ранга на доске");
+  ensureIncludesRank(rank: Card["rank"]): void {
+    if (this.#slots.someSlotHasSameRank(rank)) {
+      return;
     }
+    throw new GameLogicError("Нет схожего ранга на доске");
   }
 
-  async allowsTransferMove(card: Card, slot: DeskSlot) {
-    return this.#slots.allowsTransferMove(card, slot);
+  async ensureAllowsTransferMove(card: Card) {
+    return this.#slots.ensureAllowsTransferMove(card);
   }
 
   get randomEmptySlot() {

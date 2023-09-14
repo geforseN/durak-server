@@ -1,3 +1,4 @@
+import { asNotificationAlert } from "../../error/index.js";
 import Card from "../Card/index.js";
 import { DefendedSlot, DeskSlot } from "./index.js";
 
@@ -15,20 +16,19 @@ export default class UnbeatenSlot extends DeskSlot {
   }
 
   override async ensureCanBeAttacked() {
-    throw new Error("Слот занят");
+    throw asNotificationAlert(new Error("Слот занят"));
   }
 
   override async ensureCanBeDefended(card: Card) {
     if (card.isTrump) {
-      return card;
+      return;
     }
     if (this.attackCard.suit !== card.suit) {
-      throw new Error("Вы кинули неверную масть");
+      throw asNotificationAlert(new Error("Вы кинули неверную масть"));
     }
     if (this.attackCard.power > card.power) {
-      throw new Error("Вы кинули слабую карту");
+      throw asNotificationAlert(new Error("Вы кинули слабую карту"));
     }
-    return card;
   }
 
   override nextDeskSlot(card: Card): DefendedSlot {

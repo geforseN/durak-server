@@ -10,6 +10,10 @@ export default class DeskSlots {
     this.#value = Array.from({ length }, (_, index) => new EmptySlot(index));
   }
 
+  toEmpty() {
+    return new DeskSlots(this.count);
+  }
+
   get isEverySlotEmpty(): boolean {
     return this.#value.every((slot) => slot.isEmpty());
   }
@@ -31,18 +35,13 @@ export default class DeskSlots {
   }
 
   update(slot: DeskSlot, card: Card) {
-    this.#value[slot.index] = slot.nextDeskSlot(card);
+    const nextSlot = slot.nextDeskSlot(card);
+    this.#value[slot.index] = nextSlot;
   }
 
-  async allowsTransferMove(card: Card, slot: DeskSlot): Promise<boolean> {
-    if (!slot.isEmpty()) {
-      return Promise.reject(false);
-    }
-    return Promise.all(
+  async ensureAllowsTransferMove(card: Card): Promise<void> {
+    return void Promise.all(
       this.#value.map((slot) => slot.ensureAllowsTransfer(card)),
-    ).then(
-      (_cards) => true,
-      (_error) => false,
     );
   }
 
@@ -50,7 +49,7 @@ export default class DeskSlots {
     return this.#value.at(index) || raise();
   }
 
-  someSlotHas({ rank }: { rank: Rank }) {
+  someSlotHasSameRank(rank: Rank) {
     return this.#value.some((slot) => slot.has({ rank }));
   }
 

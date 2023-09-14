@@ -1,7 +1,5 @@
-import assert from "node:assert";
 import type DurakGame from "../../DurakGame.js";
-import { AllowedSuperPlayer } from "../../entity/Player/AllowedSuperPlayer.abstract.js";
-
+import { type AllowedSuperPlayer } from "../../entity/Player/AllowedSuperPlayer.abstract.js";
 import type { Card as CardDTO } from "@durak-game/durak-dts";
 import { makeMagic } from "./makeMagic.js";
 

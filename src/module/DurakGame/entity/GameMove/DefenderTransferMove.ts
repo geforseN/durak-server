@@ -21,6 +21,10 @@ export default class TransferMove
     super(game, performer, context);
   }
 
+  override isTransferMove() {
+    return true;
+  }
+
   calculateNextThingToDoInGame() {
     assert.ok(
       this.performer.right.isAttacker() && !this.performer.right.isAllowed(),
