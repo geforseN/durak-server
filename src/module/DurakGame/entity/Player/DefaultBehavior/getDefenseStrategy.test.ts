@@ -1,4 +1,4 @@
-import test from "node:test";
+import { describe, it } from "vitest";
 import assert from "node:assert";
 import Card, { Suit } from "../../Card/index.js";
 import { TrumpCard } from "../../Card/TrumpCard.js";
@@ -18,8 +18,8 @@ const WEAK_SUITS: Record<
 } as const;
 let logger: { log: Function } | undefined = undefined;
 
-test.describe("trump cards check", { concurrency: true }, () => {
-  test.it("throw when defender has weaker trump cards", () => {
+describe("trump cards check", () => {
+  it("throw when defender has weaker trump cards", () => {
     assert.throws(
       () => {
         getDefenseStrategy(
@@ -38,7 +38,7 @@ test.describe("trump cards check", { concurrency: true }, () => {
   });
 });
 
-test.describe("defense of trump unbeaten cards with best trump cards", () => {
+describe("defense of trump unbeaten cards with best trump cards", () => {
   const { defenseStrategy, remainingDefenderTrumpCards } = getDefenseStrategy(
     [
       new TrumpCard({ rank: "J", suit: TRUMP_SUIT }),
@@ -53,11 +53,11 @@ test.describe("defense of trump unbeaten cards with best trump cards", () => {
     ],
   );
 
-  test.it("correct remained defender trump cards count", () => {
+  it("correct remained defender trump cards count", () => {
     assert.strictEqual(remainingDefenderTrumpCards.length, 3);
   });
 
-  test.it("remained defender trump cards are best", () => {
+  it("remained defender trump cards are best", () => {
     assert.deepStrictEqual(
       [...remainingDefenderTrumpCards].sort(cardsSort),
       [
@@ -68,7 +68,7 @@ test.describe("defense of trump unbeaten cards with best trump cards", () => {
     );
   });
 
-  test.it("defense strategy contains best cards", () => {
+  it("defense strategy contains best cards", () => {
     assert.deepStrictEqual(
       [...defenseStrategy].sort(slotsSort),
       [
@@ -85,21 +85,18 @@ test.describe("defense of trump unbeaten cards with best trump cards", () => {
   });
 });
 
-
-test.it(
+it.todo(
   `
 throw when there is no unbeaten v cards
 (when no unbeaten cards, then find player who can put card on desk.
 if no one found then defender won defense`,
-  { todo: true },
-  // (test) => {
-  //   assert.throws(() => getDefenseStrategy([], []));
-  // },
+  (test) => {
+    assert.throws(() => getDefenseStrategy([], []));
+  },
 );
 
-test.describe(
+describe(
   "defense of trump unbeaten cards with best trump cards",
-  { concurrency: true },
   () => {
     const { defenseStrategy, remainingDefenderTrumpCards } = getDefenseStrategy(
       [
@@ -119,11 +116,11 @@ test.describe(
       logger,
     );
 
-    test.it("correct remained defender trump cards count", () => {
+    it("correct remained defender trump cards count", () => {
       assert.strictEqual(remainingDefenderTrumpCards.length, 0);
     });
 
-    test.it("defense strategy contains best cards", () => {
+    it("defense strategy contains best cards", () => {
       assert.deepStrictEqual(
         [...defenseStrategy].sort(slotsSort),
         [
