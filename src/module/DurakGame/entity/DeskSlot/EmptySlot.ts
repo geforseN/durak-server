@@ -1,5 +1,7 @@
+import { AllowedPlayerBadInputError } from "../../error/index.js";
 import Card from "../Card/index.js";
-import { DeskSlot, UnbeatenSlot, UnbeatenTrumpSlot } from "./index.js";
+import { UnbeatenSlot, UnbeatenTrumpSlot } from "./index.js";
+import DeskSlot from "./DeskSlot.abstract.js";
 
 export default class EmptySlot extends DeskSlot {
   get value(): [] {
@@ -15,10 +17,12 @@ export default class EmptySlot extends DeskSlot {
   }
 
   override async ensureCanBeDefended() {
-    throw new Error("Нет от чего защищаться");
+    throw new AllowedPlayerBadInputError("Empty slot can not be defended", {
+      header: "Defense move attempt",
+    });
   }
 
-  override async ensureAllowsTransfer(_: Card) {
+  override async ensureAllowsTransferMoveForRank(_: Card["rank"]) {
     return;
   }
 

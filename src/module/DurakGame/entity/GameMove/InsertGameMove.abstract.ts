@@ -1,4 +1,4 @@
-import { GameMove } from "./index.js";
+import GameMove from "./GameMove.abstract.js";
 import Card from "../Card/index.js";
 import DurakGame from "../../DurakGame.js";
 import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
@@ -24,7 +24,7 @@ export default abstract class InsertGameMove<
     return true;
   }
 
-  makeCardTransfer() {
+  makeCardInsert() {
     this.performer.remove((card) => card === this.card);
     this.game.desk.update(this.slot, this.card, this.performer);
   }
@@ -33,12 +33,20 @@ export default abstract class InsertGameMove<
     this.game.info.namespace.to(this.performer.id).emit("move::new", {
       move: {
         name: this.constructor.name,
+        insert: {
+          card: this.card,
+          slot: { index: this.slot.index },
+        },
       },
     });
     this.game.info.namespace.except(this.performer.id).emit("move::new", {
       move: {
         performer: { id: this.performer.id },
         name: this.constructor.name,
+        insert: {
+          card: this.card,
+          slot: { index: this.slot.index },
+        },
       },
     });
   }

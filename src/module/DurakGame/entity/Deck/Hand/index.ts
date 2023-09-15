@@ -6,7 +6,7 @@ export default class Hand extends Deck {
   constructor(cards?: Card[]);
   constructor(hand?: Hand);
   constructor(data?: Card[] | Hand) {
-    super(data instanceof Hand ? data.value : data );
+    super(data instanceof Hand ? data.value : data);
   }
 
   get(cb: (card: Card) => boolean, notFoundMessage = "У вас нет такой карты") {
@@ -17,5 +17,19 @@ export default class Hand extends Deck {
 
   receive(cards: Card[]): void {
     this.value.push(...cards);
+  }
+
+  toString() {
+    return this.value.map((card, index) => `[${index}_${card}]`).join(" ");
+  }
+
+  toJSON() {
+    return this.value.map((card, index) => {
+      return {
+        index,
+        ...card.toJSON(),
+        isTrump: card.isTrump,
+      };
+    });
   }
 }

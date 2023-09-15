@@ -1,21 +1,15 @@
 import FailedDefense from "../DefenseEnding/FailedDefense.js";
 import SuccessfulDefense from "../DefenseEnding/SuccessfulDefense.js";
-import GameMove, { type CanCommandNextMove } from "./GameMove.abstract.js";
 import type DurakGame from "../../DurakGame.js";
-import { AllowedAttacker } from "../Player/AllowedAttacker.js";
-import assert from "node:assert";
-import { RoundEnd } from "../DefenseEnding/index.js";
-import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
+import { type AllowedAttacker } from "../Player/AllowedAttacker.js";
+import GameMove from "./GameMove.abstract.js";
 
-export default class StopAttackMove
-  extends GameMove<AllowedAttacker>
-  implements CanCommandNextMove
-{
+export default class StopAttackMove extends GameMove<AllowedAttacker> {
   constructor(game: DurakGame, performer: AllowedAttacker) {
     super(game, performer);
   }
 
-  calculateNextThingToDoInGame() {
+  get gameMutationStrategy() {
     if (this.game.players.defender.isSurrendered()) {
       return this.#handleInPursuit();
     }
@@ -24,23 +18,15 @@ export default class StopAttackMove
     // TODO
     // TODO add check if defender canNotTakeMore
     if (this.performer.didLatestMove) {
-      this.game.players
-        .mutateWith(this.performer.asDisallowed())
-        .mutateWith(this.game.players.defender.asAllowed(this.game));
-      assert.ok(this.game.players.defender.isAllowed());
-      return this.game.players.defender;
+      return this.strategies.letDefenderMove;
     }
     if (this.game.players.defender.canWinDefense(this.game)) {
-      return new SuccessfulDefense(this.game);
+      return () => new SuccessfulDefense(this.game);
     }
-    this.game.players
-      .mutateWith(this.performer.asDisallowed())
-      .mutateWith(this.game.round.nextAttacker.asAttacker().asAllowed(this.game));
-    assert.ok(this.game.players.attacker.isAllowed());
-    return this.game.players.attacker;
+    return this.strategies.letNextPossibleAttackerMove;
   }
 
-  #handleInPursuit(): AllowedSuperPlayer | RoundEnd {
+  #handleInPursuit() {
     if (
       // REVIEW - changed from Player to Player#id, ? should change again to Player ?
       // TODO use latestPrimalAttacker instead of primalAttacker
@@ -48,13 +34,8 @@ export default class StopAttackMove
       this.game.players.defender.left.id ===
         this.game.round.latestPrimalAttacker.id
     ) {
-      return new FailedDefense(this.game);
+      return () => new FailedDefense(this.game);
     }
-
-    this.game.players
-      .mutateWith(this.performer.asDisallowed())
-      .mutateWith(this.game.round.nextAttacker.asAttacker().asAllowed(this.game));
-    assert.ok(this.game.players.attacker.isAllowed());
-    return this.game.players.attacker;
+    return this.strategies.letNextPossibleAttackerMove;
   }
 }

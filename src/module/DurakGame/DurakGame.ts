@@ -1,4 +1,4 @@
-import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
+import type { DurakGameSocket, GameSettings, GameState } from "@durak-game/durak-dts";
 import type NonStartedDurakGame from "./NonStartedDurakGame.js";
 import GameRoundMoves from "./entity/GameRound/GameRoundMoves.js";
 import GameRoundDistribution from "./entity/GameRoundDistributionQueue.js";
@@ -20,7 +20,6 @@ import {
   GameTalonWebsocketService,
 } from "./socket/service/index.js";
 import { pino } from "pino";
-import type { GameState } from "@durak-game/durak-dts";
 import { Player } from "./entity/Player/Player.js";
 import { Hand } from "./entity/Deck/index.js";
 
@@ -41,7 +40,7 @@ export default class DurakGame {
   readonly #wsService: DurakGameWebsocketService;
   players: Players;
   round: GameRound;
-  readonly distribution: GameRoundDistribution;
+  readonly talonDistribution: GameRoundDistribution;
   readonly logger = pino({
     transport: {
       target: "pino-pretty" as const,
@@ -96,7 +95,7 @@ export default class DurakGame {
       new GameDeskWebsocketService(namespace),
     );
     this.#wsService = new DurakGameWebsocketService(namespace);
-    this.distribution = new GameRoundDistribution(
+    this.talonDistribution = new GameRoundDistribution(
       this,
     ).makeInitialDistribution();
     this.#makeInitialSuperPlayers();

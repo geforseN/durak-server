@@ -11,7 +11,7 @@ export default class GameRoundDistribution {
 
   *playersQueue() {
     const { latestPrimalAttacker } = this.game.round;
-    const { defender: defender } = this.game.players;
+    const { defender } = this.game.players;
     yield latestPrimalAttacker;
     assert.strictEqual(latestPrimalAttacker.left, defender);
     let player: BasePlayer = defender;
@@ -23,7 +23,9 @@ export default class GameRoundDistribution {
 
   makeDistribution() {
     for (const player of this.playersQueue()) {
-      if (this.game.talon.isEmpty) return this;
+      if (this.game.talon.isEmpty) {
+        return this;
+      }
       this.game.talon.provideCards(player);
     }
     return this;

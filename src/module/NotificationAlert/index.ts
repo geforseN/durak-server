@@ -6,8 +6,9 @@ export default class NotificationAlert {
   type: TNotificationAlert["type"];
   durationInMS: TNotificationAlert["durationInMS"];
   id: TNotificationAlert["id"];
+  header?: string
 
-  constructor(data: Partial<TNotificationAlert> = {}) {
+  constructor(data: Partial<TNotificationAlert & {header: string}> = {}) {
     data.message ??= "Произошла ошибка";
     data.durationInMS ??= 5_000;
     data.id ??= crypto.randomUUID();
@@ -16,5 +17,10 @@ export default class NotificationAlert {
     this.type = data.type;
     this.durationInMS = data.durationInMS;
     this.id = data.id;
+    this.header = data.header
+  }
+
+  isNotification(): this is NotificationAlert {
+    return true;
   }
 }

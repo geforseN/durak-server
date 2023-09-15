@@ -1,9 +1,10 @@
 import type Lobby from "../Lobbies/entity/Lobby.js";
-import { durakGamesStore, raise } from "../../index.js";
+import raise from "../../common/raise.js";
 import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSocket.handler.js";
 import type DurakGame from "./DurakGame.js";
 import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
 import LobbyUser from "../Lobbies/entity/LobbyUser.js";
+import type DurakGamesStore from "../../DurakGamesStore.js";
 
 export default class NonStartedDurakGame {
   info: {
@@ -16,6 +17,7 @@ export default class NonStartedDurakGame {
   sockets: Map<string, Set<DurakGameSocket.Socket>>;
   settings: GameSettings;
   usersInfo: LobbyUser[];
+  store?: DurakGamesStore
 
   constructor(lobby: Lobby) {
     this.info = {
@@ -60,7 +62,7 @@ export default class NonStartedDurakGame {
     if (!this.isAllPlayersConnected) {
       this.emitSocketWithLoadingDetails(socket);
     } else {
-      durakGamesStore.updateNonStartedGameToStarted(this, namespace);
+      this.store?.updateNonStartedGameToStarted(this, namespace);
     }
   }
 

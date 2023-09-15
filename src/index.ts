@@ -19,7 +19,6 @@ import {
   validatorCompiler,
 } from "fastify-type-provider-zod";
 import getMe from "./api/me.js";
-import DurakGamesStore from "./DurakGamesStore.js";
 import { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
 import { DurakGameSocket } from "@durak-game/durak-dts";
@@ -35,7 +34,6 @@ export type SingletonFastifyInstance = typeof fastify;
 
 const local = "http://localhost:3000/";
 
-export const durakGamesStore = new DurakGamesStore();
 export const store: SessionStore = new PrismaSessionStore(new PrismaClient(), {
   checkPeriod: env.SESSION_STORE_CHECK_PERIOD,
   loggerLevel: ["log", "warn", "error"],
@@ -111,10 +109,6 @@ fastify
     process.exit(1);
   }
 })();
-
-export function raise(err: Error | string = new Error()): never {
-  throw typeof err === "string" ? new Error(err) : err;
-}
 
 const io = new Server(env.SOCKET_IO_PORT, {
   cors: {

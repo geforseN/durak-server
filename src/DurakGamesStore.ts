@@ -5,7 +5,7 @@ import NonStartedDurakGame from "./module/DurakGame/NonStartedDurakGame.js";
 import type Lobby from "./module/Lobbies/entity/Lobby.js";
 
 export default class DurakGamesStore<
-  Game extends NonStartedDurakGame | DurakGame,
+  Game extends NonStartedDurakGame | DurakGame = NonStartedDurakGame | DurakGame,
 > {
   values: Map<Game["info"]["id"], NonStartedDurakGame | DurakGame>;
 

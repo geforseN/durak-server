@@ -1,13 +1,9 @@
-import assert from "node:assert";
 import type DurakGame from "../../DurakGame.js";
 import { AllowedDefender } from "../Player/AllowedDefender.js";
 import { FailedDefense } from "../DefenseEnding/index.js";
-import GameMove, { type CanCommandNextMove } from "./GameMove.abstract.js";
+import GameMove from "./GameMove.abstract.js";
 
-export default class StopDefenseMove
-  extends GameMove<AllowedDefender>
-  implements CanCommandNextMove
-{
+export default class StopDefenseMove extends GameMove<AllowedDefender> {
   constructor(game: DurakGame, performer: AllowedDefender) {
     super(game, performer);
   }
@@ -16,21 +12,13 @@ export default class StopDefenseMove
     return false;
   }
 
-  calculateNextThingToDoInGame() {
+  get gameMutationStrategy() {
     if (this.game.desk.isDefended) {
-      this.game.players
-        .mutateWith(this.performer.asDisallowed())
-        .mutateWith(this.game.round.primalAttacker.asAttacker().asAllowed(this.game));
-      assert.ok(this.game.players.attacker.isAllowed());
-      return this.game.players.attacker;
+      return this.strategies.letPrimalAttackerMove;
     }
     if (!this.game.desk.isAllowsMoves) {
-      return new FailedDefense(this.game);
+      return () => new FailedDefense(this.game);
     }
-    this.game.players
-      .mutateWith(this.performer.asDisallowed().asSurrendered())
-      .mutateWith(this.game.round.primalAttacker.asAttacker().asAllowed(this.game));
-    assert.ok(this.game.players.attacker.isAllowed());
-    return this.game.players.attacker;
+    return this.strategies.letPrimalAttackerMove;
   }
 }

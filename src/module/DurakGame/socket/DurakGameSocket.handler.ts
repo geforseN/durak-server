@@ -1,5 +1,6 @@
 import type { DurakGameSocket } from "@durak-game/durak-dts";
-import { durakGamesStore, raise } from "../../../index.js";
+import durakGamesStore from "../../../common/durakGamesStore.js";
+import raise from "../../../common/raise.js";
 import { cardPlaceListener, stopMoveListener } from "./listener/index.js";
 import type DurakGame from "../DurakGame.js";
 import NotificationAlert from "../../NotificationAlert/index.js";

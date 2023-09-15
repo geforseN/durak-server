@@ -12,8 +12,8 @@ import {
 import type { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
 import type { Defender } from "../Player/Defender.js";
 import type GameDeskWebsocketService from "./Desk.service.js";
-import { raise } from "../../../../index.js";
-import { GameLogicError } from "../../error/index.js";
+import raise from "../../../../common/raise.js";
+import { AllowedPlayerBadInputError } from "../../error/index.js";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
   #slots: Readonly<DeskSlots>;
@@ -93,7 +93,7 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     if (this.#slots.someSlotHasSameRank(rank)) {
       return;
     }
-    throw new GameLogicError("Нет схожего ранга на доске");
+    throw new AllowedPlayerBadInputError("Нет схожего ранга на доске");
   }
 
   async ensureAllowsTransferMove(card: Card) {

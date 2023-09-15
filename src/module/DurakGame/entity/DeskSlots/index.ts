@@ -1,7 +1,7 @@
 import { DeskSlot, EmptySlot } from "../DeskSlot/index.js";
 import Card, { Rank } from "../Card/index.js";
 import { randomInt } from "node:crypto";
-import { raise } from "../../../../index.js";
+import raise from "../../../../common/raise.js";
 
 export default class DeskSlots {
   readonly #value: DeskSlot[];
@@ -41,7 +41,7 @@ export default class DeskSlots {
 
   async ensureAllowsTransferMove(card: Card): Promise<void> {
     return void Promise.all(
-      this.#value.map((slot) => slot.ensureAllowsTransfer(card)),
+      this.#value.map((slot) => slot.ensureAllowsTransferMoveForRank(card.rank)),
     );
   }
 

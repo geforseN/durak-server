@@ -1,6 +1,7 @@
-import { asNotificationAlert } from "../../error/index.js";
+import { AllowedPlayerBadInputError } from "../../error/index.js";
 import Card from "../Card/index.js";
-import { DefendedSlot, DeskSlot } from "./index.js";
+import { DefendedSlot } from "./index.js";
+import DeskSlot from "./DeskSlot.abstract.js";
 
 export default class UnbeatenSlot extends DeskSlot {
   constructor(index: number, public attackCard: Card) {
@@ -16,7 +17,9 @@ export default class UnbeatenSlot extends DeskSlot {
   }
 
   override async ensureCanBeAttacked() {
-    throw asNotificationAlert(new Error("Слот занят"));
+    throw new AllowedPlayerBadInputError("The slot already attacked", {
+      header: "Attack move attempt",
+    });
   }
 
   override async ensureCanBeDefended(card: Card) {
@@ -24,11 +27,30 @@ export default class UnbeatenSlot extends DeskSlot {
       return;
     }
     if (this.attackCard.suit !== card.suit) {
-      throw asNotificationAlert(new Error("Вы кинули неверную масть"));
+      throw new AllowedPlayerBadInputError(
+        "The card you threw is of the wrong suit",
+        { header: "Defense move attempt" },
+      );
     }
     if (this.attackCard.power > card.power) {
-      throw asNotificationAlert(new Error("Вы кинули слабую карту"));
+      throw new AllowedPlayerBadInputError("The card you threw is weaker", {
+        header: "Defense move attempt",
+      });
     }
+  }
+
+  override async ensureAllowsTransferMoveForRank(
+    rank: Card["rank"],
+  ): Promise<void> {
+    if (this.attackCard.hasSame({ rank })) {
+      return;
+    }
+    throw new AllowedPlayerBadInputError(
+      `The card you threw has wrong rank, allowed rank is ${rank}`,
+      {
+        header: "Transfer move attempt",
+      },
+    );
   }
 
   override nextDeskSlot(card: Card): DefendedSlot {
