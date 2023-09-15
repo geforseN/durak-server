@@ -5,14 +5,7 @@ import InsertGameMove from "./InsertGameMove.abstract.js";
 import type { AllowedAttacker } from "../Player/AllowedAttacker.js";
 import { AllowedDefender } from "../Player/AllowedDefender.js";
 
-export interface CanCommandNextMove {
-  //                                                             TODO or not TODO ...
-  calculateNextThingToDoInGame(): AllowedSuperPlayer | RoundEnd; // | GameEnd;
-}
-
-export default abstract class GameMove<ASP extends AllowedSuperPlayer>
-  implements CanCommandNextMove
-{
+export default abstract class GameMove<ASP extends AllowedSuperPlayer> {
   game: DurakGame;
   performer: ASP;
 
@@ -55,5 +48,42 @@ export default abstract class GameMove<ASP extends AllowedSuperPlayer>
     });
   }
 
-  abstract calculateNextThingToDoInGame(): AllowedSuperPlayer | RoundEnd;
+  protected strategies = {
+    letPrimalAttackerMove: () => {
+      this.game.players
+        .mutateWith(this.performer.asDisallowed())
+        .mutateWith(
+          this.game.round.primalAttacker.asAttacker().asAllowed(this.game),
+        );
+      // assert.ok(this.game.players.attacker.isAllowed());
+      // return this.game.players.attacker;
+    },
+    letDefenderMove: () => {
+      this.game.players
+        .mutateWith(this.performer.asDisallowed())
+        .mutateWith(this.game.players.defender.asAllowed(this.game));
+      // assert.ok(this.game.players.defender.isAllowed());
+      // return this.game.players.defender;
+    },
+    letPerformerMoveAgain: () => {
+      this.game.players.mutateWith(this.performer.asAllowedAgain());
+      // return this.performer.asLatest();
+    },
+    letNextPossibleAttackerMove: () => {
+      this.game.players
+        .mutateWith(this.performer.asDisallowed())
+        .mutateWith(
+          this.game.round.nextAttacker.asAttacker().asAllowed(this.game),
+        );
+      // assert.ok(this.game.players.attacker.isAllowed());
+      // return this.game.players.attacker;
+    },
+  };
+
+  abstract get gameMutationStrategy():
+    | PlayerMutationCallback
+    | NewRoundCallback;
 }
+
+type PlayerMutationCallback = () => void;
+type NewRoundCallback = () => RoundEnd;

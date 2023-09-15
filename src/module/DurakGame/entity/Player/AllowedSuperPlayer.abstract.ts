@@ -26,6 +26,7 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
 
   asLatest() {
     const latest = this.game.players.get((player) => player.id === this.id);
+    // FIXME here can be throw
     assert.ok(latest.isAllowed());
     return latest;
   }

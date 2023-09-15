@@ -2,7 +2,7 @@ import "dotenv/config";
 import { z } from "zod";
 import path from "node:path";
 import crypto from "node:crypto";
-import { raise } from "../index.js";
+import raise from "../common/raise.js";
 
 export const env = z
   .object({

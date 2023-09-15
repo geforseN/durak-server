@@ -1,6 +1,7 @@
 import type { User, UserProfile } from "@prisma/client";
 import EventEmitter from "events";
-import { durakGamesStore, raise } from "../../../index.js";
+import durakGamesStore from "../../../common/durakGamesStore.js";
+import raise from "../../../common/raise.js";
 import { CustomWebsocketEvent, SocketsStore } from "../../../ws/index.js";
 import { FindLobbyError } from "../error.js";
 import Lobby, {

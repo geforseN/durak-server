@@ -16,7 +16,7 @@ export default class GameRound {
 
   makeEmitAboutStart() {
     this.game.info.namespace.emit("round::new", {
-      roundNumber: this.number,
+      round: { number: this.number },
     });
     return this;
   }

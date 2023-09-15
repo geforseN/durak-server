@@ -1,24 +1,25 @@
 import type DurakGame from "../../DurakGame.js";
 import { AllowedSuperPlayer } from "../../entity/Player/AllowedSuperPlayer.abstract.js";
 import { GameMove } from "../../entity/GameMove/index.js";
+import { RoundEnd } from "../../entity/DefenseEnding/RoundEnd.js";
 
 // FIXME: rename function below
 export function makeMagic(
   this: { game: DurakGame },
   move: GameMove<AllowedSuperPlayer>,
 ) {
-  const nextThing = move.calculateNextThingToDoInGame();
-  move.emitContextToPlayers();
+  if (move.isInsertMove()) {
+    move.makeCardInsert();
+  }
+  const nextThing = move.gameMutationStrategy();
   this.game.round.moves.push(move);
-  if (nextThing.kind === "RoundEnd") {
+  if (nextThing instanceof RoundEnd) {
     const { newGameRound } = nextThing;
     if (!newGameRound) {
       return this.game.end();
     }
     this.game.round = newGameRound;
-    return;
   } else {
-    const allowedPlayer = nextThing;
-    allowedPlayer.setTimer();
+    this.game.players.allowedPlayer.setTimer();
   }
 }

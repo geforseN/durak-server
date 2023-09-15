@@ -33,9 +33,10 @@ export default class Talon extends Deck implements CanProvideCards<BasePlayer> {
   }
 
   #pop(count: number): Card[] {
-    if (count <= 0) {
-      throw new Error("first argument must be positive number");
-    }
+    assert.ok(
+      Number.isInteger(count) && count > 0,
+      "First argument must be positive number",
+    );
     const startIndex = this.count - count;
     if (startIndex <= 0) {
       return this.#lastCards;

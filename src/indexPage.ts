@@ -1,6 +1,7 @@
 import type { SocketStream } from "@fastify/websocket";
 import type { FastifyBaseLogger, FastifyReply, FastifyRequest } from "fastify";
-import { durakGamesStore, type SingletonFastifyInstance } from "./index.js";
+import { type SingletonFastifyInstance } from "./index.js";
+import durakGamesStore from "./common/durakGamesStore.js";
 import assert from "node:assert";
 import crypto from "node:crypto";
 import prisma from "../prisma/index.js";

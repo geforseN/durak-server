@@ -1,8 +1,8 @@
-import { asNotificationAlert } from "../../error/index.js";
-import Card, { Rank } from "../Card/index.js";
-import DefendedSlot from "./DefendedSlot.js";
-import EmptySlot from "./EmptySlot.js";
-import UnbeatenSlot from "./UnbeatenSlot.js";
+import { type default as Card, type Rank } from "../Card/index.js";
+import type DefendedSlot from "./DefendedSlot.js";
+import type EmptySlot from "./EmptySlot.js";
+import type UnbeatenSlot from "./UnbeatenSlot.js";
+import type UnbeatenTrumpSlot from "./UnbeatenTrumpSlot.js";
 
 export type DefendedDeskSlotBase = Required<
   Pick<DefendedSlot, "attackCard" | "defendCard">
@@ -18,6 +18,10 @@ export default abstract class DeskSlot {
   }
 
   isUnbeaten(): this is UnbeatenSlot {
+    return false;
+  }
+
+  isUnbeatenWithTrumpCard(): this is UnbeatenTrumpSlot {
     return false;
   }
 
@@ -37,11 +41,5 @@ export default abstract class DeskSlot {
 
   abstract ensureCanBeAttacked(): Promise<void>;
 
-  async ensureAllowsTransfer(card: Card): Promise<void> {
-    if (!this.attackCard?.hasSame({ rank: card.rank })) {
-      throw asNotificationAlert(
-        new Error("Нельзя перевести: нет схожего ранга"),
-      );
-    }
-  }
+  abstract ensureAllowsTransferMoveForRank(rank: Card["rank"]): Promise<void>;
 }

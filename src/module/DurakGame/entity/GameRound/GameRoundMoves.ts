@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { DefenderTransferMove, GameMove } from "../GameMove/index.js";
+import { GameMove } from "../GameMove/index.js";
 import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
 import { AllowedDefender } from "../Player/AllowedDefender.js";
 import { InternalError } from "../../error/index.js";
@@ -14,9 +14,7 @@ export default class GameRoundMoves {
 
   push(move: GameMove<AllowedSuperPlayer>) {
     this.#value.push(move);
-    if (move.isInsertMove()) {
-      move.makeCardTransfer();
-    }
+    move.emitContextToPlayers();
   }
 
   get latestDoneMove() {

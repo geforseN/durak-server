@@ -17,9 +17,6 @@ export default class Card {
 
   hasSame(cardProperties: Partial<CardDTO>): boolean {
     return Object.entries(cardProperties).every(([key, value]) => {
-      if (!Object.hasOwn(this, key)) {
-        throw new Error("Нет такого поля");
-      }
       return this[key as keyof this] === value;
     });
   }
