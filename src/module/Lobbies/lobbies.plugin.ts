@@ -1,4 +1,3 @@
-import type { GameSettings } from "@durak-game/durak-dts";
 import type { SocketStream } from "@fastify/websocket";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import {
@@ -9,6 +8,7 @@ import {
 } from "../../ws/index.js";
 import Lobbies from "./entity/Lobbies.js";
 import type Lobby from "./entity/Lobby.js";
+import { FrontendGameSettings } from "./entity/CorrectGameSettings.js";
 
 type GameLobbiesContext = ReturnType<ReturnType<typeof initializeGameLobbies>>;
 
@@ -34,7 +34,7 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
         new GameLobbiesStateRestoreEvent(context.lobbies).asString,
       );
       context.socket
-        .on("lobby::add", ({ settings }: { settings: GameSettings }) =>
+        .on("lobby::add", ({ settings }: { settings: FrontendGameSettings }) =>
           context.lobbies.pushNewLobby({ initiator: context.user, settings }),
         )
         .on("lobby::remove", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>

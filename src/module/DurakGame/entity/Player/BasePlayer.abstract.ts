@@ -1,6 +1,5 @@
 import type {
   AllowedMissingCardCount,
-  PlayerInfo,
   PlayerKind,
 } from "@durak-game/durak-dts";
 import type Card from "../Card/index.js";
@@ -13,6 +12,7 @@ import { type Defender } from "./Defender.js";
 import { type Player } from "./Player.js";
 import type GamePlayerWebsocketService from "./Player.service.js";
 import { type SuperPlayer } from "./SuperPlayer.abstract.js";
+import LobbyUser from "../../../Lobbies/entity/LobbyUser.js";
 
 export const GOOD_CARD_AMOUNT = 6;
 
@@ -20,7 +20,7 @@ export abstract class BasePlayer {
   left: BasePlayer;
   right: BasePlayer;
   readonly hand: Hand;
-  readonly info: PlayerInfo;
+  readonly info: LobbyUser;
   readonly wsService: GamePlayerWebsocketService;
 
   static _Player: typeof Player;

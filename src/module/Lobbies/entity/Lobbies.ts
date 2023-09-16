@@ -11,7 +11,7 @@ import Lobby, {
 } from "./Lobby.js";
 import LobbyUser from "./LobbyUser.js";
 import assert from "node:assert";
-import type { GameSettings } from "@durak-game/durak-dts";
+import { FrontendGameSettings } from "./CorrectGameSettings.js";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;
@@ -88,7 +88,7 @@ export default class Lobbies {
     settings,
     initiator,
   }: {
-    settings: GameSettings;
+    settings: FrontendGameSettings;
     initiator: User & { profile: UserProfile };
   }) {
     const pastLobby = this.#findLobbyWithUser(initiator.id);
