@@ -6,14 +6,14 @@ import { type CanProvideCards } from "../../../DurakGame.js";
 import type GameTalonWebsocketService from "./Talon.service.js";
 import { buildTalon } from "./buildTalon.js";
 import type { BasePlayer } from "../../Player/BasePlayer.abstract.js";
-import type { CardCount } from "@durak-game/durak-dts";
+import { GameSettings } from "@durak-game/durak-dts";
 
 export default class Talon extends Deck implements CanProvideCards<BasePlayer> {
   readonly #wsService: GameTalonWebsocketService;
   readonly trumpCard: Card;
 
   constructor(
-    { cardCount }: { cardCount: CardCount },
+    settings: GameSettings['talon'],
     wsService: GameTalonWebsocketService,
   ) {
     super(buildTalon(settings));

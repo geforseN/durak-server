@@ -70,10 +70,10 @@ export default class DurakGame {
     };
     this.settings = {
       ...nonStartedGame.settings,
-      moveTime: 2147483647,
+      players: { ...nonStartedGame.settings.players, moveTime: 2147483647 },
     };
     this.talon = new Talon(
-      nonStartedGame.settings,
+      this.settings.talon,
       new GameTalonWebsocketService(namespace),
     );
     const playersData = nonStartedGame.usersInfo
@@ -96,7 +96,7 @@ export default class DurakGame {
         (userInfo) =>
           players.find((player) => player.id === userInfo.id) || raise(),
       );
-      playerWhichNeedCards = players.filter(player => player.info)
+    playerWhichNeedCards = players.filter((player) => player.info);
     playersData.forEach(([leftPlayerIndex, player, rightPlayerIndex]) => {
       player.left = players[leftPlayerIndex];
       player.right = players[rightPlayerIndex];
