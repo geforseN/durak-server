@@ -9,7 +9,7 @@ export default class Hand extends Deck {
     super(data instanceof Hand ? data.value : data);
   }
 
-  get(cb: (card: Card) => boolean, notFoundMessage = "У вас нет такой карты") {
+  get(cb: (card: Card, index: number) => boolean, notFoundMessage = "У вас нет такой карты") {
     const card = this.value.find(cb);
     assert.ok(card, notFoundMessage);
     return card;
