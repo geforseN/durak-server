@@ -31,7 +31,7 @@ export default class NonStartedDurakGame {
   }
 
   get isAllPlayersConnected() {
-    return this.sockets.size === this.settings.userCount;
+    return this.sockets.size === this.settings.players.count;
   }
 
   addPlayerConnection(socket: DurakGameSocket.Socket) {
