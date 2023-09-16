@@ -38,7 +38,7 @@
     "zod": "^3.22.2"
   },
   "devDependencies": {
-    "@durak-game/durak-dts": "^0.4.9",
+    "@durak-game/durak-dts": "^0.4.10",
     "@swc/core": "^1.3.85",
     "@swc/helpers": "^0.5.2",
     "@tsconfig/node20": "^20.1.2",
@@ -49,6 +49,7 @@
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",
     "eslint": "^8.47.0",
+    "eslint-plugin-perfectionist": "^2.1.0",
     "pino-pretty": "^10.2.0",
     "prisma": "^5.1.1",
     "regenerator-runtime": "^0.14.0",
