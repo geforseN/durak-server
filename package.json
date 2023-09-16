@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "ts-node src/index.ts",
     "dev:respawn": "node --watch --loader ts-node/esm src/index.ts",
-    "debug": "node --inspect --loader ts-node/esm src/index.ts"
+    "debug": "node --inspect --loader ts-node/esm src/index.ts",
+    "test:dev": "vitest dev",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "keywords": [],
   "author": "",
