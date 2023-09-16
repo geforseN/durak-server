@@ -1,23 +1,24 @@
-import { describe, beforeEach, it } from "vitest";
+import { Card, DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
+import { Suit } from "@durak-game/durak-dts";
 import assert from "node:assert";
+import EventEmitter from "node:events";
+import { beforeEach, describe, it } from "vitest";
+
+import Lobby from "../Lobbies/entity/Lobby.js";
+import LobbyUser from "../Lobbies/entity/LobbyUser.js";
 import DurakGame from "./DurakGame.js";
 import NonStartedDurakGame from "./NonStartedDurakGame.js";
-import Lobby from "../Lobbies/entity/Lobby.js";
-import { Card, DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
-import EventEmitter from "node:events";
-import LobbyUser from "../Lobbies/entity/LobbyUser.js";
 import { BasePlayer } from "./entity/Player/BasePlayer.abstract.js";
 import { makeMagic } from "./socket/handler/makeMagic.js";
-import { Suit } from "@durak-game/durak-dts";
 
 const namespaceStubOfSocketIO = {
   emit() {},
-  to: () => {
+  except: () => {
     return {
       emit: () => {},
     };
   },
-  except: () => {
+  to: () => {
     return {
       emit: () => {},
     };
@@ -25,31 +26,31 @@ const namespaceStubOfSocketIO = {
 } as unknown as DurakGameSocket.Namespace;
 
 const defaultLobbySettings: GameSettings = {
-  talon: {
-    count: 36,
-    trumpCard: { rank: "4", suit: "♣" },
-  },
-  players: {
-    count: 2,
-    moveTime: 2147483647,
-  },
   desk: {
     allowedFilledSlotCount: 6,
     slotCount: 6,
   },
-  type: "perevodnoy",
   initialDistribution: { cardCountPerIteration: 2, finalCardCount: 6 },
+  players: {
+    count: 2,
+    moveTime: 2147483647,
+  },
+  talon: {
+    count: 36,
+    trumpCard: { rank: "4", suit: "♣" },
+  },
+  type: "perevodnoy",
 };
 
 await BasePlayer.configureDependencies();
 
 function createDurakGame({
-  players: playersLike,
   gameSettings = {},
+  players,
   shouldStartRightNow,
 }: {
-  players: { id: string; cards?: Card[] }[];
   gameSettings?: Partial<GameSettings>;
+  players: { cards?: Card[]; id: string }[];
   shouldStartRightNow: boolean;
 }) {
   const settings = { ...defaultLobbySettings, gameSettings };
@@ -62,7 +63,7 @@ function createDurakGame({
     },
     new EventEmitter(),
   );
-  playersLike.forEach((player, index) => {
+  players.forEach((player, index) => {
     lobby.insertUser(new LobbyUser({ id: player.id }, player.cards), index);
   });
   assert.ok(lobby.isFull);
@@ -134,16 +135,16 @@ describe("Проверка логики игры для двух игроков"
       "♦": "♦",
     };
     const game = createDurakGame({
-      players: [
-        { id: "cat", cards: [{ rank: "9", suit: trumpSuit }] },
-        { id: "dog", cards: [{ rank: "10", suit: suits["♣"] }] },
-      ],
       gameSettings: {
         talon: {
           ...defaultLobbySettings.talon,
           trumpCard,
         },
       },
+      players: [
+        { cards: [{ rank: "9", suit: trumpSuit }], id: "cat" },
+        { cards: [{ rank: "10", suit: suits["♣"] }], id: "dog" },
+      ],
       shouldStartRightNow: false
     });
     game.start()
