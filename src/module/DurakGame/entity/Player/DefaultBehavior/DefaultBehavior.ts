@@ -23,8 +23,8 @@ export default abstract class DefaultBehavior<ASP extends AllowedSuperPlayer> {
 
   protected abstract makeMove(): Promise<void | GameMove<ASP>>;
 
-  setTimeout(delay = this.game.settings.moveTime) {
-    this.callTime = { UTC: Date.now() + this.game.settings.moveTime };
+  setTimeout(delay = this.game.settings.players.moveTime) {
+    this.callTime = { UTC: Date.now() + this.game.settings.players.moveTime };
     this.timeout = setTimeout(async () => {
       const move = await this.makeMove();
       assert.ok(move, "this.makeMove returned falsy value");
