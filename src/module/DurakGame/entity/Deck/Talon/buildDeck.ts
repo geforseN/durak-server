@@ -1,48 +1,67 @@
 import type { Suit } from "@durak-game/durak-dts";
 import Card from "../../Card/index.js";
+import type { Card as CardDTO } from "@durak-game/durak-dts";
 import { TrumpCard } from "../../Card/TrumpCard.js";
 import crypto from "node:crypto";
 import assert from "node:assert";
+import { GameSettings } from "@durak-game/durak-dts";
 
-export function buildTalon(cardCount: number) {
+export function buildTalon({ count, trumpCard }: GameSettings["talon"]) {
   // cardCount probably equal to 24, 36 or 52
   // but later 54 can be added (where 2 additional cards are jokers)
-  // assert below will throw if maxCardsPerSuit is float number
-  const maxCardsPerSuit = cardCount / Card.suits.length;
+  const maxCardsPerSuit = count / Card.suits.length;
   assert.ok(Number.isInteger(maxCardsPerSuit));
-  return Card.suits
-    .flatMap(
-      // NOTE - get non shuffled deck
-      (suit) => getCardOfSuit(suit, maxCardsPerSuit),
-    )
-    .reduce(
-      // NOTE - get shuffled deck, where most bottom card suit will be trump suit
-      makeCardsShuffle,
-      Array<Card>(),
-    )
-    .map(
-      // NOTE - make card with trump suit TrumpCard, otherwise return same card
-      (card, _, cards) =>
-        card.suit === cards[0].suit ? new TrumpCard(card) : card,
-    );
+  // will throw below if cards card equal to 54
+  // this should be removed when game will support joker cards
+  assert.strictEqual(maxCardsPerSuit % Card.suits.length, 0);
+
+  const nonShuffledDeck = Card.suits.flatMap((suit) =>
+    getCardsOfSuit(suit, maxCardsPerSuit),
+  );
+
+  const shuffledCards = withCorrectTrumpCard(
+    makeModernFisherYatesShuffle(nonShuffledDeck),
+    trumpCard,
+  );
+
+  return shuffledCards.map(
+    // NOTE - make card with trump suit TrumpCard, otherwise return same card
+    (card, _, cards) =>
+      card.suit === cards[0].suit ? new TrumpCard(card) : card,
+  );
 }
 
-function getCardOfSuit(suit: Suit, maxCardsPerSuit: number) {
+function getCardsOfSuit(suit: Suit, maxCardsPerSuit: number) {
   return [...Card.ranks]
     .reverse()
     .filter((_, index) => index < maxCardsPerSuit)
     .map((rank) => new Card({ rank, suit }));
 }
 
-// FIXME better shuffle cards, use index and cards for it instead of just card
-function makeCardsShuffle(
-  shuffledCards: Card[],
-  card: Card,
-) {
-  if (crypto.randomInt(10) > 4) {
-    shuffledCards.push(card);
-  } else {
-    shuffledCards.unshift(card);
+function makeModernFisherYatesShuffle(deck: Card[]) {
+  for (let j, i = deck.length - 1; i > 0; i--) {
+    j = crypto.randomInt(i + 1);
+    [deck[j], deck[i]] = [deck[i], deck[j]];
   }
-  return shuffledCards;
+  return deck;
+}
+
+function withCorrectTrumpCard(deck: Card[], correctTrumpCard?: CardDTO) {
+  if (!correctTrumpCard) {
+    return deck;
+  }
+  const correctTrumpCardIndex = deck.findIndex(
+    (card) =>
+      card.suit === correctTrumpCard.suit &&
+      card.rank === correctTrumpCard.rank,
+  );
+  assert.ok(correctTrumpCardIndex >= 0);
+  if (correctTrumpCardIndex === 0) {
+    return deck;
+  }
+  [deck[0], deck[correctTrumpCardIndex]] = [
+    deck[correctTrumpCardIndex],
+    deck[0],
+  ];
+  return deck;
 }
