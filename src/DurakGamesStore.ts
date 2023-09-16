@@ -18,7 +18,7 @@ export default class DurakGamesStore<
       .filter((game): game is DurakGame => game.info.status !== "ended")
       .map((game) => ({
         ...game,
-        players: game.players.value.map((player) => player.toJSON()),
+        players: [...game.players].map((player) => player.toJSON()),
       }));
   }
 
