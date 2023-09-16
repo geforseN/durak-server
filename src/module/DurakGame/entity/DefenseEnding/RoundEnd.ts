@@ -11,7 +11,7 @@ export abstract class RoundEnd {
     if (!this.game.talon.isEmpty) {
       return this.game.talonDistribution.makeDistribution();
     }
-    const groupedPlayers = getGropedPlayers(this.game.players.value);
+    const groupedPlayers = getGropedPlayers([...this.game.players]);
     this.game.players = new Players(groupedPlayers.toStay);
     groupedPlayers.toLeave; // TODO let playersToLeave exit game
     if (this.game.players.count === 1) {

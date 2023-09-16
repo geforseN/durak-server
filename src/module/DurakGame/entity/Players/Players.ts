@@ -5,26 +5,26 @@ import { type Attacker } from "../Player/Attacker.js";
 import { type Defender } from "../Player/Defender.js";
 
 export class Players {
-  value: BasePlayer[];
+  readonly #value: BasePlayer[];
 
   constructor(value: BasePlayer[]) {
-    this.value = value;
+    this.#value = value;
   }
 
   *[Symbol.iterator]() {
-    yield* this.value;
+    yield* this.#value;
   }
 
   get count() {
-    return this.value.length;
+    return this.#value.length;
   }
 
   mutateWith(updatedPlayer: BasePlayer) {
     const player: BasePlayer | never = this.get(
       (player) => player.id === updatedPlayer.id,
     );
-    const index = this.value.indexOf(player);
-    this.value[index] = updatedPlayer;
+    const index = this.#value.indexOf(player);
+    this.#value[index] = updatedPlayer;
     updatedPlayer.emitKind();
     return this;
   }
@@ -39,7 +39,7 @@ export class Players {
   // TODO change body of method to this.#allowedPlayer body
   // should change it when this.allowedPlayer will never throw
   get allowedPlayer() {
-    const allowedPlayers = this.value.filter((player) => player.isAllowed());
+    const allowedPlayers = this.#value.filter((player) => player.isAllowed());
     assert.ok(allowedPlayers.length === 1);
     const allowedPlayer = allowedPlayers[0];
     assert.ok(allowedPlayer.isAllowed() && allowedPlayer.isSuperPlayer());
@@ -72,7 +72,7 @@ export class Players {
     cb: (player: BasePlayer) => boolean,
     notFoundMessage = "Игрок не найден",
   ): BasePlayer {
-    const player = this.value.find(cb);
+    const player = this.#value.find(cb);
     assert.ok(player, notFoundMessage);
     return player;
   }
@@ -81,9 +81,9 @@ export class Players {
     cb: (player: BasePlayer) => boolean,
     notRemovedMessage?: string,
   ): BasePlayer {
-    const playerIndex = this.value.findIndex(cb);
+    const playerIndex = this.#value.findIndex(cb);
     assert.ok(playerIndex, notRemovedMessage);
-    const [player] = this.value.splice(playerIndex, 1);
+    const [player] = this.#value.splice(playerIndex, 1);
     return player;
   }
 }
