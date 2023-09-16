@@ -1,19 +1,22 @@
-import type { Suit } from "@durak-game/durak-dts";
-import Card from "../../Card/index.js";
-import type { Card as CardDTO } from "@durak-game/durak-dts";
-import { TrumpCard } from "../../Card/TrumpCard.js";
-import crypto from "node:crypto";
+import type {
+  Card as CardDTO,
+  GameSettings,
+  Suit,
+} from "@durak-game/durak-dts";
 import assert from "node:assert";
-import { GameSettings } from "@durak-game/durak-dts";
+import crypto from "node:crypto";
+import TrumpCard from "../../Card/TrumpCard.js";
+import Card from "../../Card/index.js";
 
-export function buildTalon({ count, trumpCard }: GameSettings["talon"]) {
+export default function buildTalon({ count, trumpCard }: GameSettings["talon"]) {
+  assert.ok(count)
   // cardCount probably equal to 24, 36 or 52
   // but later 54 can be added (where 2 additional cards are jokers)
   const maxCardsPerSuit = count / Card.suits.length;
   assert.ok(Number.isInteger(maxCardsPerSuit));
   // will throw below if cards card equal to 54
   // this should be removed when game will support joker cards
-  assert.strictEqual(maxCardsPerSuit % Card.suits.length, 0);
+  assert.strictEqual(count % Card.suits.length, 0);
 
   const nonShuffledDeck = Card.suits.flatMap((suit) =>
     getCardsOfSuit(suit, maxCardsPerSuit),
