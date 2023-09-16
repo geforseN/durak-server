@@ -1,7 +1,9 @@
 import assert from "node:assert";
 import crypto from "node:crypto";
 import type EventEmitter from "node:events";
-import CorrectGameSettings from "./CorrectGameSettings.js";
+import CorrectGameSettings, {
+  FrontendGameSettings,
+} from "./CorrectGameSettings.js";
 import type { GameSettings } from "@durak-game/durak-dts";
 import LobbySlots from "./LobbySlots.js";
 import { LobbyAccessError } from "../error.js";
@@ -16,11 +18,11 @@ export default class Lobby {
   slots: LobbySlots;
   #lobbiesEmitter: EventEmitter;
 
-  constructor(settings: GameSettings, lobbiesEmitter: EventEmitter) {
+  constructor(settings: FrontendGameSettings, lobbiesEmitter: EventEmitter) {
     this.settings = new CorrectGameSettings(settings);
     this.#lobbiesEmitter = lobbiesEmitter;
     this.id = crypto.randomUUID();
-    this.slots = new LobbySlots(settings.userCount);
+    this.slots = new LobbySlots(this.settings.players.count);
     this.#lobbiesEmitter.emit("lobby##add", { lobby: this });
     // TODO: this.emptySlots = new EmptySlots(this)
     // TODO: this.userSlots = new UsersSlots(this)

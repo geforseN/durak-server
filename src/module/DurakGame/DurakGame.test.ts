@@ -3,7 +3,7 @@ import assert from "node:assert";
 import DurakGame from "./DurakGame.js";
 import NonStartedDurakGame from "./NonStartedDurakGame.js";
 import Lobby from "../Lobbies/entity/Lobby.js";
-import { GameSettings } from "@durak-game/durak-dts";
+import { Card, GameSettings } from "@durak-game/durak-dts";
 import EventEmitter from "node:events";
 import LobbyUser from "../Lobbies/entity/LobbyUser.js";
 import { BasePlayer } from "./entity/Player/BasePlayer.abstract.js";
@@ -23,34 +23,49 @@ const socketIO__stub = {
   },
 };
 
-/**
- *  @property {number} moveTime - time in milliseconds, allowed to make move (the maximum value is 2147483647 due to the setTimeout maximum value of delay parameter)
- */
+
 const defaultLobbySettings: GameSettings = {
-  cardCount: 36,
+  talon: {
+    count: 36,
+    trumpCard: { rank: "4", suit: "♣" },
+  },
+  players: {
+    count: 2,
+    moveTime: 2147483647,
+  },
   desk: {
     allowedFilledSlotCount: 6,
     slotCount: 6,
   },
-  gameType: "perevodnoy",
+  type: "perevodnoy",
   initialDistribution: { cardCountPerIteration: 2, finalCardCount: 6 },
-  moveTime: 2147483647,
-  userCount: 2,
 };
 
 await BasePlayer.configureDependencies();
 
-function createDurakGameWithPlayers(...playersLike: { id: string }[]) {
+function createDurakGameWithPlayers(
+  ...playersLike: { id: string; cards: Card[] }[]
+) {
   const lobby = new Lobby(
-    { ...defaultLobbySettings, userCount: playersLike.length },
+    {
+      ...defaultLobbySettings,
+      players: {
+        count: playersLike.length,
+      },
+    },
     new EventEmitter(),
   );
   playersLike.forEach((player, index) => {
-    lobby.insertUser(new LobbyUser({ id: player.id }), index);
+    lobby.insertUser(new LobbyUser({ id: player.id }, player.cards), index);
   });
   assert.ok(lobby.isFull);
   const nonStartedDurakGame = new NonStartedDurakGame(lobby);
   const game = new DurakGame(nonStartedDurakGame, socketIO__stub);
+  [...game.players].forEach((player) => {
+    assert.ok(
+      player.hand.count === game.settings.initialDistribution.finalCardCount,
+    );
+  });
   assert.ok(game.info.status === "started");
   return game;
 }
@@ -93,7 +108,5 @@ describe("Проверка логики игры для двух игроков"
     expect(defender.isAllowed()).toBeTruthy();
   });
 
-  it('', () => {
-
-  })
+  it.todo("", () => {});
 });

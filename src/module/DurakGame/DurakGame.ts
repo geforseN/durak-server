@@ -1,4 +1,8 @@
-import type { DurakGameSocket, GameSettings, GameState } from "@durak-game/durak-dts";
+import type {
+  DurakGameSocket,
+  GameSettings,
+  GameState,
+} from "@durak-game/durak-dts";
 import type NonStartedDurakGame from "./NonStartedDurakGame.js";
 import GameRoundMoves from "./entity/GameRound/GameRoundMoves.js";
 import GameRoundDistribution from "./entity/GameRoundDistributionQueue.js";
@@ -22,6 +26,7 @@ import {
 import { pino } from "pino";
 import { Player } from "./entity/Player/Player.js";
 import { Hand } from "./entity/Deck/index.js";
+import raise from "../../common/raise.js";
 
 export class InternalGameLogicError extends Error {}
 
@@ -67,6 +72,10 @@ export default class DurakGame {
       ...nonStartedGame.settings,
       moveTime: 2147483647,
     };
+    this.talon = new Talon(
+      nonStartedGame.settings,
+      new GameTalonWebsocketService(namespace),
+    );
     const playersData = nonStartedGame.usersInfo
       .map(
         (info, index, array) =>
@@ -80,15 +89,19 @@ export default class DurakGame {
       )
       .map((user) => Player.create(user));
     const players = playersData.map((data) => data[1]);
+
+    let playerWhichNeedCards = nonStartedGame.usersInfo
+      .filter((userInfo) => userInfo.cardsToAdd.length)
+      .map(
+        (userInfo) =>
+          players.find((player) => player.id === userInfo.id) || raise(),
+      );
+      playerWhichNeedCards = players.filter(player => player.info)
     playersData.forEach(([leftPlayerIndex, player, rightPlayerIndex]) => {
       player.left = players[leftPlayerIndex];
       player.right = players[rightPlayerIndex];
     });
     this.players = new Players(players);
-    this.talon = new Talon(
-      nonStartedGame.settings,
-      new GameTalonWebsocketService(namespace),
-    );
     this.discard = new Discard(new GameDiscardWebsocketService(namespace));
     this.desk = new Desk(
       nonStartedGame.settings.desk,
