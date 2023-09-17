@@ -1,8 +1,7 @@
 import { Card, DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
-import { Suit } from "@durak-game/durak-dts";
 import assert from "node:assert";
 import EventEmitter from "node:events";
-import { beforeEach, describe, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import Lobby from "../Lobbies/entity/Lobby.js";
 import LobbyUser from "../Lobbies/entity/LobbyUser.js";
@@ -47,11 +46,15 @@ await BasePlayer.configureDependencies();
 function createDurakGame({
   gameSettings = {},
   players,
+  shouldGiveRequiredCards,
+  shouldMakeInitialDistribution,
   shouldStartRightNow,
 }: {
   gameSettings?: Partial<GameSettings>;
   players: { cards?: Card[]; id: string }[];
-  shouldStartRightNow: boolean;
+  shouldGiveRequiredCards?: boolean;
+  shouldMakeInitialDistribution?: boolean;
+  shouldStartRightNow?: boolean;
 }) {
   const settings = { ...defaultLobbySettings, gameSettings };
   const lobby = new Lobby(
@@ -68,17 +71,21 @@ function createDurakGame({
   });
   assert.ok(lobby.isFull);
   const nonStartedDurakGame = new NonStartedDurakGame(lobby);
-  const game = new DurakGame(
-    nonStartedDurakGame,
-    namespaceStubOfSocketIO,
+  const game = new DurakGame(nonStartedDurakGame, namespaceStubOfSocketIO, {
+    shouldGiveRequiredCards,
+    shouldMakeInitialDistribution,
     shouldStartRightNow,
-  );
-  [...game.players].forEach((player) => {
-    assert.ok(
-      player.hand.count === game.settings.initialDistribution.finalCardCount,
-    );
   });
-  assert.ok(game.info.status === "started");
+  if (shouldMakeInitialDistribution) {
+    [...game.players].forEach((player) => {
+      assert.ok(
+        player.hand.count === game.settings.initialDistribution.finalCardCount,
+      );
+    });
+  }
+  if (shouldStartRightNow) {
+    assert.ok(game.info.status === "started");
+  }
   return game;
 }
 
@@ -88,7 +95,8 @@ describe("Проверка логики игры для двух игроков"
   it("first scenario", () => {
     const game = createDurakGame({
       players: [{ id: "1" }, { id: "2" }],
-      shouldStartRightNow: true
+      shouldMakeInitialDistribution: true,
+      shouldStartRightNow: true,
     });
 
     it("card is dropped by attacker", async ({ expect }) => {
@@ -125,15 +133,14 @@ describe("Проверка логики игры для двух игроков"
     });
   });
 
-  it.todo("second scenario", () => {
-    const trumpSuit: "♠" = "♠";
-    const trumpCard: Card = { rank: "K", suit: trumpSuit };
-    type nonTrumpSuit = Exclude<Suit, "♠">;
-    const suits: Record<nonTrumpSuit, nonTrumpSuit> = {
+  it("second scenario", () => {
+    const suits = {
+      trump: "♠",
       "♣": "♣",
       "♥": "♥",
       "♦": "♦",
-    };
+    } as const;
+    const trumpCard: Card = { rank: "K", suit: suits["trump"] };
     const game = createDurakGame({
       gameSettings: {
         talon: {
@@ -142,12 +149,22 @@ describe("Проверка логики игры для двух игроков"
         },
       },
       players: [
-        { cards: [{ rank: "9", suit: trumpSuit }], id: "cat" },
+        { cards: [{ rank: "9", suit: suits["trump"] }], id: "cat" },
         { cards: [{ rank: "10", suit: suits["♣"] }], id: "dog" },
       ],
-      shouldStartRightNow: false
+      shouldMakeInitialDistribution: false,
+      shouldStartRightNow: false,
     });
-    game.start()
+    game.start();
+    expect(
+      [...game.players].every((player) => player.hand.count === 1),
+    ).toBeTruthy();
+    expect(
+      game.players
+        .get((player) => player.id === "cat")
+        .hand.get((_, index) => index === 0).isTrump,
+      ).toBeTruthy();
+
 
   });
 });

@@ -8,7 +8,7 @@ import type { Attacker } from "./Attacker.js";
 import type DefaultBehavior from "./DefaultBehavior/DefaultBehavior.js";
 import type { Defender } from "./Defender.js";
 import { SuperPlayer } from "./SuperPlayer.abstract.js";
-
+import type { Card as CardDTO } from "@durak-game/durak-dts";
 export abstract class AllowedSuperPlayer extends SuperPlayer {
   asSuperPlayer: SuperPlayer;
   game: DurakGame;
@@ -90,4 +90,8 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
   ): Promise<GameMove<AllowedSuperPlayer>>;
 
   abstract makeStopMove(): GameMove<AllowedSuperPlayer>;
+
+  // abstract makeMove(): GameMove<AllowedSuperPlayer>;
+  // abstract makeMove(card: Card, slot: DeskSlot): GameMove<AllowedSuperPlayer>;
+  // abstract makeMove(cardDTO: CardDTO, slotIndex: number): GameMove<AllowedSuperPlayer>;
 }
