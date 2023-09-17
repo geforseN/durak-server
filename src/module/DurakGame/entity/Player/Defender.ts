@@ -1,4 +1,5 @@
 import type DurakGame from "../../DurakGame.js";
+
 import { AllowedDefender } from "./AllowedDefender.js";
 import { type AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
 import { type BasePlayer } from "./BasePlayer.abstract.js";
@@ -6,37 +7,32 @@ import { SuperPlayer } from "./SuperPlayer.abstract.js";
 
 export class Defender extends SuperPlayer {
   #isSurrendered: boolean;
+  public isReal: boolean;
 
-  constructor(basePlayer: BasePlayer, isSurrendered = false) {
+  constructor(
+    basePlayer: BasePlayer,
+    {
+      isPrimal = false, // TODO think about it ...
+      isSurrendered = false,
+    }: { isPrimal?: boolean; isSurrendered?: boolean } = {},
+  ) {
     super(basePlayer);
     this.#isSurrendered = isSurrendered;
-  }
-
-  get kind() {
-    return this.#isSurrendered ? "SurrenderedDefender" : "Defender";
+    this.isReal = isPrimal;
   }
 
   asAllowed(game: DurakGame): AllowedSuperPlayer {
     return new AllowedDefender(this, game);
   }
 
-  isDefender(): this is Defender {
-    return true;
+  asSurrendered() {
+    return new Defender(this, { isPrimal: true, isSurrendered: true });
   }
 
   canNotDefend(cardCount: number) {
     return !this.canTakeMore(cardCount);
   }
 
-  isSurrendered() {
-    return this.#isSurrendered;
-  }
-
-  asSurrendered() {
-    return new Defender(this, true);
-  }
-
-  // TODO - rewrite
   // REVIEW - code is smelly
   canWinDefense(game: DurakGame) {
     try {
@@ -55,5 +51,18 @@ export class Defender extends SuperPlayer {
       // TODO else throw error
       return false;
     }
+  }
+
+  isDefender(): this is Defender {
+    return true;
+  }
+
+  isSurrendered() {
+    return this.#isSurrendered;
+  }
+
+  // TODO - rewrite
+  get kind() {
+    return this.#isSurrendered ? "SurrenderedDefender" : "Defender";
   }
 }

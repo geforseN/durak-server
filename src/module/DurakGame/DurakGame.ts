@@ -3,10 +3,14 @@ import type {
   GameSettings,
   GameState,
 } from "@durak-game/durak-dts";
+
+import assert from "node:assert";
+import { pino } from "pino";
+
 import type NonStartedDurakGame from "./NonStartedDurakGame.js";
+
 import GameRoundMoves from "./entity/GameRound/GameRoundMoves.js";
 import GameRoundDistribution from "./entity/GameRoundDistributionQueue.js";
-import NonStartedGameUser from "./entity/Player/NonStartedGameUser.js";
 import {
   Card,
   Desk,
@@ -14,124 +18,95 @@ import {
   GameRound,
   Players,
   Talon,
+  createPlayers,
 } from "./entity/index.js";
 import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSocket.handler.js";
 import {
-  DurakGameWebsocketService,
-  GameDeskWebsocketService,
-  GameDiscardWebsocketService,
-  GamePlayerWebsocketService,
-  GameTalonWebsocketService,
+  type DurakGameWebsocketService,
+  createServices,
 } from "./socket/service/index.js";
-import { pino } from "pino";
-import { Player } from "./entity/Player/Player.js";
-import { Hand } from "./entity/Deck/index.js";
-import raise from "../../common/raise.js";
-
-export class InternalGameLogicError extends Error {}
 
 export default class DurakGame {
+  readonly #wsService: DurakGameWebsocketService;
+  readonly desk: Desk;
+  readonly discard: Discard;
+  history: any;
   readonly info: {
-    id: string;
     adminId: string;
-    namespace: DurakGameSocket.Namespace;
     durakId?: string;
+    id: string;
+    namespace: DurakGameSocket.Namespace;
+    shouldGiveRequiredCards: boolean;
+    shouldMakeInitialDistribution: boolean;
+    shouldStartRightNow: boolean;
     status: GameState["status"];
   };
-  readonly settings: GameSettings;
-  readonly talon: Talon;
-  readonly discard: Discard;
-  readonly desk: Desk;
-  readonly #wsService: DurakGameWebsocketService;
-  players: Players;
-  round: GameRound;
-  readonly talonDistribution: GameRoundDistribution;
   readonly logger = pino({
     transport: {
       target: "pino-pretty" as const,
     },
   });
-  readonly initialPlayers: {
-    id: string;
-    place: number | null;
-    roundLeftNumber: number | null;
-    index: number;
-  }[];
-  leftPlayersCount: number;
+  players: Players;
+  round: GameRound;
+  readonly settings: GameSettings;
+  readonly talon: Talon;
+  readonly talonDistribution: GameRoundDistribution;
 
   constructor(
     nonStartedGame: NonStartedDurakGame,
     namespace: DurakGameSocket.Namespace,
+    {
+      shouldGiveRequiredCards = true,
+      shouldMakeInitialDistribution = true,
+      shouldStartRightNow = true,
+    }: {
+      shouldGiveRequiredCards?: boolean;
+      shouldMakeInitialDistribution?: boolean;
+      shouldStartRightNow?: boolean;
+    } = {},
   ) {
+    const wsServices = createServices(namespace);
     this.info = {
       ...nonStartedGame.info,
       namespace,
+      shouldGiveRequiredCards,
+      shouldMakeInitialDistribution,
+      shouldStartRightNow,
       status: "starts",
     };
     this.settings = {
       ...nonStartedGame.settings,
-      players: { ...nonStartedGame.settings.players, moveTime: 2147483647 },
+      players: {
+        ...nonStartedGame.settings.players,
+        moveTime: 2147483647,
+      },
     };
-    this.talon = new Talon(
-      this.settings.talon,
-      new GameTalonWebsocketService(namespace),
-    );
-    const playersData = nonStartedGame.usersInfo
-      .map(
-        (info, index, array) =>
-          new NonStartedGameUser({
-            index,
-            info,
-            lobbySlotsCount: array.length,
-            wsService: new GamePlayerWebsocketService(namespace),
-            hand: new Hand(),
-          }),
-      )
-      .map((user) => Player.create(user));
-    const players = playersData.map((data) => data[1]);
-
-    let playerWhichNeedCards = nonStartedGame.usersInfo
-      .filter((userInfo) => userInfo.cardsToAdd.length)
-      .map(
-        (userInfo) =>
-          players.find((player) => player.id === userInfo.id) || raise(),
-      );
-    playerWhichNeedCards = players.filter((player) => player.info);
-    playersData.forEach(([leftPlayerIndex, player, rightPlayerIndex]) => {
-      player.left = players[leftPlayerIndex];
-      player.right = players[rightPlayerIndex];
-    });
-    this.players = new Players(players);
-    this.discard = new Discard(new GameDiscardWebsocketService(namespace));
-    this.desk = new Desk(
-      nonStartedGame.settings.desk,
-      new GameDeskWebsocketService(namespace),
-    );
-    this.#wsService = new DurakGameWebsocketService(namespace);
-    this.talonDistribution = new GameRoundDistribution(
-      this,
-    ).makeInitialDistribution();
-    this.#makeInitialSuperPlayers();
+    this.talon = new Talon(this.settings.talon, wsServices.talonService);
+    this.players = createPlayers(nonStartedGame, wsServices.playerService);
+    this.discard = new Discard(wsServices.discardService);
+    this.desk = new Desk(nonStartedGame.settings.desk, wsServices.deskService);
+    this.#wsService = wsServices.gameService;
     this.round = new GameRound(this, new GameRoundMoves());
-    this.initialPlayers = [...this.players].map((player, index) => ({
-      id: player.id,
-      place: null,
-      roundLeftNumber: null,
-      index,
-    }));
-    this.leftPlayersCount = 0;
-    this.info.status = "started";
-  }
+    this.talonDistribution = new GameRoundDistribution(this);
+    this.history = {
+      players: {
+        leftPlayers: {
+          count: 0,
+          value: [],
+        },
+        value: [...this.players].map((player, index) => ({
+          id: player.id,
+          index,
+          place: null,
+          roundLeftNumber: null,
+        })),
+      },
+      rounds: [],
+    };
 
-  restoreState(socket: DurakGameSocket.Socket) {
-    this.#wsService.restoreState(this, socket);
-  }
-
-  handleSocketConnection(
-    socket: DurakGameSocket.Socket,
-    namespace: DurakGameSocket.Namespace,
-  ) {
-    addListenersWhichAreNeededForStartedGame.call(socket, this);
+    if (this.info.shouldStartRightNow) {
+      this.start();
+    }
   }
 
   #makeInitialSuperPlayers() {
@@ -142,22 +117,64 @@ export default class DurakGame {
   }
 
   end() {
+    assert.ok(this.info.status === "started");
     this.info.status = "ended";
     const [durakPlayer] = this.players;
     // NOTE: durakPlayer may not exist if game ended with draw
     this.info.durakId = durakPlayer?.id;
     this.#wsService.end(this);
   }
+
+  handleSocketConnection(
+    socket: DurakGameSocket.Socket,
+    _namespace: DurakGameSocket.Namespace,
+  ) {
+    addListenersWhichAreNeededForStartedGame.call(socket, this);
+  }
+
+  restoreState(socket: DurakGameSocket.Socket) {
+    this.#wsService.restoreState(this, socket);
+  }
+
+  start() {
+    assert.ok(this.info.status === "starts");
+    if (this.info.shouldGiveRequiredCards) {
+      [...this.players]
+        .filter((player) => player.info.cardsToAdd.length)
+        .forEach((player) => {
+          player.receiveCards(
+            ...player.info.cardsToAdd.map((card) =>
+              this.talon.__test_only_getCard(card),
+            ),
+          );
+        });
+    }
+    if (this.info.shouldMakeInitialDistribution) {
+      this.talonDistribution.makeInitialDistribution();
+    }
+    this.#makeInitialSuperPlayers();
+    this.info.status = "started";
+  }
 }
 
 export interface CanReceiveCards {
-  receiveCards: (...cards: Card[]) => void;
+  receiveCards: (..._cards: Card[]) => void;
 }
 
 export interface CanProvideCards<Target extends CanReceiveCards> {
-  provideCards: (target: Target) => void;
+  provideCards: (_target: Target) => void;
 }
 
-export interface NextThingToDoInGame {
-  kind: "RoundEnd" | "Defender" | "Attacker";
+export interface ___________NextThingToDoInGame________ {
+  kind: "Attacker" | "Defender" | "RoundEnd";
+}
+
+function createDurakGame({
+  namespace,
+}: {
+  namespace: DurakGameSocket.Namespace;
+  nonStartedGame: NonStartedDurakGame;
+  shouldStartRightNow: boolean;
+}) {
+  return new DurakGame(namespace);
 }

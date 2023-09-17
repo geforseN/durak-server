@@ -2,7 +2,11 @@ import type {
   AllowedMissingCardCount,
   PlayerKind,
 } from "@durak-game/durak-dts";
+
 import type Card from "../Card/index.js";
+import type GamePlayerWebsocketService from "./Player.service.js";
+
+import LobbyUser from "../../../Lobbies/entity/LobbyUser.js";
 import { type Hand } from "../Deck/index.js";
 import { type AllowedAttacker } from "./AllowedAttacker.js";
 import { type AllowedDefender } from "./AllowedDefender.js";
@@ -10,22 +14,46 @@ import { type AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
 import { type Attacker } from "./Attacker.js";
 import { type Defender } from "./Defender.js";
 import { type Player } from "./Player.js";
-import type GamePlayerWebsocketService from "./Player.service.js";
 import { type SuperPlayer } from "./SuperPlayer.abstract.js";
-import LobbyUser from "../../../Lobbies/entity/LobbyUser.js";
 
 export const GOOD_CARD_AMOUNT = 6;
 
 export abstract class BasePlayer {
-  left: BasePlayer;
-  right: BasePlayer;
+  static _Attacker: typeof Attacker;
+  static _Defender: typeof Defender;
+  static _Player: typeof Player;
+
   readonly hand: Hand;
   readonly info: LobbyUser;
+  left: BasePlayer;
+  right: BasePlayer;
+
+  // TODO think about it ...
+  withEmit = {
+    receiveCards: (...cards: Card[]) => {
+      this.hand.receive(cards);
+      this.wsService.receiveCards(cards, this);
+    },
+  };
+
+  // TODO think about it ...
+  withoutEmit = {
+    receiveCards: (...cards: Card[]) => {
+      this.hand.receive(cards);
+    },
+  };
+
   readonly wsService: GamePlayerWebsocketService;
 
-  static _Player: typeof Player;
-  static _Defender: typeof Defender;
-  static _Attacker: typeof Attacker;
+  constructor(basePlayer: BasePlayer) {
+    this.info = basePlayer.info;
+    this.left = basePlayer.left;
+    this.right = basePlayer.right;
+    this.hand = basePlayer.hand;
+    this.wsService = basePlayer.wsService;
+    if (this.left) this.left.right = this;
+    if (this.right) this.right.left = this;
+  }
 
   static async configureDependencies() {
     await Promise.all([
@@ -41,26 +69,6 @@ export abstract class BasePlayer {
     ]);
   }
 
-  constructor(basePlayer: BasePlayer) {
-    this.info = basePlayer.info;
-    this.left = basePlayer.left;
-    this.right = basePlayer.right;
-    this.hand = basePlayer.hand;
-    this.wsService = basePlayer.wsService;
-    if (this.left) this.left.right = this;
-    if (this.right) this.right.left = this;
-  }
-
-  get id() {
-    return this.info.id;
-  }
-
-  get isAdmin() {
-    return this.info.isAdmin;
-  }
-
-  abstract get kind(): PlayerKind;
-
   asAttacker() {
     return new BasePlayer._Attacker(this);
   }
@@ -73,16 +81,12 @@ export abstract class BasePlayer {
     return new BasePlayer._Player(this);
   }
 
-  isDefender(): this is Defender {
-    return false;
+  canTakeMore(cardCount: number) {
+    return this.hand.count > cardCount;
   }
 
-  isAttacker(): this is Attacker {
-    return false;
-  }
-
-  isSuperPlayer(): this is SuperPlayer {
-    return this.isAttacker() || this.isDefender();
+  emitKind() {
+    this.wsService.emitOwnKind(this);
   }
 
   isAllowed(): this is AllowedSuperPlayer {
@@ -97,12 +101,16 @@ export abstract class BasePlayer {
     return this.isDefender() && this.isAllowed();
   }
 
-  emitKind() {
-    this.wsService.emitOwnKind(this);
+  isAttacker(): this is Attacker {
+    return false;
   }
 
-  canTakeMore(cardCount: number) {
-    return this.hand.count > cardCount;
+  isDefender(): this is Defender {
+    return false;
+  }
+
+  isSuperPlayer(): this is SuperPlayer {
+    return this.isAttacker() || this.isDefender();
   }
 
   receiveCards(...cards: Card[]): void {
@@ -110,31 +118,15 @@ export abstract class BasePlayer {
     this.wsService.receiveCards(cards, this);
   }
 
-  get missingNumberOfCards(): AllowedMissingCardCount {
-    return Math.max(
-      GOOD_CARD_AMOUNT - this.hand.count,
-      0,
-    ) as AllowedMissingCardCount;
-  }
-
   toDebugJSON() {
     return {
+      hand: this.hand,
       id: this.id,
       info: this.info,
-      kind: this.kind,
       isAllowed: this.isAllowed(),
-      hand: this.hand,
+      kind: this.kind,
       leftId: this.left.id,
       rightId: this.right.id,
-    };
-  }
-
-  toJSON() {
-    return {
-      id: this.id,
-      info: this.info,
-      kind: this.kind,
-      isAllowedToMove: this.isAllowed(),
     };
   }
 
@@ -142,6 +134,15 @@ export abstract class BasePlayer {
     return {
       ...this.toJSON(),
       cardCount: this.hand.count,
+    };
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      info: this.info,
+      isAllowedToMove: this.isAllowed(),
+      kind: this.kind,
     };
   }
 
@@ -160,4 +161,21 @@ export abstract class BasePlayer {
     }
     return value;
   }
+
+  get id() {
+    return this.info.id;
+  }
+
+  get isAdmin() {
+    return this.info.isAdmin;
+  }
+
+  get missingNumberOfCards(): AllowedMissingCardCount {
+    return Math.max(
+      GOOD_CARD_AMOUNT - this.hand.count,
+      0,
+    ) as AllowedMissingCardCount;
+  }
+
+  abstract get kind(): PlayerKind;
 }

@@ -10,7 +10,8 @@
     "debug": "node --inspect --loader ts-node/esm src/index.ts",
     "test:dev": "vitest dev",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "nibble": "eslint-nibble ext-- .ts src/**"
   },
   "keywords": [],
   "author": "",

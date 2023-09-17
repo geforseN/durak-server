@@ -12,7 +12,9 @@ export class InternalError extends Error {
   }
 }
 
-// export class NotificationToSelf
+export class InternalGameLogicError extends Error {}
+
+export class NotificationToSelf extends Error {}
 
 export class GameLogicError extends Error {
   get asNotificationAlert() {
@@ -21,10 +23,10 @@ export class GameLogicError extends Error {
 }
 
 type BadAllowedPlayerInputHeader =
-  | "Transfer move attempt"
-  | "Defense move attempt"
   | "Attack move attempt"
-  | "Move attempt";
+  | "Defense move attempt"
+  | "Move attempt"
+  | "Transfer move attempt";
 
 export class AllowedPlayerBadInputError extends Error {
   header?: BadAllowedPlayerInputHeader;
@@ -41,11 +43,3 @@ export class AllowedPlayerBadInputError extends Error {
     return new NotificationAlert(this);
   }
 }
-
-// header TransferMove attempt
-// transfer moves no more allowed
-// no such rank found on board
-
-// header AttackMove attempt
-
-// header DefendMove attempt
