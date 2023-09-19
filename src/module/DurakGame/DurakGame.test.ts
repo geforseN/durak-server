@@ -6,13 +6,14 @@ import type {
 
 import assert from "node:assert";
 import EventEmitter from "node:events";
-import { beforeEach, describe, expect, it, test } from "vitest";
+import { beforeEach, describe, expect, it, should, test } from "vitest";
 
 import Lobby from "../Lobbies/entity/Lobby.js";
 import LobbyUser from "../Lobbies/entity/LobbyUser.js";
 import DurakGame from "./DurakGame.js";
 import NonStartedDurakGame from "./NonStartedDurakGame.js";
 import DeskSlots from "./entity/DeskSlots/index.js";
+import DefenderGaveUpMove from "./entity/GameMove/DefenderGaveUpMove.js";
 import TransferMove from "./entity/GameMove/DefenderTransferMove.js";
 import {
   InsertAttackCardMove,
@@ -22,7 +23,6 @@ import {
 import { BasePlayer } from "./entity/Player/BasePlayer.abstract.js";
 import getDefenseStrategy from "./entity/Player/DefaultBehavior/getDefenseStrategy.js";
 import { Card } from "./entity/index.js";
-import DefenderGaveUpMove from "./entity/GameMove/DefenderGaveUpMove.js";
 
 const namespaceStubOfSocketIO = {
   emit() {},
@@ -71,6 +71,7 @@ function createDurakGame({
   shouldGiveRequiredCards,
   shouldMakeInitialDistribution,
   shouldStartRightNow,
+  trumpCard,
 }: {
   deskValues?: [number, Card?, Card?][];
   players: { cards?: CardDTO[]; id: string }[];
@@ -78,8 +79,10 @@ function createDurakGame({
   shouldGiveRequiredCards?: boolean;
   shouldMakeInitialDistribution?: boolean;
   shouldStartRightNow?: boolean;
+  trumpCard?: CardDTO;
 }) {
   const gameSettings = { ...defaultLobbySettings, ...settings };
+  trumpCard ??= gameSettings.talon.trumpCard;
   const lobby = new Lobby(
     {
       cardCount: gameSettings.talon.count,
@@ -97,7 +100,6 @@ function createDurakGame({
   players.forEach((player, index) => {
     lobby.insertUser(new LobbyUser({ id: player.id }, player.cards), index);
   });
-  const { trumpCard } = gameSettings.talon;
   if (trumpCard) {
     players.forEach((player) => {
       if (!player.cards) {
@@ -106,7 +108,7 @@ function createDurakGame({
       if (
         player.cards.some(
           (card) =>
-            card.rank === trumpCard.rank && card.suit === trumpCard.suit,
+            card.rank === trumpCard!.rank && card.suit === trumpCard!.suit,
         )
       ) {
         throw {
@@ -415,33 +417,29 @@ describe("Проверка логики игры для двух игроков"
     );
   });
 
-  describe.todo("transfer move logic", () => {
-    describe.todo("disallow transfer move", () => {
-      describe.todo("no enough cards for attacker.left player", async () => {
+  describe("transfer move logic", () => {
+    describe("disallow transfer move", () => {
+      describe("no enough cards for left player", async () => {
+        const dog = {
+          cards: [
+            { rank: "10", suit: suits["♠"] },
+            { rank: "10", suit: suits.trump },
+            { rank: "8", suit: suits["♦"] },
+          ] satisfies CardDTO[],
+          id: "dog",
+        };
+        const cat = {
+          cards: [
+            { rank: "10", suit: suits["♦"] },
+            { rank: "10", suit: suits["♥"] },
+            { rank: "8", suit: suits["♥"] },
+          ] satisfies CardDTO[],
+          id: "cat",
+        };
         const game = createDurakGame({
-          players: [
-            {
-              cards: [
-                { rank: "10", suit: suits.trump },
-                { rank: "10", suit: suits["♠"] },
-              ],
-              id: "dog",
-            },
-            {
-              cards: [
-                { rank: "10", suit: suits["♦"] },
-                { rank: "10", suit: suits["♥"] },
-              ],
-              id: "cat",
-            },
-          ],
-          settings: {
-            talon: {
-              ...defaultLobbySettings.talon,
-              trumpCard,
-            },
-          },
+          players: [dog, cat],
           shouldMakeInitialDistribution: false,
+          trumpCard,
         });
 
         ////// ! !? !?! ? ?!? W?!W?!?W?!W?!W?!?W?!W?!?W?
@@ -452,17 +450,42 @@ describe("Проверка логики игры для двух игроков"
         it("first", async () => {
           const { allowed, attacker } = game.players;
           assert.strict.equal(attacker, allowed);
+          expect(attacker.id).toBe("dog");
           await attacker.makeNewMove("0♠", 0);
+          expect(game.round.moves.latest).to.be.instanceOf(
+            InsertAttackCardMove,
+          );
         });
         it("second", async () => {
           const { allowed, attacker } = game.players;
           assert.strict.equal(attacker, allowed);
+          expect(attacker.id).toBe("dog");
           await attacker.makeNewMove();
+          expect(game.round.moves.latest).to.be.instanceOf(StopAttackMove);
         });
-        it("second", async () => {
+        it("third", async () => {
+          const { allowed, defender } = game.players;
+          assert.strict.equal(defender, allowed);
+          expect(defender.id).toBe("cat");
+          await defender.makeNewMove("0♦", 1);
+          expect(game.round.moves.latest).to.be.instanceOf(TransferMove);
+        });
+        it("fourth", async () => {
           const { allowed, attacker } = game.players;
           assert.strict.equal(attacker, allowed);
+          expect(attacker.id).toBe("cat");
           await attacker.makeNewMove();
+        });
+        it("fifth", async () => {
+          console.log(2, game.players);
+          const { allowed, attacker, defender } = game.players;
+          assert.strict.equal(defender, allowed);
+          expect(defender.id).toBe("dog");
+          expect(defender.hand.count).toBe(2);
+          expect(attacker.hand.count).toBe(2);
+          await expect(async () => {
+            await defender.makeNewMove("0♣", 2);
+          }).rejects.toThrow("qweqw");
         });
       });
       it.todo("transfer move already done", () => {});

@@ -15,6 +15,7 @@ import { type Attacker } from "./Attacker.js";
 import { type Defender } from "./Defender.js";
 import { type Player } from "./Player.js";
 import { type SuperPlayer } from "./SuperPlayer.abstract.js";
+import { AllowedPlayerBadInputError } from "../../error/index.js";
 
 export const GOOD_CARD_AMOUNT = 6;
 
@@ -51,7 +52,6 @@ export abstract class BasePlayer {
     this.right = basePlayer.right;
     this.hand = basePlayer.hand;
     this.wsService = basePlayer.wsService;
-
   }
 
   static async configureDependencies() {
@@ -82,6 +82,18 @@ export abstract class BasePlayer {
 
   canTakeMore(cardCount: number) {
     return this.hand.count > cardCount;
+  }
+
+  ensureCanAllowTransfer(cardCount: number) {
+    if (this.left.canTakeMore(cardCount)) {
+      return;
+    }
+    throw new AllowedPlayerBadInputError(
+      "Player, to which you wanna transfer cards, has not enough card for defense. You must defend cards on desk",
+      {
+        header: "Transfer move attempt",
+      },
+    );
   }
 
   emitKind() {
