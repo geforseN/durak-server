@@ -1,15 +1,16 @@
-import type {
-  Card as CardDTO,
-  GameSettings,
-  Suit,
-} from "@durak-game/durak-dts";
+import type { CardDTO, GameSettings, Suit } from "@durak-game/durak-dts";
+
 import assert from "node:assert";
 import crypto from "node:crypto";
+
 import TrumpCard from "../../Card/TrumpCard.js";
 import Card from "../../Card/index.js";
 
-export default function buildTalon({ count, trumpCard }: GameSettings["talon"]) {
-  assert.ok(count)
+export default function buildTalon({
+  count,
+  trumpCard,
+}: GameSettings["talon"]) {
+  assert.ok(count);
   // cardCount probably equal to 24, 36 or 52
   // but later 54 can be added (where 2 additional cards are jokers)
   const maxCardsPerSuit = count / Card.suits.length;
@@ -21,6 +22,14 @@ export default function buildTalon({ count, trumpCard }: GameSettings["talon"]) 
   const nonShuffledDeck = Card.suits.flatMap((suit) =>
     getCardsOfSuit(suit, maxCardsPerSuit),
   );
+  if (trumpCard) {
+    assert.ok(
+      nonShuffledDeck.some((card) =>
+        card.hasSame({ rank: trumpCard.rank, suit: trumpCard.suit }),
+      ),
+      "The trump card you provided does not exist on deck. Probably, the rank of card is to low",
+    );
+  }
 
   const shuffledCards = withCorrectTrumpCard(
     makeModernFisherYatesShuffle(nonShuffledDeck),

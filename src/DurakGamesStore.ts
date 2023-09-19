@@ -1,37 +1,36 @@
 import type { DurakGameSocket } from "@durak-game/durak-dts";
+
 import assert from "node:assert";
-import DurakGame from "./module/DurakGame/DurakGame.js";
-import NonStartedDurakGame from "./module/DurakGame/NonStartedDurakGame.js";
+
 import type Lobby from "./module/Lobbies/entity/Lobby.js";
 
+import DurakGame from "./module/DurakGame/DurakGame.js";
+import NonStartedDurakGame from "./module/DurakGame/NonStartedDurakGame.js";
+
 export default class DurakGamesStore<
-  Game extends NonStartedDurakGame | DurakGame = NonStartedDurakGame | DurakGame,
+  Game extends DurakGame | NonStartedDurakGame = DurakGame | NonStartedDurakGame,
 > {
-  values: Map<Game["info"]["id"], NonStartedDurakGame | DurakGame>;
+  values: Map<Game["info"]["id"], DurakGame | NonStartedDurakGame>;
 
   constructor() {
     this.values = new Map();
-  }
-
-  get startedGamesState() {
-    return [...this.values.values()]
-      .filter((game): game is DurakGame => game.info.status !== "ended")
-      .map((game) => ({
-        ...game,
-        players: [...game.players].map((player) => player.toJSON()),
-      }));
-  }
-
-  hasGameWithId(gameId: Game["info"]["id"]) {
-    return this.values.has(gameId);
   }
 
   getGameWithId(gameId: Game["info"]["id"]) {
     return this.values.get(gameId);
   }
 
+  hasGameWithId(gameId: Game["info"]["id"]) {
+    return this.values.has(gameId);
+  }
+
+  removeStartedGame(game: DurakGame) {
+    const isExisted = this.values.delete(game.info.id);
+    assert.ok(isExisted);
+  }
+
   updateLobbyToNonStartedGame(lobby: Lobby) {
-    this.values.set(lobby.id, new NonStartedDurakGame(lobby));
+    this.values.set(lobby.id, new NonStartedDurakGame(lobby, this));
   }
 
   updateNonStartedGameToStarted(
@@ -45,8 +44,12 @@ export default class DurakGamesStore<
     return startedGame;
   }
 
-  removeStartedGame(game: DurakGame) {
-    const isExisted = this.values.delete(game.info.id);
-    assert.ok(isExisted);
+  get startedGamesState() {
+    return [...this.values.values()]
+      .filter((game): game is DurakGame => game.info.status !== "ended")
+      .map((game) => ({
+        ...game,
+        players: [...game.players].map((player) => player.toJSON()),
+      }));
   }
 }

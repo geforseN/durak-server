@@ -26,6 +26,7 @@ type BadAllowedPlayerInputHeader =
   | "Attack move attempt"
   | "Defense move attempt"
   | "Move attempt"
+  | "Stop move attempt"
   | "Transfer move attempt";
 
 export class AllowedPlayerBadInputError extends Error {

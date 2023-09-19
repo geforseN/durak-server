@@ -8,7 +8,11 @@ import assert from "node:assert";
 import { pino } from "pino";
 
 import type NonStartedDurakGame from "./NonStartedDurakGame.js";
+import type { GameMove } from "./entity/GameMove/index.js";
+import type { AllowedSuperPlayer } from "./entity/Player/AllowedSuperPlayer.abstract.js";
+import type { Players } from "./entity/index.js";
 
+import RoundEnd from "./entity/DefenseEnding/RoundEnd.js";
 import GameRoundMoves from "./entity/GameRound/GameRoundMoves.js";
 import GameRoundDistribution from "./entity/GameRoundDistributionQueue.js";
 import {
@@ -16,7 +20,6 @@ import {
   Desk,
   Discard,
   GameRound,
-  Players,
   Talon,
   createPlayers,
 } from "./entity/index.js";
@@ -28,17 +31,19 @@ import {
 
 export default class DurakGame {
   readonly #wsService: DurakGameWebsocketService;
+  __________history__________: any;
   readonly desk: Desk;
   readonly discard: Discard;
-  history: any;
   readonly info: {
     adminId: string;
     durakId?: string;
     id: string;
     namespace: DurakGameSocket.Namespace;
+    shouldBeUsedOnlyForTest: boolean;
     shouldGiveRequiredCards: boolean;
     shouldMakeInitialDistribution: boolean;
     shouldStartRightNow: boolean;
+    shouldWriteEndedGameInDatabase: boolean;
     status: GameState["status"];
   };
   readonly logger = pino({
@@ -56,22 +61,28 @@ export default class DurakGame {
     nonStartedGame: NonStartedDurakGame,
     namespace: DurakGameSocket.Namespace,
     {
+      shouldBeUsedOnlyForTest = false,
       shouldGiveRequiredCards = true,
       shouldMakeInitialDistribution = true,
       shouldStartRightNow = true,
+      shouldWriteEndedGameInDatabase = true,
     }: {
+      shouldBeUsedOnlyForTest?: boolean;
       shouldGiveRequiredCards?: boolean;
       shouldMakeInitialDistribution?: boolean;
       shouldStartRightNow?: boolean;
+      shouldWriteEndedGameInDatabase?: boolean;
     } = {},
   ) {
     const wsServices = createServices(namespace);
     this.info = {
       ...nonStartedGame.info,
       namespace,
+      shouldBeUsedOnlyForTest,
       shouldGiveRequiredCards,
       shouldMakeInitialDistribution,
       shouldStartRightNow,
+      shouldWriteEndedGameInDatabase,
       status: "starts",
     };
     this.settings = {
@@ -88,7 +99,7 @@ export default class DurakGame {
     this.#wsService = wsServices.gameService;
     this.round = new GameRound(this, new GameRoundMoves());
     this.talonDistribution = new GameRoundDistribution(this);
-    this.history = {
+    this.__________history__________ = {
       players: {
         leftPlayers: {
           count: 0,
@@ -103,7 +114,6 @@ export default class DurakGame {
       },
       rounds: [],
     };
-
     if (this.info.shouldStartRightNow) {
       this.start();
     }
@@ -122,7 +132,31 @@ export default class DurakGame {
     const [durakPlayer] = this.players;
     // NOTE: durakPlayer may not exist if game ended with draw
     this.info.durakId = durakPlayer?.id;
+    if (this.info.shouldBeUsedOnlyForTest) {
+      return;
+    }
     this.#wsService.end(this);
+  }
+
+  handleNewMove(move: GameMove<AllowedSuperPlayer>) {
+    if (move.isInsertMove()) {
+      move.makeCardInsert();
+    }
+    // HERE IS MANY BUGS
+    // FIXME
+    // StopAttackMove;
+    this.round.moves.push(move);
+    const nextThing = move.gameMutationStrategy();
+    if (nextThing?.kind === 'RoundEnd') {
+      nextThing.makeMutation();
+      const { newGameRound } = nextThing;
+      if (!newGameRound) {
+        return this.end();
+      }
+      this.round = newGameRound;
+    } else {
+      this.players.allowed.setTimer();
+    }
   }
 
   handleSocketConnection(
@@ -165,11 +199,7 @@ export interface CanProvideCards<Target extends CanReceiveCards> {
   provideCards: (_target: Target) => void;
 }
 
-export interface ___________NextThingToDoInGame________ {
-  kind: "Attacker" | "Defender" | "RoundEnd";
-}
-
-function createDurakGame({
+function __createDurakGame__({
   namespace,
 }: {
   namespace: DurakGameSocket.Namespace;

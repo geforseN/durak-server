@@ -1,17 +1,19 @@
+import assert from "node:assert";
+
 import DurakGame from "../../DurakGame.js";
+import { AllowedPlayerBadInputError } from "../../error/index.js";
 import Card from "../Card/index.js";
 import DeskSlot from "../DeskSlot/index.js";
+import DefenderGaveUpMove from "../GameMove/DefenderGaveUpMove.js";
 import {
   DefenderTransferMove,
   InsertDefendCardMove,
   StopDefenseMove,
 } from "../GameMove/index.js";
 import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
+import AllowedDefenderDefaultBehavior from "./DefaultBehavior/AllowedDefenderDefaultBehavior.js";
 import { Defender } from "./Defender.js";
 import { type SuperPlayer } from "./SuperPlayer.abstract.js";
-import AllowedDefenderDefaultBehavior from "./DefaultBehavior/AllowedDefenderDefaultBehavior.js";
-import { AllowedPlayerBadInputError } from "../../error/index.js";
-import assert from "node:assert";
 
 export class AllowedDefender extends AllowedSuperPlayer {
   defaultBehavior: AllowedDefenderDefaultBehavior;
@@ -21,8 +23,8 @@ export class AllowedDefender extends AllowedSuperPlayer {
     this.defaultBehavior = new AllowedDefenderDefaultBehavior(this);
   }
 
-  get kind() {
-    return "AllowedDefender" as const;
+  asAllowed(): AllowedDefender {
+    return this.asAllowedAgain();
   }
 
   asAllowedAgain(): AllowedDefender {
@@ -31,17 +33,31 @@ export class AllowedDefender extends AllowedSuperPlayer {
     return new AllowedDefender(this, this.game);
   }
 
-  asAllowed(): AllowedDefender {
-    return this.asAllowedAgain();
-  }
-
   asDisallowed(): Defender {
     this.defaultBehavior.shouldBeCalled = false;
     this.defaultBehavior.clearTimeout();
     return new Defender(this);
   }
 
+  async ensureCanMakeTransferMove(card: Card, slot: DeskSlot): Promise<void> {
+    if (!this.left.canTakeMore(this.game.desk.cardsCount)) {
+      new AllowedPlayerBadInputError(
+        "Player, to which you wanna transfer cards, has not enough card for defense. You must defend cards on desk",
+        {
+          header: "Transfer move attempt",
+        },
+      );
+    }
+    await slot.ensureCanBeAttacked();
+    this.game.desk.ensureIncludesRank(card.rank);
+    const deskRanks = [...this.game.desk.ranks];
+    assert.ok(deskRanks.length === 1 && card.rank === deskRanks[0]);
+    return this.game.desk.ensureAllowsTransferMove(card);
+  }
+
   async makeInsertMove(card: Card, slot: DeskSlot) {
+    this.defaultBehavior.shouldBeCalled = false;
+    this.defaultBehavior.clearTimeout();
     if (this.game.round.isAllowsTransferMove) {
       try {
         await this.ensureCanMakeTransferMove(card, slot);
@@ -63,22 +79,18 @@ export class AllowedDefender extends AllowedSuperPlayer {
   }
 
   makeStopMove() {
+    this.defaultBehavior.shouldBeCalled = false;
+    this.defaultBehavior.clearTimeout();
+    if (!this.game.desk.isDefended) {
+      // defender.defaultBehavior.shouldBeCalled = false;
+      // defender.defaultBehavior.clearTimeout();
+
+      return new DefenderGaveUpMove(this.game,this);
+    }
     return new StopDefenseMove(this.game, this);
   }
 
-  async ensureCanMakeTransferMove(card: Card, slot: DeskSlot): Promise<void> {
-    if (!this.left.canTakeMore(this.game.desk.cardsCount)) {
-      new AllowedPlayerBadInputError(
-        "Player, to which you wanna transfer cards, has not enough card for defense. You must defend cards on desk",
-        {
-          header: "Transfer move attempt",
-        },
-      );
-    }
-    await slot.ensureCanBeAttacked();
-    this.game.desk.ensureIncludesRank(card.rank);
-    const deskRanks = [...this.game.desk.ranks];
-    assert.ok(deskRanks.length === 1 && card.rank === deskRanks[0]);
-    return this.game.desk.ensureAllowsTransferMove(card);
+  get kind() {
+    return "AllowedDefender" as const;
   }
 }

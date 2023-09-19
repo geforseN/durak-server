@@ -6,19 +6,10 @@ import { type BasePlayer } from "./BasePlayer.abstract.js";
 import { SuperPlayer } from "./SuperPlayer.abstract.js";
 
 export class Defender extends SuperPlayer {
-  #isSurrendered: boolean;
-  public isReal: boolean;
-
   constructor(
     basePlayer: BasePlayer,
-    {
-      isPrimal = false, // TODO think about it ...
-      isSurrendered = false,
-    }: { isPrimal?: boolean; isSurrendered?: boolean } = {},
   ) {
     super(basePlayer);
-    this.#isSurrendered = isSurrendered;
-    this.isReal = isPrimal;
   }
 
   asAllowed(game: DurakGame): AllowedSuperPlayer {
@@ -26,7 +17,7 @@ export class Defender extends SuperPlayer {
   }
 
   asSurrendered() {
-    return new Defender(this, { isPrimal: true, isSurrendered: true });
+    return new Defender(this);
   }
 
   canNotDefend(cardCount: number) {
@@ -40,11 +31,11 @@ export class Defender extends SuperPlayer {
         //  below statement is for 2 players game:
         //  in 2 players game can be only one attacker
         //  IF attacker stop move THAN defender won
-        (game.round.latestPrimalAttacker.isAllowed() &&
-          this.left === game.round.latestPrimalAttacker) ||
+        (game.round.primalAttackerAsLatest.isAllowed() &&
+          this.left === game.round.primalAttackerAsLatest) ||
         // below statement is for more than 2 players game
         (game.players.attacker.isAllowed() &&
-          game.players.attacker.left === game.round.latestPrimalAttacker)
+          game.players.attacker.left === game.round.primalAttackerAsLatest)
       );
     } catch (error) {
       // TODO if (error instanceof NoPrimalAttackerError) {}
@@ -57,12 +48,8 @@ export class Defender extends SuperPlayer {
     return true;
   }
 
-  isSurrendered() {
-    return this.#isSurrendered;
-  }
-
   // TODO - rewrite
   get kind() {
-    return this.#isSurrendered ? "SurrenderedDefender" : "Defender";
+    return "Defender" as const;
   }
 }

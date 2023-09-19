@@ -1,41 +1,36 @@
-import type Lobby from "../Lobbies/entity/Lobby.js";
-import raise from "../../common/raise.js";
-import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSocket.handler.js";
-import type DurakGame from "./DurakGame.js";
 import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
-import LobbyUser from "../Lobbies/entity/LobbyUser.js";
+
 import type DurakGamesStore from "../../DurakGamesStore.js";
+import type Lobby from "../Lobbies/entity/Lobby.js";
+import type DurakGame from "./DurakGame.js";
+
+import raise from "../../common/raise.js";
+import LobbyUser from "../Lobbies/entity/LobbyUser.js";
+import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSocket.handler.js";
 
 export default class NonStartedDurakGame {
   info: {
-    id: string;
     adminId: string;
     durakPlayerId?: string;
+    id: string;
     namespace?: DurakGameSocket.Namespace;
     status: "non started";
   };
-  sockets: Map<string, Set<DurakGameSocket.Socket>>;
   settings: GameSettings;
-  usersInfo: LobbyUser[];
+  sockets: Map<string, Set<DurakGameSocket.Socket>>;
   store?: DurakGamesStore
+  usersInfo: LobbyUser[];
 
-  constructor(lobby: Lobby) {
+  constructor(lobby: Lobby, store?: DurakGamesStore) {
     this.info = {
-      id: lobby.id,
       adminId: lobby.slots.admin.id,
+      id: lobby.id,
       status: 'non started',
     };
+    this.store = store
     this.settings = lobby.settings;
-    this.usersInfo = lobby.userSlots.map((slot) => slot.user.toJSON());
+    this.usersInfo = lobby.userSlots.map((slot) => slot.user);
     this.sockets = new Map();
-  }
-
-  get isAllPlayersConnected() {
-    return this.sockets.size === this.settings.players.count;
-  }
-
-  addPlayerConnection(socket: DurakGameSocket.Socket) {
-    this.#addPlayerConnection(socket);
   }
 
   #addPlayerConnection(socket: DurakGameSocket.Socket) {
@@ -46,6 +41,18 @@ export default class NonStartedDurakGame {
     } else {
       this.sockets.set(playerId, new Set([socket]));
     }
+  }
+
+  addPlayerConnection(socket: DurakGameSocket.Socket) {
+    this.#addPlayerConnection(socket);
+  }
+
+  emitEverySocketWithStartedGameDetails(startedGame: DurakGame) {
+    this.sockets.forEach((playerSockets) => {
+      playerSockets.forEach((socket) => {
+        addListenersWhichAreNeededForStartedGame.call(socket, startedGame);
+      });
+    });
   }
 
   emitSocketWithLoadingDetails(socket: DurakGameSocket.Socket) {
@@ -66,11 +73,7 @@ export default class NonStartedDurakGame {
     }
   }
 
-  emitEverySocketWithStartedGameDetails(startedGame: DurakGame) {
-    this.sockets.forEach((playerSockets) => {
-      playerSockets.forEach((socket) => {
-        addListenersWhichAreNeededForStartedGame.call(socket, startedGame);
-      });
-    });
+  get isAllPlayersConnected() {
+    return this.sockets.size === this.settings.players.count;
   }
 }

@@ -1,10 +1,12 @@
 import type { DurakGameSocket } from "@durak-game/durak-dts";
+
+import type DurakGame from "../DurakGame.js";
+
+import prisma from "../../../../prisma/index.js";
 import durakGamesStore from "../../../common/durakGamesStore.js";
 import raise from "../../../common/raise.js";
-import { cardPlaceListener, stopMoveListener } from "./listener/index.js";
-import type DurakGame from "../DurakGame.js";
 import NotificationAlert from "../../NotificationAlert/index.js";
-import prisma from "../../../../prisma/index.js";
+import { cardPlaceListener, stopMoveListener } from "./listener/index.js";
 
 export function addListenersWhichAreNeededForStartedGame(
   this: DurakGameSocket.Socket,
@@ -41,8 +43,8 @@ export default function durakGameSocketHandler(
   socket: DurakGameSocket.Socket,
 ) {
   const {
-    nsp: namespace,
     data: { user: player },
+    nsp: namespace,
   } = socket;
   const gameId = namespace.name.replace("/game/", "");
   console.assert(namespace === this);
@@ -64,7 +66,7 @@ function handleNoSuchGameOnline(
 ) {
   console.log("handleNoSuchGameOnline");
   prisma.durakGame
-    .findFirstOrThrow({ where: { uuid: gameId }, include: { players: true } })
+    .findFirstOrThrow({ include: { players: true }, where: { uuid: gameId } })
     .then(
       (game) => {
         socket.emit("finishedGame::restore", { state: game });

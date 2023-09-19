@@ -1,8 +1,10 @@
 import assert from "node:assert";
-import getDefenseStrategy from "./getDefenseStrategy.js";
+
+import type { Card } from "../../index.js";
+import type { AllowedDefender } from "../AllowedDefender.js";
+
 import DefaultBehavior from "./DefaultBehavior.js";
-import { AllowedDefender } from "../AllowedDefender.js";
-import { type Card } from "../../index.js";
+import getDefenseStrategy from "./getDefenseStrategy.js";
 
 export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefender> {
   constructor(
@@ -42,7 +44,7 @@ export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefen
           [...this.allowedPlayer.hand],
           this.game.desk.unbeatenSlots.cards,
         );
-        const { defendCard, attackCard } = defenseStrategy[0];
+        const { attackCard, defendCard } = defenseStrategy[0];
         const slot = [...this.game.desk].find(
           (slot) =>
             slot.attackCard?.rank === attackCard.rank &&

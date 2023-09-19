@@ -1,9 +1,11 @@
 import assert from "node:assert";
-import { GameMove } from "../GameMove/index.js";
-import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
-import { AllowedDefender } from "../Player/AllowedDefender.js";
+
 import { InternalError } from "../../error/index.js";
+import DefenderGaveUpMove from "../GameMove/DefenderGaveUpMove.js";
+import { GameMove } from "../GameMove/index.js";
 import { AllowedAttacker } from "../Player/AllowedAttacker.js";
+import { AllowedDefender } from "../Player/AllowedDefender.js";
+import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
 
 export default class GameRoundMoves {
   #value: GameMove<AllowedSuperPlayer>[];
@@ -17,14 +19,6 @@ export default class GameRoundMoves {
     move.emitContextToPlayers();
   }
 
-  get latestDoneMove() {
-    assert.ok(
-      this.#value.length,
-      new InternalError("No one yet done a single move"),
-    );
-    return this.#value[this.#value.length - 1];
-  }
-
   get firstRealDefenderMove(): GameMove<AllowedDefender> | never {
     const firstRealDefenderMove = this.#value.find(
       (move): move is GameMove<AllowedDefender> =>
@@ -32,6 +26,26 @@ export default class GameRoundMoves {
     );
     assert.ok(firstRealDefenderMove, "Нет защищающегося хода");
     return firstRealDefenderMove;
+  }
+
+  get isDefenderSurrendered() {
+    return this.#value.some((move) => move instanceof DefenderGaveUpMove);
+  }
+
+  get latest() {
+    assert.ok(
+      this.#value.length,
+      new InternalError("No one yet done a single move in current round"),
+    );
+    return this.#value[this.#value.length - 1];
+  }
+
+  get previous() {
+    assert.ok(
+      this.#value.length >= 1,
+      new InternalError("No one yet done a single move"),
+    );
+    return this.#value[this.#value.length - 2];
   }
 
   get primalMove(): GameMove<AllowedAttacker> {

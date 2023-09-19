@@ -1,14 +1,28 @@
-import { Card, DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
+import type {
+  CardDTO,
+  DurakGameSocket,
+  GameSettings,
+} from "@durak-game/durak-dts";
+
 import assert from "node:assert";
 import EventEmitter from "node:events";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, test } from "vitest";
 
 import Lobby from "../Lobbies/entity/Lobby.js";
 import LobbyUser from "../Lobbies/entity/LobbyUser.js";
 import DurakGame from "./DurakGame.js";
 import NonStartedDurakGame from "./NonStartedDurakGame.js";
+import DeskSlots from "./entity/DeskSlots/index.js";
+import TransferMove from "./entity/GameMove/DefenderTransferMove.js";
+import {
+  InsertAttackCardMove,
+  StopAttackMove,
+  StopDefenseMove,
+} from "./entity/GameMove/index.js";
 import { BasePlayer } from "./entity/Player/BasePlayer.abstract.js";
-import { makeMagic } from "./socket/handler/makeMagic.js";
+import getDefenseStrategy from "./entity/Player/DefaultBehavior/getDefenseStrategy.js";
+import { Card } from "./entity/index.js";
+import DefenderGaveUpMove from "./entity/GameMove/DefenderGaveUpMove.js";
 
 const namespaceStubOfSocketIO = {
   emit() {},
@@ -36,46 +50,86 @@ const defaultLobbySettings: GameSettings = {
   },
   talon: {
     count: 36,
-    trumpCard: { rank: "4", suit: "♣" },
   },
   type: "perevodnoy",
 };
 
 await BasePlayer.configureDependencies();
 
+const suits = {
+  trump: "♣",
+  "♠": "♠",
+  "♥": "♥",
+  "♦": "♦",
+} as const;
+const trumpCard: CardDTO = { rank: "9", suit: suits["trump"] } as const;
+
 function createDurakGame({
-  gameSettings = {},
+  deskValues,
   players,
+  settings = {},
   shouldGiveRequiredCards,
   shouldMakeInitialDistribution,
   shouldStartRightNow,
 }: {
-  gameSettings?: Partial<GameSettings>;
-  players: { cards?: Card[]; id: string }[];
+  deskValues?: [number, Card?, Card?][];
+  players: { cards?: CardDTO[]; id: string }[];
+  settings?: Partial<GameSettings>;
   shouldGiveRequiredCards?: boolean;
   shouldMakeInitialDistribution?: boolean;
   shouldStartRightNow?: boolean;
 }) {
-  const settings = { ...defaultLobbySettings, gameSettings };
+  const gameSettings = { ...defaultLobbySettings, ...settings };
   const lobby = new Lobby(
     {
-      cardCount: settings.talon.count,
-      gameType: settings.type,
-      moveTime: settings.players.moveTime,
-      userCount: settings.players.count,
+      cardCount: gameSettings.talon.count,
+      gameType: gameSettings.type,
+      moveTime: gameSettings.players.moveTime,
+      trumpCard: gameSettings.talon.trumpCard,
+      userCount: gameSettings.players.count,
     },
     new EventEmitter(),
   );
+  // NOTE: the first player is admin of lobby
+  // NOTE: IF game logic of define first attacker did not changed THEN
+  // - the first player will be attacker
+  // - the second player will be defender
   players.forEach((player, index) => {
     lobby.insertUser(new LobbyUser({ id: player.id }, player.cards), index);
   });
+  const { trumpCard } = gameSettings.talon;
+  if (trumpCard) {
+    players.forEach((player) => {
+      if (!player.cards) {
+        return;
+      }
+      if (
+        player.cards.some(
+          (card) =>
+            card.rank === trumpCard.rank && card.suit === trumpCard.suit,
+        )
+      ) {
+        throw {
+          message:
+            "player card has main trump card on game creation, which is not ok for later logic of test",
+          playerCards: player.cards,
+          trumpCard,
+        };
+      }
+    });
+  }
   assert.ok(lobby.isFull);
   const nonStartedDurakGame = new NonStartedDurakGame(lobby);
   const game = new DurakGame(nonStartedDurakGame, namespaceStubOfSocketIO, {
+    shouldBeUsedOnlyForTest: true,
     shouldGiveRequiredCards,
     shouldMakeInitialDistribution,
     shouldStartRightNow,
+    shouldWriteEndedGameInDatabase: false,
   });
+  if (deskValues) {
+    game.desk._slots = DeskSlots.__test_only_deskSlots(deskValues);
+  }
   if (shouldMakeInitialDistribution) {
     [...game.players].forEach((player) => {
       assert.ok(
@@ -92,20 +146,369 @@ function createDurakGame({
 describe("Проверка логики игры для двух игроков", async () => {
   beforeEach((test) => console.log(`about to run "${test.task.name}"`));
 
+  it.todo("throw when defender puts wrong card", () => {
+    it.todo("case 1", () => {});
+    it.todo("case 2", () => {});
+    it.todo("defender tries to put not trump card on trump card", () => {});
+    it.todo("defender put ", () => {});
+  });
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  describe("THIS IS IT", () => {
+    const game = createDurakGame({
+      players: [
+        {
+          cards: [
+            { rank: "10", suit: "♥" },
+            { rank: "7", suit: "♥" },
+            { rank: "J", suit: "♥" },
+            { rank: "9", suit: "♣" },
+            { rank: "7", suit: "♠" },
+            { rank: "10", suit: "♠" },
+          ],
+          id: "dog",
+        },
+        {
+          cards: [
+            { rank: "6", suit: "♣" },
+            { rank: "6", suit: "♥" },
+            { rank: "8", suit: "♦" },
+            { rank: "Q", suit: "♦" },
+            { rank: "10", suit: "♣" },
+            { rank: "Q", suit: "♣" },
+          ],
+          id: "cat",
+        },
+      ],
+      settings: {
+        talon: {
+          count: 36,
+          trumpCard: { rank: "8", suit: "♥" },
+        },
+      },
+    });
+    test("dog first move 0♠ ok", async () => {
+      const { allowed, attacker } = game.players;
+      assert.strict.equal(attacker, allowed);
+      expect(attacker.id).equal("dog");
+      await attacker.makeNewMove("0♠", 0);
+      expect(game.round.moves.latest).instanceOf(InsertAttackCardMove);
+      assert.strict.notEqual(attacker, game.players.attacker);
+    });
+    test("dog second move stop ok", async () => {
+      const { allowed, attacker } = game.players;
+      assert.strict.equal(attacker, allowed);
+      expect(attacker.id).equal("dog");
+      await attacker.makeNewMove();
+      expect(game.round.moves.latest).instanceOf(StopAttackMove);
+      assert.strict.notEqual(attacker, game.players.attacker);
+    });
+    test("cat first move transfer 0♣ ok", async () => {
+      const { allowed, defender } = game.players;
+      assert.strict.equal(defender, allowed);
+      expect(defender.id).equal("cat");
+      await defender.makeNewMove("0♣", 1);
+      expect(game.round.moves.latest).instanceOf(TransferMove);
+      assert.strict.notEqual(defender, game.players.defender);
+    });
+    test("cat second move stop ok", async () => {
+      const { allowed, attacker } = game.players;
+      assert.strict.equal(attacker, allowed);
+      expect(attacker.id).equal("cat");
+      await attacker.makeNewMove();
+      expect(game.round.moves.latest).instanceOf(StopAttackMove);
+      assert.strict.notEqual(attacker, game.players.attacker);
+    });
+    test("dog third move 0♥ (trump suit) transfer ok", async () => {
+      const { allowed, defender } = game.players;
+      assert.strict.equal(defender, allowed);
+      expect(defender.id).equal("dog");
+      await defender.makeNewMove("0♥", 2);
+      expect(game.round.moves.latest).instanceOf(TransferMove);
+      assert.strict.notEqual(defender, game.players.attacker);
+    });
+    test("dog fourth move stop ok", async () => {
+      const { allowed, attacker } = game.players;
+      assert.strict.equal(attacker, allowed);
+      expect(attacker.id).equal("dog");
+      await attacker.makeNewMove();
+      expect(game.round.moves.latest).instanceOf(StopAttackMove);
+      assert.strict.notEqual(attacker, game.players.attacker);
+    });
+    test("cat can not really win", async () => {
+      const { allowed, defender } = game.players;
+      assert.strict.equal(defender, allowed);
+      expect(defender.id).equal("cat");
+      expect(() =>
+        getDefenseStrategy([...defender.hand], game.desk.unbeatenSlots.cards),
+      ).toThrow("Defender trump card could not defend desk trump card");
+    });
+    test("cat third move stop ok", async () => {
+      const { allowed, defender } = game.players;
+      assert.strict.equal(defender, allowed);
+      expect(defender.id).equal("cat");
+      await defender.makeNewMove();
+      expect(game.round.moves.latest).instanceOf(DefenderGaveUpMove);
+      const newDefender = game.players.defender;
+      assert.strict.notEqual(defender, newDefender);
+      // NOTE: i wish defender can have isSurrendered method or property
+      // but because of bugs in code logic is changed and isSurrender do not exist
+      // for better code it should be added later
+      // TODO: Defender#isSurrendered
+      // assert.ok(newDefender.isSurrendered());
+    });
+    test("dog can not really pursuit move", () => {
+      const { allowed, attacker } = game.players;
+      assert.strict.equal(attacker, allowed);
+      const deskRanks = [...game.desk.ranks];
+      expect(deskRanks).lengthOf(1);
+      expect(() => {
+        attacker.hand.get((card) => card.rank === deskRanks[0]);
+      }).toThrow("У вас нет такой карты");
+    });
+    test(
+      "dog stop move should lead to: " +
+        "1) push desk cards to defender " +
+        "2) dog again allowed to move",
+      async () => {
+        const { allowed, attacker, defender } = game.players;
+        assert.strict.equal(attacker, allowed);
+        const deckCards = game.desk._slots.cards;
+        expect(game.round.number).toStrictEqual(1);
+        const defenderCardCountBeforeDistribution = defender.hand.count;
+        const newDefenderCardCount =
+          deckCards.length + defenderCardCountBeforeDistribution;
+        expect(newDefenderCardCount).equals(8);
+        await attacker.makeNewMove();
+        expect(() => game.round.moves.latest).toThrow(
+          "No one yet done a single move in current round",
+        );
+        const { attacker: newRoundAttacker, defender: newRoundDefender } =
+          game.players;
+        expect(game.round.number).toStrictEqual(2);
+        expect(newRoundAttacker.hand.count).equal(6);
+        expect(newRoundAttacker.missingNumberOfCards).equal(0);
+        // FIXME: commented line below never end the code
+        // expect(newRoundDefender).toBe(defender)
+        // same thing with assert.strict.equal
+        // so used line below instead
+        assert.ok(newRoundDefender !== defender);
+        // NOTE: the expect below will work because
+        // card distribution will happened on the end of first round
+        // so past defender received card from desk and then new defender created
+        expect(newRoundDefender.hand.count).equal(defender.hand.count);
+        expect(newRoundDefender.hand.count).equals(newDefenderCardCount);
+        assert.strict.equal(newRoundAttacker, game.players.allowed);
+      },
+    );
+  });
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  describe("throw when attacker puts card with wrong rank", async () => {
+    let game: DurakGame;
+    beforeEach(() => {
+      game = createDurakGame({
+        players: [
+          {
+            cards: [
+              { rank: "10", suit: suits.trump },
+              { rank: "J", suit: suits.trump },
+            ],
+            id: "cat",
+          },
+          {
+            cards: [
+              { rank: "J", suit: suits.trump },
+              { rank: "Q", suit: suits.trump },
+            ],
+            id: "dog",
+          },
+        ],
+        settings: {
+          talon: {
+            ...defaultLobbySettings.talon,
+            trumpCard,
+          },
+        },
+        shouldMakeInitialDistribution: false,
+      });
+    });
+
+    it("put card of rank 10, then J rank throws", async () => {
+      [...game.players].forEach((player) => {
+        expect(player.hand.count).toBe(2);
+      });
+      const { allowed, attacker } = game.players;
+      assert.strictEqual(attacker, allowed);
+      game.handleNewMove(await attacker._makeMove(`${"0"}${suits.trump}`, 0));
+      const { allowed: allowed2, attacker: attacker2 } = game.players;
+      assert.notStrictEqual(attacker, allowed2);
+      assert.strictEqual(attacker2, allowed2);
+      await expect(
+        async () => await attacker.makeNewMove(`J${suits.trump}`, 1),
+      ).rejects.toThrow("Нет схожего ранга на доске");
+    });
+    it("att, def, bad att", async () => {
+      [...game.players].forEach((player) => {
+        expect(player.hand.count).toBe(2);
+      });
+      const { allowed, attacker } = game.players;
+      assert.strictEqual(attacker, allowed);
+      game.handleNewMove(
+        await attacker._makeMove({ rank: "10", suit: suits.trump }, 0),
+      );
+      const { allowed: allowed2, attacker: attacker2 } = game.players;
+      assert.notStrictEqual(allowed2, attacker);
+      assert.strictEqual(attacker2, allowed2);
+      // expect(async () =>
+      //   game.handleNewMove(await attacker.makeMove()),
+      // ).resolves.toBeTruthy();
+      game.handleNewMove(await attacker2._makeMove());
+      const { allowed: allowed3, defender } = game.players;
+      assert.strictEqual(defender, allowed3);
+      // game.handleNewMove(
+      //   await defender.makeInsertMove(
+      //     defender.hand.get((card) =>
+      //       card.hasSame({ rank: "Q", suit: suits.trump })
+      //     ),
+      //     game.desk.slotAt(0)
+      //   ),
+      // );
+      game.handleNewMove(await defender._makeMove(`Q${suits.trump}`, 0));
+      const { allowed: allowed4, attacker: attacker3 } = game.players;
+      assert.strictEqual(attacker3, allowed4);
+      await expect(async () => {
+        await attacker3.makeNewMove(`J${suits.trump}`, 1);
+      }).rejects.toThrow("Нет схожего ранга на доске");
+    });
+  });
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ddd!!!!!!!!!!
+
+  it("attacker logic", async () => {
+    it.todo("THIS IS COPY PASTE", async () => {
+      const game = createDurakGame({
+        players: [
+          { cards: [{ rank: "J", suit: suits.trump }], id: "cat" },
+          { cards: [{ rank: "10", suit: suits.trump }], id: "dog" },
+        ],
+        settings: {
+          talon: {
+            ...defaultLobbySettings.talon,
+            trumpCard,
+          },
+        },
+      });
+      const { allowed, attacker } = game.players;
+      assert.strictEqual(attacker, allowed);
+      game.handleNewMove(
+        await attacker._makeMove(
+          game.players.attacker.hand.get((_, index) => index === 0),
+          game.desk.slotAt(0),
+        ),
+      );
+      expect(game.players.attacker).not.toBe(attacker);
+    });
+    it.todo(
+      "throw when attacker wanna attack player which can not defend",
+      () => {
+        it.todo("case 1", () => {});
+        it.todo("case 2", () => {});
+      },
+    );
+  });
+
+  describe.todo("transfer move logic", () => {
+    describe.todo("disallow transfer move", () => {
+      describe.todo("no enough cards for attacker.left player", async () => {
+        const game = createDurakGame({
+          players: [
+            {
+              cards: [
+                { rank: "10", suit: suits.trump },
+                { rank: "10", suit: suits["♠"] },
+              ],
+              id: "dog",
+            },
+            {
+              cards: [
+                { rank: "10", suit: suits["♦"] },
+                { rank: "10", suit: suits["♥"] },
+              ],
+              id: "cat",
+            },
+          ],
+          settings: {
+            talon: {
+              ...defaultLobbySettings.talon,
+              trumpCard,
+            },
+          },
+          shouldMakeInitialDistribution: false,
+        });
+
+        ////// ! !? !?! ? ?!? W?!W?!?W?!W?!W?!?W?!W?!?W?
+        // !!!!!!!!!!!! GO HERE !!!!!!!!!
+        // !!!!!!!!!!!! GO HERE !!!!!!!!!
+        // !!!!!!!!!!!! GO HERE !!!!!!!!!
+        // !!!!!!!!!!!! GO HERE !!!!!!!!!
+        it("first", async () => {
+          const { allowed, attacker } = game.players;
+          assert.strict.equal(attacker, allowed);
+          await attacker.makeNewMove("0♠", 0);
+        });
+        it("second", async () => {
+          const { allowed, attacker } = game.players;
+          assert.strict.equal(attacker, allowed);
+          await attacker.makeNewMove();
+        });
+        it("second", async () => {
+          const { allowed, attacker } = game.players;
+          assert.strict.equal(attacker, allowed);
+          await attacker.makeNewMove();
+        });
+      });
+      it.todo("transfer move already done", () => {});
+      it.todo("wrong card for transfer move (wrong rank of card)", () => {});
+    });
+
+    it.todo("allows transfer move ", () => {
+      it.todo("case 1", () => {});
+      it.todo("case 2", () => {});
+    });
+  });
+  it.todo("last move of round works correct", () => {
+    it.todo("game end when needed", () => {
+      it.todo("case 1", () => {});
+      it.todo("case 2", () => {});
+    });
+    it.todo("new round become when needed", () => {
+      it.todo("case 1", () => {});
+      it.todo("case 2", () => {});
+    });
+    it.todo("handle empty player correct", () => {
+      it.todo("remove player from game when talon empty", () => {
+        it.todo("case 1", () => {});
+        it.todo("case 2", () => {});
+      });
+    });
+
+    it.todo("do not remove player when talon has cards", () => {
+      it.todo("case 1", () => {});
+      it.todo("case 2", () => {});
+    });
+  });
+  it.todo("", () => {});
+  it.todo("", () => {});
+
   it("first scenario", () => {
     const game = createDurakGame({
       players: [{ id: "1" }, { id: "2" }],
-      shouldMakeInitialDistribution: true,
-      shouldStartRightNow: true,
     });
 
-    it("card is dropped by attacker", async ({ expect }) => {
+    it("card is dropped by attacker", async () => {
       const attacker = game.players.attacker;
       assert.ok(attacker.isAllowed());
       expect(attacker.isAllowed()).toStrictEqual(true);
       expect(game.players.attacker.hand.count).toBe(6);
-      makeMagic.call(
-        { game },
+      game.handleNewMove(
         await attacker.makeInsertMove(
           game.players.attacker.hand.get((_, index) => index === 0),
           game.desk.slotAt(0),
@@ -121,7 +524,7 @@ describe("Проверка логики игры для двух игроков"
       const attackerAfterInsert = game.players.attacker;
       assert.ok(attackerAfterInsert.isAllowed());
 
-      makeMagic.call({ game }, attackerAfterInsert.makeStopMove());
+      game.handleNewMove(attackerAfterInsert.makeStopMove());
 
       const attackerAfterStop = game.players.attacker;
       expect(attackerAfterStop).toBe(game.players.attacker);
@@ -140,31 +543,42 @@ describe("Проверка логики игры для двух игроков"
       "♥": "♥",
       "♦": "♦",
     } as const;
-    const trumpCard: Card = { rank: "K", suit: suits["trump"] };
+    const trumpCard: CardDTO = { rank: "K", suit: suits["trump"] };
     const game = createDurakGame({
-      gameSettings: {
+      players: [
+        { cards: [{ rank: "9", suit: suits["trump"] }], id: "cat" },
+        { cards: [{ rank: "10", suit: suits["♣"] }], id: "dog" },
+      ],
+      settings: {
         talon: {
           ...defaultLobbySettings.talon,
           trumpCard,
         },
       },
-      players: [
-        { cards: [{ rank: "9", suit: suits["trump"] }], id: "cat" },
-        { cards: [{ rank: "10", suit: suits["♣"] }], id: "dog" },
-      ],
       shouldMakeInitialDistribution: false,
       shouldStartRightNow: false,
     });
+
+    expect(
+      [...game.players].every((player) => player.hand.count === 0),
+    ).toBeTruthy();
+
     game.start();
+
     expect(
       [...game.players].every((player) => player.hand.count === 1),
     ).toBeTruthy();
+
     expect(
       game.players
         .get((player) => player.id === "cat")
         .hand.get((_, index) => index === 0).isTrump,
-      ).toBeTruthy();
+    ).toBeTruthy();
 
-
+    expect(
+      [...game.players].every((player) => player.hand.count === 1),
+    ).toBeTruthy();
   });
+
+  it.todo("ended successfully when defender and talon is empty", () => {});
 });

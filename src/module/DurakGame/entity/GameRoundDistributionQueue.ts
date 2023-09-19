@@ -3,8 +3,7 @@ import type { AllowedMissingCardCount } from "@durak-game/durak-dts";
 import assert from "node:assert";
 
 import type DurakGame from "../DurakGame.js";
-
-import { BasePlayer } from "./Player/BasePlayer.abstract.js";
+import type { BasePlayer } from "./Player/BasePlayer.abstract.js";
 
 export default class GameRoundDistribution {
   game: DurakGame;
@@ -33,12 +32,13 @@ export default class GameRoundDistribution {
   }
 
   *playersQueue() {
-    const { latestPrimalAttacker } = this.game.round;
     const { defender } = this.game.players;
-    yield latestPrimalAttacker;
-    assert.strictEqual(latestPrimalAttacker.left, defender);
+    const { primalAttackerAsLatest } = this.game.round;
+    assert.strictEqual(defender.right, primalAttackerAsLatest);
+    yield defender.right;
+    // yield primalAttackerAsLatest;
     let player: BasePlayer = defender;
-    while ((player = player.left) !== latestPrimalAttacker) {
+    while ((player = player.left) !== primalAttackerAsLatest) {
       yield player;
     }
     yield defender;

@@ -1,12 +1,13 @@
 import type { User, UserProfile } from "@prisma/client";
+
 import { Card } from "../../DurakGame/entity/index.js";
 
 /** @property {Card[]} cards - property which can be used, for now, only for tests */
 export default class LobbyUser {
-  id: string;
-  profile: UserProfile;
-  isAdmin;
   cardsToAdd: Card[];
+  id: string;
+  isAdmin;
+  profile: UserProfile;
 
   constructor(user: User & { profile: UserProfile }, cards: Card[] = []) {
     this.id = user.id;
@@ -16,6 +17,6 @@ export default class LobbyUser {
   }
 
   toJSON() {
-    return { ...this };
+    return { ...this, cardsToAdd: undefined };
   }
 }

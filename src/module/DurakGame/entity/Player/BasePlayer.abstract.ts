@@ -51,8 +51,7 @@ export abstract class BasePlayer {
     this.right = basePlayer.right;
     this.hand = basePlayer.hand;
     this.wsService = basePlayer.wsService;
-    if (this.left) this.left.right = this;
-    if (this.right) this.right.left = this;
+
   }
 
   static async configureDependencies() {

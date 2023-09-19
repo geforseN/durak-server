@@ -1,14 +1,21 @@
-import handlePutCardOnDesk from "../handler/handle-put-card-on-desk.js";
-import handleStopMove from "../handler/handle-stop-move.js";
-import DurakGame from "../../DurakGame.js";
-import NotificationAlert from "../../../NotificationAlert/index.js";
-import assert from "node:assert";
 import { Card as CardDTO } from "@durak-game/durak-dts";
+import assert from "node:assert";
+
+import type DurakGame from "../../DurakGame.js";
+
+import NotificationAlert from "../../../NotificationAlert/index.js";
 import { AllowedPlayerBadInputError } from "../../error/index.js";
 
-export function stopMoveListener(this: { game: DurakGame; playerId: string }) {
+export async function stopMoveListener(this: {
+  game: DurakGame;
+  playerId: string;
+}) {
   try {
-    handleStopMove.call(this);
+    const player = this.game.players.get(
+      (player) => player.id === this.playerId,
+    );
+    assert.strict.equal(player, this.game.players.allowed);
+    await player.makeNewMove();
   } catch (error) {
     if (error instanceof AllowedPlayerBadInputError) {
       return this.game.info.namespace
@@ -28,7 +35,11 @@ export async function cardPlaceListener(
   slotIndex: number,
 ) {
   try {
-    await handlePutCardOnDesk.call(this, card, slotIndex);
+    const player = this.game.players.get(
+      (player) => player.id === this.playerId,
+    );
+    assert.strict.equal(player, this.game.players.allowed);
+    await player.makeNewMove(card, slotIndex);
   } catch (error) {
     if (error instanceof AllowedPlayerBadInputError) {
       return this.game.info.namespace

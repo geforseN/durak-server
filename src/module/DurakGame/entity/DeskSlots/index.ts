@@ -1,7 +1,10 @@
-import { DeskSlot, EmptySlot } from "../DeskSlot/index.js";
-import Card, { Rank } from "../Card/index.js";
 import { randomInt } from "node:crypto";
+
+import type Card from "../Card/index.js";
+import type DeskSlot from "../DeskSlot/index.js";
+
 import raise from "../../../../common/raise.js";
+import EmptySlot from "../DeskSlot/EmptySlot.js";
 
 export default class DeskSlots {
   readonly #value: DeskSlot[];
@@ -10,20 +13,45 @@ export default class DeskSlots {
     this.#value = Array.from({ length }, (_, index) => new EmptySlot(index));
   }
 
-  toEmpty() {
-    return new DeskSlots(this.count);
-  }
-
-  get isEverySlotEmpty(): boolean {
-    return this.#value.every((slot) => slot.isEmpty());
+  static __test_only_deskSlots(slotValues: [number, Card?, Card?][]) {
+    const slots = new DeskSlots(slotValues.length);
+    for (const [index, attackCard, defendCard] of slotValues) {
+      if (attackCard) {
+        slots.update(slots.at(index), attackCard);
+      }
+      if (defendCard) {
+        slots.update(slots.at(index), defendCard);
+      }
+    }
+    return slots;
   }
 
   *[Symbol.iterator]() {
     yield* this.#value;
   }
 
-  get count() {
-    return this.#value.length;
+  at(index: number): DeskSlot {
+    return this.#value.at(index) || raise();
+  }
+
+  async ensureAllowsTransferMove(card: Card): Promise<void> {
+    return void Promise.all(
+      this.#value.map((slot) =>
+        slot.ensureAllowsTransferMoveForRank(card.rank),
+      ),
+    );
+  }
+
+  someSlotHasSameRank(rank: Card["rank"]) {
+    return this.#value.some((slot) => slot.hasCardWith({ rank }));
+  }
+
+  toEmpty() {
+    return new DeskSlots(this.count);
+  }
+
+  update(slot: DeskSlot, card: Card) {
+    this.#value[slot.index] = slot.nextDeskSlot(card);
   }
 
   get cards(): Card[] {
@@ -34,23 +62,12 @@ export default class DeskSlots {
     return this.cards.length;
   }
 
-  update(slot: DeskSlot, card: Card) {
-    const nextSlot = slot.nextDeskSlot(card);
-    this.#value[slot.index] = nextSlot;
+  get count() {
+    return this.#value.length;
   }
 
-  async ensureAllowsTransferMove(card: Card): Promise<void> {
-    return void Promise.all(
-      this.#value.map((slot) => slot.ensureAllowsTransferMoveForRank(card.rank)),
-    );
-  }
-
-  at(index: number): DeskSlot {
-    return this.#value.at(index) || raise();
-  }
-
-  someSlotHasSameRank(rank: Rank) {
-    return this.#value.some((slot) => slot.has({ rank }));
+  get isEverySlotEmpty(): boolean {
+    return this.#value.every((slot) => slot.isEmpty());
   }
 
   get randomEmptySlot() {
