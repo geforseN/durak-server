@@ -22,24 +22,6 @@ export class AllowedAttacker extends AllowedSuperPlayer {
     this.defaultBehavior = new AllowedAttackerDefaultBehavior(this);
   }
 
-  _makeMove(): Promise<GameMove<AllowedAttacker>>;
-  _makeMove(_card: Card, _slot: DeskSlot): Promise<GameMove<AllowedAttacker>>;
-  _makeMove(
-    _cardDTO: CardDTO,
-    _slotIndex: number,
-  ): Promise<GameMove<AllowedAttacker>>;
-  async _makeMove(
-    cardLike?: unknown,
-    slotData?: unknown,
-  ): Promise<GameMove<AllowedAttacker>> {
-    if (!cardLike && !slotData) {
-      return this.makeStopMove();
-    }
-    const card = this.hand.getValidCard(cardLike);
-    const slot = this.game.desk.getValidSlot(slotData);
-    return this.makeInsertMove(card, slot);
-  }
-
   asAllowed(): AllowedAttacker {
     return this.asAllowedAgain();
   }

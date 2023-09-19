@@ -7,12 +7,11 @@ export default class DefendedSlot extends DeskSlot {
     super(index);
   }
 
-  get value(): [Card, Card] {
-    return [this.attackCard, this.defendCard];
-  }
-
-  override isDefended(): this is DefendedSlot {
-    return true;
+  override ensureAllowsTransferMoveForRank(_: Card["rank"]): Promise<void> {
+    throw new AllowedPlayerBadInputError(
+      "The transfer move is disallowed because defended slot exist on desk",
+      { header: "Transfer move attempt" },
+    );
   }
 
   override async ensureCanBeAttacked() {
@@ -29,11 +28,8 @@ export default class DefendedSlot extends DeskSlot {
     );
   }
 
-  override ensureAllowsTransferMoveForRank(_: Card["rank"]): Promise<void> {
-    throw new AllowedPlayerBadInputError(
-      "The transfer move is disallowed because defended slot exist on desk",
-      { header: "Transfer move attempt" },
-    );
+  override isDefended(): this is DefendedSlot {
+    return true;
   }
 
   override nextDeskSlot(_: Card): never {
@@ -41,5 +37,9 @@ export default class DefendedSlot extends DeskSlot {
       "The slot can not be used for a move because it is defended",
       { header: "Move attempt" },
     );
+  }
+
+  get value(): [Card, Card] {
+    return [this.attackCard, this.defendCard];
   }
 }

@@ -40,14 +40,7 @@ export class AllowedDefender extends AllowedSuperPlayer {
   }
 
   async ensureCanMakeTransferMove(card: Card, slot: DeskSlot): Promise<void> {
-    if (!this.left.canTakeMore(this.game.desk.cardsCount)) {
-      new AllowedPlayerBadInputError(
-        "Player, to which you wanna transfer cards, has not enough card for defense. You must defend cards on desk",
-        {
-          header: "Transfer move attempt",
-        },
-      );
-    }
+    this.left.ensureCanAllowTransfer(this.game.desk.cardsCount + 1)
     await slot.ensureCanBeAttacked();
     this.game.desk.ensureIncludesRank(card.rank);
     const deskRanks = [...this.game.desk.ranks];
@@ -58,6 +51,7 @@ export class AllowedDefender extends AllowedSuperPlayer {
   async makeInsertMove(card: Card, slot: DeskSlot) {
     this.defaultBehavior.shouldBeCalled = false;
     this.defaultBehavior.clearTimeout();
+    slot.isEmpty() // THEN we can try transfer move
     if (this.game.round.isAllowsTransferMove) {
       try {
         await this.ensureCanMakeTransferMove(card, slot);
@@ -85,7 +79,7 @@ export class AllowedDefender extends AllowedSuperPlayer {
       // defender.defaultBehavior.shouldBeCalled = false;
       // defender.defaultBehavior.clearTimeout();
 
-      return new DefenderGaveUpMove(this.game,this);
+      return new DefenderGaveUpMove(this.game, this);
     }
     return new StopDefenseMove(this.game, this);
   }
