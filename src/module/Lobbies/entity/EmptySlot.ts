@@ -14,20 +14,20 @@ class EmptySlot {
     return false;
   }
 
-  withInsertedUser(user: LobbyUser) {
-    return new FilledSlot(this.index, user);
+  toJSON() {
+    return null;
   }
 
   withInsertedAdminUser(user: LobbyUser) {
     return new AdminSlot(this.index, user);
   }
 
-  withRemovedUser() {
-    return new EmptySlot(this.index);
+  withInsertedUser(user: LobbyUser) {
+    return new FilledSlot(this.index, user);
   }
 
-  toJSON() {
-    return null;
+  withRemovedUser() {
+    return new EmptySlot(this.index);
   }
 }
 

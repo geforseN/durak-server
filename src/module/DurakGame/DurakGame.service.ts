@@ -11,19 +11,8 @@ import raise from "../../common/raise.js";
 export default class DurakGameWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
 
-  end(gameToRemove: DurakGame) {
-    assert.ok(typeof gameToRemove.info.durakId !== "undefined");
-    this.namespace
-      .to(gameToRemove.info.id)
-      .emit("game::over", { durak: { id: gameToRemove.info.durakId } });
-    this.namespace.socketsLeave(gameToRemove.info.id);
-    gameToRemove.history.players.forEach((player) => {
-      this.namespace.socketsLeave(player.id);
-    });
-    durakGamesStore.removeStartedGame(gameToRemove);
-    const gameType = gameToRemove.settings.gameType.toUpperCase();
-    assert.ok(gameType === GameType.BASIC || gameType === GameType.PEREVODNOY);
-    // TODO rework code
+  // TODO rework code
+  #saveEndedGameInDB(gameToRemove: DurakGame) {
     prisma.durakGame
       .create({
         data: {
@@ -31,14 +20,17 @@ export default class DurakGameWebsocketService {
           gameType,
           moveTime: gameToRemove.settings.moveTime,
           players: {
-            create: gameToRemove.history.players.map((player) => ({
-              hasLost: gameToRemove.info.durakId === player.id,
-              index: player.index,
-              place: player.place,
-              result: gameToRemove.info.durakId === player.id ? "LOST" : "WON",
-              roundLeftNumber: player.roundLeftNumber,
-              userId: player.id,
-            })),
+            create: gameToRemove.__________history__________.players.map(
+              (player) => ({
+                hasLost: gameToRemove.info.durakId === player.id,
+                index: player.index,
+                place: player.place,
+                result:
+                  gameToRemove.info.durakId === player.id ? "LOST" : "WON",
+                roundLeftNumber: player.roundLeftNumber,
+                userId: player.id,
+              }),
+            ),
           },
           playersCount: gameToRemove.settings.userCount,
           status: "ENDED",
@@ -60,6 +52,23 @@ export default class DurakGameWebsocketService {
       .catch((reason) =>
         gameToRemove.logger.error({ reason }, "Game was not created"),
       );
+  }
+
+  end(gameToRemove: DurakGame) {
+    this.namespace
+      .to(gameToRemove.info.id)
+      .emit("game::over", { durak: { id: gameToRemove.info.durakId } });
+    this.namespace.socketsLeave(gameToRemove.info.id);
+    gameToRemove.__________history__________.players.forEach((player) => {
+      this.namespace.socketsLeave(player.id);
+    });
+    durakGamesStore.removeStartedGame(gameToRemove);
+    const gameType = gameToRemove.settings.type.toUpperCase();
+    assert.ok(gameType === GameType.BASIC || gameType === GameType.PEREVODNOY);
+    if (!gameToRemove.info.shouldWriteEndedGameInDatabase) {
+      return;
+    }
+    this.#saveEndedGameInDB(gameToRemove);
   }
 
   restoreState(game: DurakGame, socket: DurakGameSocket.Socket) {

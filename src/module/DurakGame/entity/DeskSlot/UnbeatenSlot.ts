@@ -1,19 +1,25 @@
 import { AllowedPlayerBadInputError } from "../../error/index.js";
 import Card from "../Card/index.js";
-import { DefendedSlot } from "./index.js";
 import DeskSlot from "./DeskSlot.abstract.js";
+import { DefendedSlot } from "./index.js";
 
 export default class UnbeatenSlot extends DeskSlot {
   constructor(index: number, public attackCard: Card) {
     super(index);
   }
 
-  get value() {
-    return [this.attackCard];
-  }
-
-  override isUnbeaten(): this is UnbeatenSlot {
-    return true;
+  override async ensureAllowsTransferMoveForRank(
+    rank: Card["rank"],
+  ): Promise<void> {
+    if (this.attackCard.hasSame({ rank })) {
+      return;
+    }
+    throw new AllowedPlayerBadInputError(
+      `The card you threw has wrong rank, allowed rank is ${rank}`,
+      {
+        header: "Transfer move attempt",
+      },
+    );
   }
 
   override async ensureCanBeAttacked() {
@@ -39,21 +45,15 @@ export default class UnbeatenSlot extends DeskSlot {
     }
   }
 
-  override async ensureAllowsTransferMoveForRank(
-    rank: Card["rank"],
-  ): Promise<void> {
-    if (this.attackCard.hasSame({ rank })) {
-      return;
-    }
-    throw new AllowedPlayerBadInputError(
-      `The card you threw has wrong rank, allowed rank is ${rank}`,
-      {
-        header: "Transfer move attempt",
-      },
-    );
+  override isUnbeaten(): this is UnbeatenSlot {
+    return true;
   }
 
   override nextDeskSlot(card: Card): DefendedSlot {
     return new DefendedSlot(this.index, this.attackCard, card);
+  }
+
+  get value() {
+    return [this.attackCard];
   }
 }

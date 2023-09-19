@@ -1,20 +1,21 @@
+import type { Card as CardDTO } from "@durak-game/durak-dts";
+
 import assert from "node:assert";
+
 import type DurakGame from "../../DurakGame.js";
 import type Card from "../Card/index.js";
-import SuperHand from "../Deck/Hand/SuperHand.js";
 import type DeskSlot from "../DeskSlot/index.js";
 import type GameMove from "../GameMove/GameMove.abstract.js";
 import type { Attacker } from "./Attacker.js";
 import type DefaultBehavior from "./DefaultBehavior/DefaultBehavior.js";
 import type { Defender } from "./Defender.js";
+
+import SuperHand from "../Deck/Hand/SuperHand.js";
 import { SuperPlayer } from "./SuperPlayer.abstract.js";
-import type { Card as CardDTO } from "@durak-game/durak-dts";
 export abstract class AllowedSuperPlayer extends SuperPlayer {
   asSuperPlayer: SuperPlayer;
   game: DurakGame;
   superHand: SuperHand;
-
-  abstract defaultBehavior: DefaultBehavior<AllowedSuperPlayer>;
 
   // REVIEW ctor, may have bugs
   constructor(superPlayer: SuperPlayer, game: DurakGame) {
@@ -24,30 +25,51 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
     this.superHand = new SuperHand(superPlayer.hand);
   }
 
+  _makeMove(): Promise<GameMove<AllowedSuperPlayer>>;
+  _makeMove(
+    _card: Card | CardDTO | ReturnType<Card["asString"]>,
+    _slot: DeskSlot | number,
+  ): Promise<GameMove<AllowedSuperPlayer>>;
+  async _makeMove(
+    cardLike?: unknown,
+    slotData?: unknown,
+  ): Promise<GameMove<AllowedSuperPlayer>> {
+    if (!cardLike && !slotData) {
+      return this.makeStopMove();
+    }
+    const card = this.hand.getValidCard(cardLike);
+    const slot = this.game.desk.getValidSlot(slotData);
+    return this.makeInsertMove(card, slot);
+  }
+
   asLatest() {
     const latest = this.game.players.get((player) => player.id === this.id);
-    // FIXME here can be throw
+    // FIXME here can be throw which are not needed
+    // ? FIXME ?
     assert.ok(latest.isAllowed());
     return latest;
-  }
-
-  isAttacker(): this is Attacker {
-    return this.asSuperPlayer.isAttacker();
-  }
-
-  isDefender(): this is Defender {
-    return this.asSuperPlayer.isDefender();
   }
 
   isAllowed(): this is AllowedSuperPlayer {
     return true;
   }
+  isAttacker(): this is Attacker {
+    return this.asSuperPlayer.isAttacker();
+  }
+  isDefender(): this is Defender {
+    return this.asSuperPlayer.isDefender();
+  }
 
-  abstract asAllowedAgain(): AllowedSuperPlayer;
+  makeNewMove(): Promise<void>;
+  makeNewMove(
+    _card: Card | CardDTO | ReturnType<Card["asString"]>,
+    _slot: DeskSlot | number,
+  ): Promise<void>;
+  async makeNewMove(cardLike?: unknown, slotData?: unknown) {
+    return this.game.handleNewMove(await this._makeMove(cardLike, slotData));
+  }
 
-  abstract asDisallowed(): SuperPlayer;
-
-  remove(cb: (card: Card) => boolean) {
+  remove(cb: (_card: Card) => boolean) {
     const card = this.superHand.remove(cb);
     this.wsService.remove(card, this);
     return card;
@@ -84,14 +106,16 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
     };
   }
 
+  abstract asAllowedAgain(): AllowedSuperPlayer;
+
+  abstract asDisallowed(): SuperPlayer;
+
+  abstract defaultBehavior: DefaultBehavior<AllowedSuperPlayer>;
+
   abstract makeInsertMove(
-    card: Card,
-    slot: DeskSlot,
+    _card: Card,
+    _slot: DeskSlot,
   ): Promise<GameMove<AllowedSuperPlayer>>;
 
   abstract makeStopMove(): GameMove<AllowedSuperPlayer>;
-
-  // abstract makeMove(): GameMove<AllowedSuperPlayer>;
-  // abstract makeMove(card: Card, slot: DeskSlot): GameMove<AllowedSuperPlayer>;
-  // abstract makeMove(cardDTO: CardDTO, slotIndex: number): GameMove<AllowedSuperPlayer>;
 }

@@ -1,25 +1,29 @@
-import { GameRound, Players } from "../index.js";
 import type DurakGame from "../../DurakGame.js";
+
 import { BasePlayer } from "../Player/BasePlayer.abstract.js";
+import { GameRound, Players } from "../index.js";
 
-export abstract class RoundEnd {
-  constructor(protected game: DurakGame) {}
-
+export default abstract class RoundEnd {
   kind = "RoundEnd" as const;
 
+  constructor(protected game: DurakGame) {}
+
   protected prepareBeforeNewGameRound() {
-    if (!this.game.talon.isEmpty) {
+    if (this.game.talon.count) {
       return this.game.talonDistribution.makeDistribution();
     }
     const groupedPlayers = getGropedPlayers([...this.game.players]);
     this.game.players = new Players(groupedPlayers.toStay);
-    groupedPlayers.toLeave; // TODO let playersToLeave exit game
+    // TODO let playersToLeave exit game
+    groupedPlayers.toLeave;
     if (this.game.players.count === 1) {
       throw new Error("One player remained. Game must be over");
-    } else if (this.game.players.count === 1) {
+    } else if (this.game.players.count === 0) {
       throw new Error("Game must be ended wit a draw");
     }
   }
+
+  abstract makeMutation(): void
 
   abstract get newGameRound(): GameRound | undefined;
 }

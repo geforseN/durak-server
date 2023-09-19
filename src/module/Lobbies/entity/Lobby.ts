@@ -1,24 +1,31 @@
+import type { GameSettings } from "@durak-game/durak-dts";
+import type EventEmitter from "node:events";
+
+import { CardDTO } from "@durak-game/durak-dts";
 import assert from "node:assert";
 import crypto from "node:crypto";
-import type EventEmitter from "node:events";
-import CorrectGameSettings, {
-  FrontendGameSettings,
-} from "./CorrectGameSettings.js";
-import type { GameSettings } from "@durak-game/durak-dts";
-import LobbySlots from "./LobbySlots.js";
-import { LobbyAccessError } from "../error.js";
+
+import type EmptySlot from "./EmptySlot.js";
+import type FilledSlot from "./FilledSlot.js";
+import type LobbyUser from "./LobbyUser.js";
+
 import { CustomWebsocketEvent } from "../../../ws/index.js";
-import LobbyUser from "./LobbyUser.js";
-import { FilledSlot } from "./FilledSlot.js";
-import EmptySlot from "./EmptySlot.js";
+import { LobbyAccessError } from "../error.js";
+import CorrectGameSettings, {
+  type FrontendGameSettings,
+} from "./CorrectGameSettings.js";
+import LobbySlots from "./LobbySlots.js";
 
 export default class Lobby {
+  #lobbiesEmitter: EventEmitter;
   id: string;
   settings: GameSettings;
   slots: LobbySlots;
-  #lobbiesEmitter: EventEmitter;
 
-  constructor(settings: FrontendGameSettings, lobbiesEmitter: EventEmitter) {
+  constructor(
+    settings: FrontendGameSettings & { trumpCard?: CardDTO },
+    lobbiesEmitter: EventEmitter,
+  ) {
     this.settings = new CorrectGameSettings(settings);
     this.#lobbiesEmitter = lobbiesEmitter;
     this.id = crypto.randomUUID();
@@ -28,24 +35,9 @@ export default class Lobby {
     // TODO: this.userSlots = new UsersSlots(this)
   }
 
-  toJSON() {
-    return { ...this };
-  }
-
-  get userSlots() {
-    return this.slots.userSlots;
-  }
-
-  get isEmpty() {
-    return this.slots.isEmpty;
-  }
-
-  get isFull() {
-    return this.slots.isFull;
-  }
-
-  get admin() {
-    return this.slots.admin;
+  deleteSelf(initiatorId: string) {
+    assert.ok(this.admin.id === initiatorId, new LobbyAccessError());
+    this.#lobbiesEmitter.emit("lobby##remove", { lobby: this });
   }
 
   hasUser(userId: string) {
@@ -62,34 +54,6 @@ export default class Lobby {
     });
   }
 
-  upgradeToNonStartedGame(initiator: LobbyUser): void {
-    assert.ok(this.admin.id === initiator.id, new LobbyAccessError());
-    assert.ok(this.isFull, "Каждый слот должен быть заполнен игроком");
-    this.#lobbiesEmitter.emit("lobby##upgrade", { lobby: this });
-  }
-
-  removeUser(userId: string): LobbyUser {
-    if (this.admin.id === userId) {
-      if (this.slots.usersCount === 1) {
-        this.slots.admin.isAdmin = false;
-      } else {
-        this.slots.admin = this.slots.mostLeftSideNonAdminUser;
-        this.#lobbiesEmitter.emit("lobby##admin##update", { lobby: this });
-      }
-    }
-    const removedUser = this.slots.removeUser(userId);
-    this.#lobbiesEmitter.emit("lobby##user##leave", {
-      lobby: this,
-      user: removedUser,
-    });
-    if (this.isEmpty) {
-      this.#lobbiesEmitter.emit("lobby##remove", {
-        lobby: this,
-      });
-    }
-    return removedUser;
-  }
-
   moveUser(userId: string, newSlotIndex: number) {
     assert.ok(
       newSlotIndex !== -1,
@@ -98,7 +62,7 @@ export default class Lobby {
     assert.ok(
       Number.isInteger(newSlotIndex) &&
         newSlotIndex >= 0 &&
-        newSlotIndex < this.settings.userCount,
+        newSlotIndex < this.settings.players.count,
       new RangeError("Неверный индекс"),
     );
     assert.ok(!this.isFull, new LobbyAccessError("Лобби полностью занято"));
@@ -125,16 +89,59 @@ export default class Lobby {
     return this.insertUser(lobby.removeUser(userId), finalSlotIndex);
   }
 
-  deleteSelf(initiatorId: string) {
-    assert.ok(this.admin.id === initiatorId, new LobbyAccessError());
-    this.#lobbiesEmitter.emit("lobby##remove", { lobby: this });
+  removeUser(userId: string): LobbyUser {
+    if (this.admin.id === userId) {
+      if (this.slots.usersCount === 1) {
+        this.slots.admin.isAdmin = false;
+      } else {
+        this.slots.admin = this.slots.mostLeftSideNonAdminUser;
+        this.#lobbiesEmitter.emit("lobby##admin##update", { lobby: this });
+      }
+    }
+    const removedUser = this.slots.removeUser(userId);
+    this.#lobbiesEmitter.emit("lobby##user##leave", {
+      lobby: this,
+      user: removedUser,
+    });
+    if (this.isEmpty) {
+      this.#lobbiesEmitter.emit("lobby##remove", {
+        lobby: this,
+      });
+    }
+    return removedUser;
+  }
+
+  toJSON() {
+    return { ...this };
+  }
+
+  upgradeToNonStartedGame(initiator: LobbyUser): void {
+    assert.ok(this.admin.id === initiator.id, new LobbyAccessError());
+    assert.ok(this.isFull, "Каждый слот должен быть заполнен игроком");
+    this.#lobbiesEmitter.emit("lobby##upgrade", { lobby: this });
+  }
+
+  get admin() {
+    return this.slots.admin;
+  }
+
+  get isEmpty() {
+    return this.slots.isEmpty;
+  }
+
+  get isFull() {
+    return this.slots.isFull;
+  }
+
+  get userSlots() {
+    return this.slots.userSlots;
   }
 }
 
 export class LobbyUserJoinEvent extends CustomWebsocketEvent {
   lobbyId;
-  user;
   slotIndex;
+  user;
 
   constructor(lobby: Lobby, slot: FilledSlot) {
     super("lobby::user::join");

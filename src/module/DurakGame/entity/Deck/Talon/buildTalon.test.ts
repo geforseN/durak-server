@@ -1,12 +1,14 @@
-import { describe, expect, it, test } from "vitest";
-import buildTalon from "./buildTalon.js";
 import type {
   Card as CardDTO,
   GameSettings,
   TalonCardCount,
 } from "@durak-game/durak-dts";
+
+import { describe, expect, it, test } from "vitest";
+
 import TrumpCard from "../../Card/TrumpCard.js";
 import { Card } from "../../index.js";
+import buildTalon from "./buildTalon.js";
 
 describe("buildTalon work good", () => {
   test.each([0, 1, -36, 54])("throws on wrong count=%i", (count) => {
@@ -32,8 +34,11 @@ describe("buildTalon work good", () => {
   ];
 
   TALON_SETTINGS.forEach(({ count, trumpCard }) => {
+
     expect(() => buildTalon({ count, trumpCard })).not.toThrow();
+
     const talonCards = buildTalon({ count, trumpCard });
+
     describe("given trump card are correct in talon cards", () => {
       it("has trump card as most bottom card", () => {
         expect(talonCards[0]).toContain(trumpCard);

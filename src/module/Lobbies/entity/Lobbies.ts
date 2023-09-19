@@ -1,17 +1,19 @@
 import type { User, UserProfile } from "@prisma/client";
+
 import EventEmitter from "events";
+import assert from "node:assert";
+
 import durakGamesStore from "../../../common/durakGamesStore.js";
 import raise from "../../../common/raise.js";
 import { CustomWebsocketEvent, SocketsStore } from "../../../ws/index.js";
 import { FindLobbyError } from "../error.js";
+import { FrontendGameSettings } from "./CorrectGameSettings.js";
 import Lobby, {
   LobbyAdminUpdateEvent,
   LobbyUserJoinEvent,
   LobbyUserMoveEvent,
 } from "./Lobby.js";
 import LobbyUser from "./LobbyUser.js";
-import assert from "node:assert";
-import { FrontendGameSettings } from "./CorrectGameSettings.js";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;
@@ -50,26 +52,30 @@ export default class Lobbies {
       });
   }
 
-  toJSON() {
-    return [...this.#store.values()];
+  #findLobbyWithUser(userId: User["id"]): Lobby | undefined {
+    for (const lobby of this.#store.values()) {
+      if (lobby.hasUser(userId)) return lobby;
+    }
   }
 
-  getById(lobbyId: Lobby["id"]) {
-    const lobby = this.#store.get(lobbyId);
-    assert.ok(lobby);
-    return lobby;
+  #getLobby(userId: User["id"], lobbyId?: Lobby["id"]) {
+    return (
+      (lobbyId && this.#store.get(lobbyId)) ||
+      this.#findLobbyWithUser(userId) ||
+      raise(new FindLobbyError())
+    );
   }
 
   // NOTE: IF user didn't send slotIndex (didn't specified slotIndex) THEN slotIndex === -1
   // NOTE: will throw WHEN user wanna join same lobby AND user didn't specified slotIndex
   async addUserInLobby({
-    user,
     lobbyId,
     slotIndex,
+    user,
   }: {
-    user: User & { profile: UserProfile };
     lobbyId: Lobby["id"];
     slotIndex: number;
+    user: User & { profile: UserProfile };
   }) {
     const [pastLobby, desiredLobby] = [
       this.#findLobbyWithUser(user.id),
@@ -84,12 +90,18 @@ export default class Lobbies {
     return desiredLobby.pickUserFrom(pastLobby, user.id, slotIndex);
   }
 
+  getById(lobbyId: Lobby["id"]) {
+    const lobby = this.#store.get(lobbyId);
+    assert.ok(lobby);
+    return lobby;
+  }
+
   pushNewLobby({
-    settings,
     initiator,
+    settings,
   }: {
-    settings: FrontendGameSettings;
     initiator: User & { profile: UserProfile };
+    settings: FrontendGameSettings;
   }) {
     const pastLobby = this.#findLobbyWithUser(initiator.id);
     if (pastLobby) {
@@ -100,24 +112,12 @@ export default class Lobbies {
     return lobby;
   }
 
-  upgradeLobbyToNonStartedGame({
-    initiator,
-    lobbyId,
-  }: {
-    lobbyId?: Lobby["id"];
-    initiator: User & { profile: UserProfile };
-  }) {
-    return this.#getLobby(initiator.id, lobbyId).upgradeToNonStartedGame(
-      initiator,
-    );
-  }
-
   removeLobby({
     initiator,
     lobbyId,
   }: {
-    lobbyId?: Lobby["id"];
     initiator: User & { profile: UserProfile };
+    lobbyId?: Lobby["id"];
   }) {
     return this.#getLobby(initiator.id, lobbyId).deleteSelf(initiator.id);
   }
@@ -126,18 +126,20 @@ export default class Lobbies {
     return this.#getLobby(leaver.id, lobbyId).removeUser(leaver.id);
   }
 
-  #getLobby(userId: User["id"], lobbyId?: Lobby["id"]) {
-    return (
-      (lobbyId && this.#store.get(lobbyId)) ||
-      this.#findLobbyWithUser(userId) ||
-      raise(new FindLobbyError())
-    );
+  toJSON() {
+    return [...this.#store.values()];
   }
 
-  #findLobbyWithUser(userId: User["id"]): Lobby | undefined {
-    for (const lobby of this.#store.values()) {
-      if (lobby.hasUser(userId)) return lobby;
-    }
+  upgradeLobbyToNonStartedGame({
+    initiator,
+    lobbyId,
+  }: {
+    initiator: User & { profile: UserProfile };
+    lobbyId?: Lobby["id"];
+  }) {
+    return this.#getLobby(initiator.id, lobbyId).upgradeToNonStartedGame(
+      initiator,
+    );
   }
 }
 

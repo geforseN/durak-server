@@ -1,8 +1,9 @@
 import type DurakGame from "../../DurakGame.js";
-import type { AllowedDefender } from "../Player/AllowedDefender.js";
 import type Card from "../Card/index.js";
-import { SuccessfulDefense } from "../DefenseEnding/index.js";
 import type DeskSlot from "../DeskSlot/index.js";
+import type { AllowedDefender } from "../Player/AllowedDefender.js";
+
+import SuccessfulDefense from "../DefenseEnding/SuccessfulDefense.js";
 import InsertGameMove from "./InsertGameMove.abstract.js";
 
 export default class InsertDefendCardMove extends InsertGameMove<AllowedDefender> {

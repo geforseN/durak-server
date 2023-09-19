@@ -1,9 +1,11 @@
+import assert from "node:assert";
+
 import type DurakGame from "../../DurakGame.js";
-import Card from "../Card/index.js";
 import type DeskSlot from "../DeskSlot/index.js";
+
+import Card from "../Card/index.js";
 import { AllowedDefender } from "../Player/AllowedDefender.js";
 import InsertGameMove from "./InsertGameMove.abstract.js";
-import assert from "node:assert";
 
 export default class TransferMove extends InsertGameMove<AllowedDefender> {
   constructor(
