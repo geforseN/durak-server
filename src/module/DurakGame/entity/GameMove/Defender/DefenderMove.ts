@@ -21,7 +21,7 @@ export class DefenderMove extends GameMove<Defender> {
   }
 
   override async putCardOnDesk(card: Card, slotIndex: number) {
-    await this.game.desk.slots[slotIndex].ensureCanBeDefended({ card });
+    await this.game.desk.slotAt(slotIndex)?.ensureCanBeDefended(card);
     this.game.round.makeDefendInsertMove(card, slotIndex);
   }
 
@@ -31,8 +31,8 @@ export class DefenderMove extends GameMove<Defender> {
 
   async allowsTransferMove(card: Card, slotIndex: number) {
     return (
-      this.player.left.canTakeMore({ cardCount: this.game.desk.cardCount }) &&
-      this.game.desk.allowsTransferMove(card, slotIndex)
+      this.player.left.canTakeMore(this.game.desk.slots.cardsCount) &&
+      this.game.desk.slots.allowsTransferMove(card, slotIndex)
     );
   }
 }

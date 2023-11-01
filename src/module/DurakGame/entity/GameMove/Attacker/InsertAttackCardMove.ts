@@ -1,6 +1,6 @@
 import { AttackerMove } from "./AttackerMove";
 import Card from "../../Card";
-import { AfterHandler, insertCard } from "../../GameRound";
+import { AfterHandler, insertCardStrategy } from "../../GameRound";
 
 type ConstructorArg = ConstructorParameters<typeof AttackerMove>[number] & {
   card: Card;
@@ -19,13 +19,13 @@ export class InsertAttackCardMove extends AttackerMove implements AfterHandler {
   }
 
   #insertCard() {
-    return insertCard.call(this);
+    return insertCardStrategy.call(this);
   }
 
-  handleAfterInitialization() {
+  handleAfterMoveIsDone() {
     if (
       this.player.hand.isEmpty ||
-      !this.game.players.defender.canDefend(this.game.desk.unbeatenCardCount) ||
+      !this.game.players.defender.canDefend(this.game.desk.unbeatenSlots.cardCount) ||
       !this.game.desk.allowsAttackerMove
     ) {
       return this.game.round.giveDefenderLastChance();

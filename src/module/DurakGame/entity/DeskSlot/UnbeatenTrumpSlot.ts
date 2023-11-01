@@ -6,15 +6,15 @@ export default class UnbeatenTrumpSlot extends UnbeatenSlot {
     super(attackCard);
   }
 
-  override ensureCanBeDefended({ card }: { card: Card }) {
-    return new Promise<Card>((resolve, reject) => {
-      if (!card.isTrump) {
-        reject(new Error("Козырную карту можно побить только козырной"));
-      }
-      if (this.attackCard.power > card.power) {
-        reject(new Error("Вы кинули слабую карту"));
-      }
-      resolve(card);
-    });
+  override ensureCanBeDefended(card: Card) {
+    if (!card.isTrump) {
+      return Promise.reject(
+        new Error("Козырную карту можно побить только козырной"),
+      );
+    }
+    if (this.attackCard.power > card.power) {
+      return Promise.reject(new Error("Вы кинули слабую карту"));
+    }
+    return Promise.resolve(card);
   }
 }

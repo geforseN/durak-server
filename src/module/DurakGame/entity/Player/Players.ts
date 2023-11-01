@@ -8,9 +8,20 @@ export default class Players {
   __value: Player[];
   manager: PlayersManager;
 
-  constructor(users: LobbyUser[]) {
-    this.__value = users.map((user) => new Player(user));
-    this.manager = new PlayersManager(this);
+  constructor(arg: LobbyUser[] | Players) {
+    if (arg instanceof Players) {
+      this.__value = [...arg].filter((player) => {
+        if (!player.hand.isEmpty) {
+          return true;
+        }
+        arg.manager.remove({ player });
+        return false;
+      });
+      this.manager = arg.manager;
+    } else {
+      this.__value = arg.map((user) => new Player(user));
+      this.manager = new PlayersManager(this);
+    }
   }
 
   *[Symbol.iterator]() {
@@ -48,7 +59,7 @@ export default class Players {
     return player instanceof SuperPlayer;
   }
 
-  private get<Player extends SuperPlayer>(Player : {
+  private get<Player extends SuperPlayer>(Player: {
     new (...arg: any): Player;
   }): Player | undefined {
     // used Symbol.iterator here

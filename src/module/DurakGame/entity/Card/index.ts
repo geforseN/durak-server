@@ -1,7 +1,7 @@
-export type Suit = typeof Card.suits[number];
-export type Rank = typeof Card.ranks[number];
+export type Suit = (typeof Card.suits)[number];
+export type Rank = (typeof Card.ranks)[number];
 export type Power = number;
-export type CardConstructor = { suit: Suit, rank: Rank, isTrump?: boolean };
+export type CardConstructor = { suit: Suit; rank: Rank; isTrump?: boolean };
 
 export default class Card {
   rank: Rank;
@@ -28,11 +28,25 @@ export default class Card {
   }
 
   toString() {
-    return this.suit + this.rank.at(-1) + ' isTrump: ' + this.isTrump;
+    return this.suit + this.rank.at(-1) + " isTrump: " + this.isTrump;
   }
 
   static suits = ["♠", "♦", "♥", "♣"] as const;
-  static ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"] as const;
+  static ranks = [
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "J",
+    "Q",
+    "K",
+    "A",
+  ] as const;
   static powers: Record<Rank, number> = {
     "2": 1,
     "3": 2,
@@ -43,9 +57,9 @@ export default class Card {
     "8": 7,
     "9": 8,
     "10": 9,
-    "J": 10,
-    "Q": 11,
-    "K": 12,
-    "A": 13,
+    J: 10,
+    Q: 11,
+    K: 12,
+    A: 13,
   } as const;
 }

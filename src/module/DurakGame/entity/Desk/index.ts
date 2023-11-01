@@ -1,72 +1,60 @@
-import { randomInt } from "node:crypto";
-import {
-  Defender,
-  Player,
-  SuperPlayer,
-  AllowedMissingCardCount,
-} from "../Player";
-import Card, { Rank } from "../Card";
-import {
-  DefendedSlot,
-  DeskSlot,
-  EmptySlot,
-  UnbeatenSlot,
-} from "../DeskSlot";
-import { CanProvideCards } from "../../DurakGame.implimetntation";
-import { Discard } from "../Deck";
-import GameDeskService from "./Desk.service";
-import NextDeskSlot from "../DeskSlot/NextDeskSlot";
+import type { Defender, SuperPlayer, AllowedMissingCardCount } from "../Player";
+import type Card from "../Card";
+import { type CanProvideCards } from "../../DurakGame.implimetntation";
+import { type Discard } from "../Deck";
+import type GameDeskService from "./Desk.service";
+import DeskSlots, {
+  DefendedSlots,
+  FilledSlots,
+  UnbeatenSlots,
+} from "../DeskSlots";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
-  slots: DeskSlot[];
+  slots: DeskSlots;
   allowedFilledSlotCount: number;
   private service?: GameDeskService;
 
   constructor({
     allowedFilledSlotCount = 6,
-    slotCount: length = 6,
+    slotCount = 6,
   }: Partial<{
     allowedFilledSlotCount: AllowedMissingCardCount;
     slotCount: AllowedMissingCardCount;
   }> = {}) {
     this.allowedFilledSlotCount = allowedFilledSlotCount;
-    this.slots = Array.from({ length }, () => new EmptySlot());
+    this.slots = new DeskSlots(slotCount);
   }
 
-  get #cards(): Card[] {
-    return this.slots.flatMap((slot) => slot.value);
+  *[Symbol.iterator]() {
+    yield* this.slots;
   }
 
-  get cardCount(): number {
-    return this.#cards.length;
-  }
-
-  get ranks(): Rank[] {
-    return [...new Set(this.#cards.map((card) => card.rank))];
-  }
-
-  get unbeatenCardCount(): number {
-    return this.slots.filter((slot) => slot instanceof UnbeatenSlot).length;
+  slotAt(index: number) {
+    return this.slots.at(index);
   }
 
   get allowsMoves() {
-    return this.allowedFilledSlotCount > this.filledSlotsCount;
+    return this.allowedFilledSlotCount > this.filledSlots.count;
   }
 
-  get filledSlotsCount(): number {
-    return this.slots.filter((slot) => !(slot instanceof EmptySlot)).length;
+  get unbeatenSlots() {
+    return new UnbeatenSlots([...this]);
+  }
+
+  get filledSlots() {
+    return new FilledSlots([...this]);
+  }
+
+  get defendedSlots() {
+    return new DefendedSlots([...this]);
   }
 
   get isEmpty(): boolean {
-    return this.slots.every((slot) => slot instanceof EmptySlot);
+    return this.slots.isEverySlotEmpty;
   }
 
   get isDefended(): boolean {
-    return this.defendedSlotsCount === this.filledSlotsCount;
-  }
-
-  private get defendedSlotsCount(): number {
-    return this.slots.filter((slot) => slot instanceof DefendedSlot).length;
+    return this.defendedSlots.count === this.filledSlots.count;
   }
 
   get allowsAttackerMove(): boolean {
@@ -75,18 +63,6 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
 
   get shouldDefenderMove(): boolean {
     return this.allowsMoves;
-  }
-
-  async allowsTransferMove(card: Card, slotIndex: number) {
-    return (
-      this.slots[slotIndex] instanceof EmptySlot &&
-      Promise.all(
-        this.slots.map((slot) => slot.ensureAllowsTransfer(card)),
-      ).then(
-        () => true,
-        () => false,
-      )
-    );
   }
 
   receiveCard({
@@ -98,43 +74,34 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     index: number;
     who: SuperPlayer;
   }) {
-    this.slots[index] = new NextDeskSlot(this.slots[index], card).correctSlot;
+    this.slots.updateSlot({ at: index, with: card });
     this.service?.receiveCard({ card, index, who });
   }
 
   provideCards<T extends Defender | Discard>(target: T) {
-    target.receiveCards(...this.#cards);
+    target.receiveCards(...this.slots.cards);
     this.#clear();
   }
 
   #clear() {
-    this.slots.forEach((_, index) => (this.slots[index] = new EmptySlot()));
+    this.slots = new DeskSlots(this.slots.count);
     this.service?.clear();
   }
 
   async ensureCanAttack(card: Card, slotIndex: number): Promise<Card> {
     if (this.isEmpty) return card;
-    await this.slots[slotIndex].ensureCanBeAttacked(card);
-    await this.#ensureCanPut(card);
+    await this.slotAt(slotIndex)?.ensureCanBeAttacked(card);
+    this.#ensureCanPut(card);
     return card;
   }
 
-  async #ensureCanPut(card: Card): Promise<Card> {
-    if (!this.#hasSame({ rank: card.rank })) {
+  #ensureCanPut(card: Card) {
+    if (!this.slots.someSlotHas({ rank: card.rank })) {
       throw new Error("Нет схожего ранга на доске");
     }
-    return card;
-  }
-
-  #hasSame({ rank }: { rank: Rank }) {
-    return this.slots.some((slot) => slot.has({ rank }));
   }
 
   injectService(gameDeskService: GameDeskService) {
     this.service = gameDeskService;
-  }
-
-  get randomSlotIndex() {
-    return randomInt(0, this.slots.length);
   }
 }

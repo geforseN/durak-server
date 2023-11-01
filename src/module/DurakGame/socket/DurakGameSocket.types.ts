@@ -20,7 +20,7 @@ export namespace DurakGameSocket {
     "player__changeKind": (kind: PlayerKind, id: string) => void;
     "player__exitGame": (playerId: string) => void
     "player__receiveCards": (cards: CardDTO[]) => void;
-    "defender__gaveUp": () => void;
+    "defender__gaveUp": (defenderId: string) => void;
     "defender__lostRound": (id: string, roundNumber: number) => void;
     "defender__wonRound": (id: string, roundNumber: number) => void;
     "superPlayer__removeCard": (card: CardDTO) => void;

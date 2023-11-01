@@ -21,11 +21,11 @@ export default class GameRound {
   private readonly service?: GameRoundService;
   game: DurakGame;
 
-  constructor({ number, game }: { number: number; game: DurakGame }) {
+  constructor(game: DurakGame) {
     if (!game.info.namespace) throw new Error("Socket namespace not found");
     this.service = new GameRoundService(game.info.namespace);
     this.game = game;
-    this.number = number;
+    this.number = !game.round ? 1 : game.round.number + 1;
     this.moves = [];
     this.#pushNextMove(AttackerMove, { player: game.players.attacker });
   }
@@ -41,7 +41,7 @@ export default class GameRound {
   set currentMove(move: GameMove<Defender | Attacker>) {
     this.moves[this.#currentMoveIndex] = move;
     if (move instanceof DefenderGaveUpMove) {
-      this.service?.emitDefenderGaveUp();
+      this.service?.emitDefenderGaveUp(this);
     }
   }
 
@@ -68,11 +68,7 @@ export default class GameRound {
         player: moveContext.player,
       }),
     );
-    this.service?.letMoveTo(
-      moveContext.player,
-      this.currentMove.defaultBehaviourCallTimeInUTC,
-      this.game.settings.moveTime,
-    );
+    this.service?.letMoveToPlayer(this);
   }
 
   #updateCurrentMoveTo<M extends GameMove<Attacker | Defender>>(
@@ -87,12 +83,13 @@ export default class GameRound {
     });
   }
 
-  get #firstDefenderMove(): GameMove<Defender | Attacker> | undefined {
+  get #firstDefenderMove(): GameMove<Defender> | undefined {
     return this.moves.find(
       (move) =>
-        move instanceof InsertDefendCardMove ||
-        move instanceof DefenderGaveUpMove,
-    );
+        (move instanceof InsertDefendCardMove ||
+          move instanceof DefenderGaveUpMove) &&
+        move instanceof DefenderMove,
+    ) as DefenderMove;
   }
 
   get firstDefenderMove(): DefenderMove | never {
@@ -110,7 +107,7 @@ export default class GameRound {
   }
 
   get nextAttacker(): Player {
-    return this.game.players.attacker.isPrimalAttacker({ round: this })
+    return this.game.players.attacker.id === this.game.round.primalAttacker.id
       ? this.game.players.defender.left
       : this.game.players.attacker.left;
   }
@@ -186,16 +183,19 @@ export default class GameRound {
     certainMoveContext?: Partial<M>,
   ) {
     this.#updateCurrentMoveTo(CertainMove, certainMoveContext);
-    assert.ok(this.currentMove instanceof CertainMove, "(-_-)");
-    return this.currentMove.handleAfterInitialization();
+    assert.ok(
+      this.currentMove instanceof CertainMove,
+      "Current move was not correctly updated",
+    );
+    return this.currentMove.handleAfterMoveIsDone();
   }
 }
 
 export interface AfterHandler {
-  handleAfterInitialization(): void;
+  handleAfterMoveIsDone(): void;
 }
 
-export function insertCard(
+export function insertCardStrategy(
   this: GameMove<Attacker | Defender> & { card: Card; slotIndex: number },
 ) {
   return this.game.desk.receiveCard({

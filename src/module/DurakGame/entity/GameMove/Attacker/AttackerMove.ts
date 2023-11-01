@@ -14,22 +14,23 @@ export class AttackerMove extends GameMove<Attacker> {
   }
 
   #defaultBehaviour() {
-    console.log("#defaultBehaviour");
+    console.log("#defaultBehaviour AttackerMove");
+    console.log(Object.getPrototypeOf(this).name);
     return setTimeout(async () => {
       console.log("TIMEOUT: defaultBehaviour called");
       if (this.game.desk.isEmpty) {
         console.log("TIMEOUT: insertRandomCard");
-        return await this.#insertRandomCard();
+        return await this.#insertRandomCardOfPlayer();
       }
       console.log("TIMEOUT: stopMove");
       return this.stopMove();
     }, this.game.settings.moveTime);
   }
 
-  async #insertRandomCard() {
+  async #insertRandomCardOfPlayer() {
     return await this.putCardOnDesk(
       this.player.randomCard,
-      this.game.desk.randomSlotIndex,
+      this.game.desk.slots.ramdomSlotIndex,
     );
   }
 

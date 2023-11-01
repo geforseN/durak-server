@@ -1,15 +1,19 @@
-import Player from "../Player/Player";
 import { DurakGameSocket } from "../../socket/DurakGameSocket.types";
+import GameRound from ".";
 
 export default class GameRoundService {
-  constructor(private namespace: DurakGameSocket.Namespace) {
+  constructor(private namespace: DurakGameSocket.Namespace) {}
+
+  letMoveToPlayer({ currentMove, game }: GameRound) {
+    this.namespace.emit(
+      "player__allowedToMove",
+      currentMove.player.id,
+      currentMove.defaultBehaviourCallTimeInUTC,
+      game.settings.moveTime,
+    );
   }
 
-  letMoveTo(player: Player, timeEnd: number, moveTime: number) {
-    this.namespace.emit("player__allowedToMove", player.id, timeEnd, moveTime);
-  }
-
-  emitDefenderGaveUp() {
-    this.namespace.emit("defender__gaveUp");
+  emitDefenderGaveUp({ game }: GameRound) {
+    this.namespace.emit("defender__gaveUp", game.players.defender.id);
   }
 }

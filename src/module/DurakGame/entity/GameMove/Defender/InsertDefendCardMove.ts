@@ -1,7 +1,7 @@
 import { DefenderMove } from "./DefenderMove";
 
 import Card from "../../Card";
-import { AfterHandler, insertCard } from "../../GameRound";
+import { AfterHandler, insertCardStrategy } from "../../GameRound";
 
 type ConstructorArg = ConstructorParameters<typeof DefenderMove>[number] & {
   card: Card;
@@ -20,10 +20,10 @@ export class InsertDefendCardMove extends DefenderMove implements AfterHandler {
   }
 
   #insertCard() {
-    return insertCard.call(this);
+    return insertCardStrategy.call(this);
   }
 
-  handleAfterInitialization() {
+  handleAfterMoveIsDone() {
     if (!this.game.desk.isDefended) {
       return this.game.round.giveDefenderDefend();
     }

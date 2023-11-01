@@ -70,16 +70,4 @@ export default class Talon extends Deck implements CanProvideCards<Player> {
   injectService(talonService: GameTalonService) {
     this.service = talonService;
   }
-
-  makeInitialDistribution(players: Players, {
-    finalCardCount,
-    cardCountPerIteration: cardCount,
-  }: { finalCardCount: AllowedMissingCardCount, cardCountPerIteration: AllowedMissingCardCount }) {
-    const cardCountToDistribute = players.count * finalCardCount;
-    for (let givenCardCount = 0; givenCardCount < cardCountToDistribute; givenCardCount += cardCount) {
-      const playerIndex = givenCardCount / cardCount % players.count;
-      const player = players.__value[playerIndex];
-      this.provideCards(player, cardCount);
-    }
-  }
 }

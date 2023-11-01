@@ -39,46 +39,45 @@ export default class Lobby {
     return this.slots.hasUser(cb);
   }
 
-  updateAdmin(socket: WebSocket) {
+  updateAdmin() {
     this.slots.admin = this.slots.mostLeftSideNonAdminUser;
-    socket.emit("everySocket", "lobby::admin::update", {
+    this.emitter.emit("everySocket", "lobby::admin::update", {
       adminId: this.slots.admin.id,
       lobbyId: this.id,
     });
   }
 
-  put(user: User, slotIndex = -1, socket: WebSocket) {
+  put(user: User, slotIndex = -1) {
     assert.ok(
       !this.isFull,
       "Не получилось добавить игрока из лобби. \nЛобби полностью занято.",
     );
     slotIndex = this.slots.putUser(user, slotIndex);
-    socket.emit("socket", "user::lobby::current", { lobbyId: this.id });
-    socket.emit("everySocket", "lobby::user::put", {
+    this.emitter.emit("lobby::user::put", {
       lobbyId: this.id,
       user,
       slotIndex,
     });
   }
 
-  remove(cb: (user?: User) => boolean, socket: WebSocket) {
+  remove(cb: (user?: User) => boolean) {
     const user = this.slots.removeUser(cb);
-    socket.emit("everySocket", "lobby::user::leave", {
+    this.emitter.emit("lobby::user::leave", {
       lobbyId: this.id,
       userId: user.id,
     });
     if (this.isEmpty) {
-      socket.emit("everySocket", "lobby::delete", { lobbyId: this.id });
+      this.emitter.emit("lobby::delete", { lobbyId: this.id });
     } else if (user.isAdmin) {
-      this.updateAdmin(socket);
+      this.updateAdmin();
     }
     return user;
   }
 
-  moveUser(cb: (user?: User) => boolean, slotIndex = -1, socket: WebSocket) {
+  moveUser(cb: (user?: User) => boolean, slotIndex = -1) {
     assert.ok(slotIndex !== -1, "Выберете конкретный слот для перестановки.");
     const user = this.slots.moveUser(cb, slotIndex);
-    socket.emit("everySocket", "lobby::user::move", {
+    this.emitter.emit("lobby::user::move", {
       lobbyId: this.id,
       userId: user.id,
       slotIndex,
@@ -94,42 +93,3 @@ export default class Lobby {
     return this.id === lobby.id;
   }
 }
-
-// #listenEvents() {
-//   this.emitter.on("user::join", this.#listenUserJoin);
-//   this.emitter.on("user::leave", this.#listenUserLeave);
-//   this.emitter.on("admin::update", this.#listenAdminUpdate);
-//   this.emitter.on("delete", this.#listenThisDelete);
-// }
-//
-// #listenThisDelete() {
-//   console.log("delete", this.id);
-//   this.lobbiesEmitter.emit("everySocket", "lobby::delete", { lobbyId: this.id });
-// }
-//
-//
-// #listenUserJoin(user: __LobbyUser, slotIndex: number) {
-//   console.log("user::join", this.id, user.nickname, slotIndex);
-//   this.lobbiesEmitter.emit("everySocket", "lobby::user::join", {
-//     lobbyId: this.id,
-//     user,
-//     slotIndex,
-//   });
-// }
-//
-// #listenUserLeave(user: __LobbyUser, slotIndex: number) {
-//   console.log("user::leave", this.id, user.nickname, slotIndex);
-//   this.lobbiesEmitter.emit("everySocket", "lobby::user::leave", {
-//     lobbyId: this.id,
-//     user,
-//     slotIndex,
-//   });
-// }
-//
-// #listenAdminUpdate(admin: __LobbyUser) {
-//   console.log("admin::update", this.id, admin.nickname);
-//   this.lobbiesEmitter.emit("everySocket", "lobby::admin::update", {
-//     lobbyId: this.id,
-//     adminId: admin.id,
-//   });
-// }

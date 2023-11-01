@@ -25,7 +25,7 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
     { websocket: true },
     async function (connection: SocketStream, request: FastifyRequest) {
       const { userId, socket, lobbies } = handleConnection(connection, request);
-      socket.emit("socketOnce", "lobbies::restore", {
+      socket.emit(/* ONCE */"lobbies::restore", {
         lobbies: lobbies.value,
         lobbyId: await lobbies
           .find(Lobby.hasUserWithSameId.bind({ userId }))
@@ -64,31 +64,31 @@ export default async function gameLobbiesNamespace(fastify: FastifyInstance) {
                 lobbies.find(Lobby.hasSameId.bind({ id: lobbyId })),
                 getFirstTimeUser(userId),
               ]);
-              return lobby.put(user, slotIndex, this);
+              lobby.put(user, slotIndex);
+              return this.emit("socket", "user::lobby::current", { lobbyId: lobby.id });
             }
-            const [oldLobby, newLobby] = await Promise.all([
+            const [oldLobby, lobby] = await Promise.all([
               lobbies.find(Lobby.hasUserWithSameId.bind({ userId })),
               lobbies.find(Lobby.hasSameId.bind({ id: lobbyId })),
             ]);
-            if (newLobby === oldLobby) {
-              return oldLobby.moveUser(
+            if (lobby === oldLobby) {
+              return lobby.moveUser(
                 User.hasSameId.bind({ id: userId }),
                 slotIndex,
-                this,
               );
             }
-            return newLobby.put(
-              oldLobby.remove(User.hasSameId.bind({ id: userId }), this),
+            lobby.put(
+              oldLobby.remove(User.hasSameId.bind({ id: userId })),
               slotIndex,
-              this,
             );
+            return this.emit("socket", "user::lobby::current", { lobbyId: lobby.id });
           },
         )
         .on(
           "lobby::user::leave",
           async function ({ lobbyId }: { lobbyId?: Lobby["id"] }) {
             const lobby = await getLobby.call({ lobbies, userId }, lobbyId);
-            return lobby.remove(User.hasSameId.bind({ id: userId }), this);
+            return lobby.remove(User.hasSameId.bind({ id: userId }));
           },
         )
         .on(

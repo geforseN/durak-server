@@ -11,7 +11,7 @@ export function getPlayer(game: DurakGame, id: string): Player | never {
   return player;
 }
 
-export function getPlacedCard(card: CardDTO, game: DurakGame, player: Player): Card | never {
+export function getCard(card: CardDTO, game: DurakGame, player: Player): Card | never {
   assert.ok(player.hand.has({ card }), "У вас нет такой карты");
   return new Card({ ...card, isTrump: game.talon.trumpSuit === card.suit });
 }

@@ -25,10 +25,15 @@ export default class DurakGame {
   info: {
     id: string;
     adminId: string;
-    durakId?: string;
+    durakPlayerId?: string;
     namespace?: DurakGameSocket.Namespace;
   };
-  settings: GameSettings;
+  settings: GameSettings & {
+    initialDistribution: {
+      finalCardCount: AllowedMissingCardCount;
+      cardCountPerIteration: AllowedMissingCardCount;
+    };
+  };
   players: Players;
   talon: Talon;
   discard: Discard;
@@ -38,7 +43,14 @@ export default class DurakGame {
 
   constructor({ id, settings, slots }: Lobby) {
     this.info = { id, adminId: slots.admin.id };
-    this.settings = { ...settings, moveTime: 90_000 };
+    this.settings = {
+      ...settings,
+      moveTime: 90_000,
+      initialDistribution: {
+        finalCardCount: 6,
+        cardCountPerIteration: 2,
+      },
+    };
     this.players = new Players(slots.users);
     this.talon = new Talon(settings.cardCount);
     this.discard = new Discard();
@@ -46,77 +58,50 @@ export default class DurakGame {
   }
 
   start(socketsNamespace: DurakGameSocket.Namespace) {
-    this.injectServices(socketsNamespace);
-    this.talon.makeInitialDistribution(this.players, {
-      finalCardCount: 6,
-      cardCountPerIteration: 2,
-    });
-    this.makeInitialSuperPlayers();
-    this.makeNewRound({ number: 1 });
+    this.#injectServices(socketsNamespace);
+    new GameRoundDistributionQueue(this).makeInitialDistribution();
+    this.#makeInitialSuperPlayers();
+    this.round = new GameRound(this);
   }
 
   handleLostDefence(defender = this.players.defender): void {
     this.desk.provideCards(defender);
     this.service?.lostRound({ game: this });
-    if (this.talon.hasCards) {
-      // TODO new GameRoundDistributionQueue(this).makeDistribution()
-      this.#makeCardDistribution();
-    } else {
-      this.players.manager.removeEmptyPlayers();
-    }
+    this.#beforeNewRoundHandler();
     if (this.players.count === 1) {
-      return this.end();
+      return this.#end();
     }
     const attacker = this.players.manager.makeNewAttacker(defender.left);
     this.players.manager.makeNewDefender(attacker.left);
-    this.makeNewRound();
+    this.round = new GameRound(this);
   }
 
   handleWonDefence(defender = this.players.defender): void {
     this.desk.provideCards(this.discard);
     this.service?.wonRound({ game: this });
-    if (this.talon.hasCards) {
-      this.#makeCardDistribution();
-    } else {
-      this.players.manager.removeEmptyPlayers();
-    }
+    this.#beforeNewRoundHandler();
     if (this.players.count === 1) {
-      return this.end();
+      return this.#end();
     }
     const attacker = this.players.manager.makeNewAttacker(defender);
     this.players.manager.makeDefender(attacker.left);
-    this.makeNewRound();
+    this.round = new GameRound(this);
   }
 
-  #makeCardDistribution() {
-    // TODO: remove below mapping if assert will never called
-    const distributionQueue = new GameRoundDistributionQueue(this)
-      .makeDistribution()
-      .map((distributionPlayer) => {
-        const player = this.players.getPlayer({ id: distributionPlayer.id });
-        console.assert(
-          distributionPlayer === player,
-          "DISTRIBUTION %s QUEUE",
-          player.id,
-        );
-        return player;
-      });
-    for (const player of distributionQueue) {
-      if (this.talon.isEmpty) return;
-      this.talon.provideCards(player);
-    }
-  }
-
-  private makeNewRound({ number = this.round.number + 1 } = {}) {
-    this.round = new GameRound({ number, game: this });
-  }
-
-  private end() {
-    this.info.durakId = this.players.__value[0].id;
+  #end() {
+    this.info.durakPlayerId = this.players.__value[0].id;
     this.service?.end(this);
   }
 
-  private makeInitialSuperPlayers() {
+  #beforeNewRoundHandler() {
+    if (this.talon.hasCards) {
+      new GameRoundDistributionQueue(this).makeDistribution();
+    } else {
+      this.players = new Players(this.players)
+    }
+  }
+
+  #makeInitialSuperPlayers() {
     assert.ok(this.info.adminId, "Admin accname not found");
     const desiredAttacker = this.players.getPlayer({ id: this.info.adminId });
     const attacker = this.players.manager.makeAttacker(desiredAttacker);
@@ -124,7 +109,7 @@ export default class DurakGame {
     return { attacker, defender };
   }
 
-  private injectServices(socketsNamespace: DurakGameSocket.Namespace) {
+  #injectServices(socketsNamespace: DurakGameSocket.Namespace) {
     this.info.namespace = socketsNamespace;
     this.service = new DurakGameService(this.info.namespace);
     this.desk.injectService(new GameDeskService(this.info.namespace));

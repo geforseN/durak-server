@@ -1,6 +1,5 @@
 import { Hand } from "../Deck";
 import Card from "../Card";
-import GameRound from "../GameRound";
 import GamePlayerService from "./Player.service";
 import { LobbyUser } from "../../../Lobbies/lobbies.namespace";
 
@@ -18,10 +17,20 @@ export default class Player {
   index!: number;
   protected service?: GamePlayerService;
 
-  constructor(param: LobbyUser | Player) {
-    if (param instanceof Player) {
-      this.initializeFromPlayer(param);
-    } else this.initializeFromLobbyUser(param);
+  constructor(arg: LobbyUser);
+  constructor(arg: Player);
+  constructor(arg: LobbyUser | Player) {
+    if (arg instanceof Player) {
+      this.hand = arg.hand;
+      this.info = arg.info;
+      this.left = arg.left;
+      this.right = arg.right;
+      this.index = arg.index;
+      this.service = arg.service;
+    } else {
+      this.hand = new Hand();
+      this.info = arg;
+    }
   }
 
   receiveCards(...cards: Card[]): void {
@@ -40,26 +49,8 @@ export default class Player {
     ) as AllowedMissingCardCount;
   }
 
-  private initializeFromLobbyUser(lobbyUser: LobbyUser) {
-    this.info = lobbyUser;
-    this.hand = new Hand();
-  }
-
-  private initializeFromPlayer(player: Player) {
-    this.hand = player.hand;
-    this.info = player.info;
-    this.left = player.left;
-    this.right = player.right;
-    this.index = player.index;
-    this.service = player.service;
-  }
-
-  canTakeMore({ cardCount }: { cardCount: number }) {
+  canTakeMore(cardCount: number) {
     return this.hand.count > cardCount;
-  }
-
-  isPrimalAttacker({ round }: { round: GameRound }): boolean | never {
-    return this.id === round.primalAttacker.id;
   }
 
   injectService(playerService: GamePlayerService) {

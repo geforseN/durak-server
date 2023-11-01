@@ -1,12 +1,12 @@
-import DurakGame from "../../DurakGame.implimetntation";
 import { InsertAttackCardMove } from "../GameMove";
+import GameRound from "../GameRound";
 import SuperPlayer from "./SuperPlayer";
 
 export default class Attacker extends SuperPlayer {
-  hasPutLastCard({ round }: { round: DurakGame["round"] }): boolean {
+  hasPutLastCard(round: GameRound): boolean {
     return (
-      round.previousMove instanceof InsertAttackCardMove
-      && round.previousMove.player.id === this.id
+      round.previousMove instanceof InsertAttackCardMove &&
+      round.previousMove.player.id === this.id
     );
   }
 }

@@ -13,17 +13,6 @@ export default class PlayersManager {
     this.defineSidePlayers();
   }
 
-  removeEmptyPlayers() {
-    // used Symbol.iterator here
-    this.players.__value = [...this.players].filter((player) => {
-      if (!player.hand.isEmpty) {
-        return true;
-      }
-      this.remove({ player });
-      return false;
-    });
-  }
-
   makeAttacker(playerOrIdentifier: Player | LobbyUserIdentifier): Attacker {
     return this.make(Attacker, playerOrIdentifier);
   }

@@ -1,6 +1,6 @@
 import { DefenderMove } from "./DefenderMove";
 import Card from "../../Card";
-import { AfterHandler, insertCard } from "../../GameRound";
+import { AfterHandler, insertCardStrategy } from "../../GameRound";
 
 type ConstructorArg = ConstructorParameters<typeof DefenderMove>[number] & {
   card: Card;
@@ -19,10 +19,14 @@ export class TransferMove extends DefenderMove implements AfterHandler {
   }
 
   #insertCard() {
-    return insertCard.call(this);
+    return insertCardStrategy.call(this);
   }
 
-  handleAfterInitialization() {
+  handleAfterMoveIsDone() {
+    // TODO: fix hard to catch bug in this.#defeaultBeheviour
+    // should be this.#defaultBehaviour redefined
+    // when this.player become Attacker (code line below)
+    // or should just clearInterval(this.defaultBehaviour)
     this.game.players.manager.makeNewAttacker(this.player);
     return this.game.round.giveAttackerLeftDefend();
   }

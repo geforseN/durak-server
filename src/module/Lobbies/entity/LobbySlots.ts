@@ -41,18 +41,18 @@ export default class LobbySlots<
   }
 
   get admin(): LobbyUser {
-    return this.#findUser((user) => user.isAdmin === true, "Админ не найден");
+    return this.#getUser((user) => user.isAdmin, "Админ не найден");
   }
 
   set admin(newAdmin: LobbyUser) {
     this.admin.isAdmin = false;
-    const user = this.#findUser((user) => user.id === newAdmin.id);
+    const user = this.#getUser((user) => user.id === newAdmin.id);
     user.isAdmin = true;
     this.emitter.emit("admin::update", user);
   }
 
   get mostLeftSideNonAdminUser() {
-    return this.#findUser(
+    return this.#getUser(
       (user) => user.id !== this.admin.id,
       "Не получилось обновить админа лобби: некому стать новым админом",
     );
@@ -79,7 +79,7 @@ export default class LobbySlots<
   }
 
   removeUser(cb: (user?: LobbyUser) => boolean) {
-    return this.#removeUserByIndex(this.value.indexOf(this.#findUser(cb)));
+    return this.#removeUserByIndex(this.value.indexOf(this.#getUser(cb)));
   }
 
   #putUserInFirstFoundEmptySlot(user: LobbyUser): number {
@@ -102,7 +102,7 @@ export default class LobbySlots<
     return user;
   }
 
-  #findUser(
+  #getUser(
     cb: (user: LobbyUser) => boolean,
     notFoundMessage: string | Error = "Пользователь не был найден",
   ): LobbyUser {
@@ -120,7 +120,7 @@ export default class LobbySlots<
 
   #slotAt(slotIndex: number) {
     return {
-      isEmpty: this.#value[slotIndex] === undefined,
+      isEmpty: !!this.#value[slotIndex],
       IsValid:
         Number.isInteger(slotIndex) &&
         slotIndex >= 0 &&
