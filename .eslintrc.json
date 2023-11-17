@@ -6,7 +6,8 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:perfectionist/recommended-natural"
+    "plugin:perfectionist/recommended-natural",
+    "plugin:vitest/all"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -14,7 +15,8 @@
     "sourceType": "module"
   },
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "vitest"
   ],
   "rules": {
     "no-unused-vars": [
