@@ -94,9 +94,10 @@ fastify
 
 (async () => {
   try {
-    await import(
+    const { BasePlayer } = await import(
       "./module/DurakGame/entity/Player/BasePlayer.abstract.js"
-    ).then(({ BasePlayer }) => BasePlayer.configureDependencies());
+    );
+    BasePlayer.configureDependencies();
     await fastify.listen({ port: env.FASTIFY_PORT });
   } catch (err) {
     fastify.log.error(err);
