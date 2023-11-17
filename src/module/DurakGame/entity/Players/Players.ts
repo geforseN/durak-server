@@ -40,10 +40,7 @@ export class Players {
     );
     const index = this.#value.indexOf(player);
     this.#value[index] = updatedPlayer;
-    player.left.right = updatedPlayer;
-    player.right.left = updatedPlayer;
-    updatedPlayer.left = player.left ;
-    updatedPlayer.right = player.right;
+    updatedPlayer.becomeUpdated(player);
     updatedPlayer.emitKind();
     return this;
   }

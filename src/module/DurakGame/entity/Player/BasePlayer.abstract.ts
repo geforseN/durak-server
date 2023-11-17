@@ -3,18 +3,18 @@ import type {
   PlayerKind,
 } from "@durak-game/durak-dts";
 
+import type LobbyUser from "../../../Lobbies/entity/LobbyUser.js";
 import type Card from "../Card/index.js";
+import type { Hand } from "../Deck/index.js";
+import type { AllowedAttacker } from "./AllowedAttacker.js";
+import type { AllowedDefender } from "./AllowedDefender.js";
+import type { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
+import type { Attacker } from "./Attacker.js";
+import type { Defender } from "./Defender.js";
+import type { Player } from "./Player.js";
 import type GamePlayerWebsocketService from "./Player.service.js";
+import type { SuperPlayer } from "./SuperPlayer.abstract.js";
 
-import LobbyUser from "../../../Lobbies/entity/LobbyUser.js";
-import { type Hand } from "../Deck/index.js";
-import { type AllowedAttacker } from "./AllowedAttacker.js";
-import { type AllowedDefender } from "./AllowedDefender.js";
-import { type AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
-import { type Attacker } from "./Attacker.js";
-import { type Defender } from "./Defender.js";
-import { type Player } from "./Player.js";
-import { type SuperPlayer } from "./SuperPlayer.abstract.js";
 import { AllowedPlayerBadInputError } from "../../error/index.js";
 
 export const GOOD_CARD_AMOUNT = 6;
@@ -24,10 +24,11 @@ export abstract class BasePlayer {
   static _Defender: typeof Defender;
   static _Player: typeof Player;
 
+  _left: BasePlayer;
+  _right: BasePlayer;
   readonly hand: Hand;
+  hasLeftTheGame = false;
   readonly info: LobbyUser;
-  left: BasePlayer;
-  right: BasePlayer;
 
   // TODO think about it ...
   withEmit = {
@@ -48,10 +49,11 @@ export abstract class BasePlayer {
 
   constructor(basePlayer: BasePlayer) {
     this.info = basePlayer.info;
-    this.left = basePlayer.left;
-    this.right = basePlayer.right;
+    this._left = basePlayer._left;
+    this._right = basePlayer._right;
     this.hand = basePlayer.hand;
     this.wsService = basePlayer.wsService;
+    this.hasLeftTheGame = false;
   }
 
   static async configureDependencies() {
@@ -68,6 +70,11 @@ export abstract class BasePlayer {
     ]);
   }
 
+  addSidePlayers(left: BasePlayer, right: BasePlayer) {
+    this._left = left;
+    this._right = right;
+  }
+
   asAttacker() {
     return new BasePlayer._Attacker(this);
   }
@@ -80,11 +87,21 @@ export abstract class BasePlayer {
     return new BasePlayer._Player(this);
   }
 
+  becomeUpdated(player: BasePlayer) {
+    player._left._right = this;
+    player._right._left = this;
+    this.addSidePlayers(player.left, player.right);
+  }
+
   canTakeMore(cardCount: number) {
     return this.hand.count > cardCount;
   }
 
-  ensureCanAllowTransfer(cardCount: number) {
+  emitKind() {
+    this.wsService.emitOwnKind(this);
+  }
+
+  ensureCanTakeMore(cardCount: number) {
     if (this.left.canTakeMore(cardCount)) {
       return;
     }
@@ -96,8 +113,10 @@ export abstract class BasePlayer {
     );
   }
 
-  emitKind() {
-    this.wsService.emitOwnKind(this);
+  exitGame() {
+    this.hasLeftTheGame = true;
+    // TODO add kind 'LeftGamePlayer'
+    // ? so it means need to add new class LeftGamePlayer ?
   }
 
   isAllowed(): this is AllowedSuperPlayer {
@@ -135,6 +154,7 @@ export abstract class BasePlayer {
       id: this.id,
       info: this.info,
       isAllowed: this.isAllowed(),
+      isInGame: this.hasLeftTheGame,
       kind: this.kind,
       leftId: this.left.id,
       rightId: this.right.id,
@@ -164,11 +184,13 @@ export abstract class BasePlayer {
     };
   }
 
+  // when isInGame === false then this might not work
   get enemies() {
     const value = [];
-    let player: BasePlayer = this;
-    while ((player = player.left) !== this) {
-      value.push(player.toEnemy());
+    let enemyPlayer = this._left;
+    while (enemyPlayer !== this) {
+      value.push(enemyPlayer.toEnemy());
+      enemyPlayer = enemyPlayer._left;
     }
     return value;
   }
@@ -177,8 +199,17 @@ export abstract class BasePlayer {
     return this.info.id;
   }
 
+  // FIXME: add test
   get isAdmin() {
     return this.info.isAdmin;
+  }
+
+  get left() {
+    let left = this._left;
+    while (left.hasLeftTheGame) {
+      left = left._left;
+    }
+    return left;
   }
 
   get missingNumberOfCards(): AllowedMissingCardCount {
@@ -186,6 +217,14 @@ export abstract class BasePlayer {
       GOOD_CARD_AMOUNT - this.hand.count,
       0,
     ) as AllowedMissingCardCount;
+  }
+
+  get right() {
+    let right = this._right;
+    while (right.hasLeftTheGame) {
+      right = right._right;
+    }
+    return right;
   }
 
   abstract get kind(): PlayerKind;

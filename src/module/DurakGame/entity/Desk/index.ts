@@ -50,6 +50,12 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     throw new AllowedPlayerBadInputError("Нет схожего ранга на доске");
   }
 
+  ensureOnlyHasRank(rank: Card['rank']) {
+    this.ensureIncludesRank(rank);
+    assert.ok([...this.ranks].length !== 0, 'The desk is empty');
+    assert.ok([...this.ranks].length === 1, 'The desk has more than one rank');
+  }
+
   getValidSlot(slotData: unknown) {
     if (slotData instanceof DeskSlot) {
       return this.slotAt(slotData.index)

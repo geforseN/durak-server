@@ -6,7 +6,7 @@ import type {
 
 import assert from "node:assert";
 import EventEmitter from "node:events";
-import { beforeEach, describe, expect, it, should, test } from "vitest";
+import { beforeEach, describe, expect, it, test } from "vitest";
 
 import Lobby from "../Lobbies/entity/Lobby.js";
 import LobbyUser from "../Lobbies/entity/LobbyUser.js";
@@ -18,13 +18,12 @@ import TransferMove from "./entity/GameMove/DefenderTransferMove.js";
 import {
   InsertAttackCardMove,
   StopAttackMove,
-  StopDefenseMove,
 } from "./entity/GameMove/index.js";
 import { BasePlayer } from "./entity/Player/BasePlayer.abstract.js";
 import getDefenseStrategy from "./entity/Player/DefaultBehavior/getDefenseStrategy.js";
 import { Card } from "./entity/index.js";
 
-const namespaceStubOfSocketIO = {
+const namespaceSocketIONoop = {
   emit() {},
   except: () => {
     return {
@@ -122,7 +121,7 @@ function createDurakGame({
   }
   assert.ok(lobby.isFull);
   const nonStartedDurakGame = new NonStartedDurakGame(lobby);
-  const game = new DurakGame(nonStartedDurakGame, namespaceStubOfSocketIO, {
+  const game = new DurakGame(nonStartedDurakGame, namespaceSocketIONoop, {
     shouldBeUsedOnlyForTest: true,
     shouldGiveRequiredCards,
     shouldMakeInitialDistribution,
@@ -145,14 +144,14 @@ function createDurakGame({
   return game;
 }
 
-describe("Проверка логики игры для двух игроков", async () => {
+describe("Проверка логики игры для двух игроков", () => {
   beforeEach((test) => console.log(`about to run "${test.task.name}"`));
 
   it.todo("throw when defender puts wrong card", () => {
     it.todo("case 1", () => {});
     it.todo("case 2", () => {});
     it.todo("defender tries to put not trump card on trump card", () => {});
-    it.todo("defender put ", () => {});
+    it.todo("defender put", () => {});
   });
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   describe("THIS IS IT", () => {
@@ -304,10 +303,9 @@ describe("Проверка логики игры для двух игроков"
     );
   });
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  describe("throw when attacker puts card with wrong rank", async () => {
-    let game: DurakGame;
-    beforeEach(() => {
-      game = createDurakGame({
+  describe("throw when attacker puts card with wrong rank", () => {
+    const setupGame = () => {
+      return createDurakGame({
         players: [
           {
             cards: [
@@ -332,9 +330,10 @@ describe("Проверка логики игры для двух игроков"
         },
         shouldMakeInitialDistribution: false,
       });
-    });
+    };
 
     it("put card of rank 10, then J rank throws", async () => {
+      const game = setupGame();
       [...game.players].forEach((player) => {
         expect(player.hand.count).toBe(2);
       });
@@ -349,6 +348,7 @@ describe("Проверка логики игры для двух игроков"
       ).rejects.toThrow("Нет схожего ранга на доске");
     });
     it("att, def, bad att", async () => {
+      const game = setupGame();
       [...game.players].forEach((player) => {
         expect(player.hand.count).toBe(2);
       });
@@ -419,7 +419,7 @@ describe("Проверка логики игры для двух игроков"
 
   describe("transfer move logic", () => {
     describe("disallow transfer move", () => {
-      describe("no enough cards for left player", async () => {
+      describe("no enough cards for left player", () => {
         const dog = {
           cards: [
             { rank: "10", suit: suits["♠"] },
@@ -441,43 +441,36 @@ describe("Проверка логики игры для двух игроков"
           shouldMakeInitialDistribution: false,
           trumpCard,
         });
-
+        // !!
         ////// ! !? !?! ? ?!? W?!W?!?W?!W?!W?!?W?!W?!?W?
-        // !!!!!!!!!!!! GO HERE !!!!!!!!!
-        // !!!!!!!!!!!! GO HERE !!!!!!!!!
-        // !!!!!!!!!!!! GO HERE !!!!!!!!!
-        // !!!!!!!!!!!! GO HERE !!!!!!!!!
-        it("first", async () => {
+        it("dog first move 0♠ attack ok", async () => {
           const { allowed, attacker } = game.players;
           assert.strict.equal(attacker, allowed);
           expect(attacker.id).toBe("dog");
           await attacker.makeNewMove("0♠", 0);
-          expect(game.round.moves.latest).to.be.instanceOf(
-            InsertAttackCardMove,
-          );
+          expect(game.round.moves.latest).instanceOf(InsertAttackCardMove);
         });
-        it("second", async () => {
+        it("dog second move stop ok", async () => {
           const { allowed, attacker } = game.players;
           assert.strict.equal(attacker, allowed);
           expect(attacker.id).toBe("dog");
           await attacker.makeNewMove();
-          expect(game.round.moves.latest).to.be.instanceOf(StopAttackMove);
+          expect(game.round.moves.latest).instanceOf(StopAttackMove);
         });
-        it("third", async () => {
+        it("cat first move 0♦ transfer ok", async () => {
           const { allowed, defender } = game.players;
           assert.strict.equal(defender, allowed);
           expect(defender.id).toBe("cat");
           await defender.makeNewMove("0♦", 1);
-          expect(game.round.moves.latest).to.be.instanceOf(TransferMove);
+          expect(game.round.moves.latest).instanceOf(TransferMove);
         });
-        it("fourth", async () => {
+        it("cat second move stop ok", async () => {
           const { allowed, attacker } = game.players;
           assert.strict.equal(attacker, allowed);
           expect(attacker.id).toBe("cat");
           await attacker.makeNewMove();
         });
-        it("fifth", async () => {
-          console.log(2, game.players);
+        it("dog third move cat not make transfer because of card count of potential new defender", async () => {
           const { allowed, attacker, defender } = game.players;
           assert.strict.equal(defender, allowed);
           expect(defender.id).toBe("dog");
@@ -485,14 +478,22 @@ describe("Проверка логики игры для двух игроков"
           expect(attacker.hand.count).toBe(2);
           await expect(async () => {
             await defender.makeNewMove("0♣", 2);
-          }).rejects.toThrow("qweqw");
+          }).rejects.toThrow(
+            "Player, to which you wanna transfer cards, has not enough card for defense. You must defend cards on desk",
+          );
         });
       });
-      it.todo("transfer move already done", () => {});
+      // NOTE: 'real' defender is defender, which made InsertDefendCardMove, DefenderGaveUpMove
+      // TODO add assert that no StopDefenseMove is fist move of 'real' defender (first move can be ether Insert or GiveUp)
+      // TODO add test when player gets transfer moved and then GiveUp happen
+      it.todo(
+        "'real' defender is in game, so transfer move are not allowed anymore",
+        () => {},
+      );
       it.todo("wrong card for transfer move (wrong rank of card)", () => {});
     });
 
-    it.todo("allows transfer move ", () => {
+    it.todo("allows transfer move", () => {
       it.todo("case 1", () => {});
       it.todo("case 2", () => {});
     });
@@ -529,13 +530,11 @@ describe("Проверка логики игры для двух игроков"
     it("card is dropped by attacker", async () => {
       const attacker = game.players.attacker;
       assert.ok(attacker.isAllowed());
-      expect(attacker.isAllowed()).toStrictEqual(true);
+      expect(attacker.isAllowed()).toBe(true);
       expect(game.players.attacker.hand.count).toBe(6);
-      game.handleNewMove(
-        await attacker.makeInsertMove(
-          game.players.attacker.hand.get((_, index) => index === 0),
-          game.desk.slotAt(0),
-        ),
+      await attacker.makeNewMove(
+        game.players.attacker.hand.get((_, index) => index === 0),
+        0,
       );
       expect(game.players.attacker).not.toBe(attacker);
       expect(game.players.attacker.hand.count).toBe(5);
@@ -547,7 +546,7 @@ describe("Проверка логики игры для двух игроков"
       const attackerAfterInsert = game.players.attacker;
       assert.ok(attackerAfterInsert.isAllowed());
 
-      game.handleNewMove(attackerAfterInsert.makeStopMove());
+      attackerAfterInsert.makeNewMove();
 
       const attackerAfterStop = game.players.attacker;
       expect(attackerAfterStop).toBe(game.players.attacker);
