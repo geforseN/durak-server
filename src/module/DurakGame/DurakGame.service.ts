@@ -4,7 +4,7 @@ import assert from "node:assert";
 
 import type DurakGame from "./DurakGame.js";
 
-import prisma from "../../../prisma/index.js";
+import { prisma } from "../../config/index.js";
 import durakGamesStore from "../../common/durakGamesStore.js";
 import raise from "../../common/raise.js";
 
@@ -20,17 +20,14 @@ export default class DurakGameWebsocketService {
           gameType,
           moveTime: gameToRemove.settings.moveTime,
           players: {
-            create: gameToRemove.history.players.map(
-              (player) => ({
-                hasLost: gameToRemove.info.durakId === player.id,
-                index: player.index,
-                place: player.place,
-                result:
-                  gameToRemove.info.durakId === player.id ? "LOST" : "WON",
-                roundLeftNumber: player.roundLeftNumber,
-                userId: player.id,
-              }),
-            ),
+            create: gameToRemove.history.players.map((player) => ({
+              hasLost: gameToRemove.info.durakId === player.id,
+              index: player.index,
+              place: player.place,
+              result: gameToRemove.info.durakId === player.id ? "LOST" : "WON",
+              roundLeftNumber: player.roundLeftNumber,
+              userId: player.id,
+            })),
           },
           playersCount: gameToRemove.settings.userCount,
           status: "ENDED",

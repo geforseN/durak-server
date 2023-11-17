@@ -1,8 +1,8 @@
-import prisma from "../../../prisma/index.js";
-import { type SingletonFastifyInstance } from "../../index.js";
 import z from "zod";
+import assert from "assert";
+import { prisma, type FastifyInstanceT } from "../../config/index.js";
 
-export default function getUserProfile(fastify: SingletonFastifyInstance) {
+export default function getUserProfile(fastify: FastifyInstanceT) {
   return fastify.route({
     method: "GET",
     url: "/profile",
@@ -13,7 +13,7 @@ export default function getUserProfile(fastify: SingletonFastifyInstance) {
         }),
       }),
     },
-    handler: async function (request, reply) {
+    async handler(request) {
       const user = await prisma.userProfile.findFirst({
         where: { personalLink: request.query.personalLink },
         select: {
@@ -23,12 +23,8 @@ export default function getUserProfile(fastify: SingletonFastifyInstance) {
           User: { include: { UserGameStat: true } },
         },
       });
-      if (!user) {
-        // Пользователь не был найдем, но
-        // для безопасности просто отправим "Нет доступа"
-        throw new Error("Нет доступа");
-      }
-      return reply.send(user);
+      assert.ok(user, "No access");
+      return user;
     },
   });
 }

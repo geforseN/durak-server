@@ -1,21 +1,22 @@
-import { DurakGameSocket } from "@durak-game/durak-dts";
-import { store } from "../../../index.js";
+import type { DurakGameSocket } from "@durak-game/durak-dts";
+import type { SessionStore } from "@fastify/session";
 import { getSid } from "./getSid.js";
 
 export function mutateSocketData(
   socket: DurakGameSocket.Socket,
-  next: (err?: Error) => void
+  next: (err?: Error) => void,
+  sessionStore: SessionStore,
 ) {
   const sid = getSid(socket, next, console);
   if (!sid) return next();
-  store.get(sid, (error, session) => {
+  sessionStore.get(sid, (error, session) => {
     if (error || !session) {
       console.log(
         {
           error,
           session,
         },
-        "store couldn't get session data"
+        "store couldn't get session data",
       );
       return next();
     }

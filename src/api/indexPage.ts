@@ -1,12 +1,11 @@
-import type { SocketStream } from "@fastify/websocket";
-import type { FastifyBaseLogger, FastifyReply, FastifyRequest } from "fastify";
-import { type SingletonFastifyInstance } from "./index.js";
-import durakGamesStore from "./common/durakGamesStore.js";
 import assert from "node:assert";
 import crypto from "node:crypto";
-import prisma from "../prisma/index.js";
-import { CustomWebsocketEvent, SocketsStore } from "./ws/index.js";
+import type { SocketStream } from "@fastify/websocket";
+import type { FastifyBaseLogger, FastifyReply, FastifyRequest } from "fastify";
+import durakGamesStore from "../common/durakGamesStore.js";
+import { CustomWebsocketEvent, SocketsStore } from "../ws/index.js";
 import { User, UserProfile } from "@prisma/client";
+import { FastifyInstanceT, prisma } from "../config/index.js";
 
 declare module "fastify" {
   interface Session {
@@ -16,7 +15,7 @@ declare module "fastify" {
 }
 
 export async function handler(
-  this: SingletonFastifyInstance,
+  this: FastifyInstanceT,
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
@@ -32,14 +31,14 @@ export async function handler(
   return reply.type("text/html").sendFile("index.html");
 }
 
-export default async function indexPage(fastify: SingletonFastifyInstance) {
+export default async function indexPage(fastify: FastifyInstanceT) {
   const socketsStore = new SocketsStore();
 
   fastify.route({
     method: "GET",
     url: "/",
     handler,
-    wsHandler: async function wsHandler(connection, request) {
+    async wsHandler(connection, request) {
       socketsStore.add(connection.socket);
       const userRoom = socketsStore
         .room(request.session.user.id)
