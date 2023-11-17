@@ -2,7 +2,6 @@ import "dotenv/config";
 import { getParsedEnv } from "./zod-env.js";
 import path from "path";
 
-
 export const env = getParsedEnv(process.env);
 
 export const pathForStatic = path
@@ -11,3 +10,7 @@ export const pathForStatic = path
     "./../static",
   )
   .split(":")[1];
+
+export { createFastify, type FastifyInstanceT } from "./fastify.js";
+export { createSocketIoServer } from "./socket-io.js";
+export { prisma } from "./prisma.js";
