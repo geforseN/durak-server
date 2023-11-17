@@ -80,13 +80,7 @@ fastify
     secret: env.SESSION_SECRET,
     store,
   })
-  .register(fastifyWebsocket, {
-    options: {
-      verifyClient: async function (_info: unknown) {
-        // (info.req as FastifyRequest);
-      },
-    },
-  })
+  .register(fastifyWebsocket)
   .register(indexPage)
   .register(getMe)
   .register(getUserProfile)
@@ -96,8 +90,7 @@ fastify
     this.log.error("setNotFoundHandler");
     return reply.type("text/html").sendFile("index.html");
   })
-  .ready()
-  .then(function (this: typeof fastify) {}.bind(fastify));
+  .ready();
 
 (async () => {
   try {
