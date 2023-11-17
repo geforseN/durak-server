@@ -1,5 +1,4 @@
 import type { SessionStore } from "@fastify/session";
-
 import { DurakGameSocket } from "@durak-game/durak-dts";
 import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
@@ -25,6 +24,7 @@ import chatPlugin from "./module/Chat/chatPlugin.js";
 import durakGameSocketHandler from "./module/DurakGame/socket/DurakGameSocket.handler.js";
 import { mutateSocketData } from "./module/DurakGame/socket/mutateSocketData.js";
 import gameLobbiesPlugin from "./module/Lobbies/lobbies.plugin.js";
+import { Server } from "socket.io";
 
 const fastify = Fastify({
   logger: {
