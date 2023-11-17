@@ -31,7 +31,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "fastify": "^4.21.0",
-    "fastify-socket.io": "^4.0.0",
     "fastify-type-provider-zod": "^1.1.9",
     "fastify-zod": "^1.4.0",
     "pino": "^8.15.0",
