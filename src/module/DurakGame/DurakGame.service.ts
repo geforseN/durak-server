@@ -20,7 +20,7 @@ export default class DurakGameWebsocketService {
           gameType,
           moveTime: gameToRemove.settings.moveTime,
           players: {
-            create: gameToRemove.__________history__________.players.map(
+            create: gameToRemove.history.players.map(
               (player) => ({
                 hasLost: gameToRemove.info.durakId === player.id,
                 index: player.index,
@@ -59,7 +59,7 @@ export default class DurakGameWebsocketService {
       .to(gameToRemove.info.id)
       .emit("game::over", { durak: { id: gameToRemove.info.durakId } });
     this.namespace.socketsLeave(gameToRemove.info.id);
-    gameToRemove.__________history__________.players.forEach((player) => {
+    gameToRemove.history.players.forEach((player) => {
       this.namespace.socketsLeave(player.id);
     });
     durakGamesStore.removeStartedGame(gameToRemove);
@@ -76,6 +76,7 @@ export default class DurakGameWebsocketService {
     const player = game.players.get((player) => player.id === playerId);
     socket.emit("game::state::restore", {
       state: {
+        __allowedPlayer: game.players.allowed.toJSON(),
         desk: game.desk.toJSON(),
         discard: game.discard.toJSON(),
         enemies: player.enemies,

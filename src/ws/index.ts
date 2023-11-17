@@ -1,11 +1,10 @@
 import type WebSocket from "ws";
+
 import assert from "node:assert";
+
 import NotificationAlert from "../module/NotificationAlert/index.js";
 
 export const defaultListeners = {
-  socket(this: WebSocket, event: CustomWebsocketEvent) {
-    this.send(event.asString);
-  },
   message(this: WebSocket, data: WebSocket.RawData, _isBinary: boolean) {
     const parsedData = JSON.parse(data.toString());
     assert.ok(typeof parsedData === "object" && parsedData !== null);
@@ -13,6 +12,10 @@ export const defaultListeners = {
     assert.ok(typeof eventName === "string");
     assert.ok(typeof payload === "object" && payload !== null);
     this.emit(eventName, payload);
+  },
+
+  socket(this: WebSocket, event: CustomWebsocketEvent) {
+    this.send(event.asString);
   },
 };
 
@@ -49,20 +52,23 @@ export class SocketsStore {
     this.emit = this.emit.bind(this);
   }
 
+  add(socket: WebSocket) {
+    this.#allSockets.add(socket);
+  }
+
   emit(event: CustomWebsocketEvent) {
     const data = event.asString;
     console.log({ data });
     this.#allSockets.forEach((socket) => socket.send(data));
   }
 
-  add(socket: WebSocket) {
-    this.#allSockets.add(socket);
+  remove(socket: WebSocket) {
+    const isExisted = this.#allSockets.delete(socket);
+    assert.ok(isExisted, "Provided socket wasn't found in store");
   }
 
   room(roomName: string) {
     return {
-      isEmpty: this.#rooms.get(roomName)?.size === 0,
-      hasOneSocket: this.#rooms.get(roomName)?.size === 1,
       add: (socket: WebSocket) => {
         const room = this.#rooms.get(roomName);
         if (room) {
@@ -78,6 +84,8 @@ export class SocketsStore {
         room?.forEach((socket) => socket.send(data));
         return this.room(roomName);
       },
+      hasOneSocket: this.#rooms.get(roomName)?.size === 1,
+      isEmpty: this.#rooms.get(roomName)?.size === 0,
       remove: (socket: WebSocket) => {
         const room = this.#rooms.get(roomName);
         const isExisted = room?.delete(socket);
@@ -88,10 +96,5 @@ export class SocketsStore {
         return this.room(roomName);
       },
     };
-  }
-
-  remove(socket: WebSocket) {
-    const isExisted = this.#allSockets.delete(socket);
-    assert.ok(isExisted, "Provided socket wasn't found in store");
   }
 }

@@ -1,33 +1,34 @@
-import durakGameSocketHandler from "./module/DurakGame/socket/DurakGameSocket.handler.js";
-import Fastify from "fastify";
-import fastifyWebsocket from "@fastify/websocket";
-import fastifyCors from "@fastify/cors";
+import type { SessionStore } from "@fastify/session";
+
+import { DurakGameSocket } from "@durak-game/durak-dts";
 import fastifyCookie from "@fastify/cookie";
-import { type SessionStore, fastifySession } from "@fastify/session";
+import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
+import { fastifySession } from "@fastify/session";
 import fastifyStatic from "@fastify/static";
-import pretty from "pino-pretty";
-import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import fastifyWebsocket from "@fastify/websocket";
 import { PrismaClient } from "@prisma/client";
-import getUserProfile from "./api/profile/[personalLink].get.js";
-import indexPage from "./indexPage.js";
-import chatPlugin from "./module/Chat/chatPlugin.js";
-import gameLobbiesPlugin from "./module/Lobbies/lobbies.plugin.js";
+import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import { instrument } from "@socket.io/admin-ui";
+import Fastify from "fastify";
 import {
   ZodTypeProvider,
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
+import PinoPretty from "pino-pretty";
 import getMe from "./api/me.js";
-import { Server } from "socket.io";
-import { instrument } from "@socket.io/admin-ui";
-import { DurakGameSocket } from "@durak-game/durak-dts";
+import getUserProfile from "./api/profile/[personalLink].get.js";
 import { env, pathForStatic } from "./config/index.js";
+import indexPage from "./indexPage.js";
+import chatPlugin from "./module/Chat/chatPlugin.js";
+import durakGameSocketHandler from "./module/DurakGame/socket/DurakGameSocket.handler.js";
 import { mutateSocketData } from "./module/DurakGame/socket/mutateSocketData.js";
+import gameLobbiesPlugin from "./module/Lobbies/lobbies.plugin.js";
 
 const fastify = Fastify({
   logger: {
-    stream: pretty({ colorize: true }),
+    stream: PinoPretty({ colorize: true }),
   },
 }).withTypeProvider<ZodTypeProvider>();
 export type SingletonFastifyInstance = typeof fastify;
@@ -54,7 +55,7 @@ fastify
           "ws://127.0.0.1:3001",
           "http://127.0.0.1:3000",
           local,
-          local.replace('3000', '5173')
+          local.replace("3000", "5173"),
         ],
         defaultSrc: ["'self'"],
         imgSrc: [
@@ -68,15 +69,15 @@ fastify
   })
   .register(fastifyCookie)
   .register(fastifySession, {
-    cookieName: env.SESSION_COOKIE_NAME,
-    secret: env.SESSION_SECRET,
     cookie: {
       domain: "localhost",
-      secure: env.IS_SESSION_SECURE,
-      sameSite: "lax",
       maxAge: env.SESSION_MAX_AGE,
+      sameSite: "lax",
+      secure: env.IS_SESSION_SECURE,
     },
+    cookieName: env.SESSION_COOKIE_NAME,
     saveUninitialized: false,
+    secret: env.SESSION_SECRET,
     store,
   })
   .register(fastifyWebsocket, {
@@ -112,12 +113,12 @@ fastify
 
 const io = new Server(env.SOCKET_IO_PORT, {
   cors: {
+    credentials: true,
     origin: [
       ...env.CORS_ORIGIN,
       "http://127.0.0.1:3001",
       "http://127.0.0.1:3000",
     ],
-    credentials: true,
   },
 });
 const gamesNamespace: DurakGameSocket.Namespace = io.of(

@@ -12,9 +12,9 @@ import type { GameMove } from "./entity/GameMove/index.js";
 import type { AllowedSuperPlayer } from "./entity/Player/AllowedSuperPlayer.abstract.js";
 import type { Players } from "./entity/index.js";
 
-import RoundEnd from "./entity/DefenseEnding/RoundEnd.js";
 import GameRoundMoves from "./entity/GameRound/GameRoundMoves.js";
 import GameRoundDistribution from "./entity/GameRoundDistributionQueue.js";
+import GameHistory from "./entity/History.js";
 import {
   Card,
   Desk,
@@ -31,9 +31,9 @@ import {
 
 export default class DurakGame {
   readonly #wsService: DurakGameWebsocketService;
-  __________history__________: any;
   readonly desk: Desk;
   readonly discard: Discard;
+  readonly history: GameHistory;
   readonly info: {
     adminId: string;
     durakId?: string;
@@ -99,21 +99,7 @@ export default class DurakGame {
     this.#wsService = wsServices.gameService;
     this.round = new GameRound(this, new GameRoundMoves());
     this.talonDistribution = new GameRoundDistribution(this);
-    this.__________history__________ = {
-      players: {
-        leftPlayers: {
-          count: 0,
-          value: [],
-        },
-        value: [...this.players].map((player, index) => ({
-          id: player.id,
-          index,
-          place: null,
-          roundLeftNumber: null,
-        })),
-      },
-      rounds: [],
-    };
+    this.history = new GameHistory([...this.players]);
     if (this.info.shouldStartRightNow) {
       this.start();
     }
@@ -147,7 +133,7 @@ export default class DurakGame {
     // StopAttackMove;
     this.round.moves.push(move);
     const nextThing = move.gameMutationStrategy();
-    if (nextThing?.kind === 'RoundEnd') {
+    if (nextThing?.kind === "RoundEnd") {
       nextThing.makeMutation();
       const { newGameRound } = nextThing;
       if (!newGameRound) {

@@ -8,7 +8,9 @@ import DurakGame from "./module/DurakGame/DurakGame.js";
 import NonStartedDurakGame from "./module/DurakGame/NonStartedDurakGame.js";
 
 export default class DurakGamesStore<
-  Game extends DurakGame | NonStartedDurakGame = DurakGame | NonStartedDurakGame,
+  Game extends DurakGame | NonStartedDurakGame =
+    | DurakGame
+    | NonStartedDurakGame,
 > {
   values: Map<Game["info"]["id"], DurakGame | NonStartedDurakGame>;
 
@@ -46,10 +48,17 @@ export default class DurakGamesStore<
 
   get startedGamesState() {
     return [...this.values.values()]
-      .filter((game): game is DurakGame => game.info.status !== "ended")
+      .filter((game): game is DurakGame =>
+        ["started", "starts"].includes(game.info.status),
+      )
       .map((game) => ({
-        ...game,
+        info: {
+          adminId: game.info.adminId,
+          id: game.info.id,
+          status: game.info.status,
+        },
         players: [...game.players].map((player) => player.toJSON()),
+        settings: game.settings,
       }));
   }
 }

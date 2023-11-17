@@ -1,14 +1,11 @@
-import type { CardDTO } from "@durak-game/durak-dts";
-
 import assert from "node:assert";
 
-import type { GameMove } from "../GameMove/index.js";
+import type DurakGame from "../../DurakGame.js";
+import type Card from "../Card/index.js";
+import type DeskSlot from "../DeskSlot/index.js";
 import type { SuperPlayer } from "./SuperPlayer.abstract.js";
 
-import DurakGame from "../../DurakGame.js";
 import { AllowedPlayerBadInputError } from "../../error/index.js";
-import Card from "../Card/index.js";
-import DeskSlot from "../DeskSlot/index.js";
 import { InsertAttackCardMove, StopAttackMove } from "../GameMove/index.js";
 import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
 import { Attacker } from "./Attacker.js";
@@ -51,6 +48,8 @@ export class AllowedAttacker extends AllowedSuperPlayer {
       await slot.ensureCanBeAttacked();
       this.game.desk.ensureIncludesRank(card.rank);
     }
+    this.defaultBehavior.shouldBeCalled = false;
+    this.defaultBehavior.clearTimeout();
     return new InsertAttackCardMove(this.game, this, {
       card,
       slot,
@@ -64,6 +63,8 @@ export class AllowedAttacker extends AllowedSuperPlayer {
         header: "Stop move attempt",
       }),
     );
+    this.defaultBehavior.shouldBeCalled = false;
+    this.defaultBehavior.clearTimeout();
     return new StopAttackMove(this.game, this);
   }
 

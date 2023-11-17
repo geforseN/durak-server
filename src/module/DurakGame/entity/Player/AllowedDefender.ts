@@ -39,33 +39,22 @@ export class AllowedDefender extends AllowedSuperPlayer {
     return new Defender(this);
   }
 
-  async ensureCanMakeTransferMove(card: Card, slot: DeskSlot): Promise<void> {
-    this.left.ensureCanAllowTransfer(this.game.desk.cardsCount + 1)
-    await slot.ensureCanBeAttacked();
-    this.game.desk.ensureIncludesRank(card.rank);
-    const deskRanks = [...this.game.desk.ranks];
-    assert.ok(deskRanks.length === 1 && card.rank === deskRanks[0]);
-    return this.game.desk.ensureAllowsTransferMove(card);
+  async ensureCanMakeTransferMove(card: Card): Promise<void> {
+    this.left.ensureCanTakeMore(this.game.desk.cardsCount + 1);
+    this.game.desk.ensureOnlyHasRank(card.rank);
+    this.game.desk.ensureAllowsTransferMove(card);
   }
 
   async makeInsertMove(card: Card, slot: DeskSlot) {
-    this.defaultBehavior.shouldBeCalled = false;
-    this.defaultBehavior.clearTimeout();
-    slot.isEmpty() // THEN we can try transfer move
-    if (this.game.round.isAllowsTransferMove) {
-      try {
-        await this.ensureCanMakeTransferMove(card, slot);
-        return new DefenderTransferMove(this.game, this, { card, slot });
-      } catch (error) {
-        console.dir({ error, shit: "shit" });
-        await slot.ensureCanBeDefended(card);
-        return new InsertDefendCardMove(this.game, this, {
-          card,
-          slot,
-        });
-      }
+    if (slot.isEmpty()) {
+      await this.ensureCanMakeTransferMove(card);
+      this.defaultBehavior.shouldBeCalled = false;
+      this.defaultBehavior.clearTimeout();
+      return new DefenderTransferMove(this.game, this, { card, slot });
     }
     await slot.ensureCanBeDefended(card);
+    this.defaultBehavior.shouldBeCalled = false;
+    this.defaultBehavior.clearTimeout();
     return new InsertDefendCardMove(this.game, this, {
       card,
       slot,
@@ -76,9 +65,6 @@ export class AllowedDefender extends AllowedSuperPlayer {
     this.defaultBehavior.shouldBeCalled = false;
     this.defaultBehavior.clearTimeout();
     if (!this.game.desk.isDefended) {
-      // defender.defaultBehavior.shouldBeCalled = false;
-      // defender.defaultBehavior.clearTimeout();
-
       return new DefenderGaveUpMove(this.game, this);
     }
     return new StopDefenseMove(this.game, this);

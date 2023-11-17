@@ -1,7 +1,5 @@
 {
-  "include": [
-    "/**/*.ts"
-  ],
+  "include": ["/**/*.ts"],
   "extends": "@tsconfig/node20/tsconfig.json",
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
@@ -16,12 +14,7 @@
     /* Language and Environment */
     "target": "ES2022",
     /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
-    "lib": [
-      "ES2023",
-      "ES2023.Array",
-      "ESNext.Array",
-      "ESNext"
-    ],
+    "lib": ["ES2023", "ES2023.Array", "ESNext.Array", "ESNext"],
     /* Specify a set of bundled library declaration files that describe the target runtime environment. */
     // "jsx": "preserve",                                /* Specify what JSX code is generated. */
     // "experimentalDecorators": true,                   /* Enable experimental support for TC39 stage 2 draft decorators. */
@@ -37,7 +30,7 @@
     "module": "NodeNext",
     /* Specify what module code is generated. */
     // "rootDir": "./",                                  /* Specify the root folder within your source files. */
-    "moduleResolution": "NodeNext", /* Specify how TypeScript looks up a file from a given module specifier. */
+    "moduleResolution": "NodeNext" /* Specify how TypeScript looks up a file from a given module specifier. */,
     // "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
     // "paths": {},                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
@@ -82,7 +75,7 @@
     // "preserveValueImports": true,                     /* Preserve unused imported values in the JavaScript output that would otherwise be removed. */
     /* Interop Constraints */
     // "isolatedModules": true,                          /* Ensure that each file can be safely transpiled without relying on other imports. */
-    // "allowSyntheticDefaultImports": true,             /* Allow 'import x from y' when a module doesn't have a default export. */
+    "allowSyntheticDefaultImports": true /* Allow 'import x from y' when a module doesn't have a default export. */,
     "esModuleInterop": true,
     /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
     // "preserveSymlinks": true,                         /* Disable resolving symlinks to their realpath. This correlates to the same flag in node. */
@@ -110,7 +103,7 @@
     // "allowUnusedLabels": true,                        /* Disable error reporting for unused labels. */
     // "allowUnreachableCode": true,                     /* Disable error reporting for unreachable code. */
     /* Completeness */
-    "skipDefaultLibCheck": true, /* Skip type checking .d.ts files that are included with TypeScript. */
+    "skipDefaultLibCheck": true /* Skip type checking .d.ts files that are included with TypeScript. */,
     "skipLibCheck": true
     /* Skip type checking all .d.ts files. */
   },
@@ -118,6 +111,6 @@
     "transpileOnly": true,
     "esm": true,
     "files": true,
-    "experimentalSpecifierResolution": "node",
+    "experimentalSpecifierResolution": "node"
   }
 }

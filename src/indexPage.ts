@@ -197,6 +197,7 @@ class DurakGameStateRestoreEvent extends CustomWebsocketEvent {
 
   constructor() {
     super("durakGames::restore");
-    this.startedGames = durakGamesStore.startedGammakeesState;
+    this.startedGames = durakGamesStore.startedGamesState;
+    console.log({ startedGames: this.startedGames });
   }
 }
