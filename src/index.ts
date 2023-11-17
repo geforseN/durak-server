@@ -1,13 +1,9 @@
-import type { SessionStore } from "@fastify/session";
-import { PrismaClient } from "@prisma/client";
-import { PrismaSessionStore } from "@quixo3/prisma-session-store";
-
-import { createFastify, createSocketIoServer, env } from "./config/index.js";
-
-export const sessionStore: SessionStore = new PrismaSessionStore(new PrismaClient(), {
-  checkPeriod: env.SESSION_STORE_CHECK_PERIOD,
-  loggerLevel: ["log", "warn", "error"],
-});
+import {
+  createFastify,
+  createSocketIoServer,
+  env,
+  sessionStore,
+} from "./config/index.js";
 
 main();
 

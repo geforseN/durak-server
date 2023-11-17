@@ -3,7 +3,6 @@ import { instrument } from "@socket.io/admin-ui";
 import { DurakGameSocket } from "@durak-game/durak-dts";
 import durakGameSocketHandler from "../module/DurakGame/socket/DurakGameSocket.handler.js";
 import { getParsedEnv } from "./zod-env.js";
-import { getSid } from "../module/DurakGame/socket/getSid.js";
 import { SessionStore } from "@fastify/session";
 import { mutateSocketData } from "../module/DurakGame/socket/mutateSocketData.js";
 
