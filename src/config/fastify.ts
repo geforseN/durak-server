@@ -20,6 +20,7 @@ import getMe from "../api/me.js";
 import getUserProfile from "../api/profile/[personalLink].get.js";
 
 import indexPage from "../api/indexPage.js";
+import { sessionApi } from "../api/session.js";
 import chatPlugin from "../module/Chat/chatPlugin.js";
 import gameLobbiesPlugin from "../module/Lobbies/lobbies.plugin.js";
 import { pathForStatic } from "./index.js";
@@ -50,6 +51,7 @@ export function createFastify(
 ) {
   const fastify = Fastify({
     logger: {
+      // @ts-expect-error ts import problem
       stream: PinoPretty({ colorize: true }),
     },
   }).withTypeProvider<ZodTypeProvider>();
@@ -85,6 +87,7 @@ export function createFastify(
     .register(fastifySession, getFastifySessionSettings(env, sessionStore))
     .register(fastifyWebsocket)
     .register(indexPage)
+    .register(sessionApi)
     .register(getMe)
     .register(getUserProfile)
     .register(chatPlugin, { path: "/global-chat" })
@@ -93,6 +96,7 @@ export function createFastify(
       this.log.error("setNotFoundHandler");
       return reply.type("text/html").sendFile("index.html");
     });
+  console.log(12345, 12345, 12345, 12345, 12345, 12345, 12345, 12345, 12345);
   return fastify;
 }
 
