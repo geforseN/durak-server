@@ -10,7 +10,7 @@ import {
 } from "@fastify/session";
 import fastifyStatic from "@fastify/static";
 import fastifyWebsocket from "@fastify/websocket";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User, UserProfile } from "@prisma/client";
 import {
   ZodTypeProvider,
   serializerCompiler,
@@ -19,9 +19,8 @@ import {
 
 import getMe from "../api/me.js";
 import getUserProfile from "../api/profile/[personalLink].get.js";
+import { createUser } from "../api/auth/login.js";
 
-import indexPage from "../api/indexPage.js";
-import { sessionApi } from "../api/session.js";
 import chatPlugin from "../module/Chat/chatPlugin.js";
 import gameLobbiesPlugin from "../module/Lobbies/lobbies.plugin.js";
 import { pathForStatic } from "./index.js";
@@ -46,6 +45,12 @@ function getFastifySessionSettings(
   } satisfies FastifySessionOptions;
 }
 
+declare module "fastify" {
+  interface Session {
+    user: User & { profile: UserProfile; isAnonymous: boolean };
+  }
+}
+
 export function createFastify(
   env: ReturnType<typeof getParsedEnv>,
   sessionStore: SessionStore,
@@ -56,7 +61,6 @@ export function createFastify(
       stream: PinoPretty({ colorize: true }),
     },
   }).withTypeProvider<ZodTypeProvider>();
-
   fastify
     .decorate("prisma", new PrismaClient())
     .setValidatorCompiler(validatorCompiler)
@@ -91,17 +95,11 @@ export function createFastify(
     .register(fastifyCookie)
     .register(fastifySession, getFastifySessionSettings(env, sessionStore))
     .register(fastifyWebsocket)
-    .register(indexPage)
-    .register(sessionApi)
+    .register(createUser)
     .register(getMe)
     .register(getUserProfile)
     .register(chatPlugin, { path: "/global-chat" })
     .register(gameLobbiesPlugin)
-    .setNotFoundHandler(async function (this: typeof fastify, _, reply) {
-      this.log.error("setNotFoundHandler");
-      return reply.type("text/html").sendFile("index.html");
-    });
-  console.log(12345, 12345, 12345, 12345, 12345, 12345, 12345, 12345, 12345);
   return fastify;
 }
 
