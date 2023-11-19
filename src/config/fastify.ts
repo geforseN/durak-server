@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
+import { fastifyFormbody } from "@fastify/formbody";
 import {
   FastifySessionOptions,
   SessionStore,
@@ -61,7 +62,11 @@ export function createFastify(
     .setValidatorCompiler(validatorCompiler)
     .setSerializerCompiler(serializerCompiler)
     .register(fastifyStatic, { root: pathForStatic })
-    .register(fastifyCors, { origin: [...env.CORS_ORIGIN] })
+    .register(fastifyCors, {
+      origin: ["https://admin.socket.io", "http://localhost:5173"],
+      credentials: true,
+    })
+    .register(fastifyFormbody)
     .register(fastifyHelmet, {
       contentSecurityPolicy: {
         directives: {
