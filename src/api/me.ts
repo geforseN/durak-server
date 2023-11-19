@@ -5,8 +5,15 @@ export default async function getMe(fastify: FastifyInstance) {
     method: "GET",
     url: "/me",
     async handler(request, reply) {
-      this.log.info({ user: request.session.user });
-      return reply.send({ user: request.session.user });
+      console.log(request.session.user);
+      this.log.info({ user: request.session.user || {} });
+      if (
+        !request.session.user ||
+        !Object.values(request.session.user || {}).length
+      ) {
+        return reply.status(401).send({});
+      }
+      return request.session.user;
     },
   });
 }
