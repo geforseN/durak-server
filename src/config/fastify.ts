@@ -18,7 +18,7 @@ import {
 } from "fastify-type-provider-zod";
 
 import getMe from "../api/me.js";
-import getUserProfile from "../api/profile/[personalLink].get.js";
+import getUserProfile from "../api/profiles/personalLink.js";
 import { createUser } from "../api/auth/login.js";
 
 import chatPlugin from "../module/Chat/chatPlugin.js";
