@@ -1,13 +1,13 @@
-import type { User, UserProfile } from "@prisma/client";
-
 import EventEmitter from "events";
 import assert from "node:assert";
+import type { User, UserProfile } from "@prisma/client";
+import type { InitialGameSettings } from "@durak-game/durak-dts";
 
-import durakGamesStore from "../../../common/durakGamesStore.js";
-import raise from "../../../common/raise.js";
-import { CustomWebsocketEvent, SocketsStore } from "../../../ws/index.js";
+import durakGamesStore from "@/common/durakGamesStore.js";
+import raise from "@/common/raise.js";
+import { CustomWebsocketEvent, SocketsStore } from "@/ws/index.js";
+
 import { FindLobbyError } from "../error.js";
-import { FrontendGameSettings } from "./CorrectGameSettings.js";
 import Lobby, {
   LobbyAdminUpdateEvent,
   LobbyUserJoinEvent,
@@ -101,7 +101,7 @@ export default class Lobbies {
     settings,
   }: {
     initiator: User & { profile: UserProfile };
-    settings: FrontendGameSettings;
+    settings: InitialGameSettings;
   }) {
     const pastLobby = this.#findLobbyWithUser(initiator.id);
     if (pastLobby) {

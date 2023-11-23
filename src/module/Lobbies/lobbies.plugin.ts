@@ -1,16 +1,16 @@
+import assert from "node:assert";
 import type { SocketStream } from "@fastify/websocket";
 import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { InitialGameSettings } from "@durak-game/durak-dts";
 import {
   CustomWebsocketEvent,
   NotificationAlertEvent,
   SocketsStore,
   defaultListeners,
-} from "../../ws/index.js";
+} from "@/ws/index.js";
+
 import Lobbies from "./entity/Lobbies.js";
 import type Lobby from "./entity/Lobby.js";
-import { FrontendGameSettings } from "./entity/CorrectGameSettings.js";
-
-type GameLobbiesContext = ReturnType<ReturnType<typeof initializeGameLobbies>>;
 
 export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
   const handleConnection = initializeGameLobbies();
@@ -28,19 +28,32 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
             ),
           ).asString,
         );
-        return request.server.log.error({ request }, "No user.id found");
+        request.server.log.error({ request }, "No user.id found");
+        return;
       }
       context.socket.send(
         new GameLobbiesStateRestoreEvent(context.lobbies).asString,
       );
-      context.socket
-        .on("lobby::add", ({ settings }: { settings: FrontendGameSettings }) =>
-          context.lobbies.pushNewLobby({ initiator: context.user, settings }),
-        )
-        .on("lobby::remove", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-          context.lobbies.removeLobby({ initiator: context.user, lobbyId }),
-        )
-        .on(
+      try {
+        context.socket.on(
+          "lobby::add",
+          ({ settings }: { settings: InitialGameSettings }) => {
+            context.lobbies.pushNewLobby({
+              initiator: context.user,
+              settings,
+            });
+          },
+        );
+        context.socket.on(
+          "lobby::remove",
+          ({ lobbyId }: { lobbyId?: Lobby["id"] }) => {
+            context.lobbies.removeLobby({
+              initiator: context.user,
+              lobbyId,
+            });
+          },
+        );
+        context.socket.on(
           "lobby::user::join",
           async ({
             lobbyId,
@@ -48,22 +61,33 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
           }: {
             lobbyId: Lobby["id"];
             slotIndex: number;
-          }) =>
+          }) => {
             await context.lobbies.addUserInLobby({
               user: context.user,
               lobbyId,
               slotIndex,
-            }),
-        )
-        .on("lobby::user::leave", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-          context.lobbies.removeUserFromLobby(context.user, lobbyId),
-        )
-        .on("lobby::upgrade", ({ lobbyId }: { lobbyId?: Lobby["id"] }) =>
-          context.lobbies.upgradeLobbyToNonStartedGame({
-            initiator: context.user,
-            lobbyId,
-          }),
+            });
+          },
         );
+        context.socket.on(
+          "lobby::user::leave",
+          ({ lobbyId }: { lobbyId?: Lobby["id"] }) => {
+            context.lobbies.removeUserFromLobby(context.user, lobbyId);
+          },
+        );
+        context.socket.on(
+          "lobby::upgrade",
+          ({ lobbyId }: { lobbyId?: Lobby["id"] }) => {
+            context.lobbies.upgradeLobbyToNonStartedGame({
+              initiator: context.user,
+              lobbyId,
+            });
+          },
+        );
+      } catch (error) {
+        assert.ok(error instanceof Error);
+        context.socket.emit(new NotificationAlertEvent(error).asString);
+      }
     },
   );
 }

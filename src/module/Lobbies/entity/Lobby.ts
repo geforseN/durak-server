@@ -1,20 +1,18 @@
-import type { GameSettings } from "@durak-game/durak-dts";
-import type EventEmitter from "node:events";
-
-import { CardDTO } from "@durak-game/durak-dts";
 import assert from "node:assert";
 import crypto from "node:crypto";
+import type { GameSettings } from "@durak-game/durak-dts";
+import type EventEmitter from "node:events";
+import type { InitialGameSettings, CardDTO } from "@durak-game/durak-dts";
 
+import { CustomWebsocketEvent } from "@/ws/index.js";
+
+import { LobbyAccessError } from "../error.js";
+import CorrectGameSettings from "./CorrectGameSettings.js";
+import LobbySlots from "./LobbySlots.js";
 import type EmptySlot from "./EmptySlot.js";
 import type FilledSlot from "./FilledSlot.js";
 import type LobbyUser from "./LobbyUser.js";
 
-import { CustomWebsocketEvent } from "../../../ws/index.js";
-import { LobbyAccessError } from "../error.js";
-import CorrectGameSettings, {
-  type FrontendGameSettings,
-} from "./CorrectGameSettings.js";
-import LobbySlots from "./LobbySlots.js";
 
 export default class Lobby {
   #lobbiesEmitter: EventEmitter;
@@ -23,7 +21,7 @@ export default class Lobby {
   slots: LobbySlots;
 
   constructor(
-    settings: FrontendGameSettings & { trumpCard?: CardDTO },
+    settings: InitialGameSettings & { trumpCard?: CardDTO },
     lobbiesEmitter: EventEmitter,
   ) {
     this.settings = new CorrectGameSettings(settings);
