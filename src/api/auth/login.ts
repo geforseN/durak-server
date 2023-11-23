@@ -26,7 +26,7 @@ export async function createUser(fastify: FastifyInstanceT) {
     },
     async handler(request, reply) {
       console.log({ anon: request.query.anonymous });
-      if (!request.session.isAnonymous) {
+      if (!("isAnonymous" in (request.session.user || {}))) {
         await mutateSessionWithAnonymousUser(request, this.log);
       }
       return reply.redirect(
