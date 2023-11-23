@@ -5,9 +5,9 @@ import { prisma, type FastifyInstanceT } from "../../config/index.js";
 export default function getUserProfile(fastify: FastifyInstanceT) {
   return fastify.route({
     method: "GET",
-    url: "/profile",
+    url: "/api/profiles/:personalLink",
     schema: {
-      querystring: z.object({
+      params: z.object({
         personalLink: z.string({
           description: "Не указана ссылка пользователя",
         }),
@@ -15,7 +15,7 @@ export default function getUserProfile(fastify: FastifyInstanceT) {
     },
     async handler(request) {
       const user = await prisma.userProfile.findFirst({
-        where: { personalLink: request.query.personalLink },
+        where: { personalLink: request.params.personalLink },
         select: {
           nickname: true,
           connectStatus: true,
