@@ -66,6 +66,7 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
     _slot: DeskSlot | number,
   ): Promise<void>;
   async makeNewMove(cardLike?: unknown, slotData?: unknown) {
+    // @ts-expect-error hard to type for now
     return this.game.handleNewMove(await this._makeMove(cardLike, slotData));
   }
 

@@ -138,6 +138,7 @@ export default class Lobbies {
     lobbyId?: Lobby["id"];
   }) {
     return this.#getLobby(initiator.id, lobbyId).upgradeToNonStartedGame(
+      // @ts-expect-error hard to type for now, ts is true here
       initiator,
     );
   }

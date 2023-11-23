@@ -1,10 +1,14 @@
+import DurakGame from "../../DurakGame.js";
 import { BasePlayer } from "../Player/BasePlayer.abstract.js";
-import { GameRound, Players } from "../index.js";
+import { Players } from "../index.js";
 
 class SuccessfulDefense {
+  protected game;
   kind = "RoundEnd" as const;
 
-  constructor(protected game: DurakGame) {}
+  constructor(game: DurakGame) {
+    this.game = game;
+  }
 
   makeMutation(): void {
     this.game.desk.provideCards(this.game.discard);

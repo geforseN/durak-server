@@ -13,7 +13,9 @@ export class Player extends BasePlayer {
       new Player({
         hand: user.hand,
         info: user.info,
+        // @ts-expect-error hard to type for now
         left: undefined,
+        // @ts-expect-error hard to type for now
         right: undefined,
         wsService: user.wsService,
       }),

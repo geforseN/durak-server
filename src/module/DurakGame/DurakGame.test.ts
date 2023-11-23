@@ -84,11 +84,11 @@ function createDurakGame({
   trumpCard ??= gameSettings.talon.trumpCard;
   const lobby = new Lobby(
     {
-      cardCount: gameSettings.talon.count,
+      talonCardCount: gameSettings.talon.count,
       gameType: gameSettings.type,
       moveTime: gameSettings.players.moveTime,
       trumpCard: gameSettings.talon.trumpCard,
-      userCount: gameSettings.players.count,
+      playerCount: gameSettings.players.count,
     },
     new EventEmitter(),
   );
@@ -97,6 +97,7 @@ function createDurakGame({
   // - the first player will be attacker
   // - the second player will be defender
   players.forEach((player, index) => {
+    // @ts-expect-error no need more data, only id is required
     lobby.insertUser(new LobbyUser({ id: player.id }, player.cards), index);
   });
   if (trumpCard) {
@@ -153,7 +154,6 @@ describe("Проверка логики игры для двух игроков"
     it.todo("defender tries to put not trump card on trump card", () => {});
     it.todo("defender put", () => {});
   });
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   describe("THIS IS IT", () => {
     const game = createDurakGame({
       players: [
@@ -274,7 +274,7 @@ describe("Проверка логики игры для двух игроков"
         const { allowed, attacker, defender } = game.players;
         assert.strict.equal(attacker, allowed);
         const deckCards = game.desk._slots.cards;
-        expect(game.round.number).toStrictEqual(1);
+        expect(game.round.number).toBe(1);
         const defenderCardCountBeforeDistribution = defender.hand.count;
         const newDefenderCardCount =
           deckCards.length + defenderCardCountBeforeDistribution;
@@ -285,7 +285,7 @@ describe("Проверка логики игры для двух игроков"
         );
         const { attacker: newRoundAttacker, defender: newRoundDefender } =
           game.players;
-        expect(game.round.number).toStrictEqual(2);
+        expect(game.round.number).toBe(2);
         expect(newRoundAttacker.hand.count).equal(6);
         expect(newRoundAttacker.missingNumberOfCards).equal(0);
         // FIXME: commented line below never end the code
@@ -302,7 +302,6 @@ describe("Проверка логики игры для двух игроков"
       },
     );
   });
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   describe("throw when attacker puts card with wrong rank", () => {
     const setupGame = () => {
       return createDurakGame({
@@ -410,10 +409,7 @@ describe("Проверка логики игры для двух игроков"
     });
     it.todo(
       "throw when attacker wanna attack player which can not defend",
-      () => {
-        it.todo("case 1", () => {});
-        it.todo("case 2", () => {});
-      },
+      () => {},
     );
   });
 
@@ -441,8 +437,6 @@ describe("Проверка логики игры для двух игроков"
           shouldMakeInitialDistribution: false,
           trumpCard,
         });
-        // !!
-        ////// ! !? !?! ? ?!? W?!W?!?W?!W?!W?!?W?!W?!?W?
         it("dog first move 0♠ attack ok", async () => {
           const { allowed, attacker } = game.players;
           assert.strict.equal(attacker, allowed);
@@ -500,28 +494,17 @@ describe("Проверка логики игры для двух игроков"
   });
   it.todo("last move of round works correct", () => {
     it.todo("game end when needed", () => {
-      it.todo("case 1", () => {});
-      it.todo("case 2", () => {});
     });
     it.todo("new round become when needed", () => {
-      it.todo("case 1", () => {});
-      it.todo("case 2", () => {});
     });
     it.todo("handle empty player correct", () => {
       it.todo("remove player from game when talon empty", () => {
-        it.todo("case 1", () => {});
-        it.todo("case 2", () => {});
       });
     });
 
     it.todo("do not remove player when talon has cards", () => {
-      it.todo("case 1", () => {});
-      it.todo("case 2", () => {});
     });
   });
-  it.todo("", () => {});
-  it.todo("", () => {});
-
   it("first scenario", () => {
     const game = createDurakGame({
       players: [{ id: "1" }, { id: "2" }],

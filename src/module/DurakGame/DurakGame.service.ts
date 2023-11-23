@@ -4,68 +4,28 @@ import assert from "node:assert";
 
 import type DurakGame from "./DurakGame.js";
 
-import { prisma } from "../../config/index.js";
 import durakGamesStore from "../../common/durakGamesStore.js";
 import raise from "../../common/raise.js";
 
 export default class DurakGameWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}
 
-  // TODO rework code
-  #saveEndedGameInDB(gameToRemove: DurakGame) {
-    prisma.durakGame
-      .create({
-        data: {
-          cardCount: gameToRemove.settings.cardCount,
-          gameType,
-          moveTime: gameToRemove.settings.moveTime,
-          players: {
-            create: gameToRemove.history.players.map((player) => ({
-              hasLost: gameToRemove.info.durakId === player.id,
-              index: player.index,
-              place: player.place,
-              result: gameToRemove.info.durakId === player.id ? "LOST" : "WON",
-              roundLeftNumber: player.roundLeftNumber,
-              userId: player.id,
-            })),
-          },
-          playersCount: gameToRemove.settings.userCount,
-          status: "ENDED",
-          uuid: gameToRemove.info.id,
-        },
-        include: { players: true },
-      })
-      .then((game) => {
-        gameToRemove.logger.info(game, "Game was created");
-        game.players.forEach((player) => {
-          prisma.userGameStat.update({
-            data: player.hasLost
-              ? { lostGamesCount: { increment: 1 } }
-              : { wonGamesCount: { increment: 1 } },
-            where: { userId: player.userId },
-          });
-        });
-      })
-      .catch((reason) =>
-        gameToRemove.logger.error({ reason }, "Game was not created"),
-      );
-  }
-
   end(gameToRemove: DurakGame) {
     this.namespace
       .to(gameToRemove.info.id)
+      // @ts-expect-error id can be undefined, should change lib type
       .emit("game::over", { durak: { id: gameToRemove.info.durakId } });
     this.namespace.socketsLeave(gameToRemove.info.id);
-    gameToRemove.history.players.forEach((player) => {
-      this.namespace.socketsLeave(player.id);
-    });
+    // TODO: uncomment when history is implemented
+    // gameToRemove.history.players.forEach((player) => {
+    //   this.namespace.socketsLeave(player.id);
+    // });
     durakGamesStore.removeStartedGame(gameToRemove);
     const gameType = gameToRemove.settings.type.toUpperCase();
     assert.ok(gameType === GameType.BASIC || gameType === GameType.PEREVODNOY);
     if (!gameToRemove.info.shouldWriteEndedGameInDatabase) {
       return;
     }
-    this.#saveEndedGameInDB(gameToRemove);
   }
 
   restoreState(game: DurakGame, socket: DurakGameSocket.Socket) {
@@ -76,8 +36,10 @@ export default class DurakGameWebsocketService {
         __allowedPlayer: game.players.allowed.toJSON(),
         desk: game.desk.toJSON(),
         discard: game.discard.toJSON(),
+        // @ts-expect-error need to type it better if possible, try use satisfies in getter
         enemies: player.enemies,
         round: game.round.toJSON(),
+        // @ts-expect-error need to type it better if possible, try use satisfies in method
         self: player.toSelf(),
         settings: game.settings,
         status: game.info.status,

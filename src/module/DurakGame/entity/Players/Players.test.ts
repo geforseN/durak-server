@@ -13,8 +13,11 @@ import { Players } from "./Players.js";
 describe("test BasePlayer#enemies ", () => {
   describe("method work correct when BasePlayer called exitGame", () => {
     const playersData: [number, BasePlayer, number][] = [
+      // @ts-expect-error no need more data, only id in info is required
       [1, new Attacker({ hand: new Hand(), info: { id: "dog" } }), 2],
+      // @ts-expect-error no need more data, only id in info is required
       [2, new Defender({ hand: new Hand(), info: { id: "cat" } }), 0],
+      // @ts-expect-error no need more data, only id in info is required
       [0, new Player({ hand: new Hand(), info: { id: "fox" } }), 1],
     ];
     const players = playersData.map((data) => data[1]);
@@ -28,7 +31,6 @@ describe("test BasePlayer#enemies ", () => {
     const fox = gamePlayers.get((p) => p.id === "fox");
 
     it("left and right properties work correct after creation", () => {
-
       assert.ok(dog.left === cat);
       assert.ok(dog.right === fox);
       assert.ok(cat.left === fox);
