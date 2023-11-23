@@ -147,7 +147,6 @@ export default class DurakGame {
 
   handleSocketConnection(
     socket: DurakGameSocket.Socket,
-    _namespace: DurakGameSocket.Namespace,
   ) {
     addListenersWhichAreNeededForStartedGame.call(socket, this);
   }
@@ -183,14 +182,4 @@ export interface CanReceiveCards {
 
 export interface CanProvideCards<Target extends CanReceiveCards> {
   provideCards: (_target: Target) => void;
-}
-
-function __createDurakGame__({
-  namespace,
-}: {
-  namespace: DurakGameSocket.Namespace;
-  nonStartedGame: NonStartedDurakGame;
-  shouldStartRightNow: boolean;
-}) {
-  return new DurakGame(namespace);
 }

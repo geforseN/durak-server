@@ -1,15 +1,16 @@
+import { BasePlayer } from "./Player/BasePlayer.abstract.js";
 import { GameRound } from "./index.js";
-
 export default class GameHistory {
-  players: {};
+  players;
   rounds;
 
-  constructor(players, rounds: GameHistoryRounds = new GameHistoryRounds()) {
-    this.players;
-    this.rounds = rounds
+  constructor(
+    players: BasePlayer[],
+    rounds: GameHistoryRounds = new GameHistoryRounds(),
+  ) {
+    this.players = players;
+    this.rounds = rounds;
   }
-
-  get leftPlayers() {}
 }
 
 class GameHistoryRounds {
