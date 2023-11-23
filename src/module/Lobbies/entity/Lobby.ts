@@ -4,7 +4,7 @@ import type { GameSettings } from "@durak-game/durak-dts";
 import type EventEmitter from "node:events";
 import type { InitialGameSettings, CardDTO } from "@durak-game/durak-dts";
 
-import { CustomWebsocketEvent } from "@/ws/index.js";
+import { CustomWebsocketEvent } from "../../../ws/index.js";
 
 import { LobbyAccessError } from "../error.js";
 import CorrectGameSettings from "./CorrectGameSettings.js";
