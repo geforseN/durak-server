@@ -1,14 +1,14 @@
+import assert from "node:assert";
 import type {
   DurakGameType,
   GameSettings,
   PlayerCount,
   TalonCardCount,
+  InitialGameSettings,
+  CardDTO,
 } from "@durak-game/durak-dts";
 
-import { CardDTO } from "@durak-game/durak-dts";
-import assert from "node:assert";
-
-import { GOOD_CARD_AMOUNT } from "../../DurakGame/entity/Player/BasePlayer.abstract.js";
+import { GOOD_CARD_AMOUNT } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 export type FrontendGameSettings = {
   cardCount: GameSettings["talon"]["count"];
@@ -25,18 +25,18 @@ export default class CorrectGameSettings {
   type: GameSettings["type"];
 
   constructor({
-    cardCount,
+    talonCardCount,
     gameType,
     moveTime = 15_000,
     trumpCard,
-    userCount
-  }: FrontendGameSettings & { trumpCard?: CardDTO}) {
+    playerCount,
+  }: InitialGameSettings & { trumpCard?: CardDTO }) {
     this.players = {
-      count: userCount,
+      count: playerCount,
       moveTime,
     };
     this.talon = {
-      count: cardCount,
+      count: talonCardCount,
       trumpCard,
     };
     this.type = gameType;
