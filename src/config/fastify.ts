@@ -33,13 +33,10 @@ function getFastifySessionSettings(
 ) {
   return {
     cookie: {
-      domain:
-        process.env.NODE_ENV === "development"
-          ? "localhost"
-          : "play-durak.vercel.app",
+      domain: env.IS_DEV ? "localhost" : "play-durak.vercel.app",
       maxAge: env.SESSION_MAX_AGE,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: !env.IS_DEV,
     },
     cookieName: env.SESSION_COOKIE_NAME,
     saveUninitialized: false,
