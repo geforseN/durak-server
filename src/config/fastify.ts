@@ -33,10 +33,13 @@ function getFastifySessionSettings(
 ) {
   return {
     cookie: {
-      domain: "localhost",
+      domain:
+        process.env.NODE_ENV === "development"
+          ? "localhost"
+          : "play-durak.vercel.app",
       maxAge: env.SESSION_MAX_AGE,
       sameSite: "lax",
-      secure: env.IS_SESSION_SECURE,
+      secure: process.env.NODE_ENV === "production",
     },
     cookieName: env.SESSION_COOKIE_NAME,
     saveUninitialized: false,
@@ -99,7 +102,7 @@ export function createFastify(
     .register(getMe)
     .register(getUserProfile)
     .register(chatPlugin, { path: "/global-chat" })
-    .register(gameLobbiesPlugin)
+    .register(gameLobbiesPlugin);
   return fastify;
 }
 
