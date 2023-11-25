@@ -7,8 +7,8 @@
     "node": ">=16.13.0"
   },
   "scripts": {
-    "start": "fastify start -l info dist/app.js",
-    "build:railway": "tsc && npx prisma generate",
+    "start": "tsc && npx prisma generate && fastify start -l info dist/app.js",
+    "build:railway": "",
     "test:dev": "vitest dev",
     "test": "vitest",
     "test:run": "vitest run",
