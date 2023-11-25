@@ -33,11 +33,11 @@ function getFastifySessionSettings(
 ) {
   return {
     cookie: {
-      domain: env.IS_DEV ? "localhost" : "play-durak.vercel.app",
-      maxAge: env.SESSION_MAX_AGE,
+      domain: env.SESSION_COOKIE_DOMAIN,
+      maxAge: env.SESSION_COOKIE_MAX_AGE,
       sameSite: "lax",
       secure: !env.IS_DEV,
-      // http only true is problem
+      httpOnly: true,
     },
     cookieName: env.SESSION_COOKIE_NAME,
     saveUninitialized: false,
@@ -68,9 +68,7 @@ export function createFastify(
     .setSerializerCompiler(serializerCompiler)
     .register(fastifyStatic, { root: pathForStatic })
     .register(fastifyCors, {
-      origin: env.IS_DEV
-        ? ["https://admin.socket.io", "http://localhost:5173"]
-        : "https://play-durak.vercel.app",
+      origin: [...env.CORS_ORIGIN],
       credentials: true,
     })
     .register(fastifyFormbody)
