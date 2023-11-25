@@ -4,7 +4,8 @@ import assert from "node:assert";
 import { z } from "zod";
 import type { FastifyBaseLogger, FastifyRequest } from "fastify";
 
-import { type FastifyInstanceT, prisma } from "../../config/index.js";
+import { prisma } from "../../config/index.js";
+import { FastifyInstanceT } from "../../app.js";
 
 export async function createUser(fastify: FastifyInstanceT) {
   return fastify.route({
