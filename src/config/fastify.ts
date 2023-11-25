@@ -61,7 +61,6 @@ export function createFastify(
     },
   }).withTypeProvider<ZodTypeProvider>();
   fastify
-    .decorate("prisma", new PrismaClient())
     .setValidatorCompiler(validatorCompiler)
     .setSerializerCompiler(serializerCompiler)
     .register(fastifyCors, {
