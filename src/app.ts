@@ -33,7 +33,7 @@ async function createFastify(app: FastifyInstance, _options: unknown) {
   );
   BasePlayer.configureDependencies();
   createSocketIoServer(env, sessionStore);
-  console.log({ env });
+  console.log({ env, _options });
   app
     .setValidatorCompiler(validatorCompiler)
     .setSerializerCompiler(serializerCompiler)
