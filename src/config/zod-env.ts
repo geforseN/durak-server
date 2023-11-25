@@ -1,6 +1,6 @@
 import { z } from "zod";
-import crypto from "node:crypto";
-import raise from "../common/raise.js";
+
+import { raise, stringToArray } from "../common/index.js";
 
 export const getParsedEnv = (nodeEnv: NodeJS.ProcessEnv) => {
   return z
@@ -15,12 +15,12 @@ export const getParsedEnv = (nodeEnv: NodeJS.ProcessEnv) => {
       CORS_ORIGIN: z
         .string()
         .default("http://localhost:5173, http://127.0.0.1:5173")
-        .transform((v) => v.split(",").map((str) => str.trim())),
+        .transform(stringToArray),
       SOCKET_IO_PORT: z.string().default("3001").transform(Number),
       SOCKET_IO_CORS_ORIGIN: z
         .string()
         .default("https://admin.socket.io, http://localhost:5173")
-        .transform((v) => v.split(",").map((str) => str.trim())),
+        .transform(stringToArray),
       SESSION_COOKIE_DOMAIN: z.string().default("localhost"),
       SESSION_COOKIE_NAME: z.string().default("sessionId"),
       SESSION_COOKIE_MAX_AGE: z
@@ -31,9 +31,8 @@ export const getParsedEnv = (nodeEnv: NodeJS.ProcessEnv) => {
         .string()
         .default("600000" /* 10 minutes */)
         .transform(Number),
-      SESSION_SECRET: z
-        .string()
-        .default(crypto.randomBytes(64).toString("base64url")),
+      // NOTE: you can use crypto.randomBytes(64).toString("base64url") to generate a session secret
+      SESSION_SECRET: z.string(),
     })
     .parse(nodeEnv);
 };

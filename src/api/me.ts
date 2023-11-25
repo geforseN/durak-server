@@ -11,7 +11,9 @@ export default async function getMe(fastify: FastifyInstance) {
         !request.session.user ||
         !Object.values(request.session.user || {}).length
       ) {
-        return reply.status(401).send({});
+        return reply
+          .status(401)
+          .send({ reason: "Unauthorized. Make login POST request" });
       }
       return request.session.user;
     },
