@@ -8,7 +8,6 @@ import {
   SessionStore,
   fastifySession,
 } from "@fastify/session";
-import fastifyStatic from "@fastify/static";
 import fastifyWebsocket from "@fastify/websocket";
 import { PrismaClient, User, UserProfile } from "@prisma/client";
 import {
@@ -23,7 +22,6 @@ import { createUser } from "../api/auth/login.js";
 
 import chatPlugin from "../module/Chat/chatPlugin.js";
 import gameLobbiesPlugin from "../module/Lobbies/lobbies.plugin.js";
-import { pathForStatic } from "./index.js";
 import PinoPretty from "pino-pretty";
 import { getParsedEnv } from "./zod-env.js";
 
@@ -66,7 +64,6 @@ export function createFastify(
     .decorate("prisma", new PrismaClient())
     .setValidatorCompiler(validatorCompiler)
     .setSerializerCompiler(serializerCompiler)
-    .register(fastifyStatic, { root: pathForStatic })
     .register(fastifyCors, {
       origin: [...env.CORS_ORIGIN],
       credentials: true,
