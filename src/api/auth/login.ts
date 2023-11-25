@@ -1,11 +1,11 @@
+import type { FastifyBaseLogger, FastifyRequest } from "fastify";
+import { z } from "zod";
 import crypto from "node:crypto";
 import assert from "node:assert";
 
-import { z } from "zod";
-import type { FastifyBaseLogger, FastifyRequest } from "fastify";
-
+import type { FastifyInstanceT } from "../../app.js";
 import { prisma } from "../../config/index.js";
-import { FastifyInstanceT } from "../../app.js";
+import { stringToBoolean } from "../../common/index.js";
 
 export async function createUser(fastify: FastifyInstanceT) {
   return fastify.route({
@@ -13,21 +13,13 @@ export async function createUser(fastify: FastifyInstanceT) {
     url: "/api/auth/login",
     schema: {
       querystring: z.object({
-        anonymous: z
-          .string()
-          .transform((v) =>
-            v === "true" ? true : v === "false" ? false : z.NEVER,
-          ),
-        dev: z
-          .string()
-          .transform((v) =>
-            v === "true" ? true : v === "false" ? false : z.NEVER,
-          ),
+        anonymous: z.string().transform(stringToBoolean),
+        dev: z.string().transform(stringToBoolean),
       }),
     },
     async handler(request, reply) {
       console.log({ anon: request.query.anonymous });
-      if (!("isAnonymous" in (request.session.user || {}))) {
+      if (typeof request.session.user?.isAnonymous === "undefined") {
         await mutateSessionWithAnonymousUser(request, this.log);
       }
       return reply.redirect(
