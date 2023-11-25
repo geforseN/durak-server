@@ -11,6 +11,8 @@
     "dev:respawn": "node --watch --loader ts-node/esm src/index.ts",
     "build": "node --loader ts-node/esm src/index.ts",
     "build:tsc": "tsc",
+    "start": "node dist/index.js",
+    "build:railway": "npx prisma generate && tsc",
     "build:render": "npm install && npx prisma generate && tsc",
     "debug": "node --inspect --loader ts-node/esm src/index.ts",
     "test:dev": "vitest dev",
