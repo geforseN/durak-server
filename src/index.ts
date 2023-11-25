@@ -16,7 +16,7 @@ async function main() {
     );
     BasePlayer.configureDependencies();
     createSocketIoServer(env, sessionStore);
-    await fastify.listen({ port: env.FASTIFY_PORT });
+    await fastify.listen({ port: env.PORT });
   } catch (err) {
     fastify?.log.error(err);
     process.exit(1);
