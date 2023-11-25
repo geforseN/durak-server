@@ -1,6 +1,7 @@
 import z from "zod";
 import assert from "assert";
-import { prisma, type FastifyInstanceT } from "../../config/index.js";
+import { prisma } from "../../config/index.js";
+import { FastifyInstanceT } from "../../app.js";
 
 export default function getUserProfile(fastify: FastifyInstanceT) {
   return fastify.route({

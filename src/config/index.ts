@@ -1,5 +1,4 @@
 import "dotenv/config";
-import path from "path";
 
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 
@@ -15,6 +14,5 @@ export const sessionStore = new PrismaSessionStore(prisma, {
   loggerLevel: ["log", "warn", "error"],
 }) satisfies SessionStore;
 
-export { createFastify, type FastifyInstanceT } from "./fastify.js";
 export { createSocketIoServer } from "./socket-io.js";
 export { prisma };
