@@ -13,11 +13,7 @@ export function createSocketIoServer(
   const io = new Server(env.SOCKET_IO_PORT, {
     cors: {
       credentials: true,
-      origin: [
-        ...env.CORS_ORIGIN,
-        "http://127.0.0.1:3001",
-        "http://127.0.0.1:3000",
-      ],
+      origin: [...env.SOCKET_IO_CORS_ORIGIN],
     },
   });
   const gamesNamespace: DurakGameSocket.Namespace = io.of(
