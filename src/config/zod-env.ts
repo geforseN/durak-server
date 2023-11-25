@@ -6,7 +6,7 @@ export const getParsedEnv = (nodeEnv: NodeJS.ProcessEnv) => {
   return z
     .object({
       DATABASE_URL: z.string(),
-      FASTIFY_PORT: z.string().default("3000").transform(Number),
+      PORT: z.string().default("3000").transform(Number),
       SOCKET_IO_PORT: z.string().default("3001").transform(Number),
       CORS_ORIGIN: z
         .string()
