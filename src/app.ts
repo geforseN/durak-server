@@ -36,18 +36,12 @@ async function createFastify(
   );
   BasePlayer.configureDependencies();
   createSocketIoServer(env, sessionStore);
-  console.log(
-    { env },
-    env.CORS_ORIGIN,
-    [...env.CORS_ORIGIN],
-    env.CORS_ORIGIN instanceof Array,
-    Array.isArray(env.CORS_ORIGIN),
-  );
+  console.log({ env });
   app
     .setValidatorCompiler(validatorCompiler)
     .setSerializerCompiler(serializerCompiler)
     .register(fastifyCors, {
-      origin: [...env.CORS_ORIGIN],
+      origin: env.CORS_ORIGIN,
       methods: ["GET", "POST"],
       credentials: true,
     })
