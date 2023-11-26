@@ -9,7 +9,7 @@ export function getFastifySessionSettings(
     cookie: {
       domain: env.SESSION_COOKIE_DOMAIN,
       maxAge: env.SESSION_COOKIE_MAX_AGE,
-      sameSite: "none",
+      sameSite: "strict",
       secure: !env.IS_DEV,
       httpOnly: true,
     },
