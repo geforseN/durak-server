@@ -57,7 +57,6 @@ async function createFastify(
         origin: env.SOCKET_IO_CORS_ORIGIN,
         methods: ["GET", "POST"],
       },
-      transports: ["websocket"],
     })
     .ready()
     // @ts-ignore
