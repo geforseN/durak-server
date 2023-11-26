@@ -29,13 +29,20 @@ declare module "fastify" {
 
 async function createFastify(
   app: FastifyInstance,
-  _options: Record<string, unknown>,
+  _options: Record<string, unknown> | Record<string, never>,
 ) {
   const { BasePlayer } = await import(
     "./module/DurakGame/entity/Player/BasePlayer.abstract.js"
   );
   BasePlayer.configureDependencies();
   createSocketIoServer(env, sessionStore);
+  console.log(
+    { env },
+    env.CORS_ORIGIN,
+    [...env.CORS_ORIGIN],
+    env.CORS_ORIGIN instanceof Array,
+    Array.isArray(env.CORS_ORIGIN),
+  );
   app
     .setValidatorCompiler(validatorCompiler)
     .setSerializerCompiler(serializerCompiler)
@@ -45,27 +52,6 @@ async function createFastify(
       credentials: true,
     })
     .register(fastifyFormbody)
-    .register(fastifyHelmet, {
-      contentSecurityPolicy: {
-        directives: {
-          connectSrc: [
-            "'self'",
-            "http://127.0.0.1:3001",
-            "ws://127.0.0.1:3001",
-            "http://127.0.0.1:3000",
-            "http://localhost:3000/",
-            "http://localhost:5173/",
-          ],
-          defaultSrc: ["'self'"],
-          imgSrc: [
-            "'self'",
-            "https://xsgames.co/randomusers/assets/avatars/pixel/",
-            "https://cdn.7tv.app/emote/6306876cbe8c19d70f9d6b22/4x.webp",
-            "https://deckofcardsapi.com/static/img/",
-          ],
-        },
-      },
-    })
     .register(fastifyCookie)
     .register(fastifySession, getFastifySessionSettings(env, sessionStore))
     .register(fastifyWebsocket)
