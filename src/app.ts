@@ -27,13 +27,15 @@ declare module "fastify" {
   }
 }
 
-async function createFastify(app: FastifyInstance, _options: unknown) {
+async function createFastify(
+  app: FastifyInstance,
+  _options: Record<string, unknown>,
+) {
   const { BasePlayer } = await import(
     "./module/DurakGame/entity/Player/BasePlayer.abstract.js"
   );
   BasePlayer.configureDependencies();
   createSocketIoServer(env, sessionStore);
-  console.log({ env, _options });
   app
     .setValidatorCompiler(validatorCompiler)
     .setSerializerCompiler(serializerCompiler)
