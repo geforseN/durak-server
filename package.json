@@ -37,6 +37,7 @@
     "fastify": "^4.21.0",
     "fastify-cli": "^5.9.0",
     "fastify-plugin": "^4.5.1",
+    "fastify-socket.io": "^5.0.0",
     "fastify-type-provider-zod": "^1.1.9",
     "fastify-zod": "^1.4.0",
     "pino": "^8.15.0",
