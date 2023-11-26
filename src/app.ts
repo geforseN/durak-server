@@ -41,6 +41,7 @@ async function createFastify(
     .setSerializerCompiler(serializerCompiler)
     .register(fastifyCors, {
       origin: [...env.CORS_ORIGIN],
+      methods: ["GET", "POST"],
       credentials: true,
     })
     .register(fastifyFormbody)
