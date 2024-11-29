@@ -7,13 +7,7 @@
     "node": ">=16.13.0"
   },
   "scripts": {
-    "dev": "tsx watch --clear-screen=false src/main.ts",
-    "start": "npx prisma generate && fastify start -l info dist/app.js",
-    "build:railway": "tsc",
-    "test:dev": "vitest dev",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "nibble": "eslint-nibble ext-- .ts src/**"
+    "dev": "tsx watch --clear-screen=false src/main.ts"
   },
   "keywords": [],
   "author": "",
