@@ -33,7 +33,6 @@ async function createFastify(
     "./module/DurakGame/entity/Player/BasePlayer.abstract.js"
   );
   BasePlayer.configureDependencies();
-  console.log({ env });
   app
     .setValidatorCompiler(validatorCompiler)
     .setSerializerCompiler(serializerCompiler)
