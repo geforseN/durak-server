@@ -1,16 +1,29 @@
+import crypto from 'node:crypto'
 import { z } from "zod";
+import { isDevelopment } from 'std-env'
+import { pino } from "pino";
 
 import { raise, stringToArray } from "../common/index.js";
+
+const logger = pino()
 
 export const getParsedEnv = (nodeEnv: NodeJS.ProcessEnv) => {
   return z
     .object({
       IS_DEV: z
         .string()
+        .default(isDevelopment ? "true" : "false")
         .transform((v) =>
           v === "false" ? false : v === "true" ? true : raise(),
         ),
-      DATABASE_URL: z.string(),
+      DATABASE_URL: z.string().refine((value) => {
+        if (!value) {
+          logger.warn({
+            message: "DATABASE_URL env variable is not specified, Prisma relies on it",
+          });
+        }
+        return !!value;
+      }),
       PORT: z.string().default("3000").transform(Number),
       CORS_ORIGIN: z
         .string()
@@ -31,8 +44,7 @@ export const getParsedEnv = (nodeEnv: NodeJS.ProcessEnv) => {
         .string()
         .default("600000" /* 10 minutes */)
         .transform(Number),
-      // NOTE: you can use crypto.randomBytes(64).toString("base64url") to generate a session secret
-      SESSION_SECRET: z.string(),
+      SESSION_SECRET: z.string().default(crypto.randomBytes(64).toString("base64url")),
     })
     .parse(nodeEnv);
 };
