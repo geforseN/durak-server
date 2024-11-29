@@ -42,6 +42,7 @@
     "fastify-zod": "^1.4.0",
     "pino": "^8.15.0",
     "socket.io": "^4.7.2",
+    "std-env": "^3.8.0",
     "zod": "^3.22.2"
   },
   "devDependencies": {
