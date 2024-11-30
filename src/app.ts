@@ -25,10 +25,7 @@ declare module "fastify" {
   }
 }
 
-async function createFastify(
-  app: FastifyInstance,
-  _options: Record<string, unknown> | Record<string, never>,
-) {
+async function createFastify(app: FastifyInstance) {
   const { BasePlayer } = await import(
     "./module/DurakGame/entity/Player/BasePlayer.abstract.js"
   );
@@ -58,8 +55,13 @@ async function createFastify(
       },
     })
     .ready()
-    // @ts-ignore
-    .then(() => createSocketIoServer(app.io, sessionStore));
+    .then(() => {
+      createSocketIoServer(
+        // @ts-expect-error Property 'io' does not exist on type 'FastifyInstance<RawServerDefault, IncomingMessage, ServerResponse<IncomingMessage>, FastifyBaseLogger, FastifyTypeProviderDefault>'
+        app.io,
+        sessionStore
+      );
+    });
   return app.withTypeProvider<ZodTypeProvider>();
 }
 
