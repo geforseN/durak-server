@@ -1,23 +1,22 @@
-
-import Fastify from 'fastify'
-import createFastify from './app.js';
+import Fastify from "fastify";
+import createFastify from "./app.js";
+import consola from "consola";
 
 const start = async () => {
   const port = 10000;
+  const log = consola.withTag("Fastify");
   try {
-    console.log('[Fastify] creating...');
-    const fastify = await createFastify(Fastify(), {})
-    console.log('[Fastify] trying to listen...');
-    await fastify.listen({ port });
-    console.log(`[Fastify] listening on port ${port}`);
-  } catch (err) {
-    console.error(`[Fastify] failed to start: ${err}`);
-    console.error(err);
-    throw err;
+    log.info("Creating...");
+    const fastify = await createFastify(Fastify({ logger: true }));
+    log.info("Trying to listen...");
+    const address = await fastify.listen({ port });
+    log.info("Listening on address ", address);
+  } catch (reason) {
+    log.error(`Failed to start`, { reason });
+    throw reason;
   }
-}
+};
 
 start().catch(() => {
-  console.log('fooo')
   process.exitCode = 1;
 });
