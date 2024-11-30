@@ -32,7 +32,6 @@ Make sure you have the following tools installed:
    ```
 
 5. **Run the development server**:
-   Start the development server:
    ```bash
    pnpm dev
    ```
