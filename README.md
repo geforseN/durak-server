@@ -17,7 +17,7 @@ Make sure you have the following tools installed:
 
 2. **Setup environment variables**:
    ```bash
-   mv .env.example .env
+   cp .env.example .env
    ```
 
 3. **Run Docker**:
