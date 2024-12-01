@@ -1,43 +1,10 @@
-import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import vitest from "eslint-plugin-vitest";
-import globals from "globals";
-import tsParser from "@typescript-eslint/parser";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import js from "@eslint/js";
-import { FlatCompat } from "@eslint/eslintrc";
+// @ts-check
+import eslint from "@eslint/js";
+import tseslint from "typescript-eslint";
+import vitest from "@vitest/eslint-plugin";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
-});
-
-export default [...compat.extends(
-    "plugin:vitest/recommended",
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-), {
-    plugins: {
-        "@typescript-eslint": typescriptEslint,
-        vitest,
-    },
-
-    languageOptions: {
-        globals: {
-            ...globals.browser,
-        },
-
-        parser: tsParser,
-        ecmaVersion: "latest",
-        sourceType: "module",
-    },
-
-    rules: {
-        "no-unused-vars": ["warn", {
-            argsIgnorePattern: "^_",
-        }],
-    },
-}];
+export default tseslint.config(
+  eslint.configs.recommended,
+  tseslint.configs.recommended,
+  vitest.configs.recommended,
+);
