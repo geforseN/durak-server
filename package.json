@@ -48,7 +48,7 @@
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",
     "@vitest/eslint-plugin": "^1.0.1",
-    "eslint": "^8.47.0",
+    "eslint": "^9.0.0",
     "eslint-plugin-perfectionist": "^2.1.0",
     "pino-pretty": "^10.2.0",
     "prisma": "^5.1.1",
