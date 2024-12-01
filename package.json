@@ -55,13 +55,12 @@
     "eslint-plugin-perfectionist": "^2.1.0",
     "pino-pretty": "^10.2.0",
     "prisma": "^5.1.1",
-    "ts-node": "^10.9.1",
     "tsx": "^4.19.2",
     "types-fastify-socket.io": "^0.0.1",
     "typescript": "^5.1.6",
     "vitest": "^0.34.4"
   },
   "prisma": {
-    "seed": "ts-node --transpile-only prisma/seed.ts"
+    "seed": "tsx --transpile-only prisma/seed.ts"
   }
 }
