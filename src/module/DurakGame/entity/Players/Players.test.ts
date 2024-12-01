@@ -1,6 +1,5 @@
 import assert from "node:assert";
-import { describe } from "node:test";
-import { expect, it } from "vitest";
+import { expect, it, describe  } from "vitest";
 
 import type { BasePlayer } from "../Player/BasePlayer.abstract.js";
 
@@ -10,7 +9,7 @@ import { Defender } from "../Player/Defender.js";
 import { Player } from "../Player/Player.js";
 import { Players } from "./Players.js";
 
-describe("test BasePlayer#enemies ", () => {
+describe("test BasePlayer#enemies", () => {
   describe("method work correct when BasePlayer called exitGame", () => {
     const playersData: [number, BasePlayer, number][] = [
       // @ts-expect-error no need more data, only id in info is required
@@ -67,7 +66,7 @@ describe("test BasePlayer#enemies ", () => {
         cat.toEnemy(),
         fox.toEnemy(),
       ]);
-      expect(fox.hasLeftTheGame === true);
+      expect(fox.hasLeftTheGame).toBe(true);
     });
   });
 });

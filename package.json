@@ -7,7 +7,8 @@
     "node": ">=16.13.0"
   },
   "scripts": {
-    "dev": "tsx watch --clear-screen=false src/main.ts"
+    "dev": "tsx watch --clear-screen=false src/main.ts",
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "",
@@ -45,11 +46,9 @@
     "@tsconfig/recommended": "^1.0.2",
     "@types/node": "^20.6.1",
     "@types/ws": "^8.5.5",
-    "@typescript-eslint/eslint-plugin": "^6.4.0",
-    "@typescript-eslint/parser": "^6.4.0",
-    "@vitest/eslint-plugin": "^1.0.1",
-    "eslint": "^8.47.0",
-    "eslint-plugin-perfectionist": "^2.1.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@vitest/eslint-plugin": "^1.1.13",
+    "eslint": "^9.16.0",
     "pino-pretty": "^10.2.0",
     "prisma": "^5.1.1",
     "tsx": "^4.19.2",
