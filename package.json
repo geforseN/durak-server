@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/main.ts",
     "lint": "eslint .",
-    "build:railway": "tsc --noEmit || true",
+    "build:railway": "tsc || true",
     "start:railway": "prisma generate && node dist/main.js"
   },
   "keywords": [],
