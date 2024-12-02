@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/main.ts",
     "lint": "eslint .",
-    "build:railway": "tsc --noEmit"
+    "build:railway": "tsc --noEmit",
+    "start:railway": "prisma generate && node dist/main.js"
   },
   "keywords": [],
   "author": "",
