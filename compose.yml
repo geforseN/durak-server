@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:15
+    image: postgres:17
     container_name: postgres_prisma
     environment:
       POSTGRES_USER: ${DOCKER_POSTGRES_USER}
