@@ -5,6 +5,7 @@ import { isDevelopment } from "std-env";
 import { z } from "zod";
 
 const FastifyListerOptionsSchema = z.object({
+  NODE_ENV: z.enum(["development", "production"]),
   PORT: z.coerce.number().int().default(10000),
   HOST: z
     .string()
