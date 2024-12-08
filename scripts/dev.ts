@@ -1,5 +1,5 @@
-import { execSync as execSync_ } from "child_process";
-import type { ExecSyncOptions } from "child_process";
+import { execSync as execSync_ } from "node:child_process";
+import type { ExecSyncOptions } from "node:child_process";
 import fs from "node:fs";
 import crypto from "node:crypto";
 import path from "node:path";
