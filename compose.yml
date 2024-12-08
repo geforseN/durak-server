@@ -2,12 +2,15 @@ services:
   postgres:
     image: postgres:15
     container_name: postgres_prisma
+    env_file:
+      - path: .env.development
+        required: true
     environment:
-      POSTGRES_USER: ${DOCKER_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${DOCKER_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${DOCKER_POSTGRES_DB}
+      POSTGRES_USER: ${DOCKER_POSTGRES_USER:-my_user}
+      POSTGRES_PASSWORD: ${DOCKER_POSTGRES_PASSWORD:-my_secure_password}
+      POSTGRES_DB: ${DOCKER_POSTGRES_DB:-my_database}
     ports:
-      - "${DOCKER_POSTGRES_DB_PORT:-5432}:5432"
+      - "${DOCKER_POSTGRES_DB_PORT:-3288}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
