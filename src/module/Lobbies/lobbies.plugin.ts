@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import type { SocketStream } from "@fastify/websocket";
+import type { WebSocket } from "@fastify/websocket";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { InitialGameSettings } from "@durak-game/durak-dts";
 import {
@@ -96,18 +96,15 @@ function initializeGameLobbies() {
   const socketsStore = new SocketsStore();
   const lobbies = new Lobbies(socketsStore);
 
-  return function handleConnection(
-    connection: SocketStream,
-    request: FastifyRequest,
-  ) {
-    socketsStore.add(connection.socket);
-    socketsStore.room(request.session.user.id).add(connection.socket);
-    connection.socket
+  return function handleConnection(socket: WebSocket, request: FastifyRequest) {
+    socketsStore.add(socket);
+    socketsStore.room(request.session.user.id).add(socket);
+    socket
       .addListener("message", defaultListeners.message)
       .addListener("socket", defaultListeners.socket);
     return {
       user: request.session.user,
-      socket: connection.socket,
+      socket,
       lobbies,
     };
   };
