@@ -9,7 +9,7 @@ main();
 function main() {
   try {
     const envFile = ".env.development";
-    const exampleEnvFile = ".env.example.development";
+    const exampleEnvFile = ".env.development.example";
     const prismaClientPath = path.join("node_modules", "@prisma", "client");
     const prismaSchemaPath = path.join("prisma", "schema.prisma");
     const schemaHashPath = path.join("prisma", "schema.prisma.hash");
