@@ -1,4 +1,5 @@
 import { execSync as execSync_ } from "child_process";
+import type { ExecSyncOptions } from "child_process";
 import fs from "node:fs";
 import crypto from "node:crypto";
 import path from "node:path";
@@ -102,7 +103,7 @@ function startServer(envFile: string, onGracefulClose?: () => void) {
   }
 }
 
-function execSync(command: string, options: object = {}): void {
+function execSync(command: string, options: ExecSyncOptions = {}): void {
   execSync_(command, { stdio: "inherit", ...options });
 }
 
