@@ -26,7 +26,7 @@
     "@socket.io/admin-ui": "^0.5.1",
     "consola": "^3.2.3",
     "fastify": "^5.1.0",
-    "fastify-socket.io": "^5.0.0",
+    "fastify-socket.io": "^5.1.0",
     "fastify-type-provider-zod": "^4.0.2",
     "pino": "^8.15.0",
     "socket.io": "^4.7.2",
