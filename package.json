@@ -7,7 +7,7 @@
     "node": ">=16.13.0"
   },
   "scripts": {
-    "dev": "tsx --env-file=.env.example.development --env-file=.env.development scripts/dev.ts",
+    "dev": "tsx --env-file=.env.example.development $( [ -f .env.development ] && echo '--env-file=.env.development' ) scripts/dev.ts",
     "lint": "eslint .",
     "build:railway": "tsc || true",
     "start:railway": "prisma generate && node dist/main.js"
