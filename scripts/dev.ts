@@ -12,12 +12,12 @@ function main() {
     const exampleEnvFile = ".env.example.development";
     const prismaClientPath = path.join("node_modules", "@prisma", "client");
     const prismaSchemaPath = "prisma/schema.prisma";
-    const schemaHashFile = "prisma/schema.prisma.hash";
+    const schemaHashPath = "prisma/schema.prisma.hash";
     createEnvFile(envFile, exampleEnvFile);
     upDockerCompose(envFile);
     installDependencies();
     generatePrismaClient(prismaClientPath);
-    syncDatabase(prismaSchemaPath, schemaHashFile);
+    syncDatabase(prismaSchemaPath, schemaHashPath);
     startServer(envFile, () => {
       console.log("\nDevelopment server stopped by signal.");
       downDockerCompose();
