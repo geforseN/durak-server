@@ -39,7 +39,7 @@
     "@tsconfig/recommended": "^1.0.2",
     "@types/node": "^20.6.1",
     "@types/ws": "^8.5.13",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@vitest/eslint-plugin": "^1.1.13",
     "eslint": "^9.16.0",
     "pino-pretty": "^13.0.0",
