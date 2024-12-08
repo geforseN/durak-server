@@ -7,18 +7,18 @@ main();
 
 function main() {
   try {
-    const envFilename = ".env.development";
-    const exampleEnvFilename = ".env.example.development";
+    const envFile = ".env.development";
+    const exampleEnvFile = ".env.example.development";
     const prismaClientPath = path.join("node_modules", "@prisma", "client");
     const prismaSchemaPath = "prisma/schema.prisma";
-    const schemaHashFilename = "prisma/schema.prisma.hash";
+    const schemaHashFile = "prisma/schema.prisma.hash";
 
-    createEnvFile(envFilename, exampleEnvFilename);
-    upDockerCompose(envFilename);
+    createEnvFile(envFile, exampleEnvFile);
+    upDockerCompose(envFile);
     installDependencies();
     generatePrismaClient(prismaClientPath);
-    syncDatabase(prismaSchemaPath, schemaHashFilename);
-    startServer(envFilename, () => {
+    syncDatabase(prismaSchemaPath, schemaHashFile);
+    startServer(envFile, () => {
       console.log("\nDevelopment server stopped by signal.");
       downDockerCompose();
     });
@@ -28,12 +28,12 @@ function main() {
   }
 }
 
-function createEnvFile(envFilename: string, exampleEnvFilename: string) {
-  if (!fs.existsSync(envFilename)) {
-    console.log(`Creating ${envFilename} from example...`);
-    fs.copyFileSync(exampleEnvFilename, envFilename);
+function createEnvFile(envFile: string, envFileToCopy: string) {
+  if (!fs.existsSync(envFile)) {
+    console.log(`Creating ${envFile} from example...`);
+    fs.copyFileSync(envFileToCopy, envFile);
   } else {
-    console.log(`${envFilename} already exists.`);
+    console.log(`${envFile} already exists.`);
   }
 }
 
