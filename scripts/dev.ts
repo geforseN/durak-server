@@ -13,7 +13,6 @@ function main() {
     const prismaClientPath = path.join("node_modules", "@prisma", "client");
     const prismaSchemaPath = "prisma/schema.prisma";
     const schemaHashFile = "prisma/schema.prisma.hash";
-
     createEnvFile(envFile, exampleEnvFile);
     upDockerCompose(envFile);
     installDependencies();
@@ -47,7 +46,6 @@ function downDockerCompose() {
   console.log("Stopping Docker containers...");
   execSync("docker compose down");
 }
-
 
 function installDependencies() {
   if (!fs.existsSync("node_modules")) {
