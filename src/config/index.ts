@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 
 import type { SessionStore } from "@fastify/session";
