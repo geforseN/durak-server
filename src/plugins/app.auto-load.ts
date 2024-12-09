@@ -8,7 +8,6 @@ import { env, sessionStore } from "../config/index.js";
 import type { FastifyInstance } from "fastify";
 
 export default async function myPlugin(app: FastifyInstance) {
-  console.log("start app.auto-load");
   await app
     .register(fastifyCors, {
       origin: env.CORS_ORIGIN,
@@ -19,5 +18,4 @@ export default async function myPlugin(app: FastifyInstance) {
     .register(fastifyCookie)
     .register(fastifySession, getFastifySessionSettings(env, sessionStore))
     .register(fastifyWebsocket);
-  console.log("end app.auto-load");
 }
