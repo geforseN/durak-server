@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { ChatContext } from "../chatPlugin.js";
+import type { ChatContext } from "../../../plugins/modules/chat/global-chat.auto-load.js";
 import type ChatReplyMessage from "./ChatReplyMessage.js";
 
 export default class ChatMessage {
