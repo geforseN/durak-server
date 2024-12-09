@@ -20,8 +20,6 @@ async function createFastify(app: FastifyInstance) {
   );
   BasePlayer.configureDependencies();
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-  console.log("before fastifyAutoload");
   await app.register(fastifyAutoload, {
     dir: path.join(__dirname, "plugins"),
     ignorePattern: /^.*(?:test|spec).ts$/,
@@ -29,7 +27,6 @@ async function createFastify(app: FastifyInstance) {
     forceESM: true,
     encapsulate: false
   });
-  console.log("after fastifyAutoload");
   await app.register(fastifySocketIO.default, {
     cors: {
       credentials: true,
