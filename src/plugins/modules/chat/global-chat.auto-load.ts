@@ -2,14 +2,16 @@ import { type FastifyInstance } from "fastify";
 import {
   CustomWebsocketEvent,
   NotificationAlertEvent,
-} from "../../ws/index.js";
-import createMessage from "./createMessage.js";
-import type { Chat, ChatMessage, ChatReplyMessage } from "./entity/index.js";
-import initializeChat from "./initializeChatNamespace.js";
+} from "../../../ws/index.js";
+import createMessage from "../../../module/Chat/createMessage.js";
+import type { Chat, ChatMessage, ChatReplyMessage } from "../../../module/Chat/entity/index.js";
+import initializeChat from "../../../module/Chat/initializeChatNamespace.js";
 
 export type ChatContext = ReturnType<ReturnType<typeof initializeChat>>;
 
-export default async function chatPlugin(
+export const autoConfig = { path: "/global-chat" };
+
+export default async function(
   fastify: FastifyInstance,
   options: { path: string },
 ) {
@@ -17,10 +19,10 @@ export default async function chatPlugin(
   return fastify.get(
     options.path,
     { websocket: true },
-    async function (connection, request) {
-      const context = getChatContext(connection, request);
-      context.socket.send(new ChatRestoreEvent(context.chat).asString);
-      context.socket.on("message::send", onMessageSendListener.bind(context));
+    async function (socket, request) {
+      const context = getChatContext(socket, request);
+      socket.send(new ChatRestoreEvent(context.chat).asString);
+      socket.on("message::send", onMessageSendListener.bind(context));
     },
   );
 }

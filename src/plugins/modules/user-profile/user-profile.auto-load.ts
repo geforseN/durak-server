@@ -1,10 +1,10 @@
 import z from "zod";
 import assert from "assert";
-import { prisma } from "../../config/index.js";
-import { FastifyInstanceT } from "../../app.js";
+import { prisma } from "../../../config/index.js";
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 
-export default function getUserProfile(fastify: FastifyInstanceT) {
-  return fastify.route({
+const plugin: FastifyPluginAsyncZod = async function (fastify) {
+  fastify.route({
     method: "GET",
     url: "/api/profiles/:personalLink",
     schema: {
@@ -28,4 +28,6 @@ export default function getUserProfile(fastify: FastifyInstanceT) {
       return user;
     },
   });
-}
+};
+
+export default plugin;
