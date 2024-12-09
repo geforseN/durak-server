@@ -1,5 +1,7 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import Fastify from "fastify";
-import createFastify from "./app.js";
+import { fastifyAutoload } from "@fastify/autoload";
 import { consola } from "consola";
 import { isDevelopment } from "std-env";
 import { z } from "zod";
@@ -23,7 +25,19 @@ const start = async () => {
       }),
     ).parse(process.env);
     log.info("Creating...");
-    const fastify = await createFastify(Fastify({ logger: true }));
+    const { BasePlayer } = await import(
+      "./module/DurakGame/entity/Player/BasePlayer.abstract.js"
+    );
+    BasePlayer.configureDependencies();
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const fastify = Fastify({ logger: true });
+    await fastify.register(fastifyAutoload, {
+      dir: path.join(__dirname, "plugins"),
+      ignorePattern: /^.*(?:test|spec).ts$/,
+      indexPattern: /"^.*.auto-load.ts$/,
+      forceESM: true,
+      encapsulate: false,
+    });
     log.start("Trying to listen...");
     const address = await fastify.listen(fastifyListenOptions);
     log.success("Listening on address", address);
