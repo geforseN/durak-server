@@ -1,6 +1,5 @@
 import z from "zod";
 import assert from "node:assert";
-import { prisma } from "../../../config/index.js";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 
 const plugin: FastifyPluginAsyncZod = async function (fastify) {
@@ -15,7 +14,7 @@ const plugin: FastifyPluginAsyncZod = async function (fastify) {
       }),
     },
     async handler(request) {
-      const user = await prisma.userProfile.findFirst({
+      const user = await this.prisma.userProfile.findFirst({
         where: { personalLink: request.params.personalLink },
         select: {
           nickname: true,
