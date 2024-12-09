@@ -14,7 +14,12 @@
     /* Language and Environment */
     "target": "ES2022",
     /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
-    "lib": ["ES2023", "ES2023.Array", "ESNext.Array", "ESNext"],
+    "lib": [
+      "ES2023",
+      "ES2023.Array",
+      "ESNext.Array",
+      "ESNext"
+    ],
     /* Specify a set of bundled library declaration files that describe the target runtime environment. */
     // "jsx": "preserve",                                /* Specify what JSX code is generated. */
     // "experimentalDecorators": true,                   /* Enable experimental support for TC39 stage 2 draft decorators. */
@@ -108,5 +113,5 @@
     "skipDefaultLibCheck": true /* Skip type checking .d.ts files that are included with TypeScript. */,
     "skipLibCheck": true
     /* Skip type checking all .d.ts files. */
-  }
+  },
 }
