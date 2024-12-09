@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import { ChatMessage, ChatReplyMessage } from "./entity/index.js";
 import type { ChatContext } from "../../plugins/modules/chat/global-chat.auto-load.js";
 
