@@ -1,11 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import fastifyAutoload from "@fastify/autoload";
-import {
-  ZodTypeProvider,
-  serializerCompiler,
-  validatorCompiler,
-} from "fastify-type-provider-zod";
 import { createSocketIoServer, env, sessionStore } from "./config/index.js";
 import { FastifyInstance } from "fastify";
 import { User, UserProfile } from "@prisma/client";
@@ -35,9 +30,6 @@ async function createFastify(app: FastifyInstance) {
     encapsulate: false
   });
   console.log("after fastifyAutoload");
-  await app
-    .setValidatorCompiler(validatorCompiler)
-    .setSerializerCompiler(serializerCompiler)
   await app.register(fastifySocketIO.default, {
     cors: {
       credentials: true,
@@ -48,7 +40,7 @@ async function createFastify(app: FastifyInstance) {
   await app.ready();
   assert("io" in app);
   createSocketIoServer(app.io as unknown as SocketIO.Server, sessionStore);
-  return app.withTypeProvider<ZodTypeProvider>();
+  return app;
 }
 
 export default createFastify;
