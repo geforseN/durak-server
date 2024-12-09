@@ -3,12 +3,12 @@ import { z } from "zod";
 import crypto from "node:crypto";
 import assert from "node:assert";
 
-import type { FastifyInstanceT } from "../../../app.js";
 import { prisma } from "../../../config/index.js";
 import { stringToBoolean } from "../../../common/index.js";
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 
-export default function (fastify: FastifyInstanceT) {
-  return fastify.route({
+const plugin: FastifyPluginAsyncZod = async function (fastify) {
+  fastify.route({
     method: "POST",
     url: "/api/auth/login",
     schema: {
@@ -29,7 +29,9 @@ export default function (fastify: FastifyInstanceT) {
       );
     },
   });
-}
+};
+
+export default plugin;
 
 export async function mutateSessionWithAnonymousUser(
   request: FastifyRequest,

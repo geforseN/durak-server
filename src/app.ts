@@ -51,6 +51,4 @@ async function createFastify(app: FastifyInstance) {
   return app.withTypeProvider<ZodTypeProvider>();
 }
 
-export type FastifyInstanceT = Awaited<ReturnType<typeof createFastify>>;
-
 export default createFastify;
