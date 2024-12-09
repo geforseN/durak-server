@@ -17,10 +17,10 @@ export default async function chatPlugin(
   return fastify.get(
     options.path,
     { websocket: true },
-    async function (connection, request) {
-      const context = getChatContext(connection, request);
-      context.socket.send(new ChatRestoreEvent(context.chat).asString);
-      context.socket.on("message::send", onMessageSendListener.bind(context));
+    async function (socket, request) {
+      const context = getChatContext(socket, request);
+      socket.send(new ChatRestoreEvent(context.chat).asString);
+      socket.on("message::send", onMessageSendListener.bind(context));
     },
   );
 }
