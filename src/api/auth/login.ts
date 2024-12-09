@@ -54,9 +54,7 @@ async function createAnonymousUser(log?: FastifyBaseLogger) {
     data: {
       UserProfile: {
         create: {
-          photoUrl:
-            `https://xsgames.co/randomusers/assets/avatars/pixel/${randomInt}.jpg` ||
-            "https://cdn.7tv.app/emote/6306876cbe8c19d70f9d6b22/4x.webp",
+          photoUrl: `https://xsgames.co/randomusers/assets/avatars/pixel/${randomInt}.jpg`,
           nickname: "Anonymous",
         },
       },
