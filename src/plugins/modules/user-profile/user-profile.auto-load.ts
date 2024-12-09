@@ -1,5 +1,5 @@
 import z from "zod";
-import assert from "assert";
+import assert from "node:assert";
 import { prisma } from "../../../config/index.js";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 
