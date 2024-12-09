@@ -1,12 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import fastifyCookie from "@fastify/cookie";
-import fastifyCors from "@fastify/cors";
-import fastifyIO from "fastify-socket.io";
 import fastifyAutoload from "@fastify/autoload";
-import { fastifyFormbody } from "@fastify/formbody";
-import { fastifySession } from "@fastify/session";
-import fastifyWebsocket from "@fastify/websocket";
 import {
   ZodTypeProvider,
   serializerCompiler,
@@ -20,7 +14,9 @@ import gameLobbiesPlugin from "./module/Lobbies/lobbies.plugin.js";
 import { createSocketIoServer, env, sessionStore } from "./config/index.js";
 import { FastifyInstance } from "fastify";
 import { User, UserProfile } from "@prisma/client";
-import { getFastifySessionSettings } from "./config/fastify.js";
+import fastifySocketIO from "fastify-socket.io";
+import assert from "node:assert";
+import type SocketIO from "socket.io";
 
 declare module "fastify" {
   interface Session {
@@ -34,44 +30,34 @@ async function createFastify(app: FastifyInstance) {
   );
   BasePlayer.configureDependencies();
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  app
+
+  console.log("before fastifyAutoload");
+  await app.register(fastifyAutoload, {
+    dir: path.join(__dirname, "plugins"),
+    ignorePattern: /^.*(?:test|spec).ts$/,
+    indexPattern: /"^.*.auto-load.ts$/,
+    forceESM: true,
+    encapsulate: false
+  });
+  console.log("after fastifyAutoload");
+  await app
     .setValidatorCompiler(validatorCompiler)
     .setSerializerCompiler(serializerCompiler)
-    .register(fastifyCors, {
-      origin: env.CORS_ORIGIN,
-      methods: ["GET", "POST"],
-      credentials: true,
-    })
-    .register(fastifyFormbody)
-    .register(fastifyCookie)
-    .register(fastifySession, getFastifySessionSettings(env, sessionStore))
-    .register(fastifyWebsocket)
-    .register(fastifyAutoload, {
-      dir: path.join(__dirname, "plugins"),
-      ignorePattern: /^.*(?:test|spec).ts$/,
-      indexPattern: /"^.*.auto-load.ts$/,
-      matchFilter: /"^.*.auto-load.ts$/,
-    })
     .register(createUser)
     .register(getMe)
     .register(getUserProfile)
     .register(chatPlugin, { path: "/global-chat" })
-    .register(gameLobbiesPlugin)
-    .register(fastifyIO.default, {
-      cors: {
-        credentials: true,
-        origin: env.SOCKET_IO_CORS_ORIGIN,
-        methods: ["GET", "POST"],
-      },
-    })
-    .ready()
-    .then(() => {
-      createSocketIoServer(
-        // @ts-expect-error Property 'io' does not exist on type 'FastifyInstance<RawServerDefault, IncomingMessage, ServerResponse<IncomingMessage>, FastifyBaseLogger, FastifyTypeProviderDefault>'
-        app.io,
-        sessionStore,
-      );
-    });
+    .register(gameLobbiesPlugin);
+  await app.register(fastifySocketIO.default, {
+    cors: {
+      credentials: true,
+      origin: env.SOCKET_IO_CORS_ORIGIN,
+      methods: ["GET", "POST"],
+    },
+  });
+  await app.ready();
+  assert("io" in app);
+  createSocketIoServer(app.io as unknown as SocketIO.Server, sessionStore);
   return app.withTypeProvider<ZodTypeProvider>();
 }
 
