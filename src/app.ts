@@ -1,6 +1,9 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import fastifyIO from "fastify-socket.io";
+import fastifyAutoload from "@fastify/autoload";
 import { fastifyFormbody } from "@fastify/formbody";
 import { fastifySession } from "@fastify/session";
 import fastifyWebsocket from "@fastify/websocket";
@@ -30,6 +33,7 @@ async function createFastify(app: FastifyInstance) {
     "./module/DurakGame/entity/Player/BasePlayer.abstract.js"
   );
   BasePlayer.configureDependencies();
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
   app
     .setValidatorCompiler(validatorCompiler)
     .setSerializerCompiler(serializerCompiler)
@@ -42,6 +46,12 @@ async function createFastify(app: FastifyInstance) {
     .register(fastifyCookie)
     .register(fastifySession, getFastifySessionSettings(env, sessionStore))
     .register(fastifyWebsocket)
+    .register(fastifyAutoload, {
+      dir: path.join(__dirname, "plugins"),
+      ignorePattern: /^.*(?:test|spec).ts$/,
+      indexPattern: /"^.*.auto-load.ts$/,
+      matchFilter: /"^.*.auto-load.ts$/,
+    })
     .register(createUser)
     .register(getMe)
     .register(getUserProfile)
@@ -59,7 +69,7 @@ async function createFastify(app: FastifyInstance) {
       createSocketIoServer(
         // @ts-expect-error Property 'io' does not exist on type 'FastifyInstance<RawServerDefault, IncomingMessage, ServerResponse<IncomingMessage>, FastifyBaseLogger, FastifyTypeProviderDefault>'
         app.io,
-        sessionStore
+        sessionStore,
       );
     });
   return app.withTypeProvider<ZodTypeProvider>();
