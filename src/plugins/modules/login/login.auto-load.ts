@@ -1,12 +1,17 @@
-import type { FastifyBaseLogger, FastifyRequest } from "fastify";
 import crypto from "node:crypto";
 import assert from "node:assert";
-
-import { prisma } from "../../../config/index.js";
-import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { isDevelopment } from "std-env";
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 
-const plugin: FastifyPluginAsyncZod = async function (fastify) {
+declare module "fastify" {
+  interface FastifyInstance {
+    mutateSessionWithAnonymousUser: typeof mutateSessionWithAnonymousUser;
+    createAnonymousUser: typeof createAnonymousUser;
+  }
+}
+
+export default <FastifyPluginAsyncZod> async function (fastify) {
   let redirectUrl = process.env.AUTH_REDIRECT_URL;
   if (!redirectUrl) {
     const defaultRedirectUrl = isDevelopment
@@ -18,40 +23,43 @@ const plugin: FastifyPluginAsyncZod = async function (fastify) {
     );
     redirectUrl = defaultRedirectUrl;
   }
+  fastify.decorate(
+    "mutateSessionWithAnonymousUser",
+    mutateSessionWithAnonymousUser,
+  );
+  fastify.decorate("createAnonymousUser", createAnonymousUser);
   fastify.route({
     method: "POST",
     url: "/api/auth/login",
     async handler(request, reply) {
       if (typeof request.session.user?.isAnonymous === "undefined") {
-        await mutateSessionWithAnonymousUser(request, this.log);
+        await this.mutateSessionWithAnonymousUser(request);
       }
       return reply.redirect(redirectUrl);
     },
   });
 };
 
-export default plugin;
-
-export async function mutateSessionWithAnonymousUser(
+async function mutateSessionWithAnonymousUser(
+  this: FastifyInstance,
   request: FastifyRequest,
-  log?: FastifyBaseLogger,
 ) {
-  const user = await createAnonymousUser(log);
+  const user = await this.createAnonymousUser();
   request.session.user = user;
-  log?.info(
+  this.log.info(
     request.session,
     "session saved in RAM, start session save is store",
   );
   await request.session.save();
-  log?.info(request.session, "session saved is store");
+  this.log.info(request.session, "session saved is store");
 }
 
-async function createAnonymousUser(log?: FastifyBaseLogger) {
+async function createAnonymousUser(this: FastifyInstance) {
   // сайт xsgames.co предоставляет api, которое раздает jpg изображения
   // максимальное количество изображений (в момент написания этого комментария) равно 54 (0..53)
   const randomInt = crypto.randomInt(54);
-  log?.debug("start createAnonymousUser");
-  const { UserProfile: profile, ...user } = await prisma.user.create({
+  this.log.debug("start createAnonymousUser");
+  const { UserProfile: profile, ...user } = await this.prisma.user.create({
     data: {
       UserProfile: {
         create: {
@@ -67,6 +75,6 @@ async function createAnonymousUser(log?: FastifyBaseLogger) {
   });
   assert.ok(profile && profile.photoUrl, "TypeScript");
   assert.ok(user.email === null && user.currentGameId === null);
-  log?.info({ userProfile: profile }, "end createAnonymousUser");
+  this.log.info({ userProfile: profile }, "end createAnonymousUser");
   return { ...user, profile, isAnonymous: true };
 }
