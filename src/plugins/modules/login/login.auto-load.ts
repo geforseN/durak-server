@@ -3,11 +3,11 @@ import { z } from "zod";
 import crypto from "node:crypto";
 import assert from "node:assert";
 
-import type { FastifyInstanceT } from "../../app.js";
-import { prisma } from "../../config/index.js";
-import { stringToBoolean } from "../../common/index.js";
+import type { FastifyInstanceT } from "../../../app.js";
+import { prisma } from "../../../config/index.js";
+import { stringToBoolean } from "../../../common/index.js";
 
-export async function createUser(fastify: FastifyInstanceT) {
+export default function (fastify: FastifyInstanceT) {
   return fastify.route({
     method: "POST",
     url: "/api/auth/login",
