@@ -17,8 +17,8 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
   fastify.get(
     "/game-lobbies",
     { websocket: true },
-    async function (connection: SocketStream, request: FastifyRequest) {
-      const context = handleConnection(connection, request);
+    async function (socket: WebSocket, request: FastifyRequest) {
+      const context = handleConnection(socket, request);
       if (!context.user?.id) {
         context.socket.send(
           new NotificationAlertEvent(
