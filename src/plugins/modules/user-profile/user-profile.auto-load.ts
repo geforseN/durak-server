@@ -1,9 +1,9 @@
 import z from "zod";
 import assert from "assert";
-import { prisma } from "../../config/index.js";
-import { FastifyInstanceT } from "../../app.js";
+import { prisma } from "../../../config/index.js";
+import { FastifyInstanceT } from "../../../app.js";
 
-export default function getUserProfile(fastify: FastifyInstanceT) {
+export default function (fastify: FastifyInstanceT) {
   return fastify.route({
     method: "GET",
     url: "/api/profiles/:personalLink",

@@ -7,7 +7,6 @@ import {
   validatorCompiler,
 } from "fastify-type-provider-zod";
 import getMe from "./api/me.js";
-import getUserProfile from "./api/profiles/personalLink.js";
 import { createUser } from "./api/auth/login.js";
 import chatPlugin from "./module/Chat/chatPlugin.js";
 import gameLobbiesPlugin from "./module/Lobbies/lobbies.plugin.js";
@@ -45,7 +44,6 @@ async function createFastify(app: FastifyInstance) {
     .setSerializerCompiler(serializerCompiler)
     .register(createUser)
     .register(getMe)
-    .register(getUserProfile)
     .register(chatPlugin, { path: "/global-chat" })
     .register(gameLobbiesPlugin);
   await app.register(fastifySocketIO.default, {
