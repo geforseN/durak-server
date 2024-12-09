@@ -16,9 +16,12 @@ const FastifyListerOptionsSchema = z.object({
     .default(() => (isDevelopment ? "localhost" : "0.0.0.0")),
 });
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 const start = async () => {
   const log = consola.withTag("Fastify");
   try {
+    BasePlayer.configureDependencies();
     const fastifyListenOptions = FastifyListerOptionsSchema.transform(
       ({ PORT, HOST }) => ({
         port: PORT,
@@ -26,9 +29,8 @@ const start = async () => {
       }),
     ).parse(process.env);
     log.info("Creating...");
-    BasePlayer.configureDependencies();
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const fastify = Fastify({ logger: true });
+    log.info("Auto-loading plugins...");
     await fastify.register(fastifyAutoload, {
       dir: path.join(__dirname, "plugins"),
       ignorePattern: /^.*(?:test|spec).ts$/,
