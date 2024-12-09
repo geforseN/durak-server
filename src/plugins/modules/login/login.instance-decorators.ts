@@ -7,6 +7,10 @@ declare module "fastify" {
     mutateSessionWithAnonymousUser: typeof mutateSessionWithAnonymousUser;
     createAnonymousUser: typeof createAnonymousUser;
   }
+
+  interface Session {
+    user?: Awaited<ReturnType<typeof createAnonymousUser>>;
+  }
 }
 
 export async function mutateSessionWithAnonymousUser(
