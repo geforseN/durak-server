@@ -6,7 +6,6 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
-import chatPlugin from "./module/Chat/chatPlugin.js";
 import gameLobbiesPlugin from "./module/Lobbies/lobbies.plugin.js";
 import { createSocketIoServer, env, sessionStore } from "./config/index.js";
 import { FastifyInstance } from "fastify";
@@ -40,7 +39,6 @@ async function createFastify(app: FastifyInstance) {
   await app
     .setValidatorCompiler(validatorCompiler)
     .setSerializerCompiler(serializerCompiler)
-    .register(chatPlugin, { path: "/global-chat" })
     .register(gameLobbiesPlugin);
   await app.register(fastifySocketIO.default, {
     cors: {

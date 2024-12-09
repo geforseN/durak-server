@@ -1,4 +1,4 @@
-import { type ChatContext } from "../chatPlugin.js";
+import { type ChatContext } from "../../../plugins/modules/chat/global-chat.auto-load.js";
 import ChatMessage from "./ChatMessage.js";
 
 export default class ChatReplyMessage extends ChatMessage {
