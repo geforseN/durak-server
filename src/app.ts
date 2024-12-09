@@ -1,12 +1,9 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import fastifyAutoload from "@fastify/autoload";
-import { createSocketIoServer, env, sessionStore } from "./config/index.js";
 import { FastifyInstance } from "fastify";
 import { User, UserProfile } from "@prisma/client";
-import fastifySocketIO from "fastify-socket.io";
-import assert from "node:assert";
-import type SocketIO from "socket.io";
+
 
 declare module "fastify" {
   interface Session {
@@ -27,16 +24,6 @@ async function createFastify(app: FastifyInstance) {
     forceESM: true,
     encapsulate: false
   });
-  await app.register(fastifySocketIO.default, {
-    cors: {
-      credentials: true,
-      origin: env.SOCKET_IO_CORS_ORIGIN,
-      methods: ["GET", "POST"],
-    },
-  });
-  await app.ready();
-  assert("io" in app);
-  createSocketIoServer(app.io as unknown as SocketIO.Server, sessionStore);
   return app;
 }
 
