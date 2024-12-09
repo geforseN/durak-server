@@ -4,7 +4,6 @@ import crypto from "node:crypto";
 import assert from "node:assert";
 
 import { prisma } from "../../../config/index.js";
-import { stringToBoolean } from "../../../common/index.js";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { isDevelopment } from "std-env";
 
@@ -25,7 +24,7 @@ const plugin: FastifyPluginAsyncZod = async function (fastify) {
     url: "/api/auth/login",
     schema: {
       querystring: z.object({
-        anonymous: z.string().transform(stringToBoolean),
+        anonymous: z.coerce.boolean().default(true),
       }),
     },
     async handler(request, reply) {
