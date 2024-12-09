@@ -4,29 +4,29 @@ import crypto from "node:crypto";
 import assert from "node:assert";
 
 import { prisma } from "../../../config/index.js";
-import { stringToBoolean } from "../../../common/index.js";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import { isDevelopment } from "std-env";
 
 const plugin: FastifyPluginAsyncZod = async function (fastify) {
+  let redirectUrl = process.env.AUTH_REDIRECT_URL;
+  if (!redirectUrl) {
+    const defaultRedirectUrl = isDevelopment
+      ? "http://localhost:5173"
+      : "https://play-durak.vercel.app";
+    fastify.log.warn(
+      "AUTH_REDIRECT_URL not found in environment, using %s",
+      defaultRedirectUrl,
+    );
+    redirectUrl = defaultRedirectUrl;
+  }
   fastify.route({
     method: "POST",
     url: "/api/auth/login",
-    schema: {
-      querystring: z.object({
-        anonymous: z.string().transform(stringToBoolean),
-        dev: z.string().transform(stringToBoolean),
-      }),
-    },
     async handler(request, reply) {
-      console.log({ anon: request.query.anonymous });
       if (typeof request.session.user?.isAnonymous === "undefined") {
         await mutateSessionWithAnonymousUser(request, this.log);
       }
-      return reply.redirect(
-        request.query.dev
-          ? "http://localhost:5173"
-          : "https://play-durak.vercel.app",
-      );
+      return reply.redirect(redirectUrl);
     },
   });
 };
