@@ -33,8 +33,7 @@ const start = async () => {
     log.info("Auto-loading plugins...");
     await fastify.register(fastifyAutoload, {
       dir: path.join(__dirname, "plugins"),
-      ignorePattern: /^.*(?:test|spec).ts$/,
-      indexPattern: /"^.*.auto-load.ts$/,
+      matchFilter: (path) => path.endsWith(".auto-load.ts"),
       forceESM: true,
       encapsulate: false,
     });
