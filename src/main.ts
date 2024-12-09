@@ -5,6 +5,7 @@ import { fastifyAutoload } from "@fastify/autoload";
 import { consola } from "consola";
 import { isDevelopment } from "std-env";
 import { z } from "zod";
+import { BasePlayer } from "./module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 const FastifyListerOptionsSchema = z.object({
   NODE_ENV: z.enum(["development", "production"]),
@@ -25,9 +26,6 @@ const start = async () => {
       }),
     ).parse(process.env);
     log.info("Creating...");
-    const { BasePlayer } = await import(
-      "./module/DurakGame/entity/Player/BasePlayer.abstract.js"
-    );
     BasePlayer.configureDependencies();
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const fastify = Fastify({ logger: true });
