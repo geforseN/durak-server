@@ -1,5 +1,5 @@
 import type { SocketsStore } from "../../../ws/index.js";
-import { ChatMessageEvent } from "../chatPlugin.js";
+import { ChatMessageEvent } from "../../../plugins/modules/chat/global-chat.auto-load.js";
 import type ChatMessage from "./ChatMessage.js";
 import type ChatReplyMessage from "./ChatReplyMessage.js";
 

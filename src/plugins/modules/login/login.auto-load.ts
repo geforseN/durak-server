@@ -3,12 +3,12 @@ import { z } from "zod";
 import crypto from "node:crypto";
 import assert from "node:assert";
 
-import type { FastifyInstanceT } from "../../app.js";
-import { prisma } from "../../config/index.js";
-import { stringToBoolean } from "../../common/index.js";
+import { prisma } from "../../../config/index.js";
+import { stringToBoolean } from "../../../common/index.js";
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 
-export async function createUser(fastify: FastifyInstanceT) {
-  return fastify.route({
+const plugin: FastifyPluginAsyncZod = async function (fastify) {
+  fastify.route({
     method: "POST",
     url: "/api/auth/login",
     schema: {
@@ -29,7 +29,9 @@ export async function createUser(fastify: FastifyInstanceT) {
       );
     },
   });
-}
+};
+
+export default plugin;
 
 export async function mutateSessionWithAnonymousUser(
   request: FastifyRequest,
@@ -54,9 +56,7 @@ async function createAnonymousUser(log?: FastifyBaseLogger) {
     data: {
       UserProfile: {
         create: {
-          photoUrl:
-            `https://xsgames.co/randomusers/assets/avatars/pixel/${randomInt}.jpg` ||
-            "https://cdn.7tv.app/emote/6306876cbe8c19d70f9d6b22/4x.webp",
+          photoUrl: `https://xsgames.co/randomusers/assets/avatars/pixel/${randomInt}.jpg`,
           nickname: "Anonymous",
         },
       },
