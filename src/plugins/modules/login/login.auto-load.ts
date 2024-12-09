@@ -22,11 +22,6 @@ const plugin: FastifyPluginAsyncZod = async function (fastify) {
   fastify.route({
     method: "POST",
     url: "/api/auth/login",
-    schema: {
-      querystring: z.object({
-        anonymous: z.coerce.boolean().default(true),
-      }),
-    },
     async handler(request, reply) {
       if (typeof request.session.user?.isAnonymous === "undefined") {
         await mutateSessionWithAnonymousUser(request, this.log);
