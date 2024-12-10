@@ -93,7 +93,9 @@ function initializeGameLobbies() {
 
   return function handleConnection(socket: WebSocket, request: FastifyRequest) {
     socketsStore.add(socket);
-    socketsStore.room(request.session.user.id).add(socket);
+    if (request.session.user) {
+      socketsStore.room(request.session.user.id).add(socket);
+    }
     socket
       .addListener("message", defaultListeners.message)
       .addListener("socket", defaultListeners.socket);
