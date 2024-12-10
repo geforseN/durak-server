@@ -1,0 +1,27 @@
+model User {
+  num            Int              @unique @default(autoincrement())
+  id             String           @id @unique @default(uuid())
+  email          String?          @unique
+  currentGameId  String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  UserGamePlayer UserGamePlayer[]
+  UserGameStat   UserGameStat?
+  UserProfile    UserProfile?
+}
+
+model UserProfile {
+  userId        String        @id @unique
+  personalLink  String        @unique @default(cuid())
+  updatedAt     DateTime      @updatedAt
+  photoUrl      String?
+  nickname      String        @default("Durak Player")
+  connectStatus ConnectStatus @default(OFFLINE)
+  User          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum ConnectStatus {
+  ONLINE
+  AWAY
+  OFFLINE
+}

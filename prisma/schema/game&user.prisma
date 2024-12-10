@@ -1,0 +1,24 @@
+model UserGameStat {
+  userId             String           @id @unique
+  wonGamesCount      Int              @default(0)
+  lostGamesCount     Int              @default(0)
+  unstableGamesCount Int              @default(0)
+  createdAt          DateTime         @default(now())
+  UserGamePlayer     UserGamePlayer[]
+  User               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserGamePlayer {
+  index           Int
+  hasLost         Boolean       @default(false)
+  durakGameNumber Int
+  userId          String
+  result          GameEndResult
+  place           Int
+  roundLeftNumber Int
+  DurakGame       DurakGame     @relation(fields: [durakGameNumber], references: [number], onDelete: Cascade)
+  User            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  UserGameStat    UserGameStat  @relation(fields: [userId], references: [userId], onDelete: Cascade, map: "userGameStatId")
+
+  @@unique([durakGameNumber, index])
+}

@@ -1,0 +1,28 @@
+model DurakGame {
+  number       Int              @unique @default(autoincrement())
+  uuid         String
+  playersCount Int
+  status       GameStatus       @default(START_WAITING)
+  cardCount    Int
+  gameType     GameType
+  moveTime     Float
+  createdAt    DateTime         @default(now())
+  players      UserGamePlayer[]
+}
+
+
+enum GameStatus {
+  START_WAITING
+  STARTED
+  ENDED
+}
+
+enum GameType {
+  BASIC
+  PEREVODNOY
+}
+
+enum GameEndResult {
+  WON
+  LOST
+}
