@@ -30,8 +30,6 @@ const start = async () => {
     log.info("Creating...");
     const fastify = Fastify({ logger: true });
     log.info("Auto-loading plugins...");
-    await fastify.register(import("./plugins/zod-type-provider.js"));
-    await fastify.register(import("./plugins/swagger.js"));
     await fastify.register(import("@fastify/autoload"), {
       dir: path.join(__dirname, "plugins"),
       matchFilter: (path) => path.endsWith(".auto-load.ts"),
