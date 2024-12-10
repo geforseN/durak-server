@@ -1,21 +1,19 @@
-import { FastifyInstance } from "fastify";
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 
-export default async function getMe(fastify: FastifyInstance) {
-  return fastify.route({
+export default <FastifyPluginAsyncZod>async function (app) {
+  app.route({
     method: "GET",
     url: "/api/me",
     async handler(request, reply) {
-      console.log(request.session.user);
-      this.log.info({ user: request.session.user || {} });
-      if (
-        !request.session.user ||
-        !Object.values(request.session.user || {}).length
-      ) {
+      const log = this.log.child({ _route: "GET /api/me" });
+      if (!request.session.user) {
+        log.trace({ user: request.session.user }, "no user in session");
         return reply
           .status(401)
           .send({ reason: "Unauthorized. Make login POST request" });
       }
+      log.trace({ user: request.session.user }, "user in session");
       return request.session.user;
     },
   });
-}
+};
