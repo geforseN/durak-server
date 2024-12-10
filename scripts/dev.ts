@@ -11,7 +11,7 @@ function main() {
     const envFile = ".env.development";
     const exampleEnvFile = ".env.development.example";
     const prismaClientPath = path.join("node_modules", "@prisma", "client");
-    const prismaSchemaPath = path.join("prisma", "schema.prisma");
+    const prismaSchemaPath = path.join("prisma", "schema", "schema.prisma");
     const schemaHashPath = path.join("prisma", "schema.prisma.hash");
     createEnvFile(envFile, exampleEnvFile);
     upDockerCompose(envFile);
