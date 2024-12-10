@@ -50,8 +50,5 @@
     "types-fastify-socket.io": "^0.0.1",
     "typescript": "^5.1.6",
     "vitest": "^0.34.4"
-  },
-  "prisma": {
-    "seed": "tsx --transpile-only prisma/seed.ts"
   }
 }
