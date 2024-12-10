@@ -20,8 +20,7 @@ describe("buildTalon work good", () => {
   test.each<TalonCardCount>([24, 36, 52])(
     "correctly builded with count=%i",
     (count) => {
-      expect(() => buildTalon({ count })).not.toThrow();
-      expect(buildTalon({ count })).length(count);
+      expect(buildTalon({ count })).toHaveLength(count);
     },
   );
 
@@ -34,10 +33,10 @@ describe("buildTalon work good", () => {
   ];
 
   TALON_SETTINGS.forEach(({ count, trumpCard }) => {
-
-    expect(() => buildTalon({ count, trumpCard })).not.toThrow();
-
-    const talonCards = buildTalon({ count, trumpCard });
+    let talonCards: ReturnType<typeof buildTalon>;
+    expect(() => {
+      talonCards = buildTalon({ count, trumpCard });
+    }).not.toThrow();
 
     describe("given trump card are correct in talon cards", () => {
       it("has trump card as most bottom card", () => {
@@ -55,7 +54,7 @@ describe("buildTalon work good", () => {
       it(`deck has right amount of trump cards=${
         count / Card.suits.length
       }`, () => {
-        expect(talonCards.filter((card) => card.isTrump)).length(
+        expect(talonCards.filter((card) => card.isTrump)).toHaveLength(
           count / Card.suits.length,
         );
       });
