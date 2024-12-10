@@ -1,9 +1,9 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import z from "zod";
 import Fastify from "fastify";
-import { consola } from "consola";
+import consola from "consola";
 import { isDevelopment } from "std-env";
-import { z } from "zod";
 import { BasePlayer } from "./module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 const FastifyListerOptionsSchema = z.object({
