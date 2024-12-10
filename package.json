@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "tsx --env-file=.env.development.example $( [ -f .env.development ] && echo '--env-file=.env.development' ) scripts/dev.ts",
     "lint": "eslint .",
+    "test": "vitest",
     "build:railway": "tsc || true",
     "start:railway": "prisma generate && node dist/main.js"
   },
