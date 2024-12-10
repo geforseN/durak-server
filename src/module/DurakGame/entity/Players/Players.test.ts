@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { expect, it, describe  } from "vitest";
+import { expect, it, describe } from "vitest";
 
 import type { BasePlayer } from "../Player/BasePlayer.abstract.js";
 
@@ -39,8 +39,7 @@ describe("test BasePlayer#enemies", () => {
     });
 
     it("dog.enemies work correct", () => {
-
-      expect(dog.enemies).to.have.deep.ordered.members([
+      expect(dog.enemies).toEqual([
         cat.toEnemy(),
         fox.toEnemy(),
       ]);
@@ -48,24 +47,15 @@ describe("test BasePlayer#enemies", () => {
 
     it("after cat.exitGame dog.enemies work correct", () => {
       expect(dog.left).toBe(cat);
-
       cat.exitGame();
-
       expect(dog.left).toBe(fox);
-      expect(dog.enemies).to.have.deep.ordered.members([
-        cat.toEnemy(),
-        fox.toEnemy(),
-      ]);
-      expect(cat.hasLeftTheGame === true);
+      expect(dog.enemies).toEqual([cat.toEnemy(), fox.toEnemy()]);
+      expect(cat.hasLeftTheGame).toBe(true);
     });
     it("after fox.exitGame dog.enemies work correct", () => {
       fox.exitGame();
-
       expect(dog.left).toBe(dog);
-      expect(dog.enemies).to.have.deep.ordered.members([
-        cat.toEnemy(),
-        fox.toEnemy(),
-      ]);
+      expect(dog.enemies).toEqual([cat.toEnemy(), fox.toEnemy()]);
       expect(fox.hasLeftTheGame).toBe(true);
     });
   });
