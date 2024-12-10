@@ -1,12 +1,5 @@
 import type { FastifySessionOptions, SessionStore } from "@fastify/session";
 import type { getParsedEnv } from "./zod-env.js";
-import type { User, UserProfile } from "@prisma/client";
-
-declare module "fastify" {
-  interface Session {
-    user: User & { profile: UserProfile; isAnonymous: boolean };
-  }
-}
 
 export function getFastifySessionSettings(
   env: ReturnType<typeof getParsedEnv>,
