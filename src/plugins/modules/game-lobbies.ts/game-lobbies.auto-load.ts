@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import type { WebSocket } from "@fastify/websocket";
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { FastifyRequest } from "fastify";
 import type { InitialGameSettings } from "@durak-game/durak-dts";
 import {
   CustomWebsocketEvent,
@@ -12,12 +12,12 @@ import {
 import Lobbies from "../../../module/Lobbies/entity/Lobbies.js";
 import type Lobby from "../../../module/Lobbies/entity/Lobby.js";
 
-export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
+export default <FastifyPluginAsyncZod>async function (app) {
   const handleConnection = initializeGameLobbies();
-  fastify.get(
+  app.get(
     "/game-lobbies",
     { websocket: true },
-    async function (socket: WebSocket, request: FastifyRequest) {
+    async function (socket, request) {
       const context = handleConnection(socket, request);
       if (!context.user?.id) {
         socket.send(
@@ -85,7 +85,7 @@ export default async function gameLobbiesPlugin(fastify: FastifyInstance) {
       }
     },
   );
-}
+};
 
 function initializeGameLobbies() {
   const socketsStore = new SocketsStore();

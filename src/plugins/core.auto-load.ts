@@ -5,9 +5,8 @@ import { fastifySession } from "@fastify/session";
 import { fastifyWebsocket } from "@fastify/websocket";
 import { getFastifySessionSettings } from "../config/fastify.js";
 import { env, sessionStore } from "../config/index.js";
-import type { FastifyInstance } from "fastify";
 
-export default async function myPlugin(app: FastifyInstance) {
+export default <FastifyPluginAsyncZod>async function (app) {
   await app
     .register(fastifyCors, {
       origin: env.CORS_ORIGIN,
@@ -18,4 +17,4 @@ export default async function myPlugin(app: FastifyInstance) {
     .register(fastifyCookie)
     .register(fastifySession, getFastifySessionSettings(env, sessionStore))
     .register(fastifyWebsocket);
-}
+};
