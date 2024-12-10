@@ -1,9 +1,10 @@
 import assert from "node:assert";
 import fastifySocketIO from "fastify-socket.io";
+import type { FastifyInstance } from "fastify";
 import type SocketIO from "socket.io";
 import { createSocketIoServer, env, sessionStore } from "../config/index.js";
 
-export default <FastifyPluginAsyncZod>async function (app) {
+export default function (app: FastifyInstance) {
   app
     .register(fastifySocketIO.default, {
       cors: {
@@ -15,6 +16,6 @@ export default <FastifyPluginAsyncZod>async function (app) {
     .ready()
     .then(() => {
       assert("io" in app);
-      createSocketIoServer(<SocketIO.Server>app.io, sessionStore);
+      createSocketIoServer(app.io as unknown as SocketIO.Server, sessionStore);
     });
-};
+}

@@ -1,3 +1,5 @@
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+
 export default <FastifyPluginAsyncZod>async function (app) {
   app.route({
     method: "GET",

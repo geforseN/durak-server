@@ -1,8 +1,9 @@
 import z from "zod";
 import assert from "node:assert";
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 
-export default <FastifyPluginAsyncZod>async function (app) {
-  app.route({
+const plugin: FastifyPluginAsyncZod = async function (fastify) {
+  fastify.route({
     method: "GET",
     url: "/api/profiles/:personalLink",
     schema: {
@@ -27,3 +28,5 @@ export default <FastifyPluginAsyncZod>async function (app) {
     },
   });
 };
+
+export default plugin;

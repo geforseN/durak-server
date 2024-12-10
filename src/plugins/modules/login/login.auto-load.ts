@@ -1,27 +1,28 @@
 import { isDevelopment } from "std-env";
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import {
   createAnonymousUser,
   mutateSessionWithAnonymousUser,
 } from "./login.instance-decorators.js";
 
-export default <FastifyPluginAsyncZod>async function (app) {
+export default <FastifyPluginAsyncZod>async function (fastify) {
   let redirectUrl = process.env.AUTH_REDIRECT_URL;
   if (!redirectUrl) {
     const defaultRedirectUrl = isDevelopment
       ? "http://localhost:5173"
       : "https://play-durak.vercel.app";
-    app.log.warn(
+    fastify.log.warn(
       "AUTH_REDIRECT_URL not found in environment, using %s",
       defaultRedirectUrl,
     );
     redirectUrl = defaultRedirectUrl;
   }
-  app.decorate(
+  fastify.decorate(
     "mutateSessionWithAnonymousUser",
     mutateSessionWithAnonymousUser,
   );
-  app.decorate("createAnonymousUser", createAnonymousUser);
-  app.route({
+  fastify.decorate("createAnonymousUser", createAnonymousUser);
+  fastify.route({
     method: "POST",
     url: "/api/auth/login",
     async handler(request, reply) {
