@@ -2,13 +2,13 @@ name: Vitest
 
 on:
   push:
-    branches: master
-    paths:
-      - '!**/*.md'
+    branches:
+      - master
   pull_request:
-    branches: master
-    paths:
-      - '!**/*.md'
+    types:
+      - synchronize
+      - opened
+      - reopened
 
 jobs:
   test:
