@@ -1,10 +1,9 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import z from "zod";
 import Fastify from "fastify";
-import { fastifyAutoload } from "@fastify/autoload";
-import { consola } from "consola";
+import consola from "consola";
 import { isDevelopment } from "std-env";
-import { z } from "zod";
 import { BasePlayer } from "./module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 const FastifyListerOptionsSchema = z.object({
@@ -31,7 +30,9 @@ const start = async () => {
     log.info("Creating...");
     const fastify = Fastify({ logger: true });
     log.info("Auto-loading plugins...");
-    await fastify.register(fastifyAutoload, {
+    await fastify.register(import("./plugins/zod-type-provider.js"));
+    await fastify.register(import("./plugins/swagger.js"));
+    await fastify.register(import("@fastify/autoload"), {
       dir: path.join(__dirname, "plugins"),
       matchFilter: (path) => path.endsWith(".auto-load.ts"),
       forceESM: true,
