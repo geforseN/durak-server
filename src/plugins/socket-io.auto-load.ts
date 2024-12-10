@@ -15,6 +15,6 @@ export default <FastifyPluginAsyncZod>async function (app) {
     .ready()
     .then(() => {
       assert("io" in app);
-      createSocketIoServer(app.io as unknown as SocketIO.Server, sessionStore);
+      createSocketIoServer(<SocketIO.Server>app.io, sessionStore);
     });
 };
