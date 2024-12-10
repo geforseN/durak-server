@@ -4,11 +4,13 @@
   "description": "",
   "type": "module",
   "engines": {
-    "node": ">=16.13.0"
+    "node": "22.12.0"
   },
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "tsx --env-file=.env.development.example $( [ -f .env.development ] && echo '--env-file=.env.development' ) scripts/dev.ts",
     "lint": "eslint .",
+    "test": "vitest",
     "build:railway": "tsc || true",
     "start:railway": "prisma generate && node dist/main.js"
   },
@@ -49,6 +51,6 @@
     "tsx": "^4.19.2",
     "types-fastify-socket.io": "^0.0.1",
     "typescript": "^5.1.6",
-    "vitest": "^0.34.4"
+    "vitest": "~2.1.8"
   }
 }
