@@ -1,11 +1,7 @@
-import type { FastifyInstance } from "fastify";
-import {
-  serializerCompiler,
-  validatorCompiler,
-} from "fastify-type-provider-zod";
+import fastifyTypeProviderZod from "fastify-type-provider-zod";
 
-export default function (app: FastifyInstance) {
+export default <FastifyPluginAsyncZod>async function (app) {
   app
-    .setValidatorCompiler(validatorCompiler)
-    .setSerializerCompiler(serializerCompiler);
-}
+    .setValidatorCompiler(fastifyTypeProviderZod.validatorCompiler)
+    .setSerializerCompiler(fastifyTypeProviderZod.serializerCompiler);
+};
