@@ -17,4 +17,5 @@ export default <FastifyPluginAsyncZod>async function (app) {
     .register(fastifyCookie)
     .register(fastifySession, getFastifySessionSettings(env, sessionStore))
     .register(fastifyWebsocket);
+  app.log.info("Loaded `core` plugins.");
 };
