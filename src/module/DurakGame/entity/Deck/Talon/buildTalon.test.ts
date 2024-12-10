@@ -41,7 +41,11 @@ describe("buildTalon work good", () => {
 
     describe("given trump card are correct in talon cards", () => {
       it("has trump card as most bottom card", () => {
-        expect(talonCards[0]).toContain(trumpCard);
+        expect(talonCards[0]).toEqual({
+          isTrump: true,
+          power: expect.any(Number),
+          ...trumpCard,
+        });
       });
 
       it("is instance of TrumpCard", () => {
