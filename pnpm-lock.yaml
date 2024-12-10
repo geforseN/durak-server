@@ -58,10 +58,10 @@ importers:
         version: 5.1.0(fastify@5.1.0)(socket.io@4.8.1)
       fastify-type-provider-zod:
         specifier: ^4.0.2
-        version: 4.0.2(fastify@5.1.0)(zod@3.23.8)
+        version: 4.0.2(fastify@5.1.0)(zod@3.24.0)
       fastify-zod-openapi:
         specifier: ^3.0.4
-        version: 3.0.4(@fastify/swagger-ui@5.2.0)(@fastify/swagger@9.4.0)(fastify@5.1.0)(zod-openapi@4.1.0(zod@3.23.8))(zod@3.23.8)
+        version: 3.0.4(@fastify/swagger-ui@5.2.0)(@fastify/swagger@9.4.0)(fastify@5.1.0)(zod-openapi@4.1.0(zod@3.24.0))(zod@3.24.0)
       pino:
         specifier: ^8.15.0
         version: 8.21.0
@@ -76,10 +76,10 @@ importers:
         version: 1.4.3
       zod:
         specifier: ^3.22.2
-        version: 3.23.8
+        version: 3.24.0
       zod-openapi:
         specifier: ^4.1.0
-        version: 4.1.0(zod@3.23.8)
+        version: 4.1.0(zod@3.24.0)
     devDependencies:
       '@durak-game/durak-dts':
         specifier: ^0.5.1
@@ -101,7 +101,7 @@ importers:
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@9.16.0)(typescript@5.7.2))(eslint@9.16.0)(typescript@5.7.2)
       '@vitest/eslint-plugin':
         specifier: ^1.1.13
-        version: 1.1.13(@typescript-eslint/utils@7.18.0(eslint@9.16.0)(typescript@5.7.2))(eslint@9.16.0)(typescript@5.7.2)(vitest@2.1.8(@types/node@20.17.9))
+        version: 1.1.15(@typescript-eslint/utils@7.18.0(eslint@9.16.0)(typescript@5.7.2))(eslint@9.16.0)(typescript@5.7.2)(vitest@2.1.8(@types/node@20.17.9))
       eslint:
         specifier: ^9.16.0
         version: 9.16.0
@@ -754,8 +754,8 @@ packages:
     resolution: {integrity: sha512-cDF0/Gf81QpY3xYyJKDV14Zwdmid5+uuENhjH2EqFaF0ni+yAyq/LzMaIJdhNJXZI7uLzwIlA+V7oWoyn6Curg==}
     engines: {node: ^18.18.0 || >=20.0.0}
 
-  '@vitest/eslint-plugin@1.1.13':
-    resolution: {integrity: sha512-oabbCT4fCQfmFNtH2UuDfHx1d7dzi+VD3qwCpBfECfyzQq/Re9u7qTtE2WqV/hAuAOALw3ZVRiub2mXmpTyn/Q==}
+  '@vitest/eslint-plugin@1.1.15':
+    resolution: {integrity: sha512-vvi8UPNrDiqC/IrtV2QZn43WoO/Da9q4rYiyfhcyd3hT4rDE/wuvGxCzUEtVejocwAwKDvKk7CzWOKXGkQo50A==}
     peerDependencies:
       '@typescript-eslint/utils': '>= 8.0'
       eslint: '>= 8.57.0'
@@ -1938,8 +1938,8 @@ packages:
     peerDependencies:
       zod: ^3.23.3
 
-  zod@3.23.8:
-    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+  zod@3.24.0:
+    resolution: {integrity: sha512-Hz+wiY8yD0VLA2k/+nsg2Abez674dDGTai33SwNvMPuf9uIrBC9eFgIMQxBBbHFxVXi8W+5nX9DcAh9YNSQm/w==}
 
 snapshots:
 
@@ -2486,7 +2486,7 @@ snapshots:
       '@typescript-eslint/types': 7.18.0
       eslint-visitor-keys: 3.4.3
 
-  '@vitest/eslint-plugin@1.1.13(@typescript-eslint/utils@7.18.0(eslint@9.16.0)(typescript@5.7.2))(eslint@9.16.0)(typescript@5.7.2)(vitest@2.1.8(@types/node@20.17.9))':
+  '@vitest/eslint-plugin@1.1.15(@typescript-eslint/utils@7.18.0(eslint@9.16.0)(typescript@5.7.2))(eslint@9.16.0)(typescript@5.7.2)(vitest@2.1.8(@types/node@20.17.9))':
     dependencies:
       '@typescript-eslint/utils': 7.18.0(eslint@9.16.0)(typescript@5.7.2)
       eslint: 9.16.0
@@ -2934,21 +2934,21 @@ snapshots:
       socket.io: 4.8.1
       tslib: 2.8.1
 
-  fastify-type-provider-zod@4.0.2(fastify@5.1.0)(zod@3.23.8):
+  fastify-type-provider-zod@4.0.2(fastify@5.1.0)(zod@3.24.0):
     dependencies:
       '@fastify/error': 4.0.0
       fastify: 5.1.0
-      zod: 3.23.8
-      zod-to-json-schema: 3.23.5(zod@3.23.8)
+      zod: 3.24.0
+      zod-to-json-schema: 3.23.5(zod@3.24.0)
 
-  fastify-zod-openapi@3.0.4(@fastify/swagger-ui@5.2.0)(@fastify/swagger@9.4.0)(fastify@5.1.0)(zod-openapi@4.1.0(zod@3.23.8))(zod@3.23.8):
+  fastify-zod-openapi@3.0.4(@fastify/swagger-ui@5.2.0)(@fastify/swagger@9.4.0)(fastify@5.1.0)(zod-openapi@4.1.0(zod@3.24.0))(zod@3.24.0):
     dependencies:
       '@fastify/error': 4.0.0
       fast-json-stringify: 6.0.0
       fastify: 5.1.0
       fastify-plugin: 5.0.1
-      zod: 3.23.8
-      zod-openapi: 4.1.0(zod@3.23.8)
+      zod: 3.24.0
+      zod-openapi: 4.1.0(zod@3.24.0)
     optionalDependencies:
       '@fastify/swagger': 9.4.0
       '@fastify/swagger-ui': 5.2.0
@@ -3663,12 +3663,12 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod-openapi@4.1.0(zod@3.23.8):
+  zod-openapi@4.1.0(zod@3.24.0):
     dependencies:
-      zod: 3.23.8
+      zod: 3.24.0
 
-  zod-to-json-schema@3.23.5(zod@3.23.8):
+  zod-to-json-schema@3.23.5(zod@3.24.0):
     dependencies:
-      zod: 3.23.8
+      zod: 3.24.0
 
-  zod@3.23.8: {}
+  zod@3.24.0: {}
