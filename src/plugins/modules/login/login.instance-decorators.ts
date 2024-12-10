@@ -2,6 +2,8 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import assert from "node:assert";
 import crypto from "node:crypto";
 
+export type SessionUser = Awaited<ReturnType<typeof createAnonymousUser>>
+
 declare module "fastify" {
   interface FastifyInstance {
     mutateSessionWithAnonymousUser: typeof mutateSessionWithAnonymousUser;
@@ -9,7 +11,7 @@ declare module "fastify" {
   }
 
   interface Session {
-    user?: Awaited<ReturnType<typeof createAnonymousUser>>;
+    user?: SessionUser;
   }
 }
 
