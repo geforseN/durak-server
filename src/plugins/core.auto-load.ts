@@ -6,7 +6,7 @@ import { fastifyWebsocket } from "@fastify/websocket";
 import { getFastifySessionSettings } from "../config/fastify.js";
 import { env, sessionStore } from "../config/index.js";
 
-export default <FastifyPluginAsyncZod>async function myPlugin(app) {
+export default <FastifyPluginAsyncZod>async function (app) {
   await app
     .register(fastifyCors, {
       origin: env.CORS_ORIGIN,
