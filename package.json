@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@durak-game/durak-dts": "^0.5.1",
-    "@tsconfig/node20": "^20.1.2",
+    "@tsconfig/node22": "^22.0.0",
     "@tsconfig/recommended": "^1.0.2",
     "@types/node": "^20.6.1",
     "@types/ws": "^8.5.13",
