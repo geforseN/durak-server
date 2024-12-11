@@ -1,7 +1,7 @@
 import assert from "node:assert";
 
-import Card from "../../Card/index.js";
-import Deck from "../Deck.abstract.js";
+import Card from "@/module/DurakGame/entity/Card/index.js";
+import Deck from "@/module/DurakGame/entity/Deck/Deck.abstract.js";
 
 export default class Hand extends Deck {
   constructor(cards?: Card[]);

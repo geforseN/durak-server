@@ -1,15 +1,15 @@
 import assert from "node:assert";
 
-import type DurakGame from "../../DurakGame.js";
-import type Card from "../Card/index.js";
-import type DeskSlot from "../DeskSlot/index.js";
-import type { SuperPlayer } from "./SuperPlayer.abstract.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import type Card from "@/module/DurakGame/entity/Card/index.js";
+import type DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
+import type { SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
 
-import { AllowedPlayerBadInputError } from "../../error/index.js";
-import { InsertAttackCardMove, StopAttackMove } from "../GameMove/index.js";
-import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
-import { Attacker } from "./Attacker.js";
-import AllowedAttackerDefaultBehavior from "./DefaultBehavior/AllowedAttackerDefaultBehavior.js";
+import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
+import { InsertAttackCardMove, StopAttackMove } from "@/module/DurakGame/entity/GameMove/index.js";
+import { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
+import { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
+import AllowedAttackerDefaultBehavior from "@/module/DurakGame/entity/Player/DefaultBehavior/AllowedAttackerDefaultBehavior.js";
 
 export class AllowedAttacker extends AllowedSuperPlayer {
   defaultBehavior: AllowedAttackerDefaultBehavior;

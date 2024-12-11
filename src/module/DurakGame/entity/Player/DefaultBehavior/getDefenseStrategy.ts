@@ -1,5 +1,5 @@
-import Card, { Suit } from "../../Card/index.js";
-import { DefendedDeskSlotBase } from "../../DeskSlot/DeskSlot.abstract.js";
+import Card, { Suit } from "@/module/DurakGame/entity/Card/index.js";
+import { DefendedDeskSlotBase } from "@/module/DurakGame/entity/DeskSlot/DeskSlot.abstract.js";
 
 export default function getDefenseStrategy(
   defenderCards: Card[],

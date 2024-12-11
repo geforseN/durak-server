@@ -2,7 +2,7 @@ import { isDevelopment } from "std-env";
 import {
   createAnonymousUser,
   mutateSessionWithAnonymousUser,
-} from "./login.instance-decorators.js";
+} from "@/plugins/modules/login/login.instance-decorators.js";
 
 export default <FastifyPluginAsyncZod>async function (app) {
   let redirectUrl = process.env.AUTH_REDIRECT_URL;

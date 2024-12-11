@@ -6,9 +6,9 @@ import type {
 
 import { describe, expect, it, test } from "vitest";
 
-import TrumpCard from "../../Card/TrumpCard.js";
-import { Card } from "../../index.js";
-import buildTalon from "./buildTalon.js";
+import TrumpCard from "@/module/DurakGame/entity/Card/TrumpCard.js";
+import { Card } from "@/module/DurakGame/entity/index.js";
+import buildTalon from "@/module/DurakGame/entity/Deck/Talon/buildTalon.js";
 
 describe("buildTalon work good", () => {
   test.each([0, 1, -36, 54])("throws on wrong count=%i", (count) => {

@@ -1,5 +1,5 @@
-import { BasePlayer } from "./Player/BasePlayer.abstract.js";
-import { GameRound } from "./index.js";
+import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import { GameRound } from "@/module/DurakGame/entity/index.js";
 export default class GameHistory {
   players;
   rounds;

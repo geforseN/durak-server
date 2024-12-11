@@ -8,7 +8,7 @@ import type {
   CardDTO,
 } from "@durak-game/durak-dts";
 
-import { GOOD_CARD_AMOUNT } from "../../DurakGame/entity/Player/BasePlayer.abstract.js";
+import { GOOD_CARD_AMOUNT } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 export type FrontendGameSettings = {
   cardCount: GameSettings["talon"]["count"];

@@ -1,7 +1,7 @@
 import { type DurakGameSocket } from "@durak-game/durak-dts";
-import type Card from "../Card/index.js";
-import { type BasePlayer } from "./BasePlayer.abstract.js";
-import { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
+import type Card from "@/module/DurakGame/entity/Card/index.js";
+import { type BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
 
 export default class GamePlayerWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}

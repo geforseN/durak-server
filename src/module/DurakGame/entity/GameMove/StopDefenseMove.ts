@@ -1,8 +1,8 @@
-import type DurakGame from "../../DurakGame.js";
-import type { AllowedDefender } from "../Player/AllowedDefender.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import type { AllowedDefender } from "@/module/DurakGame/entity/Player/AllowedDefender.js";
 
-import FailedDefense from "../DefenseEnding/FailedDefense.js";
-import GameMove from "./GameMove.abstract.js";
+import FailedDefense from "@/module/DurakGame/entity/DefenseEnding/FailedDefense.js";
+import GameMove from "@/module/DurakGame/entity/GameMove/GameMove.abstract.js";
 
 export default class StopDefenseMove extends GameMove<AllowedDefender> {
   constructor(game: DurakGame, performer: AllowedDefender) {

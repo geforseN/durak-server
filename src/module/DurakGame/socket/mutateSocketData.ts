@@ -1,6 +1,6 @@
 import type { DurakGameSocket } from "@durak-game/durak-dts";
 import type { SessionStore } from "@fastify/session";
-import { getSid } from "./getSid.js";
+import { getSid } from "@/module/DurakGame/socket/getSid.js";
 
 export function mutateSocketData(
   socket: DurakGameSocket.Socket,

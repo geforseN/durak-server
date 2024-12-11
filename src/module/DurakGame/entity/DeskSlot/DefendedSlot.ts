@@ -1,6 +1,6 @@
-import { AllowedPlayerBadInputError } from "../../error/index.js";
-import Card from "../Card/index.js";
-import DeskSlot from "./DeskSlot.abstract.js";
+import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
+import Card from "@/module/DurakGame/entity/Card/index.js";
+import DeskSlot from "@/module/DurakGame/entity/DeskSlot/DeskSlot.abstract.js";
 
 export default class DefendedSlot extends DeskSlot {
   constructor(index: number, public attackCard: Card, public defendCard: Card) {

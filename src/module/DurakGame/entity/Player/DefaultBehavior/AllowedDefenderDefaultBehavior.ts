@@ -1,10 +1,10 @@
 import assert from "node:assert";
 
-import type { Card } from "../../index.js";
-import type { AllowedDefender } from "../AllowedDefender.js";
+import type { Card } from "@/module/DurakGame/entity/index.js";
+import type { AllowedDefender } from "@/module/DurakGame/entity/Player/AllowedDefender.js";
 
-import DefaultBehavior from "./DefaultBehavior.js";
-import getDefenseStrategy from "./getDefenseStrategy.js";
+import DefaultBehavior from "@/module/DurakGame/entity/Player/DefaultBehavior/DefaultBehavior.js";
+import getDefenseStrategy from "@/module/DurakGame/entity/Player/DefaultBehavior/getDefenseStrategy.js";
 
 export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefender> {
   constructor(

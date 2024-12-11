@@ -7,14 +7,14 @@ import type {
 import assert from "node:assert";
 import { pino } from "pino";
 
-import type NonStartedDurakGame from "./NonStartedDurakGame.js";
-import type { GameMove } from "./entity/GameMove/index.js";
-import type { AllowedSuperPlayer } from "./entity/Player/AllowedSuperPlayer.abstract.js";
-import type { Players } from "./entity/index.js";
+import type NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
+import type { GameMove } from "@/module/DurakGame/entity/GameMove/index.js";
+import type { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
+import type { Players } from "@/module/DurakGame/entity/index.js";
 
-import GameRoundMoves from "./entity/GameRound/GameRoundMoves.js";
-import GameRoundDistribution from "./entity/GameRoundDistributionQueue.js";
-import GameHistory from "./entity/History.js";
+import GameRoundMoves from "@/module/DurakGame/entity/GameRound/GameRoundMoves.js";
+import GameRoundDistribution from "@/module/DurakGame/entity/GameRoundDistributionQueue.js";
+import GameHistory from "@/module/DurakGame/entity/History.js";
 import {
   Card,
   Desk,
@@ -22,12 +22,12 @@ import {
   GameRound,
   Talon,
   createPlayers,
-} from "./entity/index.js";
-import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSocket.handler.js";
+} from "@/module/DurakGame/entity/index.js";
+import { addListenersWhichAreNeededForStartedGame } from "@/module/DurakGame/socket/DurakGameSocket.handler.js";
 import {
   type DurakGameWebsocketService,
   createServices,
-} from "./socket/service/index.js";
+} from "@/module/DurakGame/socket/service/index.js";
 
 export default class DurakGame {
   readonly #wsService: DurakGameWebsocketService;

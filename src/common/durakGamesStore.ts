@@ -1,4 +1,4 @@
-import DurakGamesStore from "../DurakGamesStore.js";
+import DurakGamesStore from "@/DurakGamesStore.js";
 
 export const durakGamesStore = new DurakGamesStore();
 

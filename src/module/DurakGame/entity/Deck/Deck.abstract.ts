@@ -1,4 +1,4 @@
-import Card from "../Card/index.js";
+import Card from "@/module/DurakGame/entity/Card/index.js";
 
 export default abstract class Deck {
   protected value: Card[];

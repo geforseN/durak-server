@@ -1,7 +1,7 @@
-import type DurakGame from "../../DurakGame.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import { BasePlayer } from "../Player/BasePlayer.abstract.js";
-import { GameRound, Players } from "../index.js";
+import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import { GameRound, Players } from "@/module/DurakGame/entity/index.js";
 
 export default abstract class RoundEnd {
   kind = "RoundEnd" as const;

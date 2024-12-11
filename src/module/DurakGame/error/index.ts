@@ -1,4 +1,4 @@
-import NotificationAlert from "../../NotificationAlert/index.js";
+import NotificationAlert from "@/module/NotificationAlert/index.js";
 
 export class InputError extends Error {
   constructor(message = "Введены неверные данные") {

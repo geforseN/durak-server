@@ -2,8 +2,8 @@ import type { AllowedMissingCardCount } from "@durak-game/durak-dts";
 
 import assert from "node:assert";
 
-import type DurakGame from "../DurakGame.js";
-import type { BasePlayer } from "./Player/BasePlayer.abstract.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import type { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 export default class GameRoundDistribution {
   game: DurakGame;
