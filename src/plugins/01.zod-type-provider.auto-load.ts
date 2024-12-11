@@ -5,5 +5,5 @@ export default fp(<FastifyPluginAsyncZod>async function (app) {
   app
     .setValidatorCompiler(fastifyTypeProviderZod.validatorCompiler)
     .setSerializerCompiler(fastifyTypeProviderZod.serializerCompiler);
-  app.log.info("Loaded `zod` validator and serializer.");
+  app.log.trace("Loaded `zod` validator and serializer.");
 });
