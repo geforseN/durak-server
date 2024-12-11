@@ -17,6 +17,6 @@ export default <FastifyPluginAsyncZod>async function (app) {
     .then(() => {
       assert("io" in app);
       createSocketIoServer(<SocketIO.Server>app.io, sessionStore);
-      app.log.trace('Loaded `socket-io` plugin.');
+      app.log.trace("Loaded `socket-io` plugin.");
     });
 };
