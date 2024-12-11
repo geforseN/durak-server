@@ -1,21 +1,14 @@
 import crypto from 'node:crypto'
 import { z } from "zod";
-import { isDevelopment } from 'std-env'
 import { pino } from "pino";
 
-import { raise, stringToArray } from "@/common/index.js";
+import { stringToArray } from "@/common/index.js";
 
 const logger = pino()
 
 export const getParsedEnv = (nodeEnv: NodeJS.ProcessEnv) => {
   return z
     .object({
-      IS_DEV: z
-        .string()
-        .default(isDevelopment ? "true" : "false")
-        .transform((v) =>
-          v === "false" ? false : v === "true" ? true : raise(),
-        ),
       DATABASE_URL: z.string().refine((value) => {
         if (!value) {
           logger.warn({

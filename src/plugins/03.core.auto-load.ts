@@ -4,6 +4,7 @@ import { fastifyCors } from "@fastify/cors";
 import { fastifyFormbody } from "@fastify/formbody";
 import { fastifySession } from "@fastify/session";
 import { fastifyWebsocket } from "@fastify/websocket";
+import { isDevelopment } from "std-env";
 import { env, sessionStore } from "@/config/index.js";
 
 export default fp(<FastifyPluginAsyncZod>async function (app) {
@@ -20,7 +21,7 @@ export default fp(<FastifyPluginAsyncZod>async function (app) {
         domain: env.SESSION_COOKIE_DOMAIN,
         maxAge: env.SESSION_COOKIE_MAX_AGE,
         sameSite: "lax",
-        secure: !env.IS_DEV,
+        secure: !isDevelopment,
         httpOnly: true,
       },
       cookieName: env.SESSION_COOKIE_NAME,
