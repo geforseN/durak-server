@@ -2,7 +2,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import z from "zod";
 import Fastify from "fastify";
-import consola from "consola";
 import { isDevelopment } from "std-env";
 import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
@@ -40,7 +39,6 @@ const logger = (env: z.infer<typeof EnvSchema>["NODE_ENV"]) => {
 };
 
 const start = async () => {
-  const log = consola.withTag("Fastify");
   try {
     BasePlayer.configureDependencies();
     const fastifyListenOptions = FastifyListerOptionsSchema.transform(
@@ -49,27 +47,26 @@ const start = async () => {
         host: HOST,
       }),
     ).parse(process.env);
-    log.info("Creating...");
     const fastify = Fastify({
       logger: logger(EnvSchema.parse(process.env).NODE_ENV),
     });
-    log.info("Auto-loading plugins...");
+    fastify.log.trace("Auto-loading plugins...");
     await fastify.register(import("@fastify/autoload"), {
       dir: path.join(__dirname, "plugins"),
       matchFilter: (path) => path.endsWith(".auto-load.ts"),
       forceESM: true,
       dirNameRoutePrefix: false,
     });
-    log.start("Trying to listen...");
+    fastify.log.trace("Trying to listen...");
     const address = await fastify.listen(fastifyListenOptions);
-    log.success("Listening on address", address);
+    fastify.log.info("Listening on address", address);
   } catch (reason) {
-    log.error(`Failed to start`, { reason });
+    console.error(`Failed to start`, { reason });
     process.exitCode = 1;
   }
 };
 
 start().catch((error) => {
-  consola.error("Unknown error", error);
+  console.error("Unknown error", error);
   process.exitCode = 2;
 });
