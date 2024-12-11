@@ -2,7 +2,7 @@ import type { DurakGameSocket } from "@durak-game/durak-dts";
 
 import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import { prisma } from "@/config/index.js";
+import { prisma } from "@/shared/prisma.js";
 import durakGamesStore from "@/common/durakGamesStore.js";
 import raise from "@/common/raise.js";
 import NotificationAlert from "@/module/NotificationAlert/index.js";
