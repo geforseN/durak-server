@@ -1,5 +1,5 @@
 import path from "node:path";
-import Fastify from "fastify";
+import Fastify from "fastify/fastify.js";
 import type { FastifyBaseLogger, FastifyListenOptions } from "fastify";
 
 export async function makeFastify(
