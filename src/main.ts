@@ -6,8 +6,11 @@ import consola from "consola";
 import { isDevelopment } from "std-env";
 import { BasePlayer } from "./module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
-const FastifyListerOptionsSchema = z.object({
+const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "production"]),
+});
+
+const FastifyListerOptionsSchema = z.object({
   PORT: z.coerce.number().int().default(10000),
   HOST: z
     .string()
@@ -16,6 +19,25 @@ const FastifyListerOptionsSchema = z.object({
 });
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const logger = (env: z.infer<typeof EnvSchema>["NODE_ENV"]) => {
+  switch (env) {
+    case "development": {
+      return {
+        transport: {
+          target: "pino-pretty",
+          options: {
+            translateTime: "HH:MM:ss Z",
+            ignore: "pid,hostname",
+          },
+        },
+      };
+    }
+    case "production": {
+      return true;
+    }
+  }
+};
 
 const start = async () => {
   const log = consola.withTag("Fastify");
@@ -28,7 +50,9 @@ const start = async () => {
       }),
     ).parse(process.env);
     log.info("Creating...");
-    const fastify = Fastify({ logger: true });
+    const fastify = Fastify({
+      logger: logger(EnvSchema.parse(process.env).NODE_ENV),
+    });
     log.info("Auto-loading plugins...");
     await fastify.register(import("@fastify/autoload"), {
       dir: path.join(__dirname, "plugins"),
