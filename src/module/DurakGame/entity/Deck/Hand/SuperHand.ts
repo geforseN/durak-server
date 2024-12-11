@@ -1,5 +1,5 @@
-import Card from "../../Card/index.js";
-import Hand from "./index.js";
+import Card from "@/module/DurakGame/entity/Card/index.js";
+import Hand from "@/module/DurakGame/entity/Deck/Hand/index.js";
 import assert from "node:assert";
 import crypto from "node:crypto";
 

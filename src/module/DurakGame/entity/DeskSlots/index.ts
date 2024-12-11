@@ -1,10 +1,10 @@
 import { randomInt } from "node:crypto";
 
-import type Card from "../Card/index.js";
-import type DeskSlot from "../DeskSlot/index.js";
+import type Card from "@/module/DurakGame/entity/Card/index.js";
+import type DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
 
-import raise from "../../../../common/raise.js";
-import EmptySlot from "../DeskSlot/EmptySlot.js";
+import raise from "@/common/raise.js";
+import EmptySlot from "@/module/DurakGame/entity/DeskSlot/EmptySlot.js";
 
 export default class DeskSlots {
   readonly #value: DeskSlot[];

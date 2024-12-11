@@ -1,8 +1,8 @@
-import GameMove from "./GameMove.abstract.js";
-import Card from "../Card/index.js";
-import DurakGame from "../../DurakGame.js";
-import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
-import DeskSlot from "../DeskSlot/index.js";
+import GameMove from "@/module/DurakGame/entity/GameMove/GameMove.abstract.js";
+import Card from "@/module/DurakGame/entity/Card/index.js";
+import DurakGame from "@/module/DurakGame/DurakGame.js";
+import { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
+import DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
 
 export default abstract class InsertGameMove<
   ASP extends AllowedSuperPlayer,

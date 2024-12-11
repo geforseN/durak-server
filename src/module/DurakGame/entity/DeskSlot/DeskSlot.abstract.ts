@@ -1,11 +1,11 @@
 import assert from "node:assert";
 
-import type DefendedSlot from "./DefendedSlot.js";
-import type EmptySlot from "./EmptySlot.js";
-import type UnbeatenSlot from "./UnbeatenSlot.js";
-import type UnbeatenTrumpSlot from "./UnbeatenTrumpSlot.js";
+import type DefendedSlot from "@/module/DurakGame/entity/DeskSlot/DefendedSlot.js";
+import type EmptySlot from "@/module/DurakGame/entity/DeskSlot/EmptySlot.js";
+import type UnbeatenSlot from "@/module/DurakGame/entity/DeskSlot/UnbeatenSlot.js";
+import type UnbeatenTrumpSlot from "@/module/DurakGame/entity/DeskSlot/UnbeatenTrumpSlot.js";
 
-import { type default as Card } from "../Card/index.js";
+import { type default as Card } from "@/module/DurakGame/entity/Card/index.js";
 
 export type DefendedDeskSlotBase = Required<
   Pick<DefendedSlot, "attackCard" | "defendCard">

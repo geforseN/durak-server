@@ -1,6 +1,6 @@
-import type LobbyUser from "./LobbyUser.js";
+import type LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
 
-import FilledSlot from "./FilledSlot.js";
+import FilledSlot from "@/module/Lobbies/entity/FilledSlot.js";
 
 export default class AdminSlot extends FilledSlot {
   constructor(index: number, value: LobbyUser) {

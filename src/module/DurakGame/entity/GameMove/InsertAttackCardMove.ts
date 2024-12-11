@@ -1,8 +1,8 @@
-import type DurakGame from "../../DurakGame.js";
-import { AllowedAttacker } from "../Player/AllowedAttacker.js";
-import type Card from "../Card/index.js";
-import type DeskSlot from "../DeskSlot/index.js";
-import InsertGameMove from "./InsertGameMove.abstract.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import { AllowedAttacker } from "@/module/DurakGame/entity/Player/AllowedAttacker.js";
+import type Card from "@/module/DurakGame/entity/Card/index.js";
+import type DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
+import InsertGameMove from "@/module/DurakGame/entity/GameMove/InsertGameMove.abstract.js";
 
 export default class InsertAttackCardMove extends InsertGameMove<AllowedAttacker> {
   constructor(

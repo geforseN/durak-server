@@ -1,6 +1,6 @@
-import type LobbyUser from "../../../Lobbies/entity/LobbyUser.js";
-import GamePlayerWebsocketService from "./Player.service.js";
-import { Hand } from "../Deck/index.js";
+import type LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
+import GamePlayerWebsocketService from "@/module/DurakGame/entity/Player/Player.service.js";
+import { Hand } from "@/module/DurakGame/entity/Deck/index.js";
 
 export class NonStartedGameUser {
   info: LobbyUser;

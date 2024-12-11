@@ -1,14 +1,14 @@
 import {
   CustomWebsocketEvent,
   NotificationAlertEvent,
-} from "../../../ws/index.js";
-import createMessage from "../../../module/Chat/createMessage.js";
+} from "@/ws/index.js";
+import createMessage from "@/module/Chat/createMessage.js";
 import type {
   Chat,
   ChatMessage,
   ChatReplyMessage,
-} from "../../../module/Chat/entity/index.js";
-import initializeChat from "../../../module/Chat/initializeChatNamespace.js";
+} from "@/module/Chat/entity/index.js";
+import initializeChat from "@/module/Chat/initializeChatNamespace.js";
 
 export type ChatContext = ReturnType<ReturnType<typeof initializeChat>>;
 

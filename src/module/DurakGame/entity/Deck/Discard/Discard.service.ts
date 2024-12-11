@@ -1,6 +1,6 @@
-import type Discard from "./index.js";
+import type Discard from "@/module/DurakGame/entity/Deck/Discard/index.js";
 import { DurakGameSocket } from "@durak-game/durak-dts";
-import type Card from "../../Card/index.js";
+import type Card from "@/module/DurakGame/entity/Card/index.js";
 
 export default class GameDiscardWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}

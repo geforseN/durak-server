@@ -1,8 +1,8 @@
 import assert from "node:assert";
 
-import type { Attacker } from "../Player/Attacker.js";
-import type { BasePlayer } from "../Player/BasePlayer.abstract.js";
-import type { Defender } from "../Player/Defender.js";
+import type { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
+import type { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 
 export class Players {
   readonly #value: BasePlayer[];

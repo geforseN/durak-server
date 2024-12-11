@@ -1,10 +1,10 @@
 import { Card as CardDTO } from "@durak-game/durak-dts";
 import assert from "node:assert";
 
-import type DurakGame from "../../DurakGame.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import NotificationAlert from "../../../NotificationAlert/index.js";
-import { AllowedPlayerBadInputError } from "../../error/index.js";
+import NotificationAlert from "@/module/NotificationAlert/index.js";
+import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
 
 export async function stopMoveListener(this: {
   game: DurakGame;

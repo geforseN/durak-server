@@ -1,8 +1,8 @@
-import type DurakGame from "../../DurakGame.js";
-import type { BasePlayer } from "../Player/BasePlayer.abstract.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import type { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
-import { Players } from "../index.js";
-import GameRound from "./../GameRound/index.js";
+import { Players } from "@/module/DurakGame/entity/index.js";
+import GameRound from "@/module/DurakGame/entity/GameRound/index.js";
 
 export default class FailedDefense {
   game: DurakGame;

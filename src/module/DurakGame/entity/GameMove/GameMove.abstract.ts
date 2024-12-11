@@ -1,10 +1,10 @@
-import type DurakGame from "../../DurakGame.js";
-import type { default as RoundEnd } from "../DefenseEnding/RoundEnd.js";
-import type { AllowedAttacker } from "../Player/AllowedAttacker.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import type { default as RoundEnd } from "@/module/DurakGame/entity/DefenseEnding/RoundEnd.js";
+import type { AllowedAttacker } from "@/module/DurakGame/entity/Player/AllowedAttacker.js";
 
-import { AllowedDefender } from "../Player/AllowedDefender.js";
-import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
-import InsertGameMove from "./InsertGameMove.abstract.js";
+import { AllowedDefender } from "@/module/DurakGame/entity/Player/AllowedDefender.js";
+import { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
+import InsertGameMove from "@/module/DurakGame/entity/GameMove/InsertGameMove.abstract.js";
 
 export default abstract class GameMove<ASP extends AllowedSuperPlayer> {
   game: DurakGame;

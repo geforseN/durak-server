@@ -1,7 +1,7 @@
 import type { WebSocket } from "@fastify/websocket";
 import type { FastifyRequest } from "fastify";
-import { SocketsStore, defaultListeners } from "../../ws/index.js";
-import { Chat } from "./entity/index.js";
+import { SocketsStore, defaultListeners } from "@/ws/index.js";
+import { Chat } from "@/module/Chat/entity/index.js";
 
 export default function initializeChat() {
   const socketsStore = new SocketsStore();

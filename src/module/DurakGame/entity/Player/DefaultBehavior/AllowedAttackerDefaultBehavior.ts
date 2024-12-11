@@ -1,8 +1,8 @@
 import assert from "node:assert";
 
-import type { AllowedAttacker } from "../AllowedAttacker.js";
+import type { AllowedAttacker } from "@/module/DurakGame/entity/Player/AllowedAttacker.js";
 
-import DefaultBehavior from "./DefaultBehavior.js";
+import DefaultBehavior from "@/module/DurakGame/entity/Player/DefaultBehavior/DefaultBehavior.js";
 
 export class AllowedAttackerDefaultBehavior extends DefaultBehavior<AllowedAttacker> {
   constructor(

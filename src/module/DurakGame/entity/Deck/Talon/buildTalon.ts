@@ -3,8 +3,8 @@ import type { CardDTO, GameSettings, Suit } from "@durak-game/durak-dts";
 import assert from "node:assert";
 import crypto from "node:crypto";
 
-import TrumpCard from "../../Card/TrumpCard.js";
-import Card from "../../Card/index.js";
+import TrumpCard from "@/module/DurakGame/entity/Card/TrumpCard.js";
+import Card from "@/module/DurakGame/entity/Card/index.js";
 
 export default function buildTalon({
   count,

@@ -1,7 +1,7 @@
 import { DurakGameSocket } from "@durak-game/durak-dts";
-import { BasePlayer } from "../../Player/BasePlayer.abstract.js";
-import Card from "../../Card/index.js";
-import Talon from "./index.js";
+import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import Card from "@/module/DurakGame/entity/Card/index.js";
+import Talon from "@/module/DurakGame/entity/Deck/Talon/index.js";
 
 export default class GameTalonWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}

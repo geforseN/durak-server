@@ -1,10 +1,10 @@
-import type GamePlayerWebsocketService from "../Player/Player.service.js";
+import type GamePlayerWebsocketService from "@/module/DurakGame/entity/Player/Player.service.js";
 
-import NonStartedDurakGame from "../../NonStartedDurakGame.js";
-import { Hand } from "../Deck/index.js";
-import NonStartedGameUser from "../Player/NonStartedGameUser.js";
-import { Player } from "../Player/Player.js";
-import { Players } from "./Players.js";
+import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
+import { Hand } from "@/module/DurakGame/entity/Deck/index.js";
+import NonStartedGameUser from "@/module/DurakGame/entity/Player/NonStartedGameUser.js";
+import { Player } from "@/module/DurakGame/entity/Player/Player.js";
+import { Players } from "@/module/DurakGame/entity/Players/Players.js";
 
 export default function createPlayers(
   nonStartedGame: NonStartedDurakGame,
