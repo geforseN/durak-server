@@ -44,9 +44,6 @@ importers:
       '@socket.io/admin-ui':
         specifier: ^0.5.1
         version: 0.5.1(socket.io@4.8.1)
-      consola:
-        specifier: ^3.2.3
-        version: 3.2.3
       fastify:
         specifier: ^5.1.0
         version: 5.1.0
@@ -928,10 +925,6 @@ packages:
 
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
-
-  consola@3.2.3:
-    resolution: {integrity: sha512-I5qxpzLv+sJhTVEoLYNcTW+bThDCPsit0vLNKShZx6rLtpilNpmmeTPaeqJb9ZE9dV3DGaeby6Vuhrw38WjeyQ==}
-    engines: {node: ^14.18.0 || >=16.10.0}
 
   content-disposition@0.5.4:
     resolution: {integrity: sha512-FveZTNuGw04cxlAiWbzi6zTAL/lhehaWbTtgluJh4/E95DqMwTmha3KZN1aAWA8cFIhHzMZUvLevkw5Rqk+tSQ==}
@@ -2682,8 +2675,6 @@ snapshots:
   commander@9.5.0: {}
 
   concat-map@0.0.1: {}
-
-  consola@3.2.3: {}
 
   content-disposition@0.5.4:
     dependencies:
