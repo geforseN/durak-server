@@ -1,9 +1,9 @@
-import type DurakGame from "../../DurakGame.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import { AllowedDefender } from "./AllowedDefender.js";
-import { type AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
-import { type BasePlayer } from "./BasePlayer.abstract.js";
-import { SuperPlayer } from "./SuperPlayer.abstract.js";
+import { AllowedDefender } from "@/module/DurakGame/entity/Player/AllowedDefender.js";
+import { type AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
+import { type BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import { SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
 
 export class Defender extends SuperPlayer {
   constructor(

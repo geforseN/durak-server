@@ -1,10 +1,10 @@
 import assert from "node:assert";
 
-import raise from "../../../common/raise.js";
-import { InternalError } from "../../DurakGame/error/index.js";
-import EmptySlot from "./EmptySlot.js";
-import FilledSlot from "./FilledSlot.js";
-import LobbyUser from "./LobbyUser.js";
+import raise from "@/common/raise.js";
+import { InternalError } from "@/module/DurakGame/error/index.js";
+import EmptySlot from "@/module/Lobbies/entity/EmptySlot.js";
+import FilledSlot from "@/module/Lobbies/entity/FilledSlot.js";
+import LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
 
 export default class LobbySlots {
   #lobbyId = undefined;

@@ -2,10 +2,10 @@ import { DurakGameSocket } from "@durak-game/durak-dts";
 import { GameType } from "@prisma/client";
 import assert from "node:assert";
 
-import type DurakGame from "./DurakGame.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import durakGamesStore from "../../common/durakGamesStore.js";
-import raise from "../../common/raise.js";
+import durakGamesStore from "@/common/durakGamesStore.js";
+import raise from "@/common/raise.js";
 
 export default class DurakGameWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}

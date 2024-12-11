@@ -3,19 +3,19 @@ import type {
   PlayerKind,
 } from "@durak-game/durak-dts";
 
-import type LobbyUser from "../../../Lobbies/entity/LobbyUser.js";
-import type Card from "../Card/index.js";
-import type { Hand } from "../Deck/index.js";
-import type { AllowedAttacker } from "./AllowedAttacker.js";
-import type { AllowedDefender } from "./AllowedDefender.js";
-import type { AllowedSuperPlayer } from "./AllowedSuperPlayer.abstract.js";
-import type { Attacker } from "./Attacker.js";
-import type { Defender } from "./Defender.js";
-import type { Player } from "./Player.js";
-import type GamePlayerWebsocketService from "./Player.service.js";
-import type { SuperPlayer } from "./SuperPlayer.abstract.js";
+import type LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
+import type Card from "@/module/DurakGame/entity/Card/index.js";
+import type { Hand } from "@/module/DurakGame/entity/Deck/index.js";
+import type { AllowedAttacker } from "@/module/DurakGame/entity/Player/AllowedAttacker.js";
+import type { AllowedDefender } from "@/module/DurakGame/entity/Player/AllowedDefender.js";
+import type { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
+import type { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
+import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
+import type { Player } from "@/module/DurakGame/entity/Player/Player.js";
+import type GamePlayerWebsocketService from "@/module/DurakGame/entity/Player/Player.service.js";
+import type { SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
 
-import { AllowedPlayerBadInputError } from "../../error/index.js";
+import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
 
 export const GOOD_CARD_AMOUNT = 6;
 

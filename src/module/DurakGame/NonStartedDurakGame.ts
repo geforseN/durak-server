@@ -1,12 +1,12 @@
 import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
 
-import type DurakGamesStore from "../../DurakGamesStore.js";
-import type Lobby from "../Lobbies/entity/Lobby.js";
-import type DurakGame from "./DurakGame.js";
+import type DurakGamesStore from "@/DurakGamesStore.js";
+import type Lobby from "@/module/Lobbies/entity/Lobby.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import raise from "../../common/raise.js";
-import LobbyUser from "../Lobbies/entity/LobbyUser.js";
-import { addListenersWhichAreNeededForStartedGame } from "./socket/DurakGameSocket.handler.js";
+import raise from "@/common/raise.js";
+import LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
+import { addListenersWhichAreNeededForStartedGame } from "@/module/DurakGame/socket/DurakGameSocket.handler.js";
 
 export default class NonStartedDurakGame {
   info: {

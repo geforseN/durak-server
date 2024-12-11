@@ -1,9 +1,9 @@
-import GameMove from "./GameMove.abstract.js";
-import InsertAttackCardMove from "./InsertAttackCardMove.js";
-import InsertDefendCardMove from "./InsertDefendCardMove.js";
-import StopAttackMove from "./StopAttackMove.js";
-import StopDefenseMove from "./StopDefenseMove.js";
-import DefenderTransferMove from "./DefenderTransferMove.js";
+import GameMove from "@/module/DurakGame/entity/GameMove/GameMove.abstract.js";
+import InsertAttackCardMove from "@/module/DurakGame/entity/GameMove/InsertAttackCardMove.js";
+import InsertDefendCardMove from "@/module/DurakGame/entity/GameMove/InsertDefendCardMove.js";
+import StopAttackMove from "@/module/DurakGame/entity/GameMove/StopAttackMove.js";
+import StopDefenseMove from "@/module/DurakGame/entity/GameMove/StopDefenseMove.js";
+import DefenderTransferMove from "@/module/DurakGame/entity/GameMove/DefenderTransferMove.js";
 
 export {
   GameMove,

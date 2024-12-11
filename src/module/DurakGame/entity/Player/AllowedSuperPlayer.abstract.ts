@@ -2,16 +2,16 @@ import type { Card as CardDTO } from "@durak-game/durak-dts";
 
 import assert from "node:assert";
 
-import type DurakGame from "../../DurakGame.js";
-import type Card from "../Card/index.js";
-import type DeskSlot from "../DeskSlot/index.js";
-import type GameMove from "../GameMove/GameMove.abstract.js";
-import type { Attacker } from "./Attacker.js";
-import type DefaultBehavior from "./DefaultBehavior/DefaultBehavior.js";
-import type { Defender } from "./Defender.js";
+import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import type Card from "@/module/DurakGame/entity/Card/index.js";
+import type DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
+import type GameMove from "@/module/DurakGame/entity/GameMove/GameMove.abstract.js";
+import type { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
+import type DefaultBehavior from "@/module/DurakGame/entity/Player/DefaultBehavior/DefaultBehavior.js";
+import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 
-import SuperHand from "../Deck/Hand/SuperHand.js";
-import { SuperPlayer } from "./SuperPlayer.abstract.js";
+import SuperHand from "@/module/DurakGame/entity/Deck/Hand/SuperHand.js";
+import { SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
 export abstract class AllowedSuperPlayer extends SuperPlayer {
   asSuperPlayer: SuperPlayer;
   game: DurakGame;

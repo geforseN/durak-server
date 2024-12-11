@@ -1,7 +1,7 @@
-import type { SocketsStore } from "../../../ws/index.js";
-import { ChatMessageEvent } from "../../../plugins/modules/chat/global-chat.auto-load.js";
-import type ChatMessage from "./ChatMessage.js";
-import type ChatReplyMessage from "./ChatReplyMessage.js";
+import type { SocketsStore } from "@/ws/index.js";
+import { ChatMessageEvent } from "@/plugins/modules/chat/global-chat.auto-load.js";
+import type ChatMessage from "@/module/Chat/entity/ChatMessage.js";
+import type ChatReplyMessage from "@/module/Chat/entity/ChatReplyMessage.js";
 
 export default class Chat {
   readonly #messages: ChatMessage[];

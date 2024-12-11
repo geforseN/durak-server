@@ -7,10 +7,10 @@ import {
   NotificationAlertEvent,
   SocketsStore,
   defaultListeners,
-} from "../../../ws/index.js";
+} from "@/ws/index.js";
 
-import Lobbies from "../../../module/Lobbies/entity/Lobbies.js";
-import type Lobby from "../../../module/Lobbies/entity/Lobby.js";
+import Lobbies from "@/module/Lobbies/entity/Lobbies.js";
+import type Lobby from "@/module/Lobbies/entity/Lobby.js";
 
 export default <FastifyPluginAsyncZod>async function (app) {
   const handleConnection = initializeGameLobbies();

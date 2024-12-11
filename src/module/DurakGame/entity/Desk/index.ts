@@ -2,22 +2,22 @@ import type { AllowedMissingCardCount } from "@durak-game/durak-dts";
 
 import assert from "node:assert";
 
-import type Card from "../Card/index.js";
-import type { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
-import type { Defender } from "../Player/Defender.js";
-import type GameDeskWebsocketService from "./Desk.service.js";
+import type Card from "@/module/DurakGame/entity/Card/index.js";
+import type { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
+import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
+import type GameDeskWebsocketService from "@/module/DurakGame/entity/Desk/Desk.service.js";
 
-import raise from "../../../../common/raise.js";
-import { type CanProvideCards } from "../../DurakGame.js";
-import { AllowedPlayerBadInputError } from "../../error/index.js";
-import { type Discard } from "../Deck/index.js";
-import { DeskSlot } from "../DeskSlot/index.js";
+import raise from "@/common/raise.js";
+import { type CanProvideCards } from "@/module/DurakGame/DurakGame.js";
+import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
+import { type Discard } from "@/module/DurakGame/entity/Deck/index.js";
+import { DeskSlot } from "@/module/DurakGame/entity/DeskSlot/index.js";
 import {
   DefendedSlots,
   FilledSlots,
   UnbeatenSlots,
-} from "../DeskSlots/Slots.js";
-import DeskSlots from "../DeskSlots/index.js";
+} from "@/module/DurakGame/entity/DeskSlots/Slots.js";
+import DeskSlots from "@/module/DurakGame/entity/DeskSlots/index.js";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
   readonly #wsService: GameDeskWebsocketService;
