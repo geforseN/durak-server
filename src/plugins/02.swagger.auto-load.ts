@@ -30,5 +30,8 @@ export default fp(<FastifyPluginAsyncZod>async function (app) {
       ],
     },
   });
+  app.log.info(
+    "Documentation is available at http://localhost:10000/documentation",
+  );
   app.log.trace("Loaded `swagger` plugins.");
 });
