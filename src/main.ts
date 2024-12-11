@@ -58,10 +58,7 @@ const start = async () => {
       dir: path.join(__dirname, "plugins"),
       matchFilter: (path) => path.endsWith(".auto-load.ts"),
       forceESM: true,
-      dirNameRoutePrefix: (folderParent, folderName) =>
-        folderParent.endsWith("modules") || folderName === "modules"
-          ? ""
-          : folderName,
+      dirNameRoutePrefix: false,
     });
     log.start("Trying to listen...");
     const address = await fastify.listen(fastifyListenOptions);
