@@ -35,7 +35,7 @@
     "fastify-socket.io": "^5.1.0",
     "fastify-type-provider-zod": "^4.0.2",
     "fastify-zod-openapi": "^3.0.4",
-    "pino": "^8.15.0",
+    "pino": "^9.5.0",
     "socket.io": "^4.7.2",
     "std-env": "^3.8.0",
     "swagger-themes": "^1.4.3",
