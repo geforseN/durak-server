@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import fastifySocketIO from "fastify-socket.io";
 import type SocketIO from "socket.io";
-import { sessionStore } from "@/config/index.js";
+import { sessionStore } from "@/shared/session-store.js";
 import { createSocketIoServer } from "@/modules/socket-io/create-server.js";
 import { pluginConfig } from "@/config/socket-io.config.js";
 

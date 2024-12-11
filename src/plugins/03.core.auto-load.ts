@@ -5,7 +5,8 @@ import { fastifyFormbody } from "@fastify/formbody";
 import { fastifySession } from "@fastify/session";
 import { fastifyWebsocket } from "@fastify/websocket";
 import { isDevelopment } from "std-env";
-import { env, sessionStore } from "@/config/index.js";
+import { sessionStore } from "@/shared/session-store.js";
+import { env } from "@/config/index.js";
 
 export default fp(<FastifyPluginAsyncZod>async function (app) {
   await app
