@@ -1,6 +1,6 @@
-import DurakGame from "../../DurakGame.js";
-import { BasePlayer } from "../Player/BasePlayer.abstract.js";
-import { Players } from "../index.js";
+import DurakGame from "@/module/DurakGame/DurakGame.js";
+import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import { Players } from "@/module/DurakGame/entity/index.js";
 
 class SuccessfulDefense {
   protected game;

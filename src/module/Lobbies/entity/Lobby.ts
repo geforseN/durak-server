@@ -4,14 +4,14 @@ import type { GameSettings } from "@durak-game/durak-dts";
 import type EventEmitter from "node:events";
 import type { InitialGameSettings, CardDTO } from "@durak-game/durak-dts";
 
-import { CustomWebsocketEvent } from "../../../ws/index.js";
+import { CustomWebsocketEvent } from "@/ws/index.js";
 
-import { LobbyAccessError } from "../error.js";
-import CorrectGameSettings from "./CorrectGameSettings.js";
-import LobbySlots from "./LobbySlots.js";
-import type EmptySlot from "./EmptySlot.js";
-import type FilledSlot from "./FilledSlot.js";
-import type LobbyUser from "./LobbyUser.js";
+import { LobbyAccessError } from "@/module/Lobbies/error.js";
+import CorrectGameSettings from "@/module/Lobbies/entity/CorrectGameSettings.js";
+import LobbySlots from "@/module/Lobbies/entity/LobbySlots.js";
+import type EmptySlot from "@/module/Lobbies/entity/EmptySlot.js";
+import type FilledSlot from "@/module/Lobbies/entity/FilledSlot.js";
+import type LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
 
 
 export default class Lobby {

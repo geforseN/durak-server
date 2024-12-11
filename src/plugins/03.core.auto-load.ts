@@ -4,7 +4,7 @@ import { fastifyCors } from "@fastify/cors";
 import { fastifyFormbody } from "@fastify/formbody";
 import { fastifySession } from "@fastify/session";
 import { fastifyWebsocket } from "@fastify/websocket";
-import { env, sessionStore } from "../config/index.js";
+import { env, sessionStore } from "@/config/index.js";
 
 export default fp(<FastifyPluginAsyncZod>async function (app) {
   await app

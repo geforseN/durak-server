@@ -3,7 +3,7 @@ import { z } from "zod";
 import { isDevelopment } from 'std-env'
 import { pino } from "pino";
 
-import { raise, stringToArray } from "../common/index.js";
+import { raise, stringToArray } from "@/common/index.js";
 
 const logger = pino()
 

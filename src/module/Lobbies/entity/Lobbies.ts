@@ -3,17 +3,17 @@ import assert from "node:assert";
 import type { User, UserProfile } from "@prisma/client";
 import type { InitialGameSettings } from "@durak-game/durak-dts";
 
-import durakGamesStore from "../../../common/durakGamesStore.js";
-import raise from "../../../common/raise.js";
-import { CustomWebsocketEvent, SocketsStore } from "../../../ws/index.js";
+import durakGamesStore from "@/common/durakGamesStore.js";
+import raise from "@/common/raise.js";
+import { CustomWebsocketEvent, SocketsStore } from "@/ws/index.js";
 
-import { FindLobbyError } from "../error.js";
+import { FindLobbyError } from "@/module/Lobbies/error.js";
 import Lobby, {
   LobbyAdminUpdateEvent,
   LobbyUserJoinEvent,
   LobbyUserMoveEvent,
-} from "./Lobby.js";
-import LobbyUser from "./LobbyUser.js";
+} from "@/module/Lobbies/entity/Lobby.js";
+import LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;

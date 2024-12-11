@@ -1,9 +1,9 @@
 import type { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
 import { DurakGameSocket } from "@durak-game/durak-dts";
-import durakGameSocketHandler from "../module/DurakGame/socket/DurakGameSocket.handler.js";
+import durakGameSocketHandler from "@/module/DurakGame/socket/DurakGameSocket.handler.js";
 import { SessionStore } from "@fastify/session";
-import { mutateSocketData } from "../module/DurakGame/socket/mutateSocketData.js";
+import { mutateSocketData } from "@/module/DurakGame/socket/mutateSocketData.js";
 
 export function createSocketIoServer(
   io: Server,

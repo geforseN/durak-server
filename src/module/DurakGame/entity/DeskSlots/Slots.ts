@@ -1,4 +1,4 @@
-import type { DefendedSlot, DeskSlot, UnbeatenSlot } from "../DeskSlot/index.js";
+import type { DefendedSlot, DeskSlot, UnbeatenSlot } from "@/module/DurakGame/entity/DeskSlot/index.js";
 
 export abstract class Slots<S> {
   constructor(protected value: S[]) { }

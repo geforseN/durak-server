@@ -1,4 +1,4 @@
-import Card from "./index.js";
+import Card from "@/module/DurakGame/entity/Card/index.js";
 
 export class TrumpCard extends Card {
   readonly isTrump: boolean = true;

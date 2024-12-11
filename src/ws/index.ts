@@ -2,7 +2,7 @@ import type WebSocket from "ws";
 
 import assert from "node:assert";
 
-import NotificationAlert from "../module/NotificationAlert/index.js";
+import NotificationAlert from "@/module/NotificationAlert/index.js";
 
 export const defaultListeners = {
   message(this: WebSocket, data: WebSocket.RawData, _isBinary: boolean) {

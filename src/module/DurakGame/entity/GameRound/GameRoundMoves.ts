@@ -1,11 +1,11 @@
 import assert from "node:assert";
 
-import { InternalError } from "../../error/index.js";
-import DefenderGaveUpMove from "../GameMove/DefenderGaveUpMove.js";
-import { GameMove } from "../GameMove/index.js";
-import { AllowedAttacker } from "../Player/AllowedAttacker.js";
-import { AllowedDefender } from "../Player/AllowedDefender.js";
-import { AllowedSuperPlayer } from "../Player/AllowedSuperPlayer.abstract.js";
+import { InternalError } from "@/module/DurakGame/error/index.js";
+import DefenderGaveUpMove from "@/module/DurakGame/entity/GameMove/DefenderGaveUpMove.js";
+import { GameMove } from "@/module/DurakGame/entity/GameMove/index.js";
+import { AllowedAttacker } from "@/module/DurakGame/entity/Player/AllowedAttacker.js";
+import { AllowedDefender } from "@/module/DurakGame/entity/Player/AllowedDefender.js";
+import { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
 
 export default class GameRoundMoves {
   #value: GameMove<AllowedSuperPlayer>[];

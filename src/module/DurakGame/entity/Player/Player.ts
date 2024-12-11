@@ -1,6 +1,6 @@
-import type NonStartedGameUser from "./NonStartedGameUser.js";
+import type NonStartedGameUser from "@/module/DurakGame/entity/Player/NonStartedGameUser.js";
 
-import { BasePlayer } from "./BasePlayer.abstract.js";
+import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 export class Player extends BasePlayer {
   constructor(basePlayer: BasePlayer) {

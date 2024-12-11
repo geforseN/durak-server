@@ -4,7 +4,7 @@ import z from "zod";
 import Fastify from "fastify";
 import consola from "consola";
 import { isDevelopment } from "std-env";
-import { BasePlayer } from "./module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "production"]),
