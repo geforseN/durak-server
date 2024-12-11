@@ -1,7 +1,8 @@
 import assert from "node:assert";
 import fastifySocketIO from "fastify-socket.io";
 import type SocketIO from "socket.io";
-import { createSocketIoServer, env, sessionStore } from "@/config/index.js";
+import { createSocketIoServer } from "@/modules/socket-io/create-server.js";
+import { env, sessionStore } from "@/config/index.js";
 
 export default <FastifyPluginAsyncZod>async function (app) {
   app
