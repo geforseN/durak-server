@@ -5,6 +5,9 @@ import vitest from "@vitest/eslint-plugin";
 import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
 
 export default tseslint.config(
+  {
+    ignores: ['dist', 'node_modules'],
+  },
   eslint.configs.recommended,
   tseslint.configs.recommended,
   vitest.configs.recommended,
