@@ -11,6 +11,8 @@ export default <FastifyPluginAsyncZod>async function (app) {
     return request.session.user;
   };
 
-  app.get("/api/me", getMe);
-  app.get("/api/auth/me", getMe);
+  app.get("/me", getMe);
+  app.get("/auth/me", getMe);
 };
+
+export const autoPrefix = "/api";

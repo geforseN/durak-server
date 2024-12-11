@@ -23,10 +23,12 @@ export default <FastifyPluginAsyncZod>async function (app) {
     }),
   };
 
-  app.get("/api/profiles/:linkCuid", { schema }, async function (request) {
+  app.get("/profiles/:linkCuid", { schema }, async function (request) {
     return await getUserProfile(this.prisma, request.params.linkCuid);
   });
-  app.get("/api/user/profiles/:linkCuid", { schema }, async function (request) {
+  app.get("/user/profiles/:linkCuid", { schema }, async function (request) {
     return await getUserProfile(this.prisma, request.params.linkCuid);
   });
 };
+
+export const autoPrefix = "/api";

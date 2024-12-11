@@ -30,6 +30,8 @@ export default <FastifyPluginAsyncZod>async function (app) {
     return reply.redirect(redirectUrl);
   };
 
-  app.post("/api/auth/login", onLogin);
-  app.post("/api/auth/login/anonymous", onLogin);
+  app.post("", onLogin);
+  app.post("/anonymous", onLogin);
 };
+
+export const autoPrefix = "/api/auth/login";
