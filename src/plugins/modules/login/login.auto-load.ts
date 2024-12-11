@@ -21,14 +21,15 @@ export default <FastifyPluginAsyncZod>async function (app) {
     mutateSessionWithAnonymousUser,
   );
   app.decorate("createAnonymousUser", createAnonymousUser);
-  app.route({
-    method: "POST",
-    url: "/api/auth/login",
-    async handler(request, reply) {
-      if (request.session.user === undefined) {
-        await this.mutateSessionWithAnonymousUser(request);
-      }
-      return reply.redirect(redirectUrl);
-    },
-  });
+
+  const onLogin: RouteHandlerMethod = async function (this, request, reply) {
+    this.log.info("POST /api/auth/login");
+    if (request.session.user === undefined) {
+      await this.mutateSessionWithAnonymousUser(request);
+    }
+    return reply.redirect(redirectUrl);
+  };
+
+  app.post("/api/auth/login", onLogin);
+  app.post("/api/auth/login/anonymous", onLogin);
 };
