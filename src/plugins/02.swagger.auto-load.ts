@@ -30,5 +30,5 @@ export default fp(<FastifyPluginAsyncZod>async function (app) {
       ],
     },
   });
-  app.log.info("Loaded `swagger` plugins.");
+  app.log.trace("Loaded `swagger` plugins.");
 });
