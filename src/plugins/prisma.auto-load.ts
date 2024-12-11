@@ -3,5 +3,5 @@ import fastifyPrisma from "@joggr/fastify-prisma";
 
 export default <FastifyPluginAsyncZod>fp(async function (app) {
   await app.register(fastifyPrisma);
-  app.log.info("Loaded `prisma` plugin.");
+  app.log.trace("Loaded `prisma` plugin.");
 });

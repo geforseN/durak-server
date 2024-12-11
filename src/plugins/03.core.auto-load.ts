@@ -29,5 +29,5 @@ export default fp(<FastifyPluginAsyncZod>async function (app) {
       store: sessionStore,
     })
     .register(fastifyWebsocket);
-  app.log.info("Loaded `core` plugins.");
+  app.log.trace("Loaded `core` plugins.");
 });
