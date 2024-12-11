@@ -7,14 +7,11 @@ import { fastifyWebsocket } from "@fastify/websocket";
 import { isDevelopment } from "std-env";
 import { sessionStore } from "@/shared/session-store.js";
 import { env } from "@/config/index.js";
+import { corsConfig } from "@/config/cors.config.js";
 
 export default fp(<FastifyPluginAsyncZod>async function (app) {
   await app
-    .register(fastifyCors, {
-      origin: env.CORS_ORIGIN,
-      methods: ["GET", "POST"],
-      credentials: true,
-    })
+    .register(fastifyCors, corsConfig)
     .register(fastifyFormbody)
     .register(fastifyCookie)
     .register(fastifySession, {
