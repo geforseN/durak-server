@@ -1,10 +1,8 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import z from "zod";
-import Fastify from "fastify";
 import { isDevelopment } from "std-env";
 import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 import { makeLoggerInstance } from "@/logger-instance.js";
+import { makeFastify } from "@/fastify.js";
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "production"]),
@@ -18,12 +16,10 @@ const FastifyListerOptionsSchema = z.object({
     .default(() => (isDevelopment ? "localhost" : "0.0.0.0")),
 });
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 const start = async () => {
   try {
-    const loggerInstance = makeLoggerInstance(EnvSchema.parse(process.env).NODE_ENV);
-    loggerInstance.trace("Created logger instance.");
+    const nodeEnv = EnvSchema.parse(process.env).NODE_ENV;
+    const loggerInstance = makeLoggerInstance(nodeEnv);
     BasePlayer.configureDependencies();
     const fastifyListenOptions = FastifyListerOptionsSchema.transform(
       ({ PORT, HOST }) => ({
@@ -31,20 +27,7 @@ const start = async () => {
         host: HOST,
       }),
     ).parse(process.env);
-    loggerInstance.trace("Making Fastify instance...");
-    const fastify = Fastify({
-      loggerInstance: makeLoggerInstance(EnvSchema.parse(process.env).NODE_ENV),
-    });
-    fastify.log.trace("Auto-loading plugins...");
-    await fastify.register(import("@fastify/autoload"), {
-      dir: path.join(__dirname, "plugins"),
-      matchFilter: (path) => path.endsWith(".auto-load.ts"),
-      forceESM: true,
-      dirNameRoutePrefix: false,
-    });
-    fastify.log.trace("Trying to listen...");
-    const address = await fastify.listen(fastifyListenOptions);
-    fastify.log.info("Listening on address", address);
+    await makeFastify(fastifyListenOptions, loggerInstance);
   } catch (reason) {
     console.error(`Failed to start`, { reason });
     process.exitCode = 1;
