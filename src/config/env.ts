@@ -30,16 +30,11 @@ export const EnvSchema = z.object({
   DATABASE_URL: z.string({
     message: "DATABASE_URL env variable is not specified, Prisma relies on it",
   }),
-  DIRECT_URL: z.string().optional(),
+  DIRECT_URL: z.string({
+    message:
+      "DIRECT_URL env variable is not specified, Prisma relies on it. It may be the same as DATABASE_URL",
+  }),
   LOGGER_LEVEL: z.string().default("info"),
 });
 
-const TransformedEnvSchema = EnvSchema.transform((arg) => {
-  const DIRECT_URL = arg.DIRECT_URL ?? arg.DATABASE_URL;
-  return {
-    ...arg,
-    DIRECT_URL,
-  };
-});
-
-export const parseEnv = TransformedEnvSchema.parse;
+export const parseEnv = EnvSchema.parse;
