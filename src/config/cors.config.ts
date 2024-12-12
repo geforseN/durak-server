@@ -1,18 +1,29 @@
 import { z } from "zod";
 import { stringToArray } from "@/utils/zod.js";
+import { EnvSchema } from "@/config/env.js";
+import { handleEnvDefault } from "@/config/utils.js";
 
-const CORSSchema = z
-  .object({
-    FASTIFY_CORS_ORIGIN: z.string(),
-    FASTIFY_CORS_METHODS: z
-      .string()
-      .default("GET, POST")
-      .transform(stringToArray),
-  })
-  .transform(() => ({
+const CORSSchema = z.object({
+  FRONTEND_URL: EnvSchema.shape.FRONTEND_URL,
+  FASTIFY_CORS_ORIGIN: z.string().optional(),
+  FASTIFY_CORS_METHODS: z
+    .string()
+    .default("GET, POST")
+    .transform(stringToArray),
+});
+
+export const parseFastifyCorsPluginConfig = CORSSchema.transform((arg) => {
+  let origin = arg.FASTIFY_CORS_ORIGIN;
+  if (!origin) {
+    origin = handleEnvDefault(
+      "FASTIFY_CORS_ORIGIN",
+      arg.FRONTEND_URL,
+      console.warn,
+    );
+  }
+  return {
     credentials: true,
-    origin: process.env.SOCKET_IO_CORS_ORIGIN,
-    methods: process.env.SOCKET_IO_CORS_METHODS,
-  }));
-
-export const corsConfig = CORSSchema.parse(process.env);
+    origin,
+    methods: arg.FASTIFY_CORS_METHODS,
+  };
+}).parse;

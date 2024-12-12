@@ -1,17 +1,50 @@
+import crypto from "node:crypto";
 import { z } from "zod";
-import { stringToArray } from "@/utils/zod.js";
-import type { ILevel } from "@quixo3/prisma-session-store/dist/@types/logger.js";
+import type { FastifySessionOptions } from "@fastify/session";
+import { isDevelopment } from "std-env";
+import { EnvSchema } from "@/config/env.js";
+import { handleEnvDefault } from "@/config/utils.js";
 
-const Schema = z.object({
-  SESSION_STORE_CHECK_PERIOD: z.coerce
+const FastifySessionSchema = z.object({
+  FRONTEND_DOMAIN: EnvSchema.shape.FRONTEND_DOMAIN,
+  FASTIFY_SESSION_COOKIE_DOMAIN: z.string().optional(),
+  FASTIFY_SESSION_COOKIE_NAME: z.string().default("sessionId"),
+  FASTIFY_SESSION_SAME_SITE: z.string().default("lax"),
+  FASTIFY_SESSION_SECURE: z.coerce.boolean().default(!isDevelopment),
+  FASTIFY_SESSION_COOKIE_MAX_AGE: z.coerce
     .number()
-    .default(600000 /* 10 minutes */),
-  SESSION_STORE_LOGGER_LEVELS: z.string().default("log,warn,error"),
+    .default(864000000 /* 10 days */),
+  FASTIFY_SESSION_SECRET: z
+    .string()
+    .default(crypto.randomBytes(64).toString("base64url")),
 });
 
-const transformedSchema = Schema.transform((schema) => ({
-  checkPeriod: schema.SESSION_STORE_CHECK_PERIOD,
-  loggerLevel: <ILevel[]>stringToArray(schema.SESSION_STORE_LOGGER_LEVELS),
-}));
+const TransformedFastifySessionSchema = FastifySessionSchema.transform(
+  (arg) => {
+    let cookieDomain = arg.FASTIFY_SESSION_COOKIE_DOMAIN;
+    if (!cookieDomain) {
+      cookieDomain = handleEnvDefault(
+        "FASTIFY_SESSION_COOKIE_DOMAIN",
+        arg.FRONTEND_DOMAIN,
+        console.warn,
+      );
+    }
+    return {
+      cookie: {
+        domain: cookieDomain,
+        maxAge: arg.FASTIFY_SESSION_COOKIE_MAX_AGE,
+        sameSite: <NonNullable<FastifySessionOptions["cookie"]>["sameSite"]>(
+          arg.FASTIFY_SESSION_SAME_SITE
+        ),
+        secure: arg.FASTIFY_SESSION_SECURE,
+        httpOnly: true,
+      },
+      cookieName: arg.FASTIFY_SESSION_COOKIE_NAME,
+      saveUninitialized: false,
+      secret: arg.FASTIFY_SESSION_SECRET,
+    } satisfies FastifySessionOptions;
+  },
+);
 
-export const storeConfig = transformedSchema.parse(process.env);
+export const parseFastifySessionPluginConfig =
+  TransformedFastifySessionSchema.parse;
