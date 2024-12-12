@@ -1,40 +1,27 @@
-import z from "zod";
-import { isDevelopment } from "std-env";
 import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
-import { makeLoggerInstance } from "@/logger-instance.js";
+import { makeLoggerInstance } from "@/logger.js";
 import { makeFastify } from "@/fastify.js";
+import { parseEnv } from "@/config/env.js";
 
-const EnvSchema = z.object({
-  NODE_ENV: z.enum(["development", "production"]),
-});
-
-const FastifyListerOptionsSchema = z.object({
-  PORT: z.coerce.number().int().default(10000),
-  HOST: z
-    .string()
-    .optional()
-    .default(() => (isDevelopment ? "localhost" : "0.0.0.0")),
-});
-
-const start = async () => {
+async function main() {
   try {
-    const nodeEnv = EnvSchema.parse(process.env).NODE_ENV;
-    const loggerInstance = makeLoggerInstance(nodeEnv);
+    const env = parseEnv(process.env);
+    const loggerInstance = makeLoggerInstance(env.NODE_ENV, {
+      level: env.LOGGER_LEVEL,
+    });
     BasePlayer.configureDependencies();
-    const fastifyListenOptions = FastifyListerOptionsSchema.transform(
-      ({ PORT, HOST }) => ({
-        port: PORT,
-        host: HOST,
-      }),
-    ).parse(process.env);
+    const fastifyListenOptions = {
+      port: env.PORT,
+      host: env.HOST,
+    };
     await makeFastify(fastifyListenOptions, loggerInstance);
   } catch (reason) {
     console.error(`Failed to start`, { reason });
     process.exitCode = 1;
   }
-};
+}
 
-start().catch((error) => {
+main().catch((error) => {
   console.error("Unknown error", error);
   process.exitCode = 2;
 });
