@@ -26,19 +26,15 @@ export const EnvSchema = z.object({
     .default(() =>
       handleEnvDefaultForDevOnly("FRONTEND_DOMAIN", "localhost", console.warn),
     ),
-  DATABASE_URL: z.string().optional(),
+  DATABASE_URL: z.string({
+    message: "DATABASE_URL env variable is not specified, Prisma relies on it",
+  }),
   DIRECT_URL: z.string().optional(),
   LOGGER_LEVEL: z.string().default("info"),
 });
 
 const TransformedEnvSchema = EnvSchema.transform((arg) => {
-  const DATABASE_URL = arg.DATABASE_URL;
-  if (!DATABASE_URL) {
-    throw new Error(
-      "DATABASE_URL env variable is not specified, Prisma relies on it",
-    );
-  }
-  const DIRECT_URL = arg.DIRECT_URL ?? DATABASE_URL;
+  const DIRECT_URL = arg.DIRECT_URL ?? arg.DATABASE_URL;
   return {
     ...arg,
     DIRECT_URL,
