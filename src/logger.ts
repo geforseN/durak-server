@@ -1,9 +1,10 @@
+import assert from "node:assert";
 import { pino, type LoggerOptions } from "pino";
 
-const makeOptions = (
-  env: "development" | "production",
+function makeLoggerOptions(
+  env: NodeEnv,
   options?: LoggerOptions,
-): LoggerOptions => {
+): LoggerOptions {
   switch (env) {
     case "development": {
       return {
@@ -20,12 +21,12 @@ const makeOptions = (
     case "production": {
       return { ...options };
     }
+    default: {
+      assert.fail(`Unknown env ${env}`);
+    }
   }
-};
+}
 
-export function makeLoggerInstance(
-  env: "development" | "production",
-  options?: LoggerOptions,
-) {
-  return pino(makeOptions(env, options));
+export function makeLoggerInstance(env: NodeEnv, options?: LoggerOptions) {
+  return pino(makeLoggerOptions(env, options));
 }

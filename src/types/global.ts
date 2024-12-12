@@ -65,6 +65,8 @@ declare global {
     SchemaCompiler,
     RouteGeneric
   >;
+
+  type NodeEnv = import("@/config/env.js").NodeEnv;
 }
 
 export {};
