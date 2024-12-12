@@ -6,6 +6,9 @@ import { parseEnv } from "@/config/env.js";
 async function main() {
   try {
     const env = parseEnv(process.env);
+    if (env.NODE_ENV === "production") {
+      console.log(process.env);
+    }
     const loggerInstance = makeLoggerInstance(env.NODE_ENV, {
       level: env.LOGGER_LEVEL,
     });
