@@ -3,7 +3,7 @@ import assert from "node:assert";
 import type { User, UserProfile } from "@prisma/client";
 import type { InitialGameSettings } from "@durak-game/durak-dts";
 
-import durakGamesStore from "@/common/durakGamesStore.js";
+import durakGamesStore from "@/shared/durak-games-store.js";
 import raise from "@/common/raise.js";
 import { CustomWebsocketEvent, SocketsStore } from "@/ws/index.js";
 

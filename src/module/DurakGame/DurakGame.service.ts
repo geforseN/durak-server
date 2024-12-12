@@ -4,7 +4,7 @@ import assert from "node:assert";
 
 import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import durakGamesStore from "@/common/durakGamesStore.js";
+import durakGamesStore from "@/shared/durak-games-store.js";
 import raise from "@/common/raise.js";
 
 export default class DurakGameWebsocketService {
