@@ -1,6 +1,6 @@
 import assert from "node:assert";
 
-import raise from "@/common/raise.js";
+import { raise } from "@/utils/index.js";
 import { InternalError } from "@/module/DurakGame/error/index.js";
 import EmptySlot from "@/module/Lobbies/entity/EmptySlot.js";
 import FilledSlot from "@/module/Lobbies/entity/FilledSlot.js";

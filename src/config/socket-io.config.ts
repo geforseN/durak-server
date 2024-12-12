@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { stringToArray } from "@/common/zod.js";
+import { stringToArray } from "@/utils/zod.js";
 
 const Schema = z
   .object({

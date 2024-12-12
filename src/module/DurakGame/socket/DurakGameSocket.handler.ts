@@ -4,7 +4,7 @@ import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
 import { prisma } from "@/shared/prisma.js";
 import durakGamesStore from "@/shared/durak-games-store.js";
-import raise from "@/common/raise.js";
+import { raise } from "@/utils/index.js";
 import NotificationAlert from "@/module/NotificationAlert/index.js";
 import {
   cardPlaceListener,

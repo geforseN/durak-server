@@ -4,7 +4,7 @@ import type { User, UserProfile } from "@prisma/client";
 import type { InitialGameSettings } from "@durak-game/durak-dts";
 
 import durakGamesStore from "@/shared/durak-games-store.js";
-import raise from "@/common/raise.js";
+import { raise } from "@/utils/index.js";
 import { CustomWebsocketEvent, SocketsStore } from "@/ws/index.js";
 
 import { FindLobbyError } from "@/module/Lobbies/error.js";

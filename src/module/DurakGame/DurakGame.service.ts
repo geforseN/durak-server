@@ -5,7 +5,7 @@ import assert from "node:assert";
 import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
 import durakGamesStore from "@/shared/durak-games-store.js";
-import raise from "@/common/raise.js";
+import { raise } from "@/utils/index.js";
 
 export default class DurakGameWebsocketService {
   constructor(private namespace: DurakGameSocket.Namespace) {}

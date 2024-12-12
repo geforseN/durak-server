@@ -7,7 +7,7 @@ import type { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/Allowe
 import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 import type GameDeskWebsocketService from "@/module/DurakGame/entity/Desk/Desk.service.js";
 
-import raise from "@/common/raise.js";
+import { raise } from "@/utils/index.js";
 import { type CanProvideCards } from "@/module/DurakGame/DurakGame.js";
 import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
 import { type Discard } from "@/module/DurakGame/entity/Deck/index.js";

@@ -4,7 +4,7 @@ import type DurakGamesStore from "@/DurakGamesStore.js";
 import type Lobby from "@/module/Lobbies/entity/Lobby.js";
 import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import raise from "@/common/raise.js";
+import { raise } from "@/utils/index.js";
 import LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
 import { addListenersWhichAreNeededForStartedGame } from "@/module/DurakGame/socket/DurakGameSocket.handler.js";
 

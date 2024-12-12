@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { stringToArray } from "@/common/zod.js";
+import { stringToArray } from "@/utils/zod.js";
 import type { ILevel } from "@quixo3/prisma-session-store/dist/@types/logger.js";
 
 const Schema = z.object({

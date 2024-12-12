@@ -3,7 +3,7 @@ import { randomInt } from "node:crypto";
 import type Card from "@/module/DurakGame/entity/Card/index.js";
 import type DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
 
-import raise from "@/common/raise.js";
+import { raise } from "@/utils/index.js";
 import EmptySlot from "@/module/DurakGame/entity/DeskSlot/EmptySlot.js";
 
 export default class DeskSlots {
