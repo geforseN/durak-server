@@ -2,6 +2,7 @@ import { z } from "zod";
 import { stringToArray } from "@/utils/zod.js";
 import { EnvSchema } from "@/config/env.js";
 import { handleEnvDefault } from "@/config/utils.js";
+import type { FastifyCorsOptions } from "@fastify/cors";
 
 const CORSSchema = z.object({
   FRONTEND_URL: EnvSchema.shape.FRONTEND_URL,
@@ -25,5 +26,5 @@ export const parseFastifyCorsPluginConfig = CORSSchema.transform((arg) => {
     credentials: true,
     origin,
     methods: arg.FASTIFY_CORS_METHODS,
-  };
+  } satisfies FastifyCorsOptions;
 }).parse;

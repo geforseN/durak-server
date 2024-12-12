@@ -1,21 +1,19 @@
 import path from "node:path";
-import Fastify from "fastify/fastify.js";
-import type { FastifyBaseLogger, FastifyListenOptions } from "fastify";
+import url from "node:url";
+import type { FastifyInstance, FastifyListenOptions } from "fastify";
 
-export async function makeFastify(
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+
+export async function loadFastify(
+  fastify: FastifyInstance,
   listenOptions: FastifyListenOptions,
-  loggerInstance: FastifyBaseLogger,
 ) {
-  loggerInstance.trace("Making Fastify instance...");
-  const fastify = Fastify({
-    loggerInstance,
-  });
   fastify.log.trace("Auto-loading plugins...");
   await fastify.register(import("@fastify/autoload"), {
-    dir: path.join(import.meta.dirname, "plugins"),
+    dir: path.join(__dirname, "plugins"),
     matchFilter: (path) => path.endsWith(".auto-load.ts"),
     forceESM: true,
-    dirNameRoutePrefix: false,
+    encapsulate: false,
   });
   fastify.log.trace("Trying to listen...");
   const address = await fastify.listen(listenOptions);
