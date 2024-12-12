@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { handleEnvDefaultForDevOnly } from "@/config/utils.js";
 import { isDevelopment } from "std-env";
+
 const NodeEnvSchema = z.enum(["development", "production"]);
 
 export type NodeEnv = z.infer<typeof NodeEnvSchema>;
