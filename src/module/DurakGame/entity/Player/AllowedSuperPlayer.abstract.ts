@@ -17,7 +17,6 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
   game: DurakGame;
   superHand: SuperHand;
 
-  // REVIEW ctor, may have bugs
   constructor(superPlayer: SuperPlayer, game: DurakGame) {
     super(superPlayer);
     this.asSuperPlayer = superPlayer;

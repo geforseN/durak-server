@@ -29,22 +29,6 @@ export abstract class BasePlayer {
   readonly hand: Hand;
   hasLeftTheGame = false;
   readonly info: LobbyUser;
-
-  // TODO think about it ...
-  withEmit = {
-    receiveCards: (...cards: Card[]) => {
-      this.hand.receive(cards);
-      this.wsService.receiveCards(cards, this);
-    },
-  };
-
-  // TODO think about it ...
-  withoutEmit = {
-    receiveCards: (...cards: Card[]) => {
-      this.hand.receive(cards);
-    },
-  };
-
   readonly wsService: GamePlayerWebsocketService;
 
   constructor(basePlayer: BasePlayer) {
