@@ -1,25 +1,35 @@
 import assert from "node:assert";
 import crypto from "node:crypto";
-import type { FastifyInstance, FastifyRequest } from "fastify";
 import {
   UserSchema,
   UserProfileSchema,
-} from "../../../../prisma/schema/generated/zod/index.js";
+} from "@@/prisma/schema/generated/zod/index.js";
 import type { z } from "zod";
+import type {
+  FastifyBaseLogger,
+  FastifyInstance,
+  FastifyLogFn,
+  FastifyRequest,
+} from "fastify";
+import type { PrismaClient } from "@prisma/client";
+import type { FastifySessionObject } from "@fastify/session";
 
-const SessionSchema = UserSchema.extend({
+export const AnonymousSessionUserSchema = UserSchema.extend({
   profile: UserProfileSchema,
 });
 
-export type SessionUser = z.infer<typeof SessionSchema>;
+export type SessionUser = z.infer<typeof AnonymousSessionUserSchema>;
 
 declare module "fastify" {
   interface FastifyInstance {
-    mutateSession: typeof mutateSession;
-    createAnonymousUser: typeof createAnonymousUser;
-    saveSessionInStore: typeof saveSessionInStore;
-    createUserChildLog: typeof createUserChildLog;
-    createUserAndLogger: typeof createUserAndLogger;
+    createAnonymousSessionUser(): Promise<SessionUser>;
+    createUserChildLog(user: SessionUser): FastifyBaseLogger;
+  }
+
+  interface FastifyRequest {
+    hasSession(): boolean;
+    mutateSession(user: SessionUser, log: FastifyLogFn): void;
+    saveSessionInStore(log: FastifyLogFn): Promise<void>;
   }
 
   interface Session {
@@ -28,31 +38,38 @@ declare module "fastify" {
 }
 
 export function decorate(app: FastifyInstance) {
-  app.decorate("mutateSession", mutateSession);
-  app.decorate("createAnonymousUser", createAnonymousUser);
-  app.decorate("saveSessionInStore", saveSessionInStore);
-  app.decorate("createUserChildLog", createUserChildLog);
-  app.decorate("createUserAndLogger", createUserAndLogger);
+  app.decorateRequest("hasSession", hasSession);
+  app.decorateRequest("mutateSession", function (user: SessionUser) {
+    return mutateSession(this.session, user, this.log.trace);
+  });
+  app.decorateRequest("saveSessionInStore", function () {
+    return saveSessionInStore(this.session, this.log.trace);
+  });
+  app.decorate("createAnonymousSessionUser", function () {
+    this.log.trace("started anonymous user creation");
+    return createAnonymousSessionUser(this.prisma);
+  });
+  app.decorate("createUserChildLog", function (user: SessionUser) {
+    return createUserChildLog(this.log, user);
+  });
 }
 
 export function mutateSession(
-  this: FastifyInstance,
-  request: FastifyRequest,
+  session: FastifySessionObject,
   user: SessionUser,
-  log = this.log,
+  log: FastifyLogFn,
 ) {
-  request.session.user = user;
-  log.debug("anonymous user saved in request.session");
+  session.user = user;
+  log("anonymous user saved in request.session");
 }
 
 export async function saveSessionInStore(
-  this: FastifyInstance,
-  request: FastifyRequest,
-  log = this.log,
+  session: FastifySessionObject,
+  log: FastifyLogFn,
 ) {
-  log.debug("started anonymous user save is sessionStore");
-  await request.session.save();
-  log.debug("anonymous user saved is store");
+  log("started anonymous user save is sessionStore");
+  await session.save();
+  log("anonymous user saved is store");
 }
 
 function createAnonymousUserPhotoUrl() {
@@ -62,10 +79,9 @@ function createAnonymousUserPhotoUrl() {
   return `https://xsgames.co/randomusers/assets/avatars/pixel/${randomInt}.jpg`;
 }
 
-export async function createAnonymousUser(this: FastifyInstance) {
-  this.log.trace("started anonymous user creation");
+export async function createAnonymousSessionUser(prisma: PrismaClient) {
   const photoUrl = createAnonymousUserPhotoUrl();
-  const { UserProfile: profile, ...user } = await this.prisma.user.create({
+  const { UserProfile: profile, ...user } = await prisma.user.create({
     data: {
       UserProfile: {
         create: {
@@ -92,20 +108,13 @@ export async function createAnonymousUser(this: FastifyInstance) {
   };
 }
 
-export function createUserChildLog(this: FastifyInstance, user: SessionUser) {
-  return this.log.child({
+export function createUserChildLog(log: FastifyBaseLogger, user: SessionUser) {
+  return log.child({
     userId: user.id,
     personalLink: user.profile.personalLink,
   });
 }
 
-export async function createUserAndLogger(
-  this: FastifyInstance,
-  createUser: () => Promise<SessionUser>,
-) {
-  const user = await createUser();
-  SessionSchema.parse(user);
-  const log = createUserChildLog.call(this, user);
-  log.trace("user created");
-  return { user, log };
+export function hasSession(this: FastifyRequest) {
+  return this.session.user !== undefined;
 }

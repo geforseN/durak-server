@@ -17,14 +17,13 @@ export default <FastifyPluginAsyncZod>async function (app) {
   decorate(app);
 
   app.post("/anonymous", async function (this, request, reply) {
-    this.log.info("POST /api/auth/login");
-    if (request.session.user === undefined) {
+    if (!request.hasSession()) {
+      const user = await this.createAnonymousSessionUser();
       this.log.trace("started anonymous user creation");
-      const { user, log } = await this.createUserAndLogger(() =>
-        this.createAnonymousUser(),
-      );
-      this.mutateSession(request, user, log);
-      await this.saveSessionInStore(request, log);
+      const log = this.createUserChildLog(user);
+      log.trace("user created");
+      request.mutateSession(user, log.trace);
+      await request.saveSessionInStore(log.trace);
     }
     return reply.redirect(redirectUrl);
   });
