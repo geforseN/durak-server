@@ -1,7 +1,6 @@
 import { execSync as execSync_ } from "node:child_process";
 import type { ExecSyncOptions } from "node:child_process";
 import fs from "node:fs";
-import crypto from "node:crypto";
 import path from "node:path";
 
 main();
@@ -11,13 +10,11 @@ function main() {
     const envFile = ".env.development";
     const exampleEnvFile = ".env.development.example";
     const prismaClientPath = path.join("node_modules", "@prisma", "client");
-    const prismaSchemaPath = path.join("prisma", "schema", "schema.prisma");
-    const schemaHashPath = path.join("prisma", "schema.prisma.hash");
     createEnvFile(envFile, exampleEnvFile);
     upDockerCompose(envFile);
     installDependencies();
     generatePrismaClient(prismaClientPath);
-    syncDatabase(prismaSchemaPath, schemaHashPath);
+    syncDatabase();
     startServer(envFile, () => {
       console.log("\nDevelopment server stopped by signal.");
       downDockerCompose();
@@ -65,19 +62,9 @@ function generatePrismaClient(prismaClientPath: string) {
   }
 }
 
-function syncDatabase(schemaPath: string, hashFile: string) {
-  const currentSchemaHash = getFileHash(schemaPath);
-  const previousSchemaHash = fs.existsSync(hashFile)
-    ? fs.readFileSync(hashFile, "utf8")
-    : null;
-  if (currentSchemaHash !== previousSchemaHash) {
-    console.log("Schema has changed. Syncing database...");
-    const envVariables = `DATABASE_URL=${process.env.DATABASE_URL} DIRECT_URL=${process.env.DIRECT_URL}`;
-    execSync(`${envVariables} pnpm exec prisma db push`);
-    fs.writeFileSync(hashFile, currentSchemaHash, "utf8");
-  } else {
-    console.log("Schema has not changed. Skipping database sync.");
-  }
+function syncDatabase() {
+  const envVariables = `DATABASE_URL=${process.env.DATABASE_URL} DIRECT_URL=${process.env.DIRECT_URL}`;
+  execSync(`${envVariables} pnpm exec prisma db push`);
 }
 
 function startServer(envFile: string, onGracefulClose?: () => void) {
@@ -103,9 +90,4 @@ function startServer(envFile: string, onGracefulClose?: () => void) {
 
 function execSync(command: string, options: ExecSyncOptions = {}): void {
   execSync_(command, { stdio: "inherit", ...options });
-}
-
-function getFileHash(filePath: string): string {
-  const fileContent = fs.readFileSync(filePath, "utf8");
-  return crypto.createHash("sha256").update(fileContent).digest("hex");
 }
