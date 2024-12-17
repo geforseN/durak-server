@@ -16,6 +16,7 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   server:
+    stop_grace_period: 1s
     env_file:
       - path: .env.development
         required: true
