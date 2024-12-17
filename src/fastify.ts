@@ -20,4 +20,5 @@ export async function makeFastify(
   fastify.log.trace("Trying to listen...");
   const address = await fastify.listen(listenOptions);
   fastify.log.info("Listening on address", address);
+  return fastify;
 }
