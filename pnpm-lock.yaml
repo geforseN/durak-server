@@ -57,8 +57,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2(fastify@5.1.0)(zod@3.23.8)
       fastify-zod-openapi:
-        specifier: ^3.0.4
-        version: 3.0.4(@fastify/swagger-ui@5.2.0)(@fastify/swagger@9.4.0)(fastify@5.1.0)(zod-openapi@4.1.0(zod@3.23.8))(zod@3.23.8)
+        specifier: ^4.0.0
+        version: 4.0.0(@fastify/swagger-ui@5.2.0)(@fastify/swagger@9.4.0)(fastify@5.1.0)(zod-openapi@4.1.0(zod@3.23.8))(zod@3.23.8)
       pino:
         specifier: ^9.5.0
         version: 9.5.0
@@ -1151,15 +1151,15 @@ packages:
       fastify: ^5.0.0
       zod: ^3.14.2
 
-  fastify-zod-openapi@3.0.4:
-    resolution: {integrity: sha512-0LjnHJ5UHMdxb6vCqpzERfkpHllhjRWmPhTrghyV6PDqcZjv223Q3IFTcXsnUvWl5G4JGhLQ71eF4KIiBMQbeg==}
+  fastify-zod-openapi@4.0.0:
+    resolution: {integrity: sha512-0EZGhBkSF8HOG1AXxFGGsACH6k4SOaz3g8AuMm/3wIFw9za1qihzglzr8tjGwSJbGaq8G6lj2omY096Vr5JpAA==}
     engines: {node: '>=20'}
     peerDependencies:
       '@fastify/swagger': ^9.0.0
       '@fastify/swagger-ui': ^5.0.1
       fastify: '5'
       zod: ^3.21.4
-      zod-openapi: '>=3.2.0 <5.0.0'
+      zod-openapi: ^4.2.0
     peerDependenciesMeta:
       '@fastify/swagger':
         optional: true
@@ -2907,7 +2907,7 @@ snapshots:
       zod: 3.23.8
       zod-to-json-schema: 3.23.5(zod@3.23.8)
 
-  fastify-zod-openapi@3.0.4(@fastify/swagger-ui@5.2.0)(@fastify/swagger@9.4.0)(fastify@5.1.0)(zod-openapi@4.1.0(zod@3.23.8))(zod@3.23.8):
+  fastify-zod-openapi@4.0.0(@fastify/swagger-ui@5.2.0)(@fastify/swagger@9.4.0)(fastify@5.1.0)(zod-openapi@4.1.0(zod@3.23.8))(zod@3.23.8):
     dependencies:
       '@fastify/error': 4.0.0
       fast-json-stringify: 6.0.0
