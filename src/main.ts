@@ -16,6 +16,14 @@ const FastifyListerOptionsSchema = z.object({
     .default(() => (isDevelopment ? "localhost" : "0.0.0.0")),
 });
 
+process.on("uncaughtException", (error) => {
+  console.error("There was an uncaught error:", error);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
 const start = async () => {
   try {
     const nodeEnv = EnvSchema.parse(process.env).NODE_ENV;
