@@ -28,7 +28,6 @@ export default <FastifyPluginAsyncZod>async function (app) {
             ),
           ).asString,
         );
-        request.server.log.error({ request }, "No user.id found");
         return;
       }
       socket.send(new GameLobbiesStateRestoreEvent(context.lobbies).asString);
