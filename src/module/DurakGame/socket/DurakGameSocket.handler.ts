@@ -1,12 +1,24 @@
 import type { DurakGameSocket } from "@durak-game/durak-dts";
+import {
+  UserSchema,
+  UserProfileSchema,
+} from "@@/prisma/schema/generated/zod/index.js";
 
 import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import { prisma } from "@/config/index.js";
+import { prisma, sessionStore } from "@/config/index.js";
 import durakGamesStore from "@/common/durakGamesStore.js";
 import raise from "@/common/raise.js";
 import NotificationAlert from "@/module/NotificationAlert/index.js";
-import { cardPlaceListener, stopMoveListener } from "@/module/DurakGame/socket/listener/index.js";
+import {
+  cardPlaceListener,
+  stopMoveListener,
+} from "@/module/DurakGame/socket/listener/index.js";
+import type { User, UserProfile } from "@prisma/client";
+
+const SessionSchema = UserSchema.extend({
+  profile: UserProfileSchema,
+});
 
 export function addListenersWhichAreNeededForStartedGame(
   this: DurakGameSocket.Socket,
@@ -35,22 +47,82 @@ export function addListenersWhichAreNeededForStartedGame(
   });
 }
 
+function getSessionId(socket: DurakGameSocket.Socket) {
+  const { cookie } = socket.handshake.headers;
+  if (typeof cookie !== "string") {
+    return null;
+  }
+  const cookieSessionId = getSessionIdFromCookie(cookie);
+  return cookieSessionId;
+}
+
+function getSessionIdFromCookie(cookieString: string) {
+  const match = cookieString.match(/(?:^|;\s*)sessionId=([^;]+)/);
+  const fullMatch = match ? decodeURIComponent(match[1]) : null;
+  if (fullMatch === null) {
+    return null;
+  }
+  const sid = fullMatch.split(".")[0];
+  if (typeof sid !== "string") {
+    console.warn("sid is not string");
+    return null;
+  }
+  return sid;
+}
+
+async function getUserDataBySessionId(sessionId: string) {
+  let resolveUserData: (arg: User & { profile: UserProfile }) => void;
+  let rejectUserData: () => void;
+  const userDataPromise = new Promise((resolve, reject) => {
+    resolveUserData = resolve;
+    rejectUserData = reject;
+  });
+  sessionStore.get(sessionId, (error, session) => {
+    if (error || !session) {
+      console.log(
+        {
+          error,
+          session,
+        },
+        "store couldn't get session data",
+      );
+      rejectUserData();
+    } else {
+      resolveUserData(session.user);
+    }
+  });
+  return userDataPromise;
+}
+
 // TODO add logic for NonStartedGame graceful remove
 // IF could not create game THEN send to socket THAT the game could get started
 // NOTE: game can be non started if user have not redirected to game page for some time (like 20 seconds or so)
-export default function durakGameSocketHandler(
+export default async function durakGameSocketHandler(
   this: DurakGameSocket.Namespace,
   socket: DurakGameSocket.Socket,
 ) {
-  const {
-    data: { user: player },
-    nsp: namespace,
-  } = socket;
+  const { nsp: namespace } = socket;
   const gameId = namespace.name.replace("/game/", "");
+  // TODO: throw if gameId is not uuid
   console.assert(namespace === this);
-  if (!player?.id) {
+  const sessionId = getSessionId(socket);
+  if (sessionId === null) {
     return handleNotAuthorized(socket);
   }
+  socket.data.sid = sessionId;
+  const user = await getUserDataBySessionId(sessionId)
+    .then((user) => {
+      const parse = SessionSchema.safeParse(user);
+      if (!parse.success) {
+        return null;
+      }
+      return parse.data;
+    })
+    .catch(() => null);
+  if (user === null) {
+    return handleNotAuthorized(socket);
+  }
+  socket.data.user = user;
   socket.onAny((eventName: string, ...args) => console.log(eventName, args));
   const game = durakGamesStore.getGameWithId(gameId);
   if (!game) {
