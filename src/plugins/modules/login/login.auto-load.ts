@@ -1,8 +1,5 @@
 import { isDevelopment } from "std-env";
-import {
-  createAnonymousUser,
-  mutateSessionWithAnonymousUser,
-} from "@/plugins/modules/login/login.instance-decorators.js";
+import { decorate } from "@/plugins/modules/login/login.instance-decorators.js";
 
 export default <FastifyPluginAsyncZod>async function (app) {
   let redirectUrl = process.env.AUTH_REDIRECT_URL;
@@ -16,22 +13,21 @@ export default <FastifyPluginAsyncZod>async function (app) {
     );
     redirectUrl = defaultRedirectUrl;
   }
-  app.decorate(
-    "mutateSessionWithAnonymousUser",
-    mutateSessionWithAnonymousUser,
-  );
-  app.decorate("createAnonymousUser", createAnonymousUser);
 
-  const onLogin: RouteHandlerMethod = async function (this, request, reply) {
+  decorate(app);
+
+  app.post("/anonymous", async function (this, request, reply) {
     this.log.info("POST /api/auth/login");
     if (request.session.user === undefined) {
-      await this.mutateSessionWithAnonymousUser(request);
+      this.log.trace("started anonymous user creation");
+      const { user, log } = await this.createUserAndLogger(() =>
+        this.createAnonymousUser(),
+      );
+      this.mutateSession(request, user, log);
+      await this.saveSessionInStore(request, log);
     }
     return reply.redirect(redirectUrl);
-  };
-
-  app.post("", onLogin);
-  app.post("/anonymous", onLogin);
+  });
 };
 
 export const autoPrefix = "/api/auth/login";
