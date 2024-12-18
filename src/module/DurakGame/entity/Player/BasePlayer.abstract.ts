@@ -132,6 +132,13 @@ export abstract class BasePlayer {
     this.wsService.receiveCards(cards, this);
   }
 
+  toGameJSON() {
+    return {
+      self: this.toSelf(),
+      enemies: this.enemies,
+    }
+  }
+
   toDebugJSON() {
     return {
       hand: this.hand,

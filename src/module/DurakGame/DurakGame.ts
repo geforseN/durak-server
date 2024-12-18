@@ -174,6 +174,20 @@ export default class DurakGame {
     this.#makeInitialSuperPlayers();
     this.info.status = "started";
   }
+
+  toGameJSON() {
+    return {
+      state: {
+        __allowedPlayer: this.players.allowed.toJSON(),
+        desk: this.desk.toJSON(),
+        discard: this.discard.toJSON(),
+        round: this.round.toJSON(),
+        settings: this.settings,
+        status: this.info.status,
+        talon: this.talon.toJSON(),
+      },
+    };
+  }
 }
 
 export interface CanReceiveCards {

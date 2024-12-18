@@ -6,6 +6,10 @@ import type Lobby from "@/module/Lobbies/entity/Lobby.js";
 
 import DurakGame from "@/module/DurakGame/DurakGame.js";
 import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
+import {
+  ResolveStartedGameContext,
+  type ResolvedGameContext,
+} from "@/modules/durak-game/resolve-started-game-context.js";
 
 export default class DurakGamesStore<
   Game extends DurakGame | NonStartedDurakGame =
@@ -33,6 +37,20 @@ export default class DurakGamesStore<
 
   updateLobbyToNonStartedGame(lobby: Lobby) {
     this.values.set(lobby.id, new NonStartedDurakGame(lobby, this));
+  }
+
+  async resolveStartedGame(
+    gameId: string,
+    playerId: string,
+  ): Promise<ResolvedGameContext> {
+    const game = this.getGameWithId(gameId);
+    assert.ok(game, `Unknown game with id = ${gameId}`);
+    // prettier-ignore
+    const resolveGameContext = new ResolveStartedGameContext(
+      game,
+      (gameId) => this.values.get(gameId),
+    );
+    return await resolveGameContext.execute(playerId);
   }
 
   updateNonStartedGameToStarted(
