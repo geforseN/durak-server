@@ -105,6 +105,10 @@ export default class DurakGame {
     }
   }
 
+  get id() {
+    return this.info.id;
+  }
+
   #makeInitialSuperPlayers() {
     const admin = this.players.get((player) => player.info.isAdmin);
     this.players

@@ -1,9 +1,7 @@
 import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
-
-import type DurakGamesStore from "@/utils/durak-games-store_.js";
 import type Lobby from "@/module/Lobbies/entity/Lobby.js";
-import type DurakGame from "@/module/DurakGame/DurakGame.js";
-
+import type { DurakGamesStore } from "@/common/durakGamesStore.js";
+import DurakGame from "@/module/DurakGame/DurakGame.js";
 import raise from "@/common/raise.js";
 import LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
 import { addListenersWhichAreNeededForStartedGame } from "@/module/DurakGame/socket/DurakGameSocket.handler.js";
@@ -18,19 +16,23 @@ export default class NonStartedDurakGame {
   };
   settings: GameSettings;
   sockets: Map<string, Set<DurakGameSocket.Socket>>;
-  store?: DurakGamesStore
+  store: DurakGamesStore;
   usersInfo: LobbyUser[];
 
-  constructor(lobby: Lobby, store?: DurakGamesStore) {
+  constructor(lobby: Lobby, store: DurakGamesStore) {
     this.info = {
       adminId: lobby.slots.admin.id,
       id: lobby.id,
-      status: 'non started',
+      status: "non started",
     };
-    this.store = store
+    this.store = store;
     this.settings = lobby.settings;
     this.usersInfo = lobby.userSlots.map((slot) => slot.user);
     this.sockets = new Map();
+  }
+
+  get id() {
+    return this.info.id;
   }
 
   #addPlayerConnection(socket: DurakGameSocket.Socket) {
@@ -69,7 +71,10 @@ export default class NonStartedDurakGame {
     if (!this.isAllPlayersConnected) {
       this.emitSocketWithLoadingDetails(socket);
     } else {
-      this.store?.updateNonStartedGameToStarted(this, namespace);
+      const startedGame = new DurakGame(this, namespace);
+      this.store?.set(startedGame);
+      this.emitEverySocketWithStartedGameDetails(startedGame);
+      return startedGame;
     }
   }
 
