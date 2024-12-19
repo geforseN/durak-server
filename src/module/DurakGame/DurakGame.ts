@@ -149,12 +149,6 @@ export default class DurakGame {
     }
   }
 
-  handleSocketConnection(
-    socket: DurakGameSocket.Socket,
-  ) {
-    addListenersWhichAreNeededForStartedGame.call(socket, this);
-  }
-
   restoreState(socket: DurakGameSocket.Socket) {
     this.#wsService.restoreState(this, socket);
   }
