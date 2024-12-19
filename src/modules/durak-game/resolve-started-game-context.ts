@@ -59,29 +59,45 @@ export class ResolveStartedGameContext {
     );
     const interval = {
       timeout: undefined as NodeJS.Timeout | undefined,
-      attemptCounter: 0,
+      attemptCounter: {
+        value: 0,
+        increment() {
+          this.value++;
+        },
+      },
       ...intervalOptions,
       hasToManyAttempts() {
-        return interval.attemptCounter >= interval.attempts;
+        return this.attemptCounter.value >= this.attempts;
       },
       cleanup() {
-        clearInterval(interval.timeout);
+        clearInterval(this.timeout);
+      },
+      async start<T>(tryResolve: (resolve: (value: T) => void) => void) {
+        try {
+          return await new Promise<T>((resolve, reject) => {
+            interval.timeout = setInterval(() => {
+              interval.attemptCounter.increment();
+              tryResolve(resolve);
+              if (interval.hasToManyAttempts()) {
+                return reject();
+              }
+            }, interval.attempts);
+          });
+        } finally {
+          interval.cleanup();
+        }
       },
     };
-    return await new Promise<ResolvedGameContext>((resolve, reject) => {
-      interval.timeout = setInterval(() => {
-        interval.attemptCounter++;
+    return await interval
+      .start<ResolvedGameContext>((resolve) => {
         const game = this.getGame(nonStartedGameId);
         if (game instanceof DurakGame) {
-          interval.cleanup();
           const self = game.players.get((player) => player.id === playerId);
-          return resolve(this.#make(game, self, interval.attemptCounter));
+          return resolve(this.#make(game, self, interval.attemptCounter.value));
         }
-        if (interval.hasToManyAttempts()) {
-          interval.cleanup();
-          return reject(new Error("Game is not started, too many attempts"));
-        }
-      }, interval.attempts);
-    });
+      })
+      .catch(() => {
+        throw new Error("Game is not started, too many attempts");
+      });
   }
 }
