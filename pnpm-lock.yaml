@@ -78,6 +78,9 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0(zod@3.23.8)
     devDependencies:
+      '@durak-game/durak-dts':
+        specifier: ^0.5.1
+        version: 0.5.1
       '@tsconfig/node22':
         specifier: ^22.0.0
         version: 22.0.0
@@ -128,6 +131,9 @@ importers:
         version: 3.2.1(@prisma/client@6.0.1(prisma@6.0.1))(prisma@6.0.1)
 
 packages:
+
+  '@durak-game/durak-dts@0.5.1':
+    resolution: {integrity: sha512-LQcqa1uQVxYLmDL1e1xwpcA2SrbQ27HC9x5RgJfOYbAkacbGqY+TSkCuKdJKtBdG5/+xcPTUWTSLtIDFxb74Ng==}
 
   '@esbuild/aix-ppc64@0.23.1':
     resolution: {integrity: sha512-6VhYk1diRqrhBAqpJEdjASR/+WVRtfjpqKuNw11cLiaWpAT/Uu+nokB+UJnevzy/P9C/ty6AOe0dwueMrGh/iQ==}
@@ -1936,6 +1942,8 @@ packages:
     resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
 
 snapshots:
+
+  '@durak-game/durak-dts@0.5.1': {}
 
   '@esbuild/aix-ppc64@0.23.1':
     optional: true

@@ -12,9 +12,6 @@
       "@@/*": [
         "./*"
       ],
-      "@durak-game/durak-dts": [
-        "../shared/index.ts"
-      ]
     },
     "outDir": "./dist",
     "declaration": true,
