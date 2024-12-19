@@ -1,6 +1,6 @@
 import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
 
-import type DurakGamesStore from "@/DurakGamesStore.js";
+import type DurakGamesStore from "@/utils/durak-games-store_.js";
 import type Lobby from "@/module/Lobbies/entity/Lobby.js";
 import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
