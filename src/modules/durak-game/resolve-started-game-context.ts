@@ -2,6 +2,7 @@ import assert from "node:assert";
 import DurakGame from "@/module/DurakGame/DurakGame.js";
 import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
 import type { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import { RetryInterval } from "@/utils/retry-interval.js";
 
 export type ResolvedGameContext = {
   startedGame: ReturnType<DurakGame["toGameJSON"]>;
@@ -57,47 +58,17 @@ export class ResolveStartedGameContext {
       nonStartedGame instanceof NonStartedDurakGame,
       'Game is not "non started"',
     );
-    const interval = {
-      timeout: undefined as NodeJS.Timeout | undefined,
-      attemptCounter: {
-        value: 0,
-        increment() {
-          this.value++;
-        },
-      },
-      ...intervalOptions,
-      hasToManyAttempts() {
-        return this.attemptCounter.value >= this.attempts;
-      },
-      cleanup() {
-        clearInterval(this.timeout);
-      },
-      async start<T>(tryResolve: (resolve: (value: T) => void) => void) {
-        try {
-          return await new Promise<T>((resolve, reject) => {
-            interval.timeout = setInterval(() => {
-              interval.attemptCounter.increment();
-              tryResolve(resolve);
-              if (interval.hasToManyAttempts()) {
-                return reject();
-              }
-            }, interval.attempts);
-          });
-        } finally {
-          interval.cleanup();
-        }
-      },
-    };
-    return await interval
-      .start<ResolvedGameContext>((resolve) => {
+    const interval = new RetryInterval<ResolvedGameContext>(
+      (resolve, context) => {
         const game = this.getGame(nonStartedGameId);
         if (game instanceof DurakGame) {
           const self = game.players.get((player) => player.id === playerId);
-          return resolve(this.#make(game, self, interval.attemptCounter.value));
+          return resolve(this.#make(game, self, context.attemptCounter.value));
         }
-      })
-      .catch(() => {
-        throw new Error("Game is not started, too many attempts");
-      });
+      },
+      () => new Error("Game is not started, too many attempts"),
+      intervalOptions,
+    );
+    return await interval.execute();
   }
 }

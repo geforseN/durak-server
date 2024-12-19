@@ -22,14 +22,21 @@ export default <FastifyPluginAsyncZod>async function (app) {
       },
     },
     async function (request) {
-      const { gameId } = request.params;
-      const sessionUser = request.session.user;
-      assert.ok(sessionUser, new Error("Unauthorized"));
-      const responseJson = await this.durakGamesStore.resolveStartedGame(
-        gameId,
-        sessionUser.id,
+      const gameId = request.params.gameId;
+      const playerId = request.session.user?.id;
+      assert.ok(playerId, this.httpErrors.unauthorized());
+      const game = this.durakGamesStore.require(gameId);
+      const resolveGameContext = new ResolveStartedGameContext(game, (gameId) =>
+        this.durakGamesStore.get(gameId),
       );
-      return responseJson;
+      const [error, responseJson] = await app.to(
+        resolveGameContext.execute(playerId),
+      );
+      return (
+        responseJson || {
+          error,
+        }
+      );
     },
   );
 };
