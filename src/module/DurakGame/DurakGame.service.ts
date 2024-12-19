@@ -20,7 +20,7 @@ export default class DurakGameWebsocketService {
     // gameToRemove.history.players.forEach((player) => {
     //   this.namespace.socketsLeave(player.id);
     // });
-    durakGamesStore.delete(gameToRemove.info.id);
+    durakGamesStore.delete(gameToRemove);
     const gameType = gameToRemove.settings.type.toUpperCase();
     assert.ok(gameType === GameType.BASIC || gameType === GameType.PEREVODNOY);
     if (!gameToRemove.info.shouldWriteEndedGameInDatabase) {

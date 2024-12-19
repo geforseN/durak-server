@@ -124,7 +124,7 @@ export default async function durakGameSocketHandler(
   }
   socket.data.user = user;
   socket.onAny((eventName: string, ...args) => console.log(eventName, args));
-  const game = durakGamesStore.getGameWithId(gameId);
+  const game = durakGamesStore.get(gameId);
   if (!game) {
     return handleNoSuchGameOnline(socket, gameId);
   }
