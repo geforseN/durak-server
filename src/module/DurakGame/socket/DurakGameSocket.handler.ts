@@ -7,7 +7,7 @@ import {
 import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
 import { prisma, sessionStore } from "@/config/index.js";
-import durakGamesStore from "@/common/durakGamesStore.js";
+import durakGamesStore from "@/modules/durak-game/durak-games-store-singleton.js";
 import raise from "@/common/raise.js";
 import NotificationAlert from "@/module/NotificationAlert/index.js";
 import {
