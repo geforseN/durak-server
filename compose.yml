@@ -24,6 +24,7 @@ services:
     container_name: fastify_server
     ports:
       - "10000:10000"
+      - "5555:5555"
     volumes:
       - .:/app
 
