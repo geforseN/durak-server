@@ -1,11 +1,7 @@
 import type {
   DurakGameSocket,
   GameSettings,
-  GameState,
 } from "@durak-game/durak-dts";
-
-import assert from "node:assert";
-import { pino } from "pino";
 
 import type NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
 import type { GameMove } from "@/module/DurakGame/entity/GameMove/index.js";
@@ -38,7 +34,6 @@ export default class DurakGame {
     durakId?: string;
     id: string;
     namespace: DurakGameSocket.Namespace;
-    status: GameState["status"];
   };
   players: Players;
   round: GameRound;
@@ -54,7 +49,6 @@ export default class DurakGame {
     this.info = {
       ...nonStartedGame.info,
       namespace,
-      status: "starts",
     };
     this.settings = {
       ...nonStartedGame.settings,
@@ -85,8 +79,6 @@ export default class DurakGame {
   }
 
   end() {
-    assert.ok(this.info.status === "started");
-    this.info.status = "ended";
     const [durakPlayer] = this.players;
     // NOTE: durakPlayer may not exist if game ended with draw
     this.info.durakId = durakPlayer?.id;
@@ -97,9 +89,6 @@ export default class DurakGame {
     if (move.isInsertMove()) {
       move.makeCardInsert();
     }
-    // HERE IS MANY BUGS
-    // FIXME
-    // StopAttackMove;
     this.round.moves.push(move);
     const nextThing = move.gameMutationStrategy();
     if (nextThing?.kind === "RoundEnd") {
@@ -114,25 +103,8 @@ export default class DurakGame {
     }
   }
 
-  restoreState(socket: DurakGameSocket.Socket) {
-    this.#wsService.restoreState(this, socket);
-  }
-
   start() {
-    assert.ok(this.info.status === "starts");
-    if (this.info.shouldGiveRequiredCards) {
-      [...this.players]
-        .filter((player) => player.info.cardsToAdd.length)
-        .forEach((player) => {
-          player.receiveCards(
-            ...player.info.cardsToAdd.map((card) =>
-              this.talon.__test_only_getCard(card),
-            ),
-          );
-        });
-    }
     this.#makeInitialSuperPlayers();
-    this.info.status = "started";
   }
 
   toGameJSON() {
@@ -143,7 +115,6 @@ export default class DurakGame {
         discard: this.discard.toJSON(),
         round: this.round.toJSON(),
         settings: this.settings,
-        status: this.info.status,
         talon: this.talon.toJSON(),
       },
     };
