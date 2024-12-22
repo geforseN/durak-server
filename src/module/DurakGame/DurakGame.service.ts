@@ -39,7 +39,6 @@ export default class DurakGameWebsocketService {
         // @ts-expect-error need to type it better if possible, try use satisfies in method
         self: player.toSelf(),
         settings: game.settings,
-        status: game.info.status,
         talon: game.talon.toJSON(),
       },
     });

@@ -74,6 +74,8 @@ export default abstract class GameMove<ASP extends AllowedSuperPlayer> {
     return this.game.players.get((player) => player.id === this.performer.id);
   }
 
+  // TODO: return instance with execute
+  // this will help to avoid code duplication
   abstract get gameMutationStrategy():
     | NewRoundCallback
     | PlayerMutationCallback;

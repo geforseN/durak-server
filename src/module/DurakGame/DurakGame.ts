@@ -1,88 +1,84 @@
-import type {
-  DurakGameSocket,
-  GameSettings,
-} from "@durak-game/durak-dts";
-
-import type NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
 import type { GameMove } from "@/module/DurakGame/entity/GameMove/index.js";
 import type { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
 import type { Players } from "@/module/DurakGame/entity/index.js";
 
-import GameRoundMoves from "@/module/DurakGame/entity/GameRound/GameRoundMoves.js";
-import GameRoundDistribution from "@/module/DurakGame/entity/GameRoundDistributionQueue.js";
 import GameHistory from "@/module/DurakGame/entity/History.js";
 import {
   Card,
-  Desk,
   Discard,
   GameRound,
   Talon,
-  createPlayers,
 } from "@/module/DurakGame/entity/index.js";
-import {
-  type DurakGameWebsocketService,
-  createServices,
-} from "@/module/DurakGame/socket/service/index.js";
-
+import type { GameSettings } from "@durak-game/durak-dts";
 export default class DurakGame {
-  readonly #wsService: DurakGameWebsocketService;
-  readonly desk: Desk;
-  readonly discard: Discard;
-  readonly history: GameHistory;
-  readonly info: {
-    adminId: string;
-    durakId?: string;
-    id: string;
-    namespace: DurakGameSocket.Namespace;
-  };
-  players: Players;
-  round: GameRound;
-  readonly settings: GameSettings;
-  readonly talon: Talon;
-  readonly talonDistribution: GameRoundDistribution;
+  // _ readonly desk: Desk;
+  // ! must be moved to round
+
+  // _ readonly history: GameHistory;
+  // ! should rewrite
+
+  // _ players: Players;
+  // ! must already have cards
+  // ! some player must be allowed to move
+
+  // _ round: GameRound;
+  // ! here must be desk slots */
+
+  // _ readonly settings: GameSettings;
+  // ! probably should not be here,
+  // ! settings must be used when constructing game properties
+  // ? maybe should exist is history
+  // ! refactor settings.players.moveTime into players.moveTime
+
+  // _ readonly discard: Discard;
+  // ! must be moved to decks
+
+  // _ readonly talon: Talon;
+  // ! must be moved to decks
+
+  //  _ readonly talonDistribution: GameRoundDistribution;
+  // ! must be moved to decks.talon
 
   constructor(
-    nonStartedGame: NonStartedDurakGame,
-    namespace: DurakGameSocket.Namespace,
-  ) {
-    const wsServices = createServices(namespace);
-    this.info = {
-      ...nonStartedGame.info,
-      namespace,
-    };
-    this.settings = {
-      ...nonStartedGame.settings,
-      players: {
-        ...nonStartedGame.settings.players,
-        moveTime: 2147483647,
-      },
-    };
-    this.talon = new Talon(this.settings.talon, wsServices.talonService);
-    this.players = createPlayers(nonStartedGame, wsServices.playerService);
-    this.discard = new Discard(wsServices.discardService);
-    this.desk = new Desk(nonStartedGame.settings.desk, wsServices.deskService);
-    this.#wsService = wsServices.gameService;
-    this.round = new GameRound(this, new GameRoundMoves());
-    this.talonDistribution = new GameRoundDistribution(this);
-    this.history = new GameHistory([...this.players]);
+    public id: string,
+    public round: GameRound,
+    public players: Players,
+    public readonly settings: GameSettings,
+    private decks: {
+      talon: Talon;
+      discard: Discard;
+      toJSON(): object;
+    },
+    private history: GameHistory,
+    private readonly ending: {
+      execute: (game: DurakGame) => void;
+    },
+  ) {}
+
+  get desk(): never {
+    throw new Error("Not implemented");
   }
 
-  get id() {
-    return this.info.id;
+  get talon() {
+    return this.decks.talon;
   }
 
-  #makeInitialSuperPlayers() {
+  get discard() {
+    return this.decks.discard;
+  }
+
+  start() {
+    // TODO: refactor
+    // not started game must have `start` instance with `execute` method
+    // non started game should mutate own players with same logic
+    this.#__makeInitialSuperPlayers__();
+  }
+
+  #__makeInitialSuperPlayers__() {
     const admin = this.players.get((player) => player.info.isAdmin);
     this.players
       .mutateWith(admin.left.asDefender())
       .mutateWith(this.players.defender.right.asAttacker().asAllowed(this));
-  }
-
-  end() {
-    const [durakPlayer] = this.players;
-    // NOTE: durakPlayer may not exist if game ended with draw
-    this.info.durakId = durakPlayer?.id;
-    this.#wsService.end(this);
   }
 
   handleNewMove(move: GameMove<AllowedSuperPlayer>) {
@@ -95,28 +91,23 @@ export default class DurakGame {
       nextThing.makeMutation();
       const { newGameRound } = nextThing;
       if (!newGameRound) {
-        return this.end();
+        this.ending.execute(this);
+      } else {
+        this.history.rounds.add(this.round);
+        this.round = newGameRound;
       }
-      this.round = newGameRound;
     } else {
       this.players.allowed.setTimer();
     }
   }
 
-  start() {
-    this.#makeInitialSuperPlayers();
-  }
-
   toGameJSON() {
     return {
       state: {
-        __allowedPlayer: this.players.allowed.toJSON(),
-        desk: this.desk.toJSON(),
-        discard: this.discard.toJSON(),
+        decks: this.decks.toJSON(),
         round: this.round.toJSON(),
-        settings: this.settings,
-        talon: this.talon.toJSON(),
       },
+      settings: this.settings,
     };
   }
 }
