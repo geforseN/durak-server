@@ -23,9 +23,6 @@ export default class DurakGameWebsocketService {
     durakGamesStore.delete(gameToRemove);
     const gameType = gameToRemove.settings.type.toUpperCase();
     assert.ok(gameType === GameType.BASIC || gameType === GameType.PEREVODNOY);
-    if (!gameToRemove.info.shouldWriteEndedGameInDatabase) {
-      return;
-    }
   }
 
   restoreState(game: DurakGame, socket: DurakGameSocket.Socket) {

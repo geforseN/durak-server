@@ -23,7 +23,6 @@ import {
   Talon,
   createPlayers,
 } from "@/module/DurakGame/entity/index.js";
-import { addListenersWhichAreNeededForStartedGame } from "@/module/DurakGame/socket/DurakGameSocket.handler.js";
 import {
   type DurakGameWebsocketService,
   createServices,
@@ -39,18 +38,8 @@ export default class DurakGame {
     durakId?: string;
     id: string;
     namespace: DurakGameSocket.Namespace;
-    shouldBeUsedOnlyForTest: boolean;
-    shouldGiveRequiredCards: boolean;
-    shouldMakeInitialDistribution: boolean;
-    shouldStartRightNow: boolean;
-    shouldWriteEndedGameInDatabase: boolean;
     status: GameState["status"];
   };
-  readonly logger = pino({
-    transport: {
-      target: "pino-pretty" as const,
-    },
-  });
   players: Players;
   round: GameRound;
   readonly settings: GameSettings;
@@ -60,29 +49,11 @@ export default class DurakGame {
   constructor(
     nonStartedGame: NonStartedDurakGame,
     namespace: DurakGameSocket.Namespace,
-    {
-      shouldBeUsedOnlyForTest = false,
-      shouldGiveRequiredCards = true,
-      shouldMakeInitialDistribution = true,
-      shouldStartRightNow = true,
-      shouldWriteEndedGameInDatabase = true,
-    }: {
-      shouldBeUsedOnlyForTest?: boolean;
-      shouldGiveRequiredCards?: boolean;
-      shouldMakeInitialDistribution?: boolean;
-      shouldStartRightNow?: boolean;
-      shouldWriteEndedGameInDatabase?: boolean;
-    } = {},
   ) {
     const wsServices = createServices(namespace);
     this.info = {
       ...nonStartedGame.info,
       namespace,
-      shouldBeUsedOnlyForTest,
-      shouldGiveRequiredCards,
-      shouldMakeInitialDistribution,
-      shouldStartRightNow,
-      shouldWriteEndedGameInDatabase,
       status: "starts",
     };
     this.settings = {
@@ -100,9 +71,6 @@ export default class DurakGame {
     this.round = new GameRound(this, new GameRoundMoves());
     this.talonDistribution = new GameRoundDistribution(this);
     this.history = new GameHistory([...this.players]);
-    if (this.info.shouldStartRightNow) {
-      this.start();
-    }
   }
 
   get id() {
@@ -122,9 +90,6 @@ export default class DurakGame {
     const [durakPlayer] = this.players;
     // NOTE: durakPlayer may not exist if game ended with draw
     this.info.durakId = durakPlayer?.id;
-    if (this.info.shouldBeUsedOnlyForTest) {
-      return;
-    }
     this.#wsService.end(this);
   }
 
@@ -165,9 +130,6 @@ export default class DurakGame {
             ),
           );
         });
-    }
-    if (this.info.shouldMakeInitialDistribution) {
-      this.talonDistribution.makeInitialDistribution();
     }
     this.#makeInitialSuperPlayers();
     this.info.status = "started";
