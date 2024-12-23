@@ -12,15 +12,7 @@ export default class GameRound {
     this.game = game;
     this.number = (game.round?.number || 0) + 1;
     this.moves = moves;
-    this.makeEmitAboutStart();
-  }
-
-  makeEmitAboutStart() {
-    this.game.info.namespace.emit("round::new", {
-      round: { number: this.number },
-    });
-    return this;
-  }
+   }
 
   nextRound() {
     return new GameRound(this.game)

@@ -5,7 +5,6 @@ import assert from "node:assert";
 import type Card from "@/module/DurakGame/entity/Card/index.js";
 import type { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
 import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
-import type GameDeskWebsocketService from "@/module/DurakGame/entity/Desk/Desk.service.js";
 
 import raise from "@/common/raise.js";
 import { type CanProvideCards } from "@/module/DurakGame/DurakGame.js";
@@ -20,7 +19,6 @@ import {
 import DeskSlots from "@/module/DurakGame/entity/DeskSlots/index.js";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
-  readonly #wsService: GameDeskWebsocketService;
   _slots: Readonly<DeskSlots>;
   readonly allowedFilledSlotCount: number;
   constructor(
@@ -28,11 +26,9 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
       allowedFilledSlotCount: AllowedMissingCardCount;
       slotCount: AllowedMissingCardCount;
     },
-    wsService: GameDeskWebsocketService,
   ) {
     this.allowedFilledSlotCount = settings.allowedFilledSlotCount;
     this._slots = new DeskSlots(settings.slotCount);
-    this.#wsService = wsService;
   }
 
   *[Symbol.iterator]() {
@@ -68,7 +64,6 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
   provideCards<Target extends Defender | Discard>(target: Target) {
     target.receiveCards(...this._slots.cards);
     this._slots = this._slots.toEmpty();
-    this.#wsService?.clear();
   }
 
   slotAt(index: number) {
@@ -83,9 +78,8 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return { slots: [...this._slots] };
   }
 
-  update(slot: DeskSlot, card: Card, performer: AllowedSuperPlayer) {
+  update(slot: DeskSlot, card: Card) {
     this._slots.update(slot, card);
-    this.#wsService?.update(slot, card, performer);
   }
 
   get allowsAttackerMove(): boolean {

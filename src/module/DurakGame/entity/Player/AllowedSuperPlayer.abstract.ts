@@ -78,25 +78,6 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
   setTimer() {
     this.defaultBehavior.setTimeout();
     assert.ok(typeof this.defaultBehavior.callTime !== "undefined");
-    this.game.info.namespace
-      .to(this.id)
-      .emit("allowedPlayer::defaultBehavior", {
-        defaultBehavior: {
-          callTime: {
-            UTC: this.defaultBehavior.callTime.UTC,
-          },
-        },
-      });
-    this.game.info.namespace
-      .except(this.id)
-      .emit("allowedPlayer::defaultBehavior", {
-        allowedPlayer: { id: this.id },
-        defaultBehavior: {
-          callTime: {
-            UTC: this.defaultBehavior.callTime.UTC,
-          },
-        },
-      });
   }
 
   toJSON() {

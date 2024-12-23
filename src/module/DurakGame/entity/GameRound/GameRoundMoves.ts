@@ -16,7 +16,6 @@ export default class GameRoundMoves {
 
   push(move: GameMove<AllowedSuperPlayer>) {
     this.#value.push(move);
-    move.emitContextToPlayers();
   }
 
   get firstRealDefenderMove(): GameMove<AllowedDefender> | never {
