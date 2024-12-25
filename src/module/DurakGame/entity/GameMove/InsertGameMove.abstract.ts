@@ -25,7 +25,7 @@ export default abstract class InsertGameMove<
   }
 
   makeCardInsert() {
-    this.performer.remove((card) => card === this.card);
+    this.performer.withRemoved((card) => card === this.card);
     this.game.round.desk = this.game.round.desk.with(this.slot, this.card);
   }
 }

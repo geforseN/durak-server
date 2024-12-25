@@ -18,7 +18,7 @@ export default class InsertAttackCardMove extends InsertGameMove<AllowedAttacker
 
   get gameMutationStrategy() {
     if (
-      this.performer.hand.isEmpty ||
+      this.performer.cards.isEmpty ||
       this.game.players.defender.canNotDefend(
         this.game.desk.unbeatenSlots.cardCount,
       ) ||

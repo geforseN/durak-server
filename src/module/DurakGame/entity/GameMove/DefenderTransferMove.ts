@@ -6,6 +6,9 @@ import type DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
 import Card from "@/module/DurakGame/entity/Card/index.js";
 import { AllowedDefender } from "@/module/DurakGame/entity/Player/AllowedDefender.js";
 import InsertGameMove from "@/module/DurakGame/entity/GameMove/InsertGameMove.abstract.js";
+import { Player } from "../Player/Player.js";
+import { AllowedAttacker } from "../Player/AllowedAttacker.js";
+import { Defender } from "../Player/Defender.js";
 
 export default class TransferMove extends InsertGameMove<AllowedDefender> {
   constructor(
@@ -33,10 +36,10 @@ export default class TransferMove extends InsertGameMove<AllowedDefender> {
       assert.ok(
         this.performer.right.isAttacker() && !this.performer.right.isAllowed(),
       );
-      this.game.players
-        .mutateWith(this.performer.right.asPlayer())
-        .mutateWith(this.performer.left.asDefender())
-        .mutateWith(this.performer.asAttacker().asAllowed(this.game));
+      this.game.players = this.game.players
+        .with(new Player(this.performer.right))
+        .with(new Defender(this.performer.left))
+        .with(new AllowedAttacker(this.performer));
       assert.ok(
         this.performer.asLatest().isAttacker() &&
           this.performer.asLatest().isAllowed(),

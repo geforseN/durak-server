@@ -22,7 +22,7 @@ export default class InsertDefendCardMove extends InsertGameMove<AllowedDefender
     if (!this.game.desk.isDefended) {
       return this.strategies.letPerformerMoveAgain;
     }
-    if (this.performer.hand.isEmpty || !this.game.desk.isAllowsMoves) {
+    if (this.performer.cards.isEmpty || !this.game.desk.isAllowsMoves) {
       return () => new SuccessfulDefense(this.game);
     }
     if (this.game.desk.allowsAttackerMove) {
