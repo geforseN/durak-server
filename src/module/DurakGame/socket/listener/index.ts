@@ -1,4 +1,4 @@
-import { Card as CardDTO } from "@durak-game/durak-dts";
+import { Card as CardDTO, type DurakGameSocket } from "@durak-game/durak-dts";
 import assert from "node:assert";
 
 import type DurakGame from "@/module/DurakGame/DurakGame.js";
@@ -6,49 +6,42 @@ import type DurakGame from "@/module/DurakGame/DurakGame.js";
 import NotificationAlert from "@/module/NotificationAlert/index.js";
 import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
 
-export async function stopMoveListener(this: {
-  game: DurakGame;
-  playerId: string;
-}) {
+export async function stopMoveListener(
+  io: DurakGameSocket.Namespace,
+  game: DurakGame,
+  playerId: string,
+) {
   try {
-    const player = this.game.players.get(
-      (player) => player.id === this.playerId,
-    );
-    assert.strict.equal(player, this.game.players.allowed);
-    await player.makeNewMove();
+    const player = game.players.get((player) => player.id === playerId);
+    assert.strict.equal(player, game.players.allowed);
   } catch (error) {
     if (error instanceof AllowedPlayerBadInputError) {
-      return this.game.info.namespace
-        .to(this.playerId)
+      return io
+        .to(playerId)
         .emit("notification::push", error.asNotificationAlert);
     }
     assert.ok(error instanceof Error);
-    this.game.info.namespace
-      .to(this.playerId)
-      .emit("notification::push", new NotificationAlert(error));
+    io.to(playerId).emit("notification::push", new NotificationAlert(error));
   }
 }
 
 export async function cardPlaceListener(
-  this: { game: DurakGame; playerId: string },
+  io: DurakGameSocket.Namespace,
+  game: DurakGame,
+  playerId: string,
   card: CardDTO,
   slotIndex: number,
 ) {
   try {
-    const player = this.game.players.get(
-      (player) => player.id === this.playerId,
-    );
-    assert.strict.equal(player, this.game.players.allowed);
-    await player.makeNewMove(card, slotIndex);
+    const player = game.players.get((player) => player.id === playerId);
+    assert.strict.equal(player, game.players.allowed);
   } catch (error) {
     if (error instanceof AllowedPlayerBadInputError) {
-      return this.game.info.namespace
-        .to(this.playerId)
+      return io
+        .to(playerId)
         .emit("notification::push", error.asNotificationAlert);
     }
     assert.ok(error instanceof Error);
-    this.game.info.namespace
-      .to(this.playerId)
-      .emit("notification::push", new NotificationAlert(error));
+    io.to(playerId).emit("notification::push", new NotificationAlert(error));
   }
 }
