@@ -17,9 +17,9 @@ declare module "fastify" {
 export default <FastifyPluginAsyncZod>async function (app) {
   app.decorate("durakGamesStore", durakGamesStore);
 
-  app.ready().then(() => {
+  app.ready().then(async () => {
     assert("io" in app);
-    const namespace = createDurakSocketIoNamespace(app.io, sessionStore);
+    const namespace = await createDurakSocketIoNamespace(app.io, sessionStore);
     namespace.on("connection", async (socket) => {
       await durakGameSocketHandler(namespace, socket);
     });
