@@ -1,19 +1,20 @@
-import Deck from "@/module/DurakGame/entity/Deck/Deck.abstract.js";
+import Deck from "@/module/DurakGame/entity/Deck/deck.js";
 import type Card from "@/module/DurakGame/entity/Card/index.js";
-import { type CanReceiveCards } from "@/module/DurakGame/DurakGame.js";
 
-export default class Discard extends Deck implements CanReceiveCards {
-  constructor() {
-    super();
+export default class Discard {
+  #deck;
+
+  constructor(readonly cards: Card[]) {
+    this.#deck = new Deck(cards);
   }
 
-  receiveCards(...cards: Card[]): void {
-    this.value.push(...cards);
+  withAdded(...cards: Card[]) {
+    return new Discard([...this.cards, ...cards]);
   }
 
   toJSON() {
     return {
-      isEmpty: this.isEmpty,
+      isEmpty: this.#deck.isEmpty,
     };
   }
 }
