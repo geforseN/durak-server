@@ -26,15 +26,6 @@ export default class GameRound {
     return new GameRound(this.game)
   }
 
-  // NOTE: primal attacker may not exist
-  // IF primal attacker does not exist THEN this.moves.primalAttackerMove will throw
-  // primal attacker may not exist because every move in game is transfer move (transfer can exist in perevodnoy durak)
-  // NOTE: primalAttacker actually can be not allowed for move in current time
-  // but in past time primalAttacker was allowed
-  // EXAMPLE:
-  // true => this.moves.primalAttackerMove.performer instanceof AllowedAttacker
-  // maybe => this.moves.primalAttackerMove.performer.asLatest() instanceof AllowedAttacker
-  // this is why type cast is used for return value
   toJSON() {
     return { number: this.number };
   }
