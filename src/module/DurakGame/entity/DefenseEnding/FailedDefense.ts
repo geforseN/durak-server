@@ -2,22 +2,17 @@ import type DurakGame from "@/module/DurakGame/DurakGame.js";
 import type { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 import { Players } from "@/module/DurakGame/entity/index.js";
-import GameRound from "@/module/DurakGame/entity/GameRound/index.js";
 
 export default class FailedDefense {
-  game: DurakGame;
-
-  constructor(game: DurakGame) {
-    this.game = game;
-  }
+  constructor(readonly game: DurakGame) {}
 
   makeMutation() {
-    this.game.desk.provideCards(this.game.players.defender);
+    this.game.round.desk.provideCards(this.game.players.defender);
   }
 
   protected prepareBeforeNewGameRound() {
     if (this.game.talon.count) {
-      return this.game.talonDistribution.makeDistribution();
+      return this.game.talon.distribution.execute();
     }
     const groupedPlayers = getGropedPlayers([...this.game.players]);
     this.game.players = new Players(groupedPlayers.toStay);
@@ -44,9 +39,9 @@ export default class FailedDefense {
         .mutateWith(
           this.game.players.defender.right.asAttacker().asAllowed(this.game),
         );
-      return this.game.round.nextRound();
+      return this.game.round.asNext();
     } catch {
-      return undefined; // FIXME should return GameEnd instance;
+      return this.game.toEnd();
     }
   }
 }
@@ -60,7 +55,7 @@ function getGropedPlayers(players: BasePlayer[]) {
       },
       player: BasePlayer,
     ) => {
-      if (player.hand.isEmpty) {
+      if (player.cards.isEmpty) {
         gropedPlayers.toLeave.push(player);
       } else {
         gropedPlayers.toStay.push(player);

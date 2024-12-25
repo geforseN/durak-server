@@ -10,7 +10,7 @@ export default abstract class RoundEnd {
 
   protected prepareBeforeNewGameRound() {
     if (this.game.talon.count) {
-      return this.game.talonDistribution.makeDistribution();
+      return this.game.talon.distribution.execute();
     }
     const groupedPlayers = getGropedPlayers([...this.game.players]);
     this.game.players = new Players(groupedPlayers.toStay);
@@ -37,7 +37,7 @@ function getGropedPlayers(players: BasePlayer[]) {
       },
       player: BasePlayer,
     ) => {
-      if (player.hand.isEmpty) {
+      if (player.cards.isEmpty) {
         gropedPlayers.toLeave.push(player);
       } else {
         gropedPlayers.toStay.push(player);
