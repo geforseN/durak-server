@@ -101,18 +101,6 @@ export abstract class BasePlayer {
     this.wsService.emitOwnKind(this);
   }
 
-  ensureCanTakeMore(cardCount: number) {
-    if (this.left.canTakeMore(cardCount)) {
-      return;
-    }
-    throw new AllowedPlayerBadInputError(
-      "Player, to which you wanna transfer cards, has not enough card for defense. You must defend cards on desk",
-      {
-        header: "Transfer move attempt",
-      },
-    );
-  }
-
   exitGame() {
     this.hasLeftTheGame = true;
     // TODO add kind 'LeftGamePlayer'
