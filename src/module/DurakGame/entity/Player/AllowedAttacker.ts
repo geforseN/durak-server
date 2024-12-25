@@ -9,14 +9,10 @@ import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
 import { InsertAttackCardMove, StopAttackMove } from "@/module/DurakGame/entity/GameMove/index.js";
 import { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
 import { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
-import AllowedAttackerDefaultBehavior from "@/module/DurakGame/entity/Player/DefaultBehavior/AllowedAttackerDefaultBehavior.js";
 
 export class AllowedAttacker extends AllowedSuperPlayer {
-  defaultBehavior: AllowedAttackerDefaultBehavior;
-
   constructor(superPlayer: SuperPlayer, game: DurakGame) {
     super(superPlayer, game);
-    this.defaultBehavior = new AllowedAttackerDefaultBehavior(this);
   }
 
   asAllowed(): AllowedAttacker {
@@ -24,14 +20,10 @@ export class AllowedAttacker extends AllowedSuperPlayer {
   }
 
   asAllowedAgain(): AllowedAttacker {
-    this.defaultBehavior.shouldBeCalled = false;
-    this.defaultBehavior.clearTimeout();
     return new AllowedAttacker(this, this.game);
   }
 
   asDisallowed(): Attacker {
-    this.defaultBehavior.shouldBeCalled = false;
-    this.defaultBehavior.clearTimeout();
     return new Attacker(this);
   }
 
@@ -48,8 +40,6 @@ export class AllowedAttacker extends AllowedSuperPlayer {
       await slot.ensureCanBeAttacked();
       this.game.desk.ensureIncludesRank(card.rank);
     }
-    this.defaultBehavior.shouldBeCalled = false;
-    this.defaultBehavior.clearTimeout();
     return new InsertAttackCardMove(this.game, this, {
       card,
       slot,
@@ -63,8 +53,6 @@ export class AllowedAttacker extends AllowedSuperPlayer {
         header: "Stop move attempt",
       }),
     );
-    this.defaultBehavior.shouldBeCalled = false;
-    this.defaultBehavior.clearTimeout();
     return new StopAttackMove(this.game, this);
   }
 
