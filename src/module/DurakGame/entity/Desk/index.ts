@@ -39,10 +39,6 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     yield* this._slots;
   }
 
-  async ensureAllowsTransferMove(card: Card) {
-    return this._slots.ensureAllowsTransferMove(card);
-  }
-
   ensureIncludesRank(rank: Card["rank"]): void {
     if (this._slots.someSlotHasSameRank(rank)) {
       return;

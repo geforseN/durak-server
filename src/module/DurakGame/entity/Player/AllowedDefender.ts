@@ -42,7 +42,6 @@ export class AllowedDefender extends AllowedSuperPlayer {
   async ensureCanMakeTransferMove(card: Card): Promise<void> {
     this.left.ensureCanTakeMore(this.game.desk.cardsCount + 1);
     this.game.desk.ensureOnlyHasRank(card.rank);
-    this.game.desk.ensureAllowsTransferMove(card);
   }
 
   async makeInsertMove(card: Card, slot: DeskSlot) {
