@@ -46,15 +46,6 @@ export default class GameRound {
       : this.game.players.attacker.left;
   }
 
-  get isAllowsTransferMove() {
-    try {
-      this.moves.firstRealDefenderMove;
-      return false;
-    } catch {
-      return true;
-    }
-  }
-
   get nextAttacker(): BasePlayer {
     return this.game.players.attacker.id === this.primalAttacker.id
       ? this.game.players.defender.left
