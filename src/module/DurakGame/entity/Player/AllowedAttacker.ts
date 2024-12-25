@@ -35,17 +35,9 @@ export class AllowedAttacker extends AllowedSuperPlayer {
     return new Attacker(this);
   }
 
-  hasBeenPrimalAttacker() {
-    try {
-      return this.game.round.primalAttacker.id === this.id;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  async makeInsertMove(card: Card, slot: DeskSlot) {
+  makeInsertMove(card: Card, slot: DeskSlot) {
     if (!this.game.desk.isEmpty) {
-      await slot.ensureCanBeAttacked();
+      slot.ensureCanBeAttacked();
       this.game.desk.ensureIncludesRank(card.rank);
     }
     this.defaultBehavior.shouldBeCalled = false;

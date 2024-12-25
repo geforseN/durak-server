@@ -16,3 +16,5 @@ export class Attacker extends SuperPlayer {
     return true;
   }
 }
+
+export default Attacker;

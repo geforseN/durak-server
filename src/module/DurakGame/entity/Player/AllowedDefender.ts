@@ -1,7 +1,4 @@
-import assert from "node:assert";
-
 import DurakGame from "@/module/DurakGame/DurakGame.js";
-import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
 import Card from "@/module/DurakGame/entity/Card/index.js";
 import DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
 import DefenderGaveUpMove from "@/module/DurakGame/entity/GameMove/DefenderGaveUpMove.js";
@@ -11,16 +8,12 @@ import {
   StopDefenseMove,
 } from "@/module/DurakGame/entity/GameMove/index.js";
 import { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
-import AllowedDefenderDefaultBehavior from "@/module/DurakGame/entity/Player/DefaultBehavior/AllowedDefenderDefaultBehavior.js";
 import { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 import { type SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
 
 export class AllowedDefender extends AllowedSuperPlayer {
-  defaultBehavior: AllowedDefenderDefaultBehavior;
-
   constructor(superPlayer: SuperPlayer, game: DurakGame) {
     super(superPlayer, game);
-    this.defaultBehavior = new AllowedDefenderDefaultBehavior(this);
   }
 
   asAllowed(): AllowedDefender {
@@ -28,33 +21,25 @@ export class AllowedDefender extends AllowedSuperPlayer {
   }
 
   asAllowedAgain(): AllowedDefender {
-    this.defaultBehavior.shouldBeCalled = false;
-    this.defaultBehavior.clearTimeout();
     return new AllowedDefender(this, this.game);
   }
 
   asDisallowed(): Defender {
-    this.defaultBehavior.shouldBeCalled = false;
-    this.defaultBehavior.clearTimeout();
     return new Defender(this);
   }
 
-  async ensureCanMakeTransferMove(card: Card): Promise<void> {
-    this.left.ensureCanTakeMore(this.game.desk.cardsCount + 1);
+  ensureCanMakeTransferMove(card: Card): void {
+    this.left.cards.ensureCanTakeMore(this.game.desk.cards.count + 1);
     this.game.desk.ensureOnlyHasRank(card.rank);
     this.game.desk.ensureAllowsTransferMove(card);
   }
 
-  async makeInsertMove(card: Card, slot: DeskSlot) {
+  makeInsertMove(card: Card, slot: DeskSlot) {
     if (slot.isEmpty()) {
-      await this.ensureCanMakeTransferMove(card);
-      this.defaultBehavior.shouldBeCalled = false;
-      this.defaultBehavior.clearTimeout();
+      this.ensureCanMakeTransferMove(card);
       return new DefenderTransferMove(this.game, this, { card, slot });
     }
-    await slot.ensureCanBeDefended(card);
-    this.defaultBehavior.shouldBeCalled = false;
-    this.defaultBehavior.clearTimeout();
+    slot.ensureCanBeDefended(card);
     return new InsertDefendCardMove(this.game, this, {
       card,
       slot,
@@ -62,8 +47,6 @@ export class AllowedDefender extends AllowedSuperPlayer {
   }
 
   makeStopMove() {
-    this.defaultBehavior.shouldBeCalled = false;
-    this.defaultBehavior.clearTimeout();
     if (!this.game.desk.isDefended) {
       return new DefenderGaveUpMove(this.game, this);
     }
