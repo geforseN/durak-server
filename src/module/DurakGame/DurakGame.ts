@@ -140,8 +140,6 @@ export default class DurakGame {
         return this.end();
       }
       this.round = newGameRound;
-    } else {
-      this.players.allowed.setTimer();
     }
   }
 
