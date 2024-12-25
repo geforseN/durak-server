@@ -1,66 +1,57 @@
 import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
-import type Lobby from "@/module/Lobbies/entity/Lobby.js";
-import DurakGame from "@/module/DurakGame/DurakGame.js";
-import raise from "@/common/raise.js";
-import LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
-import { addListenersWhichAreNeededForStartedGame } from "@/module/DurakGame/socket/DurakGameSocket.handler.js";
+import type { SessionUser } from "@/plugins/modules/login/login.instance-decorators.js";
 
-export default class NonStartedDurakGame {
-  info: {
-    adminId: string;
-    durakPlayerId?: string;
-    id: string;
-    namespace?: DurakGameSocket.Namespace;
-    status: "non started";
-  };
-  settings: GameSettings;
-  sockets: Map<string, Set<DurakGameSocket.Socket>>;
-  usersInfo: LobbyUser[];
+class NonConnectedPlayer {}
 
-  constructor(lobby: Lobby) {
-    this.info = {
-      adminId: lobby.slots.admin.id,
-      id: lobby.id,
-      status: "non started",
-    };
-    this.settings = lobby.settings;
-    this.usersInfo = lobby.userSlots.map((slot) => slot.user);
-    this.sockets = new Map();
-  }
+class PlayerConnection {
+  constructor(
+    public sessionUser: SessionUser,
+    public socket: DurakGameSocket.Socket,
+  ) {}
+}
 
-  get id() {
-    return this.info.id;
-  }
+class PlayersConnections<K extends string = SessionUser["id"]> {
+  constructor(
+    readonly map: Map<K, Set<PlayerConnection>>,
+    readonly sizeGoal: number,
+    readonly onReady: () => void,
+  ) {}
 
-  #addPlayerConnection(socket: DurakGameSocket.Socket) {
-    const playerId = socket.data.user?.id || raise();
-    const playerSockets = this.sockets.get(playerId);
-    if (playerSockets) {
-      playerSockets.add(socket);
+  add(connection: PlayerConnection) {
+    const key = connection.sessionUser.id as K;
+    const connections = this.map.get(key);
+    if (connections) {
+      connections.add(connection);
     } else {
-      this.sockets.set(playerId, new Set([socket]));
+      this.map.set(key, new Set([connection]));
+      if (this.sizeGoal === this.map.size) {
+        this.onReady();
+      }
     }
   }
 
-  addPlayerConnection(socket: DurakGameSocket.Socket) {
-    this.#addPlayerConnection(socket);
+  get(key: K) {
+    return this.map.get(key);
   }
 
-  emitEverySocketWithStartedGameDetails(startedGame: DurakGame) {
-    this.sockets.forEach((playerSockets) => {
-      playerSockets.forEach((socket) => {
-        addListenersWhichAreNeededForStartedGame.call(socket, startedGame);
-      });
-    });
+  require(
+    key: K,
+    makeError = () =>
+      new Error(`Failed to find connection with user id = ${key}`),
+  ) {
+    const connections = this.get(key);
+    if (!connections) {
+      throw makeError();
+    }
+    return connections;
   }
+}
 
-  emitSocketWithLoadingDetails(socket: DurakGameSocket.Socket) {
-    socket.emit("nonStartedGame::details", {
-      joinedPlayersIds: [...this.sockets.keys()],
-    });
-  }
-
-  get isAllPlayersConnected() {
-    return this.sockets.size === this.settings.players.count;
-  }
+export default class NonStartedDurakGame {
+  constructor(
+    public id: string,
+    public setting: GameSettings,
+    public connections: PlayersConnections,
+    readonly onReady: () => void,
+  ) {}
 }

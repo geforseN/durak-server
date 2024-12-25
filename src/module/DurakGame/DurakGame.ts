@@ -1,44 +1,13 @@
-import type { GameMove } from "@/module/DurakGame/entity/GameMove/index.js";
-import type { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
-import type { Players } from "@/module/DurakGame/entity/index.js";
-
-import GameHistory from "@/module/DurakGame/entity/History.js";
-import {
-  Card,
-  Discard,
-  GameRound,
-  Talon,
-} from "@/module/DurakGame/entity/index.js";
 import type { GameSettings } from "@durak-game/durak-dts";
+import type GameMove from "@/module/DurakGame/entity/GameMove/GameMove.abstract.js";
+import type AllowedSuperPlayer from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
+import type Players from "@/module/DurakGame/entity/Players/Players.js";
+import type GameRound from "@/module/DurakGame/entity/GameRound/index.js";
+import type GameHistory from "@/module/DurakGame/entity/History.js";
+import type Discard from "@/module/DurakGame/entity/Deck/Discard/index.js";
+import type Talon from "@/module/DurakGame/entity/Deck/Talon/index.js";
+
 export default class DurakGame {
-  // _ readonly desk: Desk;
-  // ! must be moved to round
-
-  // _ readonly history: GameHistory;
-  // ! should rewrite
-
-  // _ players: Players;
-  // ! must already have cards
-  // ! some player must be allowed to move
-
-  // _ round: GameRound;
-  // ! here must be desk slots */
-
-  // _ readonly settings: GameSettings;
-  // ! probably should not be here,
-  // ! settings must be used when constructing game properties
-  // ? maybe should exist is history
-  // ! refactor settings.players.moveTime into players.moveTime
-
-  // _ readonly discard: Discard;
-  // ! must be moved to decks
-
-  // _ readonly talon: Talon;
-  // ! must be moved to decks
-
-  //  _ readonly talonDistribution: GameRoundDistribution;
-  // ! must be moved to decks.talon
-
   constructor(
     public id: string,
     public round: GameRound,
@@ -55,8 +24,8 @@ export default class DurakGame {
     },
   ) {}
 
-  get desk(): never {
-    throw new Error("Not implemented");
+  get desk() {
+    return this.round.desk;
   }
 
   get talon() {
@@ -65,20 +34,6 @@ export default class DurakGame {
 
   get discard() {
     return this.decks.discard;
-  }
-
-  start() {
-    // TODO: refactor
-    // not started game must have `start` instance with `execute` method
-    // non started game should mutate own players with same logic
-    this.#__makeInitialSuperPlayers__();
-  }
-
-  #__makeInitialSuperPlayers__() {
-    const admin = this.players.get((player) => player.info.isAdmin);
-    this.players
-      .mutateWith(admin.left.asDefender())
-      .mutateWith(this.players.defender.right.asAttacker().asAllowed(this));
   }
 
   handleNewMove(move: GameMove<AllowedSuperPlayer>) {
@@ -110,12 +65,4 @@ export default class DurakGame {
       settings: this.settings,
     };
   }
-}
-
-export interface CanReceiveCards {
-  receiveCards: (..._cards: Card[]) => void;
-}
-
-export interface CanProvideCards<Target extends CanReceiveCards> {
-  provideCards: (_target: Target) => void;
 }
