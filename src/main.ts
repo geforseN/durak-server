@@ -28,7 +28,6 @@ const start = async () => {
   try {
     const nodeEnv = EnvSchema.parse(process.env).NODE_ENV;
     const loggerInstance = makeLoggerInstance(nodeEnv);
-    BasePlayer.configureDependencies();
     const fastifyListenOptions = FastifyListerOptionsSchema.transform(
       ({ PORT, HOST }) => ({
         port: PORT,
