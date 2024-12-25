@@ -1,6 +1,9 @@
 import type { Entity, EntityStore } from "@/types/entity-store.js";
 
-export class MapEntityStores<C extends { new (...args: any[]): Entity }> {
+export class MapEntityStores<
+  C extends { new (...args: any[]): Entity },
+  E extends InstanceType<C> = InstanceType<C>,
+> {
   #map;
 
   constructor(map: Map<C, EntityStore<Entity>>) {
@@ -15,14 +18,14 @@ export class MapEntityStores<C extends { new (...args: any[]): Entity }> {
     );
   }
 
-  get(id: Entity["id"]) {
+  get(id: E["id"]) {
     for (const store of this.#map.values()) {
       const value = store.get(id);
-      if (value) return value;
+      if (value) return value as E;
     }
   }
 
-  require(id: Entity["id"]) {
+  require(id: E["id"]) {
     const entity = this.get(id);
     if (!entity) {
       throw new Error(`Unknown entity with id = ${id}`);
@@ -30,7 +33,7 @@ export class MapEntityStores<C extends { new (...args: any[]): Entity }> {
     return entity;
   }
 
-  set(entity: Entity) {
+  set(entity: E) {
     const Class = this.#map.keys().find((Class) => entity instanceof Class);
     if (!Class) {
       throw new Error("Unknown entity");
@@ -42,7 +45,7 @@ export class MapEntityStores<C extends { new (...args: any[]): Entity }> {
     store.set(entity);
   }
 
-  delete(value: Entity | Entity["id"]) {
+  delete(value: E | E["id"]) {
     const store = this.#map.values().find((store) => store.has(value));
     if (!store) {
       throw new Error("Unknown entity value");
@@ -50,7 +53,7 @@ export class MapEntityStores<C extends { new (...args: any[]): Entity }> {
     store.delete(value);
   }
 
-  has(value: Entity | Entity["id"]): boolean {
+  has(value: E | E["id"]): boolean {
     return this.#map.values().some((store) => store.has(value));
   }
 }
