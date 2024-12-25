@@ -1,7 +1,6 @@
 import assert from "node:assert";
 
 import type DurakGame from "@/module/DurakGame/DurakGame.js";
-import type { GameMove } from "@/module/DurakGame/entity/GameMove/index.js";
 import type { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
 
 export default abstract class DefaultBehavior<ASP extends AllowedSuperPlayer> {
@@ -28,11 +27,8 @@ export default abstract class DefaultBehavior<ASP extends AllowedSuperPlayer> {
   setTimeout(delay = this.game.settings.players.moveTime) {
     this.callTime = { UTC: Date.now() + this.game.settings.players.moveTime };
     this.timeout = setTimeout(async () => {
-      const move = await this.makeMove();
       assert.ok(move, "this.makeMove returned falsy value");
       this.game.handleNewMove(move);
     }, delay);
   }
-
-  protected abstract makeMove(): Promise<GameMove<ASP> | void>;
 }

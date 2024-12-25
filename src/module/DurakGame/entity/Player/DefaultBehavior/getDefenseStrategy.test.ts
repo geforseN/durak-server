@@ -1,7 +1,7 @@
 import { describe, it } from "vitest";
 import assert from "node:assert";
 import Card, { Suit } from "@/module/DurakGame/entity/Card/index.js";
-import { TrumpCard } from "@/module/DurakGame/entity/Card/TrumpCard.js";
+import TrumpCard from "@/module/DurakGame/entity/Card/trump-card.js";
 import getDefenseStrategy, {
   cardsSort,
   slotsSort,

@@ -15,26 +15,18 @@ export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefen
     super(allowedDefender, game, shouldBeCalled);
   }
 
-  // @ts-ignore really weird place, should refactor
-  async makeMove() {
+  makeMove() {
     if (!this.shouldBeCalled) {
       return console.log("defaultBehavior DEFENDER: fast return");
     }
-    // TODO should remove if code is not trash
     assert.ok(this.allowedPlayer.isAllowed());
     try {
       try {
-        // @ts-ignore really weird place, should refactor
-        const card = await Promise.any(
-          [...this.allowedPlayer.hand].map<Promise<Card>>(
-            async (card: Card) => {
-              await this.allowedPlayer.ensureCanMakeTransferMove(card);
-              return card;
-            },
-          ),
-        );
-        assert.ok(card);
-        return await this.allowedPlayer.makeInsertMove(
+        for (const card of this.allowedPlayer.hand._cards) {
+          this.allowedPlayer.ensureCanMakeTransferMove(card);
+        }
+        // assert.ok(card);
+        return this.allowedPlayer.makeInsertMove(
           card,
           this.game.desk.randomEmptySlot,
         );
@@ -44,13 +36,11 @@ export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefen
           this.game.desk.unbeatenSlots.cards,
         );
         const { attackCard, defendCard } = defenseStrategy[0];
-        const slot = [...this.game.desk].find(
-          (slot) =>
-            slot.attackCard?.rank === attackCard.rank &&
-            slot.attackCard.suit === attackCard.suit,
+        const slot = [...this.game.desk].find((slot) =>
+          slot.attackCard?.isEqualTo(attackCard),
         );
         assert.ok(slot);
-        return await this.allowedPlayer.makeInsertMove(defendCard, slot);
+        return this.allowedPlayer.makeInsertMove(defendCard, slot);
       }
     } catch (error) {
       console.log("defaultBehavior DEFENDER: stopMove", error);

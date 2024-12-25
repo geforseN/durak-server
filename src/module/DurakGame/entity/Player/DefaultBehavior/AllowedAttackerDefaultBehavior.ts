@@ -13,10 +13,10 @@ export class AllowedAttackerDefaultBehavior extends DefaultBehavior<AllowedAttac
     super(allowedAttacker, game, shouldBeCalled);
   }
 
-  async #putCardWithDeskRank() {
+  #putCardWithDeskRank() {
     for (const rank of this.allowedPlayer.game.desk.ranks) {
       const card = this.allowedPlayer.hand.get((card) =>
-        card.hasSame({ rank }),
+        card.rank.isEqualTo(rank),
       );
       if (!card) continue;
       const { randomEmptySlot } = this.allowedPlayer.game.desk;
@@ -25,7 +25,7 @@ export class AllowedAttackerDefaultBehavior extends DefaultBehavior<AllowedAttac
           card +
           randomEmptySlot.index,
       );
-      return await this.allowedPlayer.makeInsertMove(card, randomEmptySlot);
+      return this.allowedPlayer.makeInsertMove(card, randomEmptySlot);
     }
     throw new Error("Impossible to put card, should stop move");
   }
