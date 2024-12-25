@@ -31,57 +31,49 @@ export default <FastifyPluginAsyncZod>async function (app) {
         return;
       }
       socket.send(new GameLobbiesStateRestoreEvent(context.lobbies).asString);
-      try {
-        socket.on(
-          "lobby::add",
-          ({ settings }: { settings: InitialGameSettings }) => {
-            context.lobbies.pushNewLobby({
-              initiator: context.user,
-              settings,
-            });
-          },
-        );
-        socket.on("lobby::remove", ({ lobbyId }: { lobbyId?: Lobby["id"] }) => {
-          context.lobbies.removeLobby({
+      socket.on(
+        "lobby::add",
+        ({ settings }: { settings: InitialGameSettings }) => {
+          context.lobbies.pushNewLobby({
             initiator: context.user,
-            lobbyId,
+            settings,
           });
+        },
+      );
+      socket.on("lobby::remove", ({ lobbyId }: { lobbyId?: Lobby["id"] }) => {
+        context.lobbies.removeLobby({
+          initiator: context.user,
+          lobbyId,
         });
-        socket.on(
-          "lobby::user::join",
-          async ({
+      });
+      socket.on(
+        "lobby::user::join",
+        async ({
+          lobbyId,
+          slotIndex = -1,
+        }: {
+          lobbyId: Lobby["id"];
+          slotIndex: number;
+        }) => {
+          await context.lobbies.addUserInLobby({
+            user: context.user,
             lobbyId,
-            slotIndex = -1,
-          }: {
-            lobbyId: Lobby["id"];
-            slotIndex: number;
-          }) => {
-            await context.lobbies.addUserInLobby({
-              user: context.user,
-              lobbyId,
-              slotIndex,
-            });
-          },
-        );
-        socket.on(
-          "lobby::user::leave",
-          ({ lobbyId }: { lobbyId?: Lobby["id"] }) => {
-            context.lobbies.removeUserFromLobby(context.user, lobbyId);
-          },
-        );
-        socket.on(
-          "lobby::upgrade",
-          ({ lobbyId }: { lobbyId?: Lobby["id"] }) => {
-            context.lobbies.upgradeLobbyToNonStartedGame({
-              initiator: context.user,
-              lobbyId,
-            });
-          },
-        );
-      } catch (error) {
-        assert.ok(error instanceof Error);
-        socket.emit(new NotificationAlertEvent(error).asString);
-      }
+            slotIndex,
+          });
+        },
+      );
+      socket.on(
+        "lobby::user::leave",
+        ({ lobbyId }: { lobbyId?: Lobby["id"] }) => {
+          context.lobbies.removeUserFromLobby(context.user, lobbyId);
+        },
+      );
+      socket.on("lobby::upgrade", ({ lobbyId }: { lobbyId?: Lobby["id"] }) => {
+        context.lobbies.upgradeLobbyToNonStartedGame({
+          initiator: context.user,
+          lobbyId,
+        });
+      });
     },
   );
 };
