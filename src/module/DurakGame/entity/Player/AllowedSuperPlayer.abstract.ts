@@ -78,11 +78,6 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
   toJSON() {
     return {
       ...super.toJSON(),
-      timer: {
-        endTime: {
-          UTC: this.defaultBehavior.callTime?.UTC || 0,
-        },
-      },
     };
   }
 
