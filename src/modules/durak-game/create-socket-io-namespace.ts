@@ -1,10 +1,10 @@
 import type { Server } from "socket.io";
-import { instrument } from "@socket.io/admin-ui";
 import { DurakGameSocket } from "@durak-game/durak-dts";
 import { SessionStore } from "@fastify/session";
 import { mutateSocketData } from "@/module/DurakGame/socket/mutateSocketData.js";
+import { isDevelopment } from "std-env";
 
-export function createDurakSocketIoNamespace(
+export async function createDurakSocketIoNamespace(
   io: Server,
   sessionStore: SessionStore,
 ) {
@@ -14,6 +14,9 @@ export function createDurakSocketIoNamespace(
   gamesNamespace.use((socket, next) => {
     mutateSocketData(socket, next, sessionStore);
   });
-  instrument(io, { auth: false, mode: "development" });
+  if (isDevelopment) {
+    const { instrument } = await import("@socket.io/admin-ui");
+    instrument(io, { auth: false, mode: "development" });
+  }
   return gamesNamespace;
 }
