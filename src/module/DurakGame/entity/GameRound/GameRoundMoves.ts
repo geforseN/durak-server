@@ -21,8 +21,7 @@ export default class GameRoundMoves {
 
   get firstRealDefenderMove(): GameMove<AllowedDefender> | never {
     const firstRealDefenderMove = this.#value.find(
-      (move): move is GameMove<AllowedDefender> =>
-        move.isDoneByDefender() && !move.isTransferMove(),
+      (move): move is GameMove<AllowedDefender> => move.isDoneByDefender(),
     );
     assert.ok(firstRealDefenderMove, "Нет защищающегося хода");
     return firstRealDefenderMove;

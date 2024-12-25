@@ -66,10 +66,6 @@ export default abstract class GameMove<ASP extends AllowedSuperPlayer> {
     return false;
   }
 
-  isTransferMove() {
-    return false;
-  }
-
   get latestPerformer() {
     return this.game.players.get((player) => player.id === this.performer.id);
   }
