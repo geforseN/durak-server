@@ -3,7 +3,6 @@ import InsertAttackCardMove from "@/module/DurakGame/entity/GameMove/InsertAttac
 import InsertDefendCardMove from "@/module/DurakGame/entity/GameMove/InsertDefendCardMove.js";
 import StopAttackMove from "@/module/DurakGame/entity/GameMove/StopAttackMove.js";
 import StopDefenseMove from "@/module/DurakGame/entity/GameMove/StopDefenseMove.js";
-import DefenderTransferMove from "@/module/DurakGame/entity/GameMove/DefenderTransferMove.js";
 
 export {
   GameMove,
@@ -11,5 +10,4 @@ export {
   InsertDefendCardMove,
   StopAttackMove,
   StopDefenseMove,
-  DefenderTransferMove,
 };

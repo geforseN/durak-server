@@ -1,12 +1,8 @@
-import assert from "node:assert";
-
 import DurakGame from "@/module/DurakGame/DurakGame.js";
-import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
 import Card from "@/module/DurakGame/entity/Card/index.js";
 import DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
 import DefenderGaveUpMove from "@/module/DurakGame/entity/GameMove/DefenderGaveUpMove.js";
 import {
-  DefenderTransferMove,
   InsertDefendCardMove,
   StopDefenseMove,
 } from "@/module/DurakGame/entity/GameMove/index.js";
@@ -45,12 +41,6 @@ export class AllowedDefender extends AllowedSuperPlayer {
   }
 
   async makeInsertMove(card: Card, slot: DeskSlot) {
-    if (slot.isEmpty()) {
-      await this.ensureCanMakeTransferMove(card);
-      this.defaultBehavior.shouldBeCalled = false;
-      this.defaultBehavior.clearTimeout();
-      return new DefenderTransferMove(this.game, this, { card, slot });
-    }
     await slot.ensureCanBeDefended(card);
     this.defaultBehavior.shouldBeCalled = false;
     this.defaultBehavior.clearTimeout();
