@@ -11,7 +11,7 @@ export default class TalonInitialDistribution {
   execute() {
     const { finalHandCardCount, talon } = this;
     for (const player of this.players) {
-      const count = finalHandCardCount - player.hand.count;
+      const count = finalHandCardCount - player.cards.count;
       talon.cards.provide(player, count);
     }
   }

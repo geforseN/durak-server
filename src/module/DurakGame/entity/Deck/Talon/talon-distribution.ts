@@ -14,10 +14,7 @@ export default class TalonDistribution {
 
   execute() {
     for (const player of this.#playersQueue()) {
-      if (this.talon.isEmpty) {
-        return;
-      }
-      this.talon.cards.provide(player);
+      this.talon.provide(player, player.cards.missing);
     }
   }
 
