@@ -8,20 +8,6 @@ export default class UnbeatenSlot extends DeskSlot {
     super(index);
   }
 
-  override async ensureAllowsTransferMoveForRank(
-    rank: Card["rank"],
-  ): Promise<void> {
-    if (this.attackCard.hasSame({ rank })) {
-      return;
-    }
-    throw new AllowedPlayerBadInputError(
-      `The card you threw has wrong rank, allowed rank is ${rank}`,
-      {
-        header: "Transfer move attempt",
-      },
-    );
-  }
-
   override async ensureCanBeAttacked() {
     throw new AllowedPlayerBadInputError("The slot already attacked", {
       header: "Attack move attempt",

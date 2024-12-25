@@ -34,14 +34,6 @@ export default class DeskSlots {
     return this.#value.at(index) || raise();
   }
 
-  async ensureAllowsTransferMove(card: Card): Promise<void> {
-    return void Promise.all(
-      this.#value.map((slot) =>
-        slot.ensureAllowsTransferMoveForRank(card.rank),
-      ),
-    );
-  }
-
   someSlotHasSameRank(rank: Card["rank"]) {
     return this.#value.some((slot) => slot.hasCardWith({ rank }));
   }

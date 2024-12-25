@@ -7,13 +7,6 @@ export default class DefendedSlot extends DeskSlot {
     super(index);
   }
 
-  override ensureAllowsTransferMoveForRank(_: Card["rank"]): Promise<void> {
-    throw new AllowedPlayerBadInputError(
-      "The transfer move is disallowed because defended slot exist on desk",
-      { header: "Transfer move attempt" },
-    );
-  }
-
   override async ensureCanBeAttacked() {
     throw new AllowedPlayerBadInputError(
       "Cannot perform an attack because the slot is completely filled",

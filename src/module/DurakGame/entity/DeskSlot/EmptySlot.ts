@@ -4,10 +4,6 @@ import DeskSlot from "@/module/DurakGame/entity/DeskSlot/DeskSlot.abstract.js";
 import { UnbeatenSlot, UnbeatenTrumpSlot } from "@/module/DurakGame/entity/DeskSlot/index.js";
 
 export default class EmptySlot extends DeskSlot {
-  override async ensureAllowsTransferMoveForRank(_: Card["rank"]) {
-    return;
-  }
-
   override async ensureCanBeAttacked() {
     return;
   }

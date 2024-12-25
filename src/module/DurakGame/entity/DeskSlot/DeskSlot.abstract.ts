@@ -56,8 +56,6 @@ export default abstract class DeskSlot {
     return false;
   }
 
-  abstract ensureAllowsTransferMoveForRank(_rank: Card["rank"]): Promise<void>;
-
   abstract ensureCanBeAttacked(): Promise<void>;
 
   abstract ensureCanBeDefended(_card: Card): Promise<void>;
