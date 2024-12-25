@@ -7,7 +7,6 @@ import type Card from "@/module/DurakGame/entity/Card/index.js";
 import type DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
 import type GameMove from "@/module/DurakGame/entity/GameMove/GameMove.abstract.js";
 import type { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
-import type DefaultBehavior from "@/module/DurakGame/entity/Player/DefaultBehavior/DefaultBehavior.js";
 import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 
 import SuperHand from "@/module/DurakGame/entity/Deck/Hand/SuperHand.js";
@@ -114,8 +113,6 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
   abstract asAllowedAgain(): AllowedSuperPlayer;
 
   abstract asDisallowed(): SuperPlayer;
-
-  abstract defaultBehavior: DefaultBehavior<AllowedSuperPlayer>;
 
   abstract makeInsertMove(
     _card: Card,
