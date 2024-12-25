@@ -15,7 +15,6 @@ export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefen
     super(allowedDefender, game, shouldBeCalled);
   }
 
-  // @ts-ignore really weird place, should refactor
   async makeMove() {
     if (!this.shouldBeCalled) {
       return console.log("defaultBehavior DEFENDER: fast return");
@@ -24,9 +23,8 @@ export class AllowedDefenderDefaultBehavior extends DefaultBehavior<AllowedDefen
     assert.ok(this.allowedPlayer.isAllowed());
     try {
       try {
-        // @ts-ignore really weird place, should refactor
         const card = await Promise.any(
-          [...this.allowedPlayer.hand].map<Promise<Card>>(
+          [...this.allowedPlayer.hand].map(
             async (card: Card) => {
               await this.allowedPlayer.ensureCanMakeTransferMove(card);
               return card;
