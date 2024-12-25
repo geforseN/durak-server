@@ -4,7 +4,10 @@ export default class CardSuit {
   constructor(readonly value: Suit) {}
 
   isEqualTo(suit: Suit | CardSuit) {
-    const value = suit instanceof CardSuit ? suit.value : suit;
-    return this.value === value;
+    return this.toString() === suit.toString();
+  }
+
+  toString() {
+    return this.value;
   }
 }

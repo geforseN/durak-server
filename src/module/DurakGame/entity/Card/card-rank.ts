@@ -4,11 +4,14 @@ export default class CardRank {
   constructor(readonly value: Rank) {}
 
   isEqualTo(rank: Rank | CardRank) {
-    const value = rank instanceof CardRank ? rank.value : rank;
-    return this.value === value;
+    return this.toString() === rank.toString();
   }
 
-  get asOneChar() {
+  toOneCharString() {
     return this.isEqualTo("10") ? "0" : this.value;
+  }
+
+  toString() {
+    return this.value;
   }
 }

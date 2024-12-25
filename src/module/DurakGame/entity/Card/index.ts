@@ -12,20 +12,19 @@ export default class Card {
   constructor(
     readonly rank: CardRank,
     readonly suit: CardSuit,
-  ) {
-  }
+  ) {}
 
   static create(rank: Rank, suit: Suit) {
     return new Card(new CardRank(rank), new CardSuit(suit));
   }
 
-  asTwoChars(): `${CardRank["asOneChar"]}${CardSuit["value"]}` {
-    return `${this.rank.asOneChar}${this.suit.value}`;
-  }
-
   isEqualTo(card: Card | CardDTO) {
     const dto = card instanceof Card ? card.toJSON() : card;
     return this.rank.isEqualTo(dto.rank) && this.suit.isEqualTo(dto.suit);
+  }
+
+  toTwoCharString(): `${ReturnType<CardRank["toOneCharString"]>}${ReturnType<CardSuit["toString"]>}` {
+    return `${this.rank.toOneCharString()}${this.suit.toString()}`;
   }
 
   toJSON() {
