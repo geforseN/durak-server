@@ -35,15 +35,7 @@ const start = async () => {
         host: HOST,
       }),
     ).parse(process.env);
-    const fastify = await makeFastify(fastifyListenOptions, loggerInstance);
-    process.on("SIGTERM", () => {
-      console.log("SIGTERM received. Shutting down...");
-      fastify.close(() => {
-        console.log("Server closed gracefully.");
-        process.exit(0);
-      });
-    });
-
+    await makeFastify(fastifyListenOptions, loggerInstance);
   } catch (reason) {
     console.error(`Failed to start`, { reason });
     process.exitCode = 1;
