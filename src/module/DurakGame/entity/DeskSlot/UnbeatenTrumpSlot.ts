@@ -11,14 +11,14 @@ export default class UnbeatenTrumpSlot extends UnbeatenSlot {
     return true;
   }
 
-  override async ensureCanBeDefended(card: Card) {
+  override ensureCanBeDefended(card: Card) {
     if (!card.isTrump) {
       throw new AllowedPlayerBadInputError(
         "A trump card can only be beaten with a trump card",
         { header: "Defense move attempt" },
       );
     }
-    if (this.attackCard.power > card.power) {
+    if (this.attackCard.strongerThan(card)) {
       throw new AllowedPlayerBadInputError("The card you threw is weaker", {
         header: "Defense move attempt",
       });
