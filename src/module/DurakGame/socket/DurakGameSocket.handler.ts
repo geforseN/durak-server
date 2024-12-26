@@ -2,9 +2,8 @@ import type { DurakGameSocket } from "@durak-game/durak-dts";
 
 import DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import { prisma } from "@/config/index.js";
+import { prisma, sessionStore } from "@/config/index.js";
 import durakGamesStore from "@/common/durakGamesStore.js";
-import raise from "@/common/raise.js";
 import NotificationAlert from "@/module/NotificationAlert/index.js";
 import {
   cardPlaceListener,
@@ -13,57 +12,95 @@ import {
 import assert from "node:assert";
 import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
 import type { Logger } from "pino";
+import type { SessionStore } from "@fastify/session";
+import type { Session } from "fastify";
 
-export function addListenersWhichAreNeededForStartedGame(
-  this: DurakGameSocket.Socket,
-  game: DurakGame,
+function getSid(socket: DurakGameSocket.Socket) {
+  const { cookie } = socket.handshake.headers;
+  if (typeof cookie !== "string") {
+    return null;
+  }
+  const cookieSessionId = getSidFromCookie(cookie);
+  return cookieSessionId;
+}
+
+export async function getSession(
+  sessionId: string,
+  sessionStore: SessionStore,
 ) {
-  const playerId = this.data.user?.id || raise();
-  this.join(playerId);
-  game.restoreState(this);
-  this.on("superPlayer__putCardOnDesk", (cardDTO, slotIndex) => {
-    cardPlaceListener.call({ game, playerId }, cardDTO, slotIndex);
-  });
-  this.on("superPlayer__stopMove", () => {
-    stopMoveListener.call({ game, playerId });
-  });
-  // TODO player__exitGame handler must not only remove player
-  // handler also must handle if left player attacker or defender and more stuff ...
-  this.on("player__exitGame", () => {
-    try {
-      game.players.remove((player) => player.id === playerId).exitGame();
-    } catch (error) {
-      console.log(error);
+  const asyncSession = Promise.withResolvers<Session>();
+  sessionStore.get(sessionId, (error, session) => {
+    if (error || !session || !session.user) {
+      console.log(
+        {
+          error,
+          session,
+        },
+        "store couldn't get session data",
+      );
+      asyncSession.reject();
+    } else {
+      asyncSession.resolve(session);
     }
   });
-  this.on("disconnect", (_reason, _description) => {
-    this.leave(playerId);
-  });
+  return asyncSession.promise;
+}
+
+export function getSidFromCookie(fullCookie: string) {
+  const match = fullCookie.match(/(?:^|;\s*)sessionId=([^;]+)/);
+  if (!match) {
+    return null;
+  }
+  const sessionId = decodeURIComponent(match[1]);
+  if (sessionId === null) {
+    return null;
+  }
+  const sid = sessionId.split(".")[0];
+  if (typeof sid !== "string") {
+    console.warn("sid is not string");
+    return null;
+  }
+  return sid;
 }
 
 // TODO add logic for NonStartedGame graceful remove
 // IF could not create game THEN send to socket THAT the game could get started
 // NOTE: game can be non started if user have not redirected to game page for some time (like 20 seconds or so)
-export default function durakGameSocketHandler(
+export default async function durakGameSocketHandler(
   this: DurakGameSocket.Namespace,
   socket: DurakGameSocket.Socket,
   log: Logger,
 ) {
-  const {
-    data: { user: player },
-    nsp: namespace,
-  } = socket;
-  const gameId = namespace.name.replace("/game/", "");
-  console.assert(namespace === this);
-  const playerId = player?.id;
-  if (typeof playerId !== "string") {
-    return handleNotAuthorized(socket);
-  }
+  // TODO: ensure gameId is uuid (via zod)
+  const gameId = this.name.replace("/game/", "");
   socket.onAny((eventName: string, ...args) => log.debug(eventName, args));
   const game = durakGamesStore.getGameWithId(gameId);
   if (!game) {
     return handleNoSuchGameOnline(socket, gameId);
   }
+  const sid = getSid(socket);
+  if (sid === null) {
+    return handleNotAuthorized(socket);
+  }
+  socket.data.sid = sid;
+  // TODO: add zod safeParse usage
+  const session = await getSession(sid, sessionStore)
+    .then((session) => {
+      if (
+        !("user" in session) ||
+        typeof session.user !== "object" ||
+        session.user === null ||
+        typeof session.user.id !== "string"
+      ) {
+        return null;
+      }
+      return session;
+    })
+    .catch(() => null);
+  if (session === null) {
+    return handleNotAuthorized(socket);
+  }
+  socket.data.user = session.user;
   const asyncGame = Promise.withResolvers<{
     game: DurakGame;
     player: {
@@ -71,6 +108,7 @@ export default function durakGameSocketHandler(
       sockets: DurakGameSocket.Socket[];
     };
   }>();
+  const playerId = session.user!.id;
   const asyncGameTimeout = setTimeout(
     () => {
       asyncGame.reject();

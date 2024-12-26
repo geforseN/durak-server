@@ -10,8 +10,8 @@ export async function createSocketIoServer(io: Server, log: Logger) {
   );
   gamesNamespace.on(
     "connection",
-    function (this: DurakGameSocket.Namespace, socket) {
-      durakGameSocketHandler.call(this, socket, log);
+    async function (this: DurakGameSocket.Namespace, socket) {
+      await durakGameSocketHandler.call(this, socket, log);
     },
   );
   if (isDevelopment) {
