@@ -35,17 +35,6 @@ export default class DurakGamesStore<
     this.values.set(lobby.id, new NonStartedDurakGame(lobby, this));
   }
 
-  updateNonStartedGameToStarted(
-    nonStartedGame: NonStartedDurakGame,
-    namespace: DurakGameSocket.Namespace,
-  ) {
-    assert.ok(nonStartedGame && nonStartedGame.info.status === "non started");
-    const startedGame = new DurakGame(nonStartedGame, namespace);
-    this.values.set(startedGame.info.id, startedGame);
-    nonStartedGame.emitEverySocketWithStartedGameDetails(startedGame);
-    return startedGame;
-  }
-
   get startedGamesState() {
     return [...this.values.values()]
       .filter((game): game is DurakGame =>

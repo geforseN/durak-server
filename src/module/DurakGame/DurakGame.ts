@@ -23,7 +23,6 @@ import {
   Talon,
   createPlayers,
 } from "@/module/DurakGame/entity/index.js";
-import { addListenersWhichAreNeededForStartedGame } from "@/module/DurakGame/socket/DurakGameSocket.handler.js";
 import {
   type DurakGameWebsocketService,
   createServices,
@@ -141,12 +140,6 @@ export default class DurakGame {
       }
       this.round = newGameRound;
     }
-  }
-
-  handleSocketConnection(
-    socket: DurakGameSocket.Socket,
-  ) {
-    addListenersWhichAreNeededForStartedGame.call(socket, this);
   }
 
   restoreState(socket: DurakGameSocket.Socket) {
