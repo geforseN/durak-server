@@ -30,29 +30,11 @@ export abstract class BasePlayer {
   hasLeftTheGame = false;
   readonly info: LobbyUser;
 
-  // TODO think about it ...
-  withEmit = {
-    receiveCards: (...cards: Card[]) => {
-      this.hand.receive(cards);
-      this.wsService.receiveCards(cards, this);
-    },
-  };
-
-  // TODO think about it ...
-  withoutEmit = {
-    receiveCards: (...cards: Card[]) => {
-      this.hand.receive(cards);
-    },
-  };
-
-  readonly wsService: GamePlayerWebsocketService;
-
   constructor(basePlayer: BasePlayer) {
     this.info = basePlayer.info;
     this._left = basePlayer._left;
     this._right = basePlayer._right;
     this.hand = basePlayer.hand;
-    this.wsService = basePlayer.wsService;
     this.hasLeftTheGame = false;
   }
 
@@ -98,7 +80,6 @@ export abstract class BasePlayer {
   }
 
   emitKind() {
-    this.wsService.emitOwnKind(this);
   }
 
   exitGame() {
@@ -133,7 +114,6 @@ export abstract class BasePlayer {
 
   receiveCards(...cards: Card[]): void {
     this.hand.receive(cards);
-    this.wsService.receiveCards(cards, this);
   }
 
   toDebugJSON() {

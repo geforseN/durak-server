@@ -23,13 +23,8 @@ import {
   Talon,
   createPlayers,
 } from "@/module/DurakGame/entity/index.js";
-import {
-  type DurakGameWebsocketService,
-  createServices,
-} from "@/module/DurakGame/socket/service/index.js";
 
 export default class DurakGame {
-  readonly #wsService: DurakGameWebsocketService;
   readonly desk: Desk;
   readonly discard: Discard;
   readonly history: GameHistory;
@@ -37,7 +32,6 @@ export default class DurakGame {
     adminId: string;
     durakId?: string;
     id: string;
-    namespace: DurakGameSocket.Namespace;
     shouldBeUsedOnlyForTest: boolean;
     shouldGiveRequiredCards: boolean;
     shouldMakeInitialDistribution: boolean;
@@ -58,7 +52,6 @@ export default class DurakGame {
 
   constructor(
     nonStartedGame: NonStartedDurakGame,
-    namespace: DurakGameSocket.Namespace,
     {
       shouldBeUsedOnlyForTest = false,
       shouldGiveRequiredCards = true,
@@ -73,10 +66,8 @@ export default class DurakGame {
       shouldWriteEndedGameInDatabase?: boolean;
     } = {},
   ) {
-    const wsServices = createServices(namespace);
     this.info = {
       ...nonStartedGame.info,
-      namespace,
       shouldBeUsedOnlyForTest,
       shouldGiveRequiredCards,
       shouldMakeInitialDistribution,
@@ -91,11 +82,10 @@ export default class DurakGame {
         moveTime: 2147483647,
       },
     };
-    this.talon = new Talon(this.settings.talon, wsServices.talonService);
-    this.players = createPlayers(nonStartedGame, wsServices.playerService);
-    this.discard = new Discard(wsServices.discardService);
-    this.desk = new Desk(nonStartedGame.settings.desk, wsServices.deskService);
-    this.#wsService = wsServices.gameService;
+    this.talon = new Talon(this.settings.talon);
+    this.players = createPlayers(nonStartedGame);
+    this.discard = new Discard();
+    this.desk = new Desk(nonStartedGame.settings.desk);
     this.round = new GameRound(this, new GameRoundMoves());
     this.talonDistribution = new GameRoundDistribution(this);
     this.history = new GameHistory([...this.players]);
@@ -120,7 +110,6 @@ export default class DurakGame {
     if (this.info.shouldBeUsedOnlyForTest) {
       return;
     }
-    this.#wsService.end(this);
   }
 
   handleNewMove(move: GameMove<AllowedSuperPlayer>) {
@@ -140,10 +129,6 @@ export default class DurakGame {
       }
       this.round = newGameRound;
     }
-  }
-
-  restoreState(socket: DurakGameSocket.Socket) {
-    this.#wsService.restoreState(this, socket);
   }
 
   start() {

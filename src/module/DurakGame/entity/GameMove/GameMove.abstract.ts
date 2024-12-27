@@ -25,7 +25,7 @@ export default abstract class GameMove<ASP extends AllowedSuperPlayer> {
     },
     letPerformerMoveAgain: () => {
       this.game.players.mutateWith(this.performer.asAllowedAgain());
-     },
+    },
     letPrimalAttackerMove: () => {
       this.game.players
         .mutateWith(this.performer.asDisallowed())
@@ -40,19 +40,7 @@ export default abstract class GameMove<ASP extends AllowedSuperPlayer> {
     this.performer = performer;
   }
 
-  emitContextToPlayers() {
-    this.game.info.namespace.to(this.performer.id).emit("move::new", {
-      move: {
-        name: this.constructor.name,
-      },
-    });
-    this.game.info.namespace.except(this.performer.id).emit("move::new", {
-      move: {
-        name: this.constructor.name,
-        performer: { id: this.performer.id },
-      },
-    });
-  }
+  emitContextToPlayers() {}
 
   isDoneByAttacker(): this is GameMove<AllowedAttacker> {
     return this.performer.isAllowedAttacker();

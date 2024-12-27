@@ -29,25 +29,5 @@ export default abstract class InsertGameMove<
     this.game.desk.update(this.slot, this.card, this.performer);
   }
 
-  override emitContextToPlayers() {
-    this.game.info.namespace.to(this.performer.id).emit("move::new", {
-      move: {
-        name: this.constructor.name,
-        insert: {
-          card: this.card,
-          slot: { index: this.slot.index },
-        },
-      },
-    });
-    this.game.info.namespace.except(this.performer.id).emit("move::new", {
-      move: {
-        performer: { id: this.performer.id },
-        name: this.constructor.name,
-        insert: {
-          card: this.card,
-          slot: { index: this.slot.index },
-        },
-      },
-    });
-  }
+  override emitContextToPlayers() {}
 }

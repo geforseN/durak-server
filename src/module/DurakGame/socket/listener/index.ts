@@ -17,15 +17,7 @@ export async function stopMoveListener(this: {
     assert.strict.equal(player, this.game.players.allowed);
     await player.makeNewMove();
   } catch (error) {
-    if (error instanceof AllowedPlayerBadInputError) {
-      return this.game.info.namespace
-        .to(this.playerId)
-        .emit("notification::push", error.asNotificationAlert);
-    }
     assert.ok(error instanceof Error);
-    this.game.info.namespace
-      .to(this.playerId)
-      .emit("notification::push", new NotificationAlert(error));
   }
 }
 
@@ -41,14 +33,6 @@ export async function cardPlaceListener(
     assert.strict.equal(player, this.game.players.allowed);
     await player.makeNewMove(card, slotIndex);
   } catch (error) {
-    if (error instanceof AllowedPlayerBadInputError) {
-      return this.game.info.namespace
-        .to(this.playerId)
-        .emit("notification::push", error.asNotificationAlert);
-    }
     assert.ok(error instanceof Error);
-    this.game.info.namespace
-      .to(this.playerId)
-      .emit("notification::push", new NotificationAlert(error));
   }
 }

@@ -1,5 +1,3 @@
-import type GamePlayerWebsocketService from "@/module/DurakGame/entity/Player/Player.service.js";
-
 import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
 import { Hand } from "@/module/DurakGame/entity/Deck/index.js";
 import NonStartedGameUser from "@/module/DurakGame/entity/Player/NonStartedGameUser.js";
@@ -8,7 +6,6 @@ import { Players } from "@/module/DurakGame/entity/Players/Players.js";
 
 export default function createPlayers(
   nonStartedGame: NonStartedDurakGame,
-  service: GamePlayerWebsocketService,
 ) {
   const playersData = nonStartedGame.usersInfo
     .map(
@@ -18,7 +15,6 @@ export default function createPlayers(
           index,
           info,
           lobbySlotsCount: array.length,
-          wsService: service,
         }),
     )
     .map((user) => Player.create(user));

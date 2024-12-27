@@ -3,9 +3,7 @@ import type { AllowedMissingCardCount } from "@durak-game/durak-dts";
 import assert from "node:assert";
 
 import type Card from "@/module/DurakGame/entity/Card/index.js";
-import type { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
 import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
-import type GameDeskWebsocketService from "@/module/DurakGame/entity/Desk/Desk.service.js";
 
 import raise from "@/common/raise.js";
 import { type CanProvideCards } from "@/module/DurakGame/DurakGame.js";
@@ -20,19 +18,14 @@ import {
 import DeskSlots from "@/module/DurakGame/entity/DeskSlots/index.js";
 
 export default class Desk implements CanProvideCards<Defender | Discard> {
-  readonly #wsService: GameDeskWebsocketService;
   _slots: Readonly<DeskSlots>;
   readonly allowedFilledSlotCount: number;
-  constructor(
-    settings: {
-      allowedFilledSlotCount: AllowedMissingCardCount;
-      slotCount: AllowedMissingCardCount;
-    },
-    wsService: GameDeskWebsocketService,
-  ) {
+  constructor(settings: {
+    allowedFilledSlotCount: AllowedMissingCardCount;
+    slotCount: AllowedMissingCardCount;
+  }) {
     this.allowedFilledSlotCount = settings.allowedFilledSlotCount;
     this._slots = new DeskSlots(settings.slotCount);
-    this.#wsService = wsService;
   }
 
   *[Symbol.iterator]() {
@@ -46,25 +39,23 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     throw new AllowedPlayerBadInputError("Нет схожего ранга на доске");
   }
 
-  ensureOnlyHasRank(rank: Card['rank']) {
+  ensureOnlyHasRank(rank: Card["rank"]) {
     this.ensureIncludesRank(rank);
-    assert.ok([...this.ranks].length !== 0, 'The desk is empty');
-    assert.ok([...this.ranks].length === 1, 'The desk has more than one rank');
+    assert.ok([...this.ranks].length !== 0, "The desk is empty");
+    assert.ok([...this.ranks].length === 1, "The desk has more than one rank");
   }
 
   getValidSlot(slotData: unknown) {
     if (slotData instanceof DeskSlot) {
-      return this.slotAt(slotData.index)
+      return this.slotAt(slotData.index);
     }
     assert.ok(DeskSlot.isSlotIndexLike(slotData));
     return this.slotAt(slotData);
-
   }
 
   provideCards<Target extends Defender | Discard>(target: Target) {
     target.receiveCards(...this._slots.cards);
     this._slots = this._slots.toEmpty();
-    this.#wsService?.clear();
   }
 
   slotAt(index: number) {
@@ -79,9 +70,8 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
     return { slots: [...this._slots] };
   }
 
-  update(slot: DeskSlot, card: Card, performer: AllowedSuperPlayer) {
+  update(slot: DeskSlot, card: Card) {
     this._slots.update(slot, card);
-    this.#wsService?.update(slot, card, performer);
   }
 
   get allowsAttackerMove(): boolean {

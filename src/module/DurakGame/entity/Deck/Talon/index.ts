@@ -3,7 +3,6 @@ import { Card as CardDTO } from "@durak-game/durak-dts";
 import assert from "node:assert";
 
 import type { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
-import type GameTalonWebsocketService from "@/module/DurakGame/entity/Deck/Talon/Talon.service.js";
 
 import { type CanProvideCards } from "@/module/DurakGame/DurakGame.js";
 import { TrumpCard } from "@/module/DurakGame/entity/Card/TrumpCard.js";
@@ -12,16 +11,13 @@ import Deck from "@/module/DurakGame/entity/Deck/Deck.abstract.js";
 import buildTalon from "@/module/DurakGame/entity/Deck/Talon/buildTalon.js";
 
 export default class Talon extends Deck implements CanProvideCards<BasePlayer> {
-  readonly #wsService: GameTalonWebsocketService;
   readonly trumpCard: Card;
 
   constructor(
     settings: GameSettings["talon"],
-    wsService: GameTalonWebsocketService,
   ) {
     super(buildTalon(settings));
     this.trumpCard = new TrumpCard(this.value[0]);
-    this.#wsService = wsService;
   }
 
   get #lastCards() {
@@ -51,7 +47,6 @@ export default class Talon extends Deck implements CanProvideCards<BasePlayer> {
   provideCards(player: BasePlayer, count = player.missingNumberOfCards) {
     if (count === 0) return;
     const cards = this.#pop(count);
-    this.#wsService.provideCardsAnimation(this, player, cards);
     player.receiveCards(...cards);
   }
 
