@@ -62,9 +62,6 @@ importers:
       pino:
         specifier: ^9.5.0
         version: 9.5.0
-      socket.io:
-        specifier: ^4.7.2
-        version: 4.8.1
       std-env:
         specifier: ^3.8.0
         version: 3.8.0
