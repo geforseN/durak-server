@@ -4,6 +4,7 @@ import durakGamesStore from "@/common/durakGamesStore.js";
 import DurakGame from "@/module/DurakGame/DurakGame.js";
 import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
 import type { WebSocket } from "ws";
+import { GameRestoreStateEventSchema } from "@/utils/durak-game-state-restore-schema.js";
 
 export default <FastifyPluginAsyncZod>async function (app) {
   app.get(
@@ -62,20 +63,21 @@ export default <FastifyPluginAsyncZod>async function (app) {
           );
           this.log.info('sending "game::state::restore"', { gameId, playerId });
           socket.send(
-            JSON.stringify({
-              event: "game::state::restore",
-              state: {
-                __allowedPlayer: game.players.allowed.toJSON(),
-                desk: game.desk.toJSON(),
-                discard: game.discard.toJSON(),
-                enemies: gamePlayer.enemies,
-                round: game.round.toJSON(),
-                self: gamePlayer.toSelf(),
-                settings: game.settings,
-                status: game.info.status,
-                talon: game.talon.toJSON(),
-              },
-            }),
+            JSON.stringify(
+              GameRestoreStateEventSchema.parse({
+                event: "game::state::restore",
+                payload: {
+                  desk: game.desk.toJSON(),
+                  discard: game.discard.toJSON(),
+                  enemies: gamePlayer.enemies,
+                  round: game.round.toJSON(),
+                  self: gamePlayer.toSelf(),
+                  settings: game.settings,
+                  status: game.info.status,
+                  talon: game.talon.toJSON(),
+                },
+              }),
+            ),
           );
         }
       });
