@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "test": "vitest",
     "build:railway": "tsc || true && tsc-alias",
-    "start:railway": "prisma generate && node dist/main.js"
+    "start:railway": "prisma generate && node dist/main.js",
+    "generate-zod-from-prisma": "npx prisma generate zod"
   },
   "keywords": [],
   "author": "",
