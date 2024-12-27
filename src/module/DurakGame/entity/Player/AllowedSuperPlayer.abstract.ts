@@ -70,9 +70,7 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
   }
 
   remove(cb: (_card: Card) => boolean) {
-    const card = this.superHand.remove(cb);
-    this.wsService.remove(card, this);
-    return card;
+    return this.superHand.remove(cb);
   }
 
   toJSON() {

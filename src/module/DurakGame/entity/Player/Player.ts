@@ -17,7 +17,6 @@ export class Player extends BasePlayer {
         left: undefined,
         // @ts-expect-error hard to type for now
         right: undefined,
-        wsService: user.wsService,
       }),
       user.rightPlayerIndex,
     ];

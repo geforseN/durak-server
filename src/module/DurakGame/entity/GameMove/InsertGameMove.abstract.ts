@@ -26,7 +26,7 @@ export default abstract class InsertGameMove<
 
   makeCardInsert() {
     this.performer.remove((card) => card === this.card);
-    this.game.desk.update(this.slot, this.card, this.performer);
+    this.game.desk.update(this.slot, this.card);
   }
 
   override emitContextToPlayers() {}
