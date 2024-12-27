@@ -12,7 +12,6 @@ import type { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/Allowe
 import type { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
 import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 import type { Player } from "@/module/DurakGame/entity/Player/Player.js";
-import type GamePlayerWebsocketService from "@/module/DurakGame/entity/Player/Player.service.js";
 import type { SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
 
 import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
