@@ -73,8 +73,9 @@ export default async function durakGameSocketHandler(
 ) {
   // TODO: ensure gameId is uuid (via zod)
   const gameId = this.name.replace("/game/", "");
+  log.info("connected to game %s", gameId);
   socket.onAny((eventName: string, ...args) => log.debug(eventName, args));
-  const game = durakGamesStore.getGameWithId(gameId);
+  const game = durakGamesStore.values.get(gameId);
   if (!game) {
     return handleNoSuchGameOnline(socket, gameId);
   }
@@ -109,17 +110,11 @@ export default async function durakGameSocketHandler(
     };
   }>();
   const playerId = session.user!.id;
-  const asyncGameTimeout = setTimeout(
-    () => {
-      asyncGame.reject();
-    },
-    // TODO: make it configurable via env
-    1000 * 60 * 2 /* 2 minutes */,
-  );
+  log.info("connected to game", { gameId, playerId });
   asyncGame.promise.then(({ game, player }) => {
-    clearTimeout(asyncGameTimeout);
     for (const socket of player.sockets) {
       const playerId = player.id;
+      log.info("game ready, adding socket listeners", { gameId, playerId });
       socket.join(playerId);
       game.restoreState(socket);
       socket.on("superPlayer__putCardOnDesk", (cardDTO, slotIndex) => {
@@ -155,12 +150,12 @@ export default async function durakGameSocketHandler(
         startedGame = storeGame;
       } else if (storeGame) {
         // TODO: game must not emit anything (round emits 100%)
-        startedGame = new DurakGame(game, namespace);
+        startedGame = new DurakGame(game, this);
         durakGamesStore.values.set(startedGame.info.id, startedGame);
       } else {
         throw new Error("storeGame is not DurakGame or NonStartedDurakGame");
       }
-      const playerSocketsSet = game.sockets.get(player.id);
+      const playerSocketsSet = game.sockets.get(playerId);
       assert.ok(playerSocketsSet);
       asyncGame.resolve({
         game: startedGame,
