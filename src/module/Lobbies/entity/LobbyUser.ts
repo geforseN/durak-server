@@ -1,8 +1,6 @@
+import type { Card } from "@durak-game/durak-dts";
 import type { User, UserProfile } from "@prisma/client";
 
-import { Card } from "@/module/DurakGame/entity/index.js";
-
-/** @property {Card[]} cards - property which can be used, for now, only for tests */
 export default class LobbyUser {
   cardsToAdd: Card[];
   id: string;
@@ -17,6 +15,10 @@ export default class LobbyUser {
   }
 
   toJSON() {
-    return { ...this, cardsToAdd: undefined };
+    return {
+      id: this.id,
+      profile: this.profile,
+      isAdmin: this.isAdmin,
+    };
   }
 }
