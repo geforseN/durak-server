@@ -1,6 +1,4 @@
 import type { GameSettings } from "@durak-game/durak-dts";
-import type GameMove from "@/module/DurakGame/entity/GameMove/GameMove.abstract.js";
-import type AllowedSuperPlayer from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
 import type Players from "@/module/DurakGame/entity/Players/Players.js";
 import type GameRound from "@/module/DurakGame/entity/GameRound/index.js";
 import type GameHistory from "@/module/DurakGame/entity/History.js";
@@ -36,7 +34,7 @@ export default class DurakGame {
     return this.decks.discard;
   }
 
-  handleNewMove(move: GameMove<AllowedSuperPlayer>) {
+  handleNewMove() {
     if (move.isInsertMove()) {
       move.makeCardInsert();
     }
@@ -51,8 +49,6 @@ export default class DurakGame {
         this.history.rounds.add(this.round);
         this.round = newGameRound;
       }
-    } else {
-      this.players.allowed.setTimer();
     }
   }
 
