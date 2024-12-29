@@ -51,14 +51,4 @@ export default class DurakGame {
       }
     }
   }
-
-  toGameJSON() {
-    return {
-      state: {
-        decks: this.decks.toJSON(),
-        round: this.round.toJSON(),
-      },
-      settings: this.settings,
-    };
-  }
 }
