@@ -67,7 +67,9 @@ export default class Desk implements CanProvideCards<Defender | Discard> {
   toJSON(): {
     slots: DeskSlot[];
   } {
-    return { slots: [...this._slots] };
+    return {
+      slots: [...this._slots],
+    };
   }
 
   update(slot: DeskSlot, card: Card) {
