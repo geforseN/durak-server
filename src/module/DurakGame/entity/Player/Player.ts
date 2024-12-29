@@ -2,7 +2,7 @@ import type NonStartedGameUser from "@/module/DurakGame/entity/Player/NonStarted
 
 import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
-export class Player extends BasePlayer {
+export class Player {
   constructor(basePlayer: BasePlayer) {
     super(basePlayer);
   }
@@ -13,9 +13,7 @@ export class Player extends BasePlayer {
       new Player({
         hand: user.hand,
         info: user.info,
-        // @ts-expect-error hard to type for now
         left: undefined,
-        // @ts-expect-error hard to type for now
         right: undefined,
       }),
       user.rightPlayerIndex,

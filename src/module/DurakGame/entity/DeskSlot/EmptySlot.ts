@@ -4,11 +4,15 @@ import DeskSlot from "@/module/DurakGame/entity/DeskSlot/DeskSlot.abstract.js";
 import { UnbeatenSlot, UnbeatenTrumpSlot } from "@/module/DurakGame/entity/DeskSlot/index.js";
 
 export default class EmptySlot extends DeskSlot {
-  override async ensureCanBeAttacked() {
+  override ensureAllowsTransferMove() {
     return;
   }
 
-  override async ensureCanBeDefended() {
+  override ensureCanBeAttacked() {
+    return;
+  }
+
+  override ensureCanBeDefended() {
     throw new AllowedPlayerBadInputError("Empty slot can not be defended", {
       header: "Defense move attempt",
     });

@@ -3,9 +3,8 @@ import type DurakGame from "@/module/DurakGame/DurakGame.js";
 import { AllowedDefender } from "@/module/DurakGame/entity/Player/AllowedDefender.js";
 import { type AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
 import { type BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
-import { SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
 
-export class Defender extends SuperPlayer {
+export class Defender {
   constructor(
     basePlayer: BasePlayer,
   ) {
@@ -21,7 +20,7 @@ export class Defender extends SuperPlayer {
   }
 
   canNotDefend(cardCount: number) {
-    return !this.canTakeMore(cardCount);
+    return !this.hand.cards.canTakeMore(cardCount);
   }
 
   // REVIEW - code is smelly

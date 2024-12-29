@@ -4,6 +4,8 @@ import { fastifyCors } from "@fastify/cors";
 import { fastifyFormbody } from "@fastify/formbody";
 import { fastifySession } from "@fastify/session";
 import { fastifyWebsocket } from "@fastify/websocket";
+import { fastifySensible } from "@fastify/sensible";
+import fastifySocketIO from "fastify-socket.io";
 import { env, sessionStore } from "@/config/index.js";
 
 export default fp(<FastifyPluginAsyncZod>async function (app) {
@@ -28,6 +30,14 @@ export default fp(<FastifyPluginAsyncZod>async function (app) {
       secret: env.SESSION_SECRET,
       store: sessionStore,
     })
-    .register(fastifyWebsocket);
+    .register(fastifyWebsocket)
+    .register(fastifySensible)
+    .register(fastifySocketIO.default, {
+      cors: {
+        credentials: true,
+        origin: env.SOCKET_IO_CORS_ORIGIN,
+        methods: ["GET", "POST"],
+      },
+    });
   app.log.trace("Loaded `core` plugins.");
 });

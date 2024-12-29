@@ -3,18 +3,29 @@ import Card from "@/module/DurakGame/entity/Card/index.js";
 import DeskSlot from "@/module/DurakGame/entity/DeskSlot/DeskSlot.abstract.js";
 
 export default class DefendedSlot extends DeskSlot {
-  constructor(index: number, public attackCard: Card, public defendCard: Card) {
+  constructor(
+    index: number,
+    public attackCard: Card,
+    public defendCard: Card,
+  ) {
     super(index);
   }
 
-  override async ensureCanBeAttacked() {
+  override ensureAllowsTransferMove() {
+    throw new AllowedPlayerBadInputError(
+      "The transfer move is disallowed because defended slot exist on desk",
+      { header: "Transfer move attempt" },
+    );
+  }
+
+  override ensureCanBeAttacked() {
     throw new AllowedPlayerBadInputError(
       "Cannot perform an attack because the slot is completely filled",
       { header: "Attack move attempt" },
     );
   }
 
-  override async ensureCanBeDefended() {
+  override ensureCanBeDefended() {
     throw new AllowedPlayerBadInputError(
       "Cannot perform a defense because the slot is defended",
       { header: "Defense move attempt" },

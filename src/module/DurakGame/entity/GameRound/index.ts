@@ -1,52 +1,121 @@
 import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
-import GameRoundMoves from "@/module/DurakGame/entity/GameRound/GameRoundMoves.js";
+import BasePlayer from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import Moves, { type Move } from "@/module/DurakGame/entity/GameRound/Moves.js";
+import GameDesk from "@/module/DurakGame/entity/Desk/index.js";
 
 export default class GameRound {
-  readonly game: DurakGame;
-  readonly moves: GameRoundMoves;
-  readonly number: number;
+  constructor(
+    public readonly number: number,
+    public desk: GameDesk,
+    public moves: Moves,
+    private readonly game: DurakGame,
+  ) {}
 
-  constructor(game: DurakGame, moves = new GameRoundMoves()) {
-    this.game = game;
-    this.number = (game.round?.number || 0) + 1;
-    this.moves = moves;
-    this.makeEmitAboutStart();
-  }
-
-  makeEmitAboutStart() {
-    return this;
-  }
-
-  nextRound() {
-    return new GameRound(this.game)
+  asNext() {
+    return new GameRound(
+      this.number + 1,
+      this.desk.withSameSettings(),
+      Moves.empty(),
+      this.game,
+    );
   }
 
   toJSON() {
-    return { number: this.number };
+    return {
+      number: this.number,
+      desk: this.desk.toJSON(),
+    };
+  }
+}
+
+class SettledGameRound {
+  constructor(
+    public readonly number: number,
+    public desk: GameDesk,
+    public moves: Moves,
+    private readonly game: DurakGame,
+    readonly primalMove: Move,
+  ) {}
+
+  asNext() {
+    return new GameRound(
+      this.number + 1,
+      this.desk.withSameSettings(),
+      Moves.empty(),
+      this.game,
+    );
   }
 
-  // so, because primal attacker incapsulated DurakGame instance on it is creation
-  get betterNextAttacker() {
-    return this.primalAttackerAsLatest.isAttacker()
-      ? this.game.players.defender.left
-      : this.game.players.attacker.left;
+  toJSON() {
+    return {
+      number: this.number,
+      desk: this.desk.toJSON(),
+    };
+  }
+
+  get allowedPlayer() {
+    return SOME_PLAYER;
+  }
+
+  get isAllowsTransferMove() {
+    return false;
   }
 
   get nextAttacker(): BasePlayer {
-    return this.game.players.attacker.id === this.primalAttacker.id
-      ? this.game.players.defender.left
-      : this.game.players.attacker.left;
+    return TODO;
   }
 
-  // it is better to return a super class than a sub class
-  get primalAttacker(): BasePlayer | never {
-    return this.moves.primalMove.performer as BasePlayer;
+  get primalAttacker(): BasePlayer {
+    return TODO;
   }
 
-  // than now  primal attacker can get own latest instance in incapsulated game
   get primalAttackerAsLatest(): BasePlayer {
-    return this.moves.primalMove.performer.asLatest();
+    return TODO;
+  }
+}
+
+class UnsettledGameRound {
+  constructor(
+    public readonly number: number,
+    public desk: GameDesk,
+    public moves: Moves,
+    private readonly game: DurakGame,
+  ) {}
+
+  asNext() {
+    return new GameRound(
+      this.number + 1,
+      this.desk.withSameSettings(),
+      Moves.empty(),
+      this.game,
+    );
+  }
+
+  toJSON() {
+    return {
+      number: this.number,
+      desk: this.desk.toJSON(),
+    };
+  }
+
+  get allowedPlayer() {
+    return SOME_PLAYER;
+  }
+
+  get isAllowsTransferMove() {
+    return false;
+  }
+
+  get nextAttacker(): BasePlayer {
+    return TODO;
+  }
+
+  get primalAttacker() {
+    return undefined;
+  }
+
+  get primalAttackerAsLatest() {
+    return undefined;
   }
 }

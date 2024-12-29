@@ -2,21 +2,31 @@ import z from "zod";
 import assert from "node:assert";
 import type { PrismaClient } from "@prisma/client";
 
-export default <FastifyPluginAsyncZod>async function (app) {
-  async function getUserProfile(prisma: PrismaClient, personalLink: string) {
-    const user = await prisma.userProfile.findFirst({
-      where: { personalLink },
-      select: {
-        nickname: true,
-        connectStatus: true,
-        photoUrl: true,
-        User: { include: { UserGameStat: true } },
-      },
-    });
-    assert.ok(user, "No access");
-    return user;
-  }
+async function getUserProfile(prisma: PrismaClient, personalLink: string) {
+  const { User, ...profile } = await prisma.userProfile.findFirstOrThrow({
+    where: { personalLink },
+    select: {
+      nickname: true,
+      connectStatus: true,
+      photoUrl: true,
+      User: { include: { UserGameStat: true } },
+    },
+  });
+  const { UserGameStat, ...user } = User;
+  assert.ok(UserGameStat !== null);
+  const { userId, ...gameStat } = UserGameStat;
+  return {
+    ...profile,
+    user: {
+      ...user,
+      gameStat,
+    },
+  };
+}
 
+export type UserProfile = Awaited<ReturnType<typeof getUserProfile>>;
+
+export default <FastifyPluginAsyncZod>async function (app) {
   const schema = {
     params: z.object({
       linkCuid: z.string(),

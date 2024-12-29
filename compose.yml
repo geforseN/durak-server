@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:15
+    image: postgres:17
     container_name: postgres_prisma
     env_file:
       - path: .env.development
@@ -9,10 +9,25 @@ services:
       POSTGRES_USER: ${DOCKER_POSTGRES_USER:-my_user}
       POSTGRES_PASSWORD: ${DOCKER_POSTGRES_PASSWORD:-my_secure_password}
       POSTGRES_DB: ${DOCKER_POSTGRES_DB:-my_database}
+      PG_DATA: /var/lib/postgresql/data
     ports:
-      - "${DOCKER_POSTGRES_DB_PORT:-5432}:5432"
+      - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+
+  server:
+    stop_grace_period: 1s
+    env_file:
+      - path: .env.development
+        required: true
+    build: .
+    container_name: fastify_server
+    ports:
+      - "10000:10000"
+      - "5555:5555"
+    volumes:
+      - .:/app
 
 volumes:
-  postgres_data:
+  pgdata:
+    driver: local

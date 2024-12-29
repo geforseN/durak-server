@@ -27,8 +27,18 @@ export class AllowedDefender extends AllowedSuperPlayer {
     return new Defender(this);
   }
 
-  async makeInsertMove(card: Card, slot: DeskSlot) {
-    await slot.ensureCanBeDefended(card);
+  ensureCanMakeTransferMove(card: Card): void {
+    this.left.cards.ensureCanTakeMore(this.game.desk.cards.count + 1);
+    this.game.desk.ensureOnlyHasRank(card.rank);
+    this.game.desk.ensureAllowsTransferMove(card);
+  }
+
+  makeInsertMove(card: Card, slot: DeskSlot) {
+    if (slot.isEmpty()) {
+      this.ensureCanMakeTransferMove(card);
+      return new DefenderTransferMove(this.game, this, { card, slot });
+    }
+    slot.ensureCanBeDefended(card);
     return new InsertDefendCardMove(this.game, this, {
       card,
       slot,

@@ -16,7 +16,7 @@ class SuccessfulDefense {
 
   protected prepareBeforeNewGameRound() {
     if (this.game.talon.count) {
-      return this.game.talonDistribution.makeDistribution();
+      return this.game.talon.distribution.execute();
     }
     const groupedPlayers = getGropedPlayers([...this.game.players]);
     this.game.players = new Players(groupedPlayers.toStay);
@@ -39,7 +39,7 @@ class SuccessfulDefense {
         .mutateWith(
           this.game.players.defender.asAttacker().asAllowed(this.game),
         );
-      return this.game.round.nextRound();
+      return this.game.round.asNext();
     } catch {
       return undefined; // FIXME should return GameEnd instance;
     }
@@ -57,7 +57,7 @@ function getGropedPlayers(players: BasePlayer[]) {
       },
       player: BasePlayer,
     ) => {
-      if (player.hand.isEmpty) {
+      if (player.cards.isEmpty) {
         gropedPlayers.toLeave.push(player);
       } else {
         gropedPlayers.toStay.push(player);

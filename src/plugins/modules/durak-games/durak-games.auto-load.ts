@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { z } from "zod";
-import durakGamesStore from "@/common/durakGamesStore.js";
+import durakGamesStore from "@/modules/durak-game/durak-games-store-singleton.js";
 import DurakGame from "@/module/DurakGame/DurakGame.js";
 import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
 import type { WebSocket } from "ws";

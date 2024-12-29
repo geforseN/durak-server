@@ -11,34 +11,16 @@ import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 
 import SuperHand from "@/module/DurakGame/entity/Deck/Hand/SuperHand.js";
 import { SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
+
 export abstract class AllowedSuperPlayer extends SuperPlayer {
-  asSuperPlayer: SuperPlayer;
-  game: DurakGame;
   superHand: SuperHand;
 
-  // REVIEW ctor, may have bugs
-  constructor(superPlayer: SuperPlayer, game: DurakGame) {
+  constructor(
+    readonly superPlayer: SuperPlayer,
+    readonly game: DurakGame,
+  ) {
     super(superPlayer);
-    this.asSuperPlayer = superPlayer;
-    this.game = game;
-    this.superHand = new SuperHand(superPlayer.hand);
-  }
-
-  _makeMove(): Promise<GameMove<AllowedSuperPlayer>>;
-  _makeMove(
-    _card: Card | CardDTO | ReturnType<Card["asString"]>,
-    _slot: DeskSlot | number,
-  ): Promise<GameMove<AllowedSuperPlayer>>;
-  async _makeMove(
-    cardLike?: unknown,
-    slotData?: unknown,
-  ): Promise<GameMove<AllowedSuperPlayer>> {
-    if (!cardLike && !slotData) {
-      return this.makeStopMove();
-    }
-    const card = this.hand.getValidCard(cardLike);
-    const slot = this.game.desk.getValidSlot(slotData);
-    return this.makeInsertMove(card, slot);
+    this.superHand = new SuperHand(superPlayer.hand._cards);
   }
 
   asLatest() {
@@ -53,24 +35,10 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
     return true;
   }
   isAttacker(): this is Attacker {
-    return this.asSuperPlayer.isAttacker();
+    return this.superPlayer.isAttacker();
   }
   isDefender(): this is Defender {
-    return this.asSuperPlayer.isDefender();
-  }
-
-  makeNewMove(): Promise<void>;
-  makeNewMove(
-    _card: Card | CardDTO | ReturnType<Card["asString"]>,
-    _slot: DeskSlot | number,
-  ): Promise<void>;
-  async makeNewMove(cardLike?: unknown, slotData?: unknown) {
-    // @ts-expect-error hard to type for now
-    return this.game.handleNewMove(await this._makeMove(cardLike, slotData));
-  }
-
-  remove(cb: (_card: Card) => boolean) {
-    return this.superHand.remove(cb);
+    return this.superPlayer.isDefender();
   }
 
   toJSON() {
@@ -86,7 +54,9 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
   abstract makeInsertMove(
     _card: Card,
     _slot: DeskSlot,
-  ): Promise<GameMove<AllowedSuperPlayer>>;
+  ): GameMove<AllowedSuperPlayer>;
 
   abstract makeStopMove(): GameMove<AllowedSuperPlayer>;
 }
+
+export default AllowedSuperPlayer;

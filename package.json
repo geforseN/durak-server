@@ -24,6 +24,7 @@
     "@fastify/cookie": "^11.0.1",
     "@fastify/cors": "^10.0.1",
     "@fastify/formbody": "^8.0.1",
+    "@fastify/sensible": "^6.0.2",
     "@fastify/session": "^11.0.1",
     "@fastify/swagger": "^9.4.0",
     "@fastify/swagger-ui": "^5.2.0",
@@ -48,7 +49,7 @@
     "@durak-game/durak-dts": "^0.5.1",
     "@tsconfig/node22": "^22.0.0",
     "@tsconfig/recommended": "^1.0.2",
-    "@types/node": "^20.6.1",
+    "@types/node": "^22.10.2",
     "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@vitest/eslint-plugin": "^1.1.15",
@@ -59,7 +60,8 @@
     "tsc-alias": "^1.8.10",
     "tsx": "^4.19.2",
     "types-fastify-socket.io": "^0.0.1",
-    "typescript": "^5.1.6",
-    "vitest": "~2.1.8"
+    "typescript": "^5.7.2",
+    "vitest": "~2.1.8",
+    "zod-prisma-types": "^3.2.1"
   }
 }

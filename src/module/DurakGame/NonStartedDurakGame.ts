@@ -1,40 +1,57 @@
-import type { WebSocket } from "ws";
-import type { GameSettings } from "@durak-game/durak-dts";
-import type Lobby from "@/module/Lobbies/entity/Lobby.js";
-import type LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
+import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
+import type { SessionUser } from "@/plugins/modules/login/login.instance-decorators.js";
 
-export default class NonStartedDurakGame {
-  info: {
-    adminId: string;
-    durakPlayerId?: string;
-    id: string;
-    status: "non started";
-  };
-  settings: GameSettings;
-  sockets: Map<string, Set<WebSocket>>;
-  usersInfo: LobbyUser[];
+class NonConnectedPlayer {}
 
-  constructor(lobby: Lobby) {
-    this.info = {
-      adminId: lobby.slots.admin.id,
-      id: lobby.id,
-      status: "non started",
-    };
-    this.settings = lobby.settings;
-    this.usersInfo = lobby.userSlots.map((slot) => slot.user);
-    this.sockets = new Map();
-  }
+class PlayerConnection {
+  constructor(
+    public sessionUser: SessionUser,
+    public socket: DurakGameSocket.Socket,
+  ) {}
+}
 
-  addPlayerConnection(playerId: string, socket: WebSocket) {
-    const playerSockets = this.sockets.get(playerId);
-    if (playerSockets) {
-      playerSockets.add(socket);
+class PlayersConnections<K extends string = SessionUser["id"]> {
+  constructor(
+    readonly map: Map<K, Set<PlayerConnection>>,
+    readonly sizeGoal: number,
+    readonly onReady: () => void,
+  ) {}
+
+  add(connection: PlayerConnection) {
+    const key = connection.sessionUser.id as K;
+    const connections = this.map.get(key);
+    if (connections) {
+      connections.add(connection);
     } else {
-      this.sockets.set(playerId, new Set([socket]));
+      this.map.set(key, new Set([connection]));
+      if (this.sizeGoal === this.map.size) {
+        this.onReady();
+      }
     }
   }
 
-  get isAllPlayersConnected() {
-    return this.sockets.size === this.settings.players.count;
+  get(key: K) {
+    return this.map.get(key);
   }
+
+  require(
+    key: K,
+    makeError = () =>
+      new Error(`Failed to find connection with user id = ${key}`),
+  ) {
+    const connections = this.get(key);
+    if (!connections) {
+      throw makeError();
+    }
+    return connections;
+  }
+}
+
+export default class NonStartedDurakGame {
+  constructor(
+    public id: string,
+    public setting: GameSettings,
+    public connections: PlayersConnections,
+    readonly onReady: () => void,
+  ) {}
 }
