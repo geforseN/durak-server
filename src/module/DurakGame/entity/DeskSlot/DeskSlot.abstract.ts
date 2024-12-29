@@ -1,11 +1,8 @@
-import assert from "node:assert";
-
 import type DefendedSlot from "@/module/DurakGame/entity/DeskSlot/DefendedSlot.js";
 import type EmptySlot from "@/module/DurakGame/entity/DeskSlot/EmptySlot.js";
 import type UnbeatenSlot from "@/module/DurakGame/entity/DeskSlot/UnbeatenSlot.js";
 import type UnbeatenTrumpSlot from "@/module/DurakGame/entity/DeskSlot/UnbeatenTrumpSlot.js";
-
-import { type default as Card } from "@/module/DurakGame/entity/Card/index.js";
+import type Card from "@/module/DurakGame/entity/Card/index.js";
 
 export type DefendedDeskSlotBase = Required<
   Pick<DefendedSlot, "attackCard" | "defendCard">
@@ -19,19 +16,6 @@ export default abstract class DeskSlot {
   constructor(index: number) {
     this.index = index;
   }
-
-  static getValidDeskSlot(
-    slotData: unknown,
-    getDeskSlot: (_slotIndex: number) => DeskSlot | never,
-  ) {
-    const slot =
-      slotData instanceof DeskSlot
-        ? slotData
-        : DeskSlot.isSlotIndexLike(slotData) && getDeskSlot(slotData);
-    assert.ok(slot);
-    return slot;
-  }
-
   static isSlotIndexLike(index: unknown): index is number {
     return typeof index === "number";
   }
