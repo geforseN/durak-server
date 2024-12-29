@@ -5,6 +5,32 @@ import DurakGame from "@/module/DurakGame/DurakGame.js";
 import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
 import type { WebSocket } from "ws";
 import { GameRestoreStateEventSchema } from "@/utils/durak-game-state-restore-schema.js";
+import type { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+
+class GameStateRestoreEvent {
+  constructor(
+    readonly game: DurakGame,
+    readonly player: BasePlayer,
+  ) {}
+
+  toString() {
+    const { game, player } = this;
+    const state = GameRestoreStateEventSchema.parse({
+      event: "game::state::restore",
+      payload: {
+        desk: game.desk.toJSON(),
+        discard: game.discard.toJSON(),
+        enemies: player.enemies,
+        round: game.round.toJSON(),
+        self: player.toSelf(),
+        settings: game.settings,
+        status: game.info.status,
+        talon: game.talon.toJSON(),
+      },
+    });
+    return JSON.stringify(state);
+  }
+}
 
 export default <FastifyPluginAsyncZod>async function (app) {
   app.get(
@@ -62,23 +88,7 @@ export default <FastifyPluginAsyncZod>async function (app) {
             (player) => player.id === playerId,
           );
           this.log.info('sending "game::state::restore"', { gameId, playerId });
-          socket.send(
-            JSON.stringify(
-              GameRestoreStateEventSchema.parse({
-                event: "game::state::restore",
-                payload: {
-                  desk: game.desk.toJSON(),
-                  discard: game.discard.toJSON(),
-                  enemies: gamePlayer.enemies,
-                  round: game.round.toJSON(),
-                  self: gamePlayer.toSelf(),
-                  settings: game.settings,
-                  status: game.info.status,
-                  talon: game.talon.toJSON(),
-                },
-              }),
-            ),
-          );
+          socket.send(new GameStateRestoreEvent(game, gamePlayer).toString());
         }
       });
       if (/* is game already started */ game instanceof DurakGame) {
