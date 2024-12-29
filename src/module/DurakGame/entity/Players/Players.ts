@@ -4,10 +4,8 @@ import type { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
 import type { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 
-
 export class SettledPlayers {
   // here will be primal attacker
-
   // here will be primal defender
 }
 
@@ -56,7 +54,7 @@ export class Players {
   }
 
   with(player: BasePlayer) {
-    const linkedPlayer = player.asLinked()
+    const linkedPlayer = player.asLinked();
     const index = this.#value.indexOf(player);
     const players = this.#value.with(index, linkedPlayer);
     return new Players(players);
