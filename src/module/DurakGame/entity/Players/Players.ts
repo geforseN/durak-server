@@ -22,6 +22,10 @@ export class Players {
     yield* this.#value;
   }
 
+  find(cb: (_player: BasePlayer) => boolean) {
+    return this.#value.find(cb);
+  }
+
   get(
     _cb: (_player: BasePlayer) => boolean,
     _notFoundMessage?: string,
