@@ -13,6 +13,10 @@ export default class DeskSlots {
     this.#values = values;
   }
 
+  get count() {
+    return this.#values.length;
+  }
+
   static clean(length: number) {
     return new DeskSlots(
       Array.from({ length }, (_, index) => new EmptySlot(index)),
@@ -36,7 +40,7 @@ export default class DeskSlots {
   }
 
   asClean() {
-    return DeskSlots.clean(this.count);
+    return DeskSlots.clean(this.#values.length);
   }
 
   with(slot: DeskSlot, card: Card) {
@@ -51,14 +55,6 @@ export default class DeskSlots {
 
   get cards(): Card[] {
     return this.#values.flatMap((slot) => slot.value);
-  }
-
-  get cardsCount(): number {
-    return this.cards.length;
-  }
-
-  get count() {
-    return this.#values.length;
   }
 
   get isEverySlotEmpty(): boolean {

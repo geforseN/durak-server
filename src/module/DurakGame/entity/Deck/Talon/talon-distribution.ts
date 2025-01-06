@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import type BasePlayer from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import type Player from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 import type Talon from "@/module/DurakGame/entity/Deck/Talon/index.js";
 import type Attacker from "@/module/DurakGame/entity/Player/Attacker.js";
 
@@ -7,14 +7,21 @@ export default class TalonDistribution {
   constructor(
     readonly talon: Talon,
     readonly players: {
-      defender: BasePlayer;
+      defender: Player;
       primalAttackerAsLatest: Attacker;
     },
   ) {}
 
   execute() {
+    if (this.talon.isEmpty()) {
+      return
+    }
     for (const player of this.#playersQueue()) {
-      this.talon.provide(player, player.cards.missing);
+      const cards = this.talon.pop(player.cards.missing);
+      player.cards
+      if (this.talon.isEmpty()) {
+        return
+      }
     }
   }
 
@@ -22,7 +29,7 @@ export default class TalonDistribution {
     const { defender, primalAttackerAsLatest } = this.players;
     assert.strictEqual(defender.right, primalAttackerAsLatest);
     yield defender.right;
-    let player: BasePlayer = defender;
+    let player: Player = defender;
     while ((player = player.left) !== primalAttackerAsLatest) {
       yield player;
     }

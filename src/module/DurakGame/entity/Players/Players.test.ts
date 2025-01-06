@@ -1,17 +1,16 @@
 import assert from "node:assert";
 import { expect, it, describe } from "vitest";
 
-import type { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import type Player from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 import { Hand } from "@/module/DurakGame/entity/Deck/index.js";
 import { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
 import { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
-import { Player } from "@/module/DurakGame/entity/Player/Player.js";
 import { Players } from "@/module/DurakGame/entity/Players/Players.js";
 
 describe("test BasePlayer#enemies", () => {
   describe("method work correct when BasePlayer called exitGame", () => {
-    const playersData: [number, BasePlayer, number][] = [
+    const playersData: [number, Player, number][] = [
       // @ts-expect-error no need more data, only id in info is required
       [1, new Attacker({ hand: new Hand(), info: { id: "dog" } }), 2],
       // @ts-expect-error no need more data, only id in info is required

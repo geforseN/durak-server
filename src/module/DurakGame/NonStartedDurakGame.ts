@@ -1,12 +1,13 @@
-import type { DurakGameSocket, GameSettings } from "@durak-game/durak-dts";
+import type { GameSettings } from "@durak-game/durak-dts";
 import type { SessionUser } from "@/plugins/modules/login/login.instance-decorators.js";
+import type WebSocket from "ws";
 
 class NonConnectedPlayer {}
 
 class PlayerConnection {
   constructor(
     public sessionUser: SessionUser,
-    public socket: DurakGameSocket.Socket,
+    public socket: WebSocket,
   ) {}
 }
 

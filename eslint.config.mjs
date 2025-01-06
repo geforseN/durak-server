@@ -1,16 +1,15 @@
 // @ts-check
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
-import vitest from "@vitest/eslint-plugin";
 import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'node_modules', 'prisma', 'shared'],
+    ignores: ["dist", "node_modules", "prisma", "shared"],
   },
   eslint.configs.recommended,
   tseslint.configs.recommended,
-  vitest.configs.recommended,
+  // vitest.configs.recommended,
   {
     plugins: {
       "no-relative-import-paths": noRelativeImportPaths,
@@ -38,6 +37,18 @@ export default tseslint.config(
           destructuredArrayIgnorePattern: "^_",
           varsIgnorePattern: "^_",
           ignoreRestSiblings: true,
+        },
+      ],
+    },
+  },
+  {
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "ClassDeclaration[superClass]",
+          message:
+            "Using 'extends' is not allowed. Consider composition instead of inheritance.",
         },
       ],
     },

@@ -10,7 +10,7 @@ import { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSupe
 import { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 import { type SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
 
-export class AllowedDefender extends AllowedSuperPlayer {
+export class AllowedDefender {
   constructor(superPlayer: SuperPlayer, game: DurakGame) {
     super(superPlayer, game);
   }
@@ -28,7 +28,14 @@ export class AllowedDefender extends AllowedSuperPlayer {
   }
 
   ensureCanMakeTransferMove(card: Card): void {
-    this.left.cards.ensureCanTakeMore(this.game.desk.cards.count + 1);
+    if (!this.left.canTakeMore(this.game.desk.cards.count + 1)) {
+      throw new AllowedPlayerBadInputError(
+        "Player, to which you wanna transfer cards, has not enough card for defense. You must defend cards on desk",
+        {
+          header: "Transfer move attempt",
+        },
+      );
+    }
     this.game.desk.ensureOnlyHasRank(card.rank);
     this.game.desk.ensureAllowsTransferMove(card);
   }
@@ -46,7 +53,7 @@ export class AllowedDefender extends AllowedSuperPlayer {
   }
 
   makeStopMove() {
-    if (!this.game.desk.isDefended) {
+    if (!this.game.desk.isDefended()) {
       return new DefenderGaveUpMove(this.game, this);
     }
     return new StopDefenseMove(this.game, this);

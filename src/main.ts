@@ -1,6 +1,5 @@
 import z from "zod";
 import { isDevelopment } from "std-env";
-import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 import { makeLoggerInstance } from "@/logger-instance.js";
 import { makeFastify } from "@/fastify.js";
 

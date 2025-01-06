@@ -13,7 +13,7 @@ export default class Moves<T extends Move = Move> {
     this.#value = value;
   }
 
-  withAdded(move: T) {
+  with(move: T) {
     return new Moves([...this.#value, move]);
   }
 }

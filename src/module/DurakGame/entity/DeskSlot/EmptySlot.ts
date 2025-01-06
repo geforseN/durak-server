@@ -22,6 +22,15 @@ export default class EmptySlot extends DeskSlot {
     return true;
   }
 
+  next(card: Card) {
+    return {
+      done: true,
+      value: card.isTrump
+      ? new UnbeatenTrumpSlot(this.index, card)
+      : new UnbeatenSlot(this.index, card)
+    }
+  }
+
   override nextDeskSlot(card: Card): UnbeatenSlot | UnbeatenTrumpSlot {
     return card.isTrump
       ? new UnbeatenTrumpSlot(this.index, card)

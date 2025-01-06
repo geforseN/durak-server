@@ -1,6 +1,6 @@
 import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
-import BasePlayer from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import type Player from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 import Moves, { EmptyMoves, type Move } from "@/module/DurakGame/entity/GameRound/Moves.js";
 import GameDesk from "@/module/DurakGame/entity/Desk/index.js";
 
@@ -9,7 +9,7 @@ export default class GameRound {
     public readonly number: number,
     public desk: GameDesk,
     public moves: Moves,
-    private readonly game: DurakGame,
+    // HISTORY
   ) {}
 
   asNext() {
@@ -17,7 +17,6 @@ export default class GameRound {
       this.number + 1,
       this.desk.withSameSettings(),
       new EmptyMoves(),
-      this.game,
     );
   }
 
@@ -62,15 +61,15 @@ class SettledGameRound {
     return false;
   }
 
-  get nextAttacker(): BasePlayer {
+  get nextAttacker(): Player {
     return TODO;
   }
 
-  get primalAttacker(): BasePlayer {
+  get primalAttacker(): Player {
     return TODO;
   }
 
-  get primalAttackerAsLatest(): BasePlayer {
+  get primalAttackerAsLatest(): Player {
     return TODO;
   }
 }
@@ -107,7 +106,7 @@ class UnsettledGameRound {
     return false;
   }
 
-  get nextAttacker(): BasePlayer {
+  get nextAttacker(): Player {
     return TODO;
   }
 

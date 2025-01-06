@@ -1,31 +1,31 @@
 import assert from "node:assert";
-import { z } from "zod";
+import z from "zod";
+import type WebSocket from "ws";
 import durakGamesStore from "@/modules/durak-game/durak-games-store-singleton.js";
 import DurakGame from "@/module/DurakGame/DurakGame.js";
 import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
-import type { WebSocket } from "ws";
 import { GameRestoreStateEventSchema } from "@/utils/durak-game-state-restore-schema.js";
-import type { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 class GameStateRestoreEvent {
   constructor(
     readonly game: DurakGame,
-    readonly player: BasePlayer,
+    readonly playerId: string,
   ) {}
 
   toString() {
-    const { game, player } = this;
+    const { game, playerId } = this;
+    const player = game.players.find((player) => player.id === playerId);
+    let self, enemies;
+    if (player) {
+      self = player.toSelf();
+      enemies = player.enemies;
+    }
     const state = GameRestoreStateEventSchema.parse({
       event: "game::state::restore",
       payload: {
-        desk: game.desk.toJSON(),
-        discard: game.discard.toJSON(),
-        enemies: player.enemies,
-        round: game.round.toJSON(),
-        self: player.toSelf(),
-        settings: game.settings,
-        status: game.info.status,
-        talon: game.talon.toJSON(),
+        ...game.toJSON(),
+        self,
+        enemies,
       },
     });
     return JSON.stringify(state);
@@ -84,11 +84,8 @@ export default <FastifyPluginAsyncZod>async function (app) {
             playerId,
           });
           // socket.join(playerId);
-          const gamePlayer = game.players.get(
-            (player) => player.id === playerId,
-          );
           this.log.info('sending "game::state::restore"', { gameId, playerId });
-          socket.send(new GameStateRestoreEvent(game, gamePlayer).toString());
+          socket.send(new GameStateRestoreEvent(game, playerId).toString());
         }
       });
       if (/* is game already started */ game instanceof DurakGame) {
@@ -102,20 +99,20 @@ export default <FastifyPluginAsyncZod>async function (app) {
         });
       } else if (game instanceof NonStartedDurakGame) {
         this.log.info("game is not started yet", { gameId });
-        game.addPlayerConnection(playerId, socket);
+        game.connections.add(playerId, socket);
         if (!game.isAllPlayersConnected) {
           return this.log.info("not all players connected yet", { gameId });
         }
         this.log.info("all players connected", { gameId });
         this.log.info("all players connected", { gameId });
-        const storeGame = durakGamesStore.get(game.info.id);
+        const storeGame = durakGamesStore.get(game.id);
         let startedGame: DurakGame;
         if (storeGame instanceof DurakGame) {
           this.log.warn('race condition "game" in "durakGamesStore"');
           startedGame = storeGame;
         } else if (storeGame) {
           this.log.info("adding DurakGame", { gameId });
-          startedGame = new DurakGame(game);
+          startedGame = new DurakGame(game.id, game.setting);
           durakGamesStore.set(gameId, startedGame);
           this.log.info("set DurakGame in store", { gameId });
         } else {

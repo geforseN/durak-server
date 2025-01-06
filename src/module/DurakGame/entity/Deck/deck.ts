@@ -1,9 +1,5 @@
-import Card from "@/module/DurakGame/entity/Card/index.js";
-
-// receivable-deck
-
-export default class Deck {
-  constructor(readonly cards: Card[]) {}
+export default class Deck<T> {
+  constructor(readonly cards: T[]) {}
 
   static get empty() {
     return new Deck([]);

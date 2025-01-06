@@ -1,5 +1,3 @@
-import type { AllowedMissingCardCount } from "@durak-game/durak-dts";
-
 import assert from "node:assert";
 
 import type Card from "@/module/DurakGame/entity/Card/index.js";
@@ -15,19 +13,54 @@ import {
   UnbeatenSlots,
 } from "@/module/DurakGame/entity/DeskSlots/Slots.js";
 import DeskSlots from "@/module/DurakGame/entity/DeskSlots/index.js";
+import type { Rank } from "@durak-game/durak-dts";
+
+class Ranks {
+  #lazy_values?: Set<Rank>;
+
+  constructor(readonly desk: Desk) {}
+
+  get #values() {
+    if (!this.#lazy_values) {
+      this.#lazy_values = new Set(this.desk.cards.map((card) => card.rank));
+    }
+    return this.#lazy_values
+  }
+
+  get count() {
+    return this.#values.size;
+  }
+}
 
 export default class Desk {
-  constructor(
-    public _slots: DeskSlots,
-    readonly allowedFilledSlotCount: AllowedMissingCardCount,
-  ) {}
+  ranks: Ranks;
+
+  constructor(private readonly _slots: DeskSlots) {
+    this.ranks = new Ranks(this);
+    this.cards = [
+      /* TODO
+
+
+
+  get cards() {
+    return {
+      count: this._slots.cards.length,
+    };
+  }
+
+      */
+    ];
+    this.slots.unbeaten = new UnbeatenSlots(this._slots);
+    this.slots.defended = new DefendedSlots(this._slots);
+    this.slots.filled = new FilledSlots(this._slots);
+  }
 
   static clean(size: number) {
-    return new Desk(DeskSlots.clean(size), 0);
+    return new Desk(DeskSlots.clean(size));
   }
 
   withSameSettings() {
-    return new Desk(this._slots, this.allowedFilledSlotCount);
+    return new Desk(this._slots);
   }
 
   ensureAllowsTransferMove(card: Card) {
@@ -43,8 +76,8 @@ export default class Desk {
 
   ensureOnlyHasRank(rank: Card["rank"]) {
     this.ensureIncludesRank(rank);
-    assert.ok([...this.ranks].length !== 0, "The desk is empty");
-    assert.ok([...this.ranks].length === 1, "The desk has more than one rank");
+    assert.ok(this.ranks.count !== 0, "The desk is empty");
+    assert.ok(this.ranks.count === 1, "The desk has more than one rank");
   }
 
   provideCards<Target extends Defender | Discard>(target: Target) {
@@ -52,69 +85,62 @@ export default class Desk {
     this._slots = this._slots.asClean();
   }
 
-  slotAt(index: number) {
-    return (
-      this._slots.at(index) || raise(`Slot with index=${index} does not exist`)
-    );
-  }
-
   toJSON() {
     return {
-      slots: this._slots.toJSON(),
+      slots: this.slots.toJSON(),
     };
-  }
-
-  update(slot: DeskSlot, card: Card) {
-    this._slots.update(slot, card);
   }
 
   with(slot: DeskSlot, card: Card) {
-    return new Desk(this._slots.with(slot, card), this.allowedFilledSlotCount);
+    return new Desk(this._slots.with(slot, card));
   }
 
-  get allowsAttackerMove(): boolean {
-    return this.isAllowsMoves;
+  isAllowsMoves() {
+    return this.slots.all.count > this.slots.filled.count;
   }
 
-  get cards() {
-    return {
-      count: this._slots.cards.length,
-    };
+  isDefended(): boolean {
+    return this.slots.defended.count === this.slots.filled.count;
   }
 
-  get defendedSlots() {
-    return new DefendedSlots([...this]);
+  isEmpty(): boolean {
+    return this.slots.all.count === this.slots.empty.count;
   }
+}
 
-  get filledSlots() {
-    return new FilledSlots([...this]);
+export class CleanDesk extends Desk {
+  constructor(size: number) {
+    super(DeskSlots.clean(size));
   }
+}
 
-  get isAllowsMoves() {
-    return this.allowedFilledSlotCount > this.filledSlots.count;
-  }
+type Some = 1
 
-  get isDefended(): boolean {
-    return this.defendedSlots.count === this.filledSlots.count;
-  }
+type Every = 1
 
-  get isEmpty(): boolean {
-    return this._slots.isEverySlotEmpty;
+class EmptyDesk {
+  slots: {
+    empty: Every
+    filled: undefined
+    defended: undefined
+    unbeaten: undefined
   }
+}
 
-  get randomEmptySlot() {
-    return this._slots.randomEmptySlot;
-  }
+class DefendedDesk {
+  slots: {
+    empty: Some;
+    filled: Some;
+    defended: Some;
+    unbeaten: undefined;
+  };
+}
 
-  get ranks() {
-    return new Set(this._slots.cards.map((card) => card.rank));
-  }
-
-  get shouldDefenderMove(): boolean {
-    return this.isAllowsMoves;
-  }
-
-  get unbeatenSlots() {
-    return new UnbeatenSlots([...this]);
-  }
+class UnbeatenDesk {
+  slots: {
+    empty: Some;
+    filled: undefined;
+    defended: Some;
+    unbeaten: Some;
+  };
 }

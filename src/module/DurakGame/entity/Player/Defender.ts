@@ -2,11 +2,11 @@ import type DurakGame from "@/module/DurakGame/DurakGame.js";
 
 import { AllowedDefender } from "@/module/DurakGame/entity/Player/AllowedDefender.js";
 import { type AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
-import { type BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import type Player from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 
 export class Defender {
   constructor(
-    basePlayer: BasePlayer,
+    basePlayer: Player,
   ) {
     super(basePlayer);
   }

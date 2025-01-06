@@ -1,20 +1,15 @@
 import type Card from "@/module/DurakGame/entity/Card/index.js";
-import type { AllowedAttacker } from "@/module/DurakGame/entity/Player/AllowedAttacker.js";
-import type { AllowedDefender } from "@/module/DurakGame/entity/Player/AllowedDefender.js";
-import type { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
-import type { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
-import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
-import type { SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
 
 import { AllowedPlayerBadInputError } from "@/module/DurakGame/error/index.js";
-import type { UserProfile } from "@durak-game/durak-dts";
 
 export const GOOD_CARD_AMOUNT = 6;
+
+// NOTE: to fix nullable left and right must use null object pattern
 
 class PlayerCards {
   constructor(
     readonly cards: Card[],
-    readonly maxCards: number = GOOD_CARD_AMOUNT,
+    readonly maxGoodCardsAmount: number = GOOD_CARD_AMOUNT,
   ) {}
 
   get isEmpty() {
@@ -25,12 +20,8 @@ class PlayerCards {
     return this.cards.length;
   }
 
-  get max() {
-    return this.maxCards;
-  }
-
   get missing() {
-    return Math.max(this.max - this.cards.length, 0);
+    return Math.max(this.maxGoodCardsAmount - this.cards.length, 0);
   }
 
   /* FIXME: only for primal defender or when non primal defender tries to make transfer for the left  */
@@ -50,19 +41,58 @@ class PlayerCards {
     );
   }
 
+  receive(...cards: Card[]) {
+    return new PlayerCards([...this.cards, ...cards], this.maxGoodCardsAmount);
+  }
+
   toJSON() {
     return this.cards.map((card) => card.toJSON());
   }
 }
 
-export class BasePlayer {
-  #left: BasePlayer;
+class Defender {
+  canTakeMore(cardCount: number) {
+    return this.cards.length > cardCount;
+  }
+}
+
+class RoundLoser {
+  constructor(private readonly defender: Defender) {}
+}
+
+class CardRecipient {
+  get missing() {
+    return Math.max(this.maxGoodCardsAmount - this.cards.length, 0);
+  }
+
+  receiveMissing(target) {
+
+  }
+
+  with(...cards: Card[]) {}
+}
+
+class MaybeNextDefender {
+  readonly left: IPlayer; /* in 2 player game it is AllowedDefender, IPlayer otherwise */
+  readonly right: AllowedDefender;
+
+  canTakeMore(cardCount: number) {
+    return this.cards.length > cardCount;
+  }
+}
+
+class AllowedAttacker {
+  perform(card: Card, slotIndex: number) {}
+}
+
+export class Player {
+  #left: Player;
 
   get left() {
     return this.#left;
   }
 
-  #right: BasePlayer;
+  #right: Player;
 
   get right() {
     return this.#right;
@@ -73,59 +103,42 @@ export class BasePlayer {
 
   constructor(
     readonly id: string,
-    readonly profile: UserProfile,
-    left: BasePlayer,
+    left: Player,
     readonly cards: PlayerCards,
-    right: BasePlayer,
+    right: Player,
   ) {
     this.#left = left;
     this.#right = right;
   }
 
-  static clean(id: string, profile: UserProfile) {
-    return new BasePlayer(id, profile, null, new PlayerCards([]), null);
-  }
+  // static clean(id: string) {
+  //   return new Player(id, null, new PlayerCards([]), null);
+  // }
 
-  static from(player: BasePlayer) {
-    return new BasePlayer(
-      player.id,
-      player.profile,
-      player.left,
-      player.cards,
-      player.right,
-    );
-  }
+  // static from(player: Player) {
+  //   return new Player(player.id, player.left, player.cards, player.right);
+  // }
 
   asLinked() {
-    const player = BasePlayer.from(this);
+    const player = Player.from(this);
     player.#left.#right = player;
     player.#right.#left = player;
     return player;
   }
 
-  isAllowed(): this is AllowedSuperPlayer {
-    return false;
-  }
+  transitionTo(p) {
+    this.#left.#right = p;
+    this.#right.#left = p;
 
-  isAllowedAttacker(): this is AllowedAttacker {
-    return this.isAttacker() && this.isAllowed();
-  }
 
-  isAllowedDefender(): this is AllowedDefender {
-    return this.isDefender() && this.isAllowed();
-  }
-
-  isAttacker(): this is Attacker {
-    return false;
-  }
-
-  isDefender(): this is Defender {
-    return false;
-  }
-
-  isSuperPlayer(): this is SuperPlayer {
-    return this.isAttacker() || this.isDefender();
   }
 }
 
-export default BasePlayer;
+export default Player;
+
+// eslint-disable-next-line -- two slashes are cool
+var a = 1
+
+if (import.meta.vitest) {
+  new Defender().isDefender() === true
+}
