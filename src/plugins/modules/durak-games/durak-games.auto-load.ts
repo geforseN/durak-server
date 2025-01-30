@@ -29,6 +29,10 @@ async function findGameWithTimeout(
   );
 }
 
+function isStartedGame(game: DurakGame | NonStartedDurakGame) {
+  return game instanceof DurakGame;
+}
+
 class GameStateRestoreEvent {
   constructor(
     readonly game: DurakGame,
@@ -94,7 +98,7 @@ export default <FastifyPluginAsyncZod>async function (app) {
           socket.send(new GameStateRestoreEvent(game, playerId).toString());
         }
       });
-      if (/* is game already started */ game instanceof DurakGame) {
+      if (isStartedGame(game)) {
         this.log.info("game already started", { gameId });
         asyncGame.resolve({
           game,
