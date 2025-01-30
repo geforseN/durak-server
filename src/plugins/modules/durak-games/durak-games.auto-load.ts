@@ -1,36 +1,11 @@
 import assert from "node:assert";
-import { setTimeout } from "node:timers/promises";
 import z from "zod";
 import type WebSocket from "ws";
 import durakGamesStore from "@/modules/durak-game/durak-games-store-singleton.js";
 import DurakGame from "@/module/DurakGame/DurakGame.js";
 import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
 import { GameRestoreStateEventSchema } from "@/utils/durak-game-state-restore-schema.js";
-
-async function findInstantlyAndAfterTimeout<T>(
-  timeout: number,
-  findThing: () => T,
-  options?: {
-    isFound?(thing: T): boolean;
-    onInstantFound?(): void;
-    onAfterTimeoutFound?(): void;
-    onNotFound?(): void;
-  },
-): Promise<T | undefined> {
-  let thing = findThing();
-  const isFound = options?.isFound ?? (() => !!thing);
-  if (isFound(thing)) {
-    options?.onInstantFound?.();
-    return thing;
-  }
-  await setTimeout(timeout);
-  thing = findThing();
-  if (isFound(thing)) {
-    options?.onAfterTimeoutFound?.();
-    return thing;
-  }
-  options?.onNotFound?.();
-}
+import findInstantlyAndAfterTimeout from "@/utils/timeout/find-instantly-and-after-timeout.js";
 
 async function findGameWithTimeout(
   gameId: string,
