@@ -1,10 +1,58 @@
 import assert from "node:assert";
+import { setTimeout } from "node:timers/promises";
 import z from "zod";
 import type WebSocket from "ws";
 import durakGamesStore from "@/modules/durak-game/durak-games-store-singleton.js";
 import DurakGame from "@/module/DurakGame/DurakGame.js";
 import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
 import { GameRestoreStateEventSchema } from "@/utils/durak-game-state-restore-schema.js";
+
+async function findInstantlyAndAfterTimeout<T>(
+  timeout: number,
+  findThing: () => T,
+  options?: {
+    isFound?(thing: T): boolean;
+    onInstantFound?(): void;
+    onAfterTimeoutFound?(): void;
+    onNotFound?(): void;
+  },
+): Promise<T | undefined> {
+  let thing = findThing();
+  const isFound = options?.isFound ?? (() => !!thing);
+  if (isFound(thing)) {
+    options?.onInstantFound?.();
+    return thing;
+  }
+  await setTimeout(timeout);
+  thing = findThing();
+  if (isFound(thing)) {
+    options?.onAfterTimeoutFound?.();
+    return thing;
+  }
+  options?.onNotFound?.();
+}
+
+async function findGameWithTimeout(
+  gameId: string,
+  timeout: number,
+  log: (...args: [message: string, ...args: unknown[]]) => void,
+) {
+  return await findInstantlyAndAfterTimeout(
+    timeout,
+    () => durakGamesStore.get(gameId),
+    {
+      onInstantFound() {
+        log("found game with id %s", gameId);
+      },
+      onAfterTimeoutFound() {
+        log("found game with id %s after timeout %s", gameId, timeout);
+      },
+      onNotFound() {
+        log("game with id %s not found even after timeout %s", gameId, timeout);
+      },
+    },
+  );
+}
 
 class GameStateRestoreEvent {
   constructor(
@@ -45,27 +93,10 @@ export default <FastifyPluginAsyncZod>async function (app) {
     },
     async function (socket, request) {
       const { gameId } = request.params;
-      const game = await new Promise((resolve, reject) => {
-        const game = durakGamesStore.get(gameId);
-        if (game) {
-          this.log.info("found game instantly", { gameId });
-          resolve(game);
-        }
-        const timeout = 1500;
-        setTimeout(() => {
-          const game = durakGamesStore.get(gameId);
-          if (game) {
-            this.log.info("found game after timeout", { timeout, gameId });
-            resolve(game);
-          } else {
-            reject();
-          }
-        }, timeout);
-      }).catch(() => null);
+      const game = await findGameWithTimeout(gameId, 1500, this.log.info);
       if (!game) {
-        return this.log.info("game not found", { gameId });
+        return;
       }
-      this.log.info("connected to game %s", gameId);
       const asyncGame = Promise.withResolvers<{
         game: DurakGame;
         player: {
