@@ -14,7 +14,7 @@ import Lobby, {
 } from "@/module/Lobbies/entity/Lobby.js";
 import LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
 import durakGamesStore from "@/modules/durak-game/durak-games-store-singleton.js";
-import makeNonStartedDurakGame from "@/modules/durak-game/make-non-started-durak-game.js";
+import makeNonStartedDurakGame from "@/modules/durak-game/non-started/make.js";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;
