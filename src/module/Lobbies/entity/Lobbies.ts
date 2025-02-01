@@ -13,8 +13,8 @@ import Lobby, {
   LobbyUserMoveEvent,
 } from "@/module/Lobbies/entity/Lobby.js";
 import LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
-import NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
 import durakGamesStore from "@/modules/durak-game/durak-games-store-singleton.js";
+import makeNonStartedDurakGame from "@/modules/durak-game/make-non-started-durak-game.js";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;
@@ -33,10 +33,7 @@ export default class Lobbies {
       })
       .on("lobby##upgrade", ({ lobby }: { lobby: Lobby }) => {
         this.#emitter.emit("lobby##remove", { lobby });
-        durakGamesStore.set(
-          lobby.id,
-          new NonStartedDurakGame(lobby.id, lobby.settings),
-        );
+        durakGamesStore.set(makeNonStartedDurakGame(lobby));
         const event = new LobbyUpgradeToNonStartedGameEvent(lobby);
         lobby.userSlots.forEach((slot) => {
           socketsStore.room(slot.user.id).emit(event);
