@@ -4,17 +4,15 @@
 
 declare global {
   interface PromiseConstructor {
-    try<T, Args extends []>(
-      callback: (...args: Args) => T,
-      ...args: Args
-    ): Promise<T>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    try<C extends (...args: any[]) => any>(
+      callback: C,
+      ...args: Parameters<C>
+    ): Promise<ReturnType<C>>;
   }
 }
 
-Promise.try = function <T, Args extends []>(
-  callback: (...args: Args) => T,
-  ...args: Args
-): Promise<T> {
+Promise.try = function (callback, ...args) {
   return new this((resolve, reject) => {
     try {
       resolve(callback(...args));
