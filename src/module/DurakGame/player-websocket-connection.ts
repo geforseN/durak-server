@@ -1,19 +1,11 @@
-import type { IConnection } from "@/modules/abstract/connections.js";
 import type { WebSocket } from "ws";
+import type { IConnection } from "@/modules/abstract/connections.js";
 
 type PlayerId = string;
 
-export type WebsocketPlayerConnection = IConnection & {
-  player: {
-    id: PlayerId;
-    connectedAt: number;
-  };
-  socket: WebSocket;
-};
-
 export default class PlayerWebSocketConnection implements IConnection {
   constructor(
-    private readonly playerId: string,
+    private readonly playerId: PlayerId,
     private readonly websocket: WebSocket,
   ) {}
 
