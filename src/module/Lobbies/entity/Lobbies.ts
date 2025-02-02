@@ -13,7 +13,7 @@ import Lobby, {
   LobbyUserMoveEvent,
 } from "@/module/Lobbies/entity/Lobby.js";
 import LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
-import durakGamesStore from "@/modules/durak-game/durak-games-store-singleton.js";
+import durakGamesStore from "@/modules/durak-game/store/instance.js";
 import makeNonStartedDurakGame from "@/modules/durak-game/non-started/make.js";
 
 export default class Lobbies {

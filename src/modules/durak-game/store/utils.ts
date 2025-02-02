@@ -4,7 +4,7 @@ import {
   isNotStartedGame,
   isStartedGame,
 } from "@/modules/durak-game/guards.js";
-import type { DurakGamesStore } from "@/modules/durak-game/durak-games-store-singleton.js";
+import type { DurakGamesStore } from "@/modules/durak-game/store/instance.js";
 import type PlayerWebSocketConnection from "@/module/DurakGame/player-websocket-connection.js";
 import type { Game } from "@/modules/durak-game/types.js";
 import type NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
