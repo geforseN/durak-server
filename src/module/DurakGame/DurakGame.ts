@@ -1,80 +1,53 @@
 import type { GameSettings } from "@durak-game/durak-dts";
-import Players from "@/module/DurakGame/entity/Players/Players.js";
-import GameRound from "@/module/DurakGame/entity/GameRound/index.js";
-import GameHistory from "@/module/DurakGame/entity/History.js";
-import Discard from "@/module/DurakGame/entity/Deck/Discard/index.js";
-import Talon from "@/module/DurakGame/entity/Deck/Talon/index.js";
-import { Desk } from "@/module/DurakGame/entity/index.js";
-import DeskSlots from "@/module/DurakGame/entity/DeskSlots/index.js";
-import { EmptyMoves } from "@/module/DurakGame/entity/GameRound/Moves.js";
+import type Players from "@/module/DurakGame/entity/Players/Players.js";
+import type GameRound from "@/module/DurakGame/entity/GameRound/index.js";
+import type GameHistory from "@/module/DurakGame/entity/History.js";
+import type Discard from "@/module/DurakGame/entity/Deck/Discard/index.js";
+import type Talon from "@/module/DurakGame/entity/Deck/Talon/index.js";
+import type PlayerWebSocketConnection from "@/module/DurakGame/player-websocket-connection.js";
 
 export default class DurakGame {
   constructor(
     public readonly id: string,
-    public readonly settings: GameSettings,
-    public players: Players,
-    public round: GameRound,
-    private decks: {
+    private readonly settings: GameSettings,
+    private readonly players: Players,
+    private readonly round: GameRound,
+    private readonly decks: {
       talon: Talon;
       discard: Discard;
       toJSON(): object;
     },
-    private history: GameHistory,
-    private readonly ending: {
-      execute: (game: DurakGame) => void;
+    private readonly history: GameHistory,
+    private readonly transit: {
+      toEnded: (game: DurakGame) => void;
+      toNextRound: (game: DurakGame, round: GameRound) => void;
     },
   ) {}
 
-  static create(id: string, settings: GameSettings) {
-    // prettier-ignore
-    return new DurakGame(
-      id,
-      settings,
-      new Players([]),
-      new GameRound(1, new Desk(new DeskSlots([])), new EmptyMoves()),
-      {
-        discard: new Discard([]),
-        talon: new Talon([]),
-        toJSON() {
-          return {
-            discard: this.discard.toJSON(),
-            talon: this.talon.toJSON(),
-          };
-        },
-      },
-      new GameHistory([]),
-      {
-        execute() {},
-      },
-    );
+  static from(_: unknown): DurakGame {
+    throw new Error("Method not implemented");
   }
 
-  get desk() {
-    return this.round.desk;
-  }
-
-  get talon() {
-    return this.decks.talon;
-  }
-
-  get discard() {
-    return this.decks.discard;
+  connect(connection: PlayerWebSocketConnection) {
+    const player = this.players.find((player) => connection.belongsTo(player));
+    connection.send(JSON.stringify(this.#toGameState(player)));
+    connection.applyTo(player, this.players);
   }
 
   withMove(move) {
     if (move.isInsertMove()) {
       move.makeCardInsert();
     }
-    this.round = this.round.withMove(move);
+    // this.round = this.round.withMove(move);
     const nextThing = move.gameMutationStrategy();
     if (nextThing?.kind === "RoundEnd") {
       nextThing.makeMutation();
       const { newGameRound } = nextThing;
       if (!newGameRound) {
-        this.ending.execute(this);
+        this.transit.toEnded(this);
       } else {
         this.history.rounds.add(this.round);
-        this.round = newGameRound;
+        this.transit.toNextRound(this, newGameRound);
       }
     }
   }
