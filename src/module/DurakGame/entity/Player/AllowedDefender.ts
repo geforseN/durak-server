@@ -1,4 +1,4 @@
-import DurakGame from "@/module/DurakGame/DurakGame.js";
+import type StartedDurakGame from "@/modules/durak-game/started/StartedDurakGame.js";
 import Card from "@/module/DurakGame/entity/Card/index.js";
 import DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
 import DefenderGaveUpMove from "@/module/DurakGame/entity/GameMove/DefenderGaveUpMove.js";
@@ -11,7 +11,7 @@ import { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 import { type SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
 
 export class AllowedDefender {
-  constructor(superPlayer: SuperPlayer, game: DurakGame) {
+  constructor(superPlayer: SuperPlayer, game: StartedDurakGame) {
     super(superPlayer, game);
   }
 

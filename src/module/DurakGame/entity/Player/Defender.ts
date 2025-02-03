@@ -1,4 +1,4 @@
-import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import type StartedDurakGame from "@/modules/durak-game/started/StartedDurakGame.js";
 
 import { AllowedDefender } from "@/module/DurakGame/entity/Player/AllowedDefender.js";
 import { type AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
@@ -11,7 +11,7 @@ export class Defender {
     super(basePlayer);
   }
 
-  asAllowed(game: DurakGame): AllowedSuperPlayer {
+  asAllowed(game: StartedDurakGame): AllowedSuperPlayer {
     return new AllowedDefender(this, game);
   }
 
@@ -24,7 +24,7 @@ export class Defender {
   }
 
   // REVIEW - code is smelly
-  canWinDefense(game: DurakGame) {
+  canWinDefense(game: StartedDurakGame) {
     try {
       return (
         //  below statement is for 2 players game:

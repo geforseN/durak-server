@@ -1,4 +1,4 @@
-import DurakGame from "@/module/DurakGame/DurakGame.js";
+import StartedDurakGame from "@/modules/durak-game/started/StartedDurakGame.js";
 import findInstantlyAndAfterTimeout from "@/utils/timeout/find-instantly-and-after-timeout.js";
 import {
   isNotStartedGame,
@@ -7,7 +7,7 @@ import {
 import type { DurakGamesStore } from "@/modules/durak-game/store/instance.js";
 import type PlayerWebSocketConnection from "@/module/DurakGame/player-websocket-connection.js";
 import type { Game } from "@/modules/durak-game/types.js";
-import type NonStartedDurakGame from "@/module/DurakGame/NonStartedDurakGame.js";
+import type NonStartedDurakGame from "@/modules/durak-game/non-started/NonStartedDurakGame.js";
 
 export async function findGameWithTimeout(
   store: DurakGamesStore,
@@ -32,7 +32,7 @@ export async function sleepUntilGameStart(
   store: DurakGamesStore,
   game: Game,
   connection: PlayerWebSocketConnection,
-  makeStartedGame: (nonStarted: NonStartedDurakGame) => DurakGame,
+  makeStartedGame: (nonStarted: NonStartedDurakGame) => StartedDurakGame,
 ) {
   if (isNotStartedGame(game)) {
     game.connect(connection);
@@ -45,7 +45,7 @@ export async function sleepUntilGameStart(
 function transformToStartedGameIfNeeded(
   store: DurakGamesStore,
   gameId: string,
-  makeStartedGame: (nonStarted: NonStartedDurakGame) => DurakGame,
+  makeStartedGame: (nonStarted: NonStartedDurakGame) => StartedDurakGame,
 ) {
   const gameInStore = store.require(gameId);
   if (isStartedGame(gameInStore)) {

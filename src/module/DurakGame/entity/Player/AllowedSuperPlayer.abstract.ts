@@ -2,7 +2,7 @@ import type { Card as CardDTO } from "@durak-game/durak-dts";
 
 import assert from "node:assert";
 
-import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import type StartedDurakGame from "@/modules/durak-game/started/StartedDurakGame.js";
 import type Card from "@/module/DurakGame/entity/Card/index.js";
 import type DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
 import type GameMove from "@/module/DurakGame/entity/GameMove/GameMove.abstract.js";
@@ -17,7 +17,7 @@ export abstract class AllowedSuperPlayer extends SuperPlayer {
 
   constructor(
     readonly superPlayer: SuperPlayer,
-    readonly game: DurakGame,
+    readonly game: StartedDurakGame,
   ) {
     super(superPlayer);
     this.superHand = new SuperHand(superPlayer.hand._cards);

@@ -1,6 +1,6 @@
 import assert from "node:assert";
 
-import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import type StartedDurakGame from "@/modules/durak-game/started/StartedDurakGame.js";
 import type Card from "@/module/DurakGame/entity/Card/index.js";
 import type DeskSlot from "@/module/DurakGame/entity/DeskSlot/index.js";
 import type { SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
@@ -10,7 +10,7 @@ import { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSupe
 import { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
 
 export class AllowedAttacker extends AllowedSuperPlayer {
-  constructor(superPlayer: SuperPlayer, game: DurakGame) {
+  constructor(superPlayer: SuperPlayer, game: StartedDurakGame) {
     super(superPlayer, game);
   }
 

@@ -1,4 +1,4 @@
-import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import type StartedDurakGame from "@/modules/durak-game/started/StartedDurakGame.js";
 
 import type Player from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 import Moves, { EmptyMoves, type Move } from "@/module/DurakGame/entity/GameRound/Moves.js";
@@ -33,7 +33,7 @@ class SettledGameRound {
     public readonly number: number,
     public desk: GameDesk,
     public moves: Moves,
-    private readonly game: DurakGame,
+    private readonly game: StartedDurakGame,
     readonly primalMove: Move,
   ) {}
 
@@ -79,7 +79,7 @@ class UnsettledGameRound {
     public readonly number: number,
     public desk: GameDesk,
     public moves: Moves,
-    private readonly game: DurakGame,
+    private readonly game: StartedDurakGame,
   ) {}
 
   asNext() {
