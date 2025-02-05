@@ -112,7 +112,7 @@ export default class Lobbies {
       pastLobby.removeUser(initiator.id);
     }
     const lobby = new Lobby(settings, this.#emitter);
-    lobby.insertUser(new LobbyUser(initiator), 0);
+    lobby.insertUser(new LobbyUser(initiator.id, initiator.profile, true), 0);
     return lobby;
   }
 
