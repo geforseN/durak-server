@@ -10,13 +10,15 @@ const nonStartedGamesStore = new MapEntityStore<NonStartedDurakGame>(
 );
 
 export const durakGamesStore = MapEntityStores.create([
-  {
-    For: NonStartedDurakGame,
-    store: nonStartedGamesStore,
-  },
+  // NOTE: order does matter, StartedDurakGame must be before NonStartedDurakGame, otherwise set will not work
+  // if EndedDurakGame will be here than must make it first
   {
     For: StartedDurakGame,
     store: startedGamesStore,
+  },
+  {
+    For: NonStartedDurakGame,
+    store: nonStartedGamesStore,
   },
 ] as const);
 
