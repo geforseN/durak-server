@@ -9,7 +9,7 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev:no-setup": "tsx watch --clear-screen=false --env-file=.env.development ./src/main.ts",
-    "dev": "tsx --env-file=.env.development.example $( [ -f .env.development ] && echo '--env-file=.env.development' ) scripts/dev.ts",
+    "dev": "tsx watch --clear-screen=false --env-file=.env.development src/main.ts",
     "lint": "eslint .",
     "test": "vitest",
     "build:railway": "tsc || true && tsc-alias",
