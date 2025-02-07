@@ -576,8 +576,8 @@ packages:
   '@prisma/fetch-engine@6.1.0':
     resolution: {integrity: sha512-asdFi7TvPlEZ8CzSZ/+Du5wZ27q6OJbRSXh+S8ISZguu+S9KtS/gP7NeXceZyb1Jv1SM1S5YfiCv+STDsG6rrg==}
 
-  '@prisma/generator-helper@6.1.0':
-    resolution: {integrity: sha512-drHaTKRmRsz6esHk2dpn7aPoxfttoqkYWSaI7zXsL5YQz73jww1YgJpGbPgOUiblriJAtdT4o7mibMqnf8TOsA==}
+  '@prisma/generator-helper@6.0.1':
+    resolution: {integrity: sha512-Qhli2Rtr0fyRcI490oLgSVlUSXp3cdbnL/yqrnChYyziourszWqqw7U5IEoOsvyWJ9iaOupduf9Sde7knUEA/Q==}
 
   '@prisma/get-platform@6.1.0':
     resolution: {integrity: sha512-ia8bNjboBoHkmKGGaWtqtlgQOhCi7+f85aOkPJKgNwWvYrT6l78KgojLekE8zMhVk0R9lWcifV0Pf8l3/15V0Q==}
@@ -2310,9 +2310,9 @@ snapshots:
       '@prisma/engines-version': 6.1.0-21.11f085a2012c0f4778414c8db2651556ee0ef959
       '@prisma/get-platform': 6.1.0
 
-  '@prisma/generator-helper@6.1.0':
+  '@prisma/generator-helper@6.0.1':
     dependencies:
-      '@prisma/debug': 6.1.0
+      '@prisma/debug': 6.0.1
 
   '@prisma/get-platform@6.1.0':
     dependencies:
