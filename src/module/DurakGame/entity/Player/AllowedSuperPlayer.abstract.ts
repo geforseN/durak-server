@@ -1,5 +1,3 @@
-import type { Card as CardDTO } from "@durak-game/durak-dts";
-
 import assert from "node:assert";
 
 import type StartedDurakGame from "@/modules/durak-game/started/StartedDurakGame.js";

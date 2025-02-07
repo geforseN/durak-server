@@ -1,4 +1,3 @@
-import type { Card } from "@durak-game/durak-dts";
 import type { User, UserProfile } from "@prisma/client";
 
 export default class LobbyUser {

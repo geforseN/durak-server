@@ -12,6 +12,7 @@ export type DefendedDeskSlotBase = Required<
 export default abstract class DeskSlot {
   attackCard?: Card;
   defendCard?: Card;
+  index: number;
 
   constructor(readonly index: number) {}
 
@@ -56,4 +57,26 @@ export default abstract class DeskSlot {
       index: this.index,
     };
   }
+
+  isEmpty(): this is EmptySlot {
+    return false;
+  }
+
+  isUnbeaten(): this is UnbeatenSlot {
+    return false;
+  }
+
+  isUnbeatenWithTrumpCard(): this is UnbeatenTrumpSlot {
+    return false;
+  }
+
+  abstract ensureAllowsTransferMoveForRank(_rank: Card["rank"]): Promise<void>;
+
+  abstract ensureCanBeAttacked(): Promise<void>;
+
+  abstract ensureCanBeDefended(_card: Card): Promise<void>;
+
+  abstract nextDeskSlot(_card: Card): DeskSlot | never;
+
+  abstract get value(): Card[];
 }

@@ -11,7 +11,11 @@ export default class UnbeatenTrumpSlot extends UnbeatenSlot {
     return true;
   }
 
-  override ensureCanBeDefended(card: Card) {
+  override isUnbeatenWithTrumpCard(): this is UnbeatenTrumpSlot {
+    return true;
+  }
+
+  override async ensureCanBeDefended(card: Card) {
     if (!card.isTrump) {
       throw new AllowedPlayerBadInputError(
         "A trump card can only be beaten with a trump card",

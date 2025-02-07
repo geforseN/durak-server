@@ -6,7 +6,6 @@ import {
   InsertDefendCardMove,
   StopDefenseMove,
 } from "@/module/DurakGame/entity/GameMove/index.js";
-import { AllowedSuperPlayer } from "@/module/DurakGame/entity/Player/AllowedSuperPlayer.abstract.js";
 import { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 import { type SuperPlayer } from "@/module/DurakGame/entity/Player/SuperPlayer.abstract.js";
 
