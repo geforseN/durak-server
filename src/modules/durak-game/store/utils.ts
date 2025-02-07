@@ -5,7 +5,7 @@ import {
   isStartedGame,
 } from "@/modules/durak-game/guards.js";
 import type { DurakGamesStore } from "@/modules/durak-game/store/instance.js";
-import type PlayerWebSocketConnection from "@/module/DurakGame/player-websocket-connection.js";
+import type PlayerWebSocketConnection from "@/modules/durak-game/websocket/player-websocket-connection.js";
 import type { Game } from "@/modules/durak-game/types.js";
 import type NonStartedDurakGame from "@/modules/durak-game/non-started/NonStartedDurakGame.js";
 
@@ -50,10 +50,12 @@ function transformToStartedGameIfNeeded(
   const gameInStore = store.require(gameId);
   if (isStartedGame(gameInStore)) {
     return;
-  } else if (!isNotStartedGame(gameInStore)) {
-    throw new Error("Unknown game type in game store, wanted 'non started'");
   }
-  store.set(makeStartedGame(gameInStore));
+  if (isNotStartedGame(gameInStore)) {
+    const startedGame = makeStartedGame(gameInStore);
+    return store.set(startedGame);
+  }
+  throw new Error("Unknown game type in game store, wanted 'non started'");
 }
 
 function requireStartedGame(store: DurakGamesStore, gameId: string) {
