@@ -12,5 +12,4 @@ export const sessionStore = new PrismaSessionStore(prisma, {
   loggerLevel: ["log", "warn", "error"],
 }) satisfies SessionStore;
 
-export { createSocketIoServer } from "./socket-io.js";
 export { prisma };

@@ -1,6 +1,5 @@
 import z from "zod";
 import { isDevelopment } from "std-env";
-import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 import { makeLoggerInstance } from "@/logger-instance.js";
 import { makeFastify } from "@/fastify.js";
 
@@ -16,11 +15,18 @@ const FastifyListerOptionsSchema = z.object({
     .default(() => (isDevelopment ? "localhost" : "0.0.0.0")),
 });
 
+process.on("uncaughtException", (error) => {
+  console.error("There was an uncaught error:", error);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
 const start = async () => {
   try {
     const nodeEnv = EnvSchema.parse(process.env).NODE_ENV;
     const loggerInstance = makeLoggerInstance(nodeEnv);
-    BasePlayer.configureDependencies();
     const fastifyListenOptions = FastifyListerOptionsSchema.transform(
       ({ PORT, HOST }) => ({
         port: PORT,

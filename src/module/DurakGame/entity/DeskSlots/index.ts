@@ -7,71 +7,66 @@ import raise from "@/common/raise.js";
 import EmptySlot from "@/module/DurakGame/entity/DeskSlot/EmptySlot.js";
 
 export default class DeskSlots {
-  readonly #value: DeskSlot[];
+  readonly #values: DeskSlot[];
 
-  constructor(length: number) {
-    this.#value = Array.from({ length }, (_, index) => new EmptySlot(index));
-  }
-
-  static __test_only_deskSlots(slotValues: [number, Card?, Card?][]) {
-    const slots = new DeskSlots(slotValues.length);
-    for (const [index, attackCard, defendCard] of slotValues) {
-      if (attackCard) {
-        slots.update(slots.at(index), attackCard);
-      }
-      if (defendCard) {
-        slots.update(slots.at(index), defendCard);
-      }
-    }
-    return slots;
-  }
-
-  *[Symbol.iterator]() {
-    yield* this.#value;
-  }
-
-  at(index: number): DeskSlot {
-    return this.#value.at(index) || raise();
-  }
-
-  async ensureAllowsTransferMove(card: Card): Promise<void> {
-    return void Promise.all(
-      this.#value.map((slot) =>
-        slot.ensureAllowsTransferMoveForRank(card.rank),
-      ),
-    );
-  }
-
-  someSlotHasSameRank(rank: Card["rank"]) {
-    return this.#value.some((slot) => slot.hasCardWith({ rank }));
-  }
-
-  toEmpty() {
-    return new DeskSlots(this.count);
-  }
-
-  update(slot: DeskSlot, card: Card) {
-    this.#value[slot.index] = slot.nextDeskSlot(card);
-  }
-
-  get cards(): Card[] {
-    return this.#value.flatMap((slot) => slot.value);
-  }
-
-  get cardsCount(): number {
-    return this.cards.length;
+  constructor(values: DeskSlot[]) {
+    this.#values = values;
   }
 
   get count() {
-    return this.#value.length;
+    return this.#values.length;
+  }
+
+  static clean(length: number) {
+    return new DeskSlots(
+      Array.from({ length }, (_, index) => new EmptySlot(index)),
+    );
+  }
+
+  at(index: number): DeskSlot {
+    return this.#values.at(index) || raise();
+  }
+
+  ensureAllowsTransferMove(card: Card) {
+    for (const slot of this.#values) {
+      slot.ensureAllowsTransferMove(card);
+    }
+  }
+
+  someSlotHasSameRank(rank: Card["rank"]) {
+    return this.#values.some((slot) =>
+      slot.cards.some((card) => card.rank.isEqualTo(rank)),
+    );
+  }
+
+  asClean() {
+    return DeskSlots.clean(this.#values.length);
+  }
+
+  with(slot: DeskSlot, card: Card) {
+    return new DeskSlots(
+      this.#values.with(slot.index, slot.nextDeskSlot(card)),
+    );
+  }
+
+  update(slot: DeskSlot, card: Card) {
+    this.#values[slot.index] = slot.nextDeskSlot(card);
+  }
+
+  get cards(): Card[] {
+    return this.#values.flatMap((slot) => slot.value);
   }
 
   get isEverySlotEmpty(): boolean {
-    return this.#value.every((slot) => slot.isEmpty());
+    return this.#values.every((slot) => slot.isEmpty());
   }
 
   get randomEmptySlot() {
-    const emptySlots = this.#value.filter((slot) => slot.isEmpty());
+    const emptySlots = this.#values.filter((slot) => slot.isEmpty());
     return emptySlots[randomInt(emptySlots.length)];
+  }
+
+  toJSON() {
+    return this.#values.map((slot) => slot.toJSON());
   }
 }

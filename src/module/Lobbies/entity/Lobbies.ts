@@ -1,9 +1,8 @@
-import EventEmitter from "events";
+import EventEmitter from "node:events";
 import assert from "node:assert";
 import type { User, UserProfile } from "@prisma/client";
 import type { InitialGameSettings } from "@durak-game/durak-dts";
 
-import durakGamesStore from "@/common/durakGamesStore.js";
 import raise from "@/common/raise.js";
 import { CustomWebsocketEvent, SocketsStore } from "@/ws/index.js";
 
@@ -14,6 +13,8 @@ import Lobby, {
   LobbyUserMoveEvent,
 } from "@/module/Lobbies/entity/Lobby.js";
 import LobbyUser from "@/module/Lobbies/entity/LobbyUser.js";
+import durakGamesStore from "@/modules/durak-game/store/instance.js";
+import makeNonStartedDurakGame from "@/modules/durak-game/non-started/make.js";
 
 export default class Lobbies {
   readonly #emitter: EventEmitter;
@@ -32,7 +33,13 @@ export default class Lobbies {
       })
       .on("lobby##upgrade", ({ lobby }: { lobby: Lobby }) => {
         this.#emitter.emit("lobby##remove", { lobby });
-        durakGamesStore.updateLobbyToNonStartedGame(lobby);
+        durakGamesStore.set(
+          makeNonStartedDurakGame({
+            id: lobby.id,
+            settings: lobby.settings,
+            lobbyUsers: lobby.userSlots.map(slot => slot.user),
+          }),
+        );
         const event = new LobbyUpgradeToNonStartedGameEvent(lobby);
         lobby.userSlots.forEach((slot) => {
           socketsStore.room(slot.user.id).emit(event);
@@ -82,7 +89,10 @@ export default class Lobbies {
       this.#store.get(lobbyId) || raise(new FindLobbyError()),
     ];
     if (!pastLobby) {
-      return desiredLobby.insertUser(new LobbyUser(user), slotIndex);
+      return desiredLobby.insertUser(
+        new LobbyUser(user.id, user.profile),
+        slotIndex,
+      );
     }
     if (pastLobby === desiredLobby) {
       return desiredLobby.moveUser(user.id, slotIndex);
@@ -108,7 +118,7 @@ export default class Lobbies {
       pastLobby.removeUser(initiator.id);
     }
     const lobby = new Lobby(settings, this.#emitter);
-    lobby.insertUser(new LobbyUser(initiator), 0);
+    lobby.insertUser(new LobbyUser(initiator.id, initiator.profile, true), 0);
     return lobby;
   }
 
@@ -164,10 +174,12 @@ class LobbyRemoveEvent extends CustomWebsocketEvent {
 
 class LobbyUpgradeToNonStartedGameEvent extends CustomWebsocketEvent {
   gameId;
+  lobby;
 
   constructor(lobby: Lobby) {
     super("lobby::upgrade");
     this.gameId = lobby.id;
+    this.lobby = lobby;
   }
 }
 

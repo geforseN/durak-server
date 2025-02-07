@@ -1,73 +1,120 @@
-import type DurakGame from "@/module/DurakGame/DurakGame.js";
+import type StartedDurakGame from "@/modules/durak-game/started/StartedDurakGame.js";
 
-import { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
-import GameRoundMoves from "@/module/DurakGame/entity/GameRound/GameRoundMoves.js";
+import type Player from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import Moves, { EmptyMoves, type Move } from "@/module/DurakGame/entity/GameRound/Moves.js";
+import GameDesk from "@/module/DurakGame/entity/Desk/index.js";
 
 export default class GameRound {
-  readonly game: DurakGame;
-  readonly moves: GameRoundMoves;
-  readonly number: number;
+  constructor(
+    public readonly number: number,
+    public desk: GameDesk,
+    public moves: Moves,
+    // HISTORY
+  ) {}
 
-  constructor(game: DurakGame, moves = new GameRoundMoves()) {
-    this.game = game;
-    this.number = (game.round?.number || 0) + 1;
-    this.moves = moves;
-    this.makeEmitAboutStart();
+  asNext() {
+    return new GameRound(
+      this.number + 1,
+      this.desk.withSameSettings(),
+      new EmptyMoves(),
+    );
   }
 
-  makeEmitAboutStart() {
-    this.game.info.namespace.emit("round::new", {
-      round: { number: this.number },
-    });
-    return this;
-  }
-
-  nextRound() {
-    return new GameRound(this.game)
-  }
-
-  // NOTE: primal attacker may not exist
-  // IF primal attacker does not exist THEN this.moves.primalAttackerMove will throw
-  // primal attacker may not exist because every move in game is transfer move (transfer can exist in perevodnoy durak)
-  // NOTE: primalAttacker actually can be not allowed for move in current time
-  // but in past time primalAttacker was allowed
-  // EXAMPLE:
-  // true => this.moves.primalAttackerMove.performer instanceof AllowedAttacker
-  // maybe => this.moves.primalAttackerMove.performer.asLatest() instanceof AllowedAttacker
-  // this is why type cast is used for return value
   toJSON() {
-    return { number: this.number };
+    return {
+      number: this.number,
+      desk: this.desk.toJSON(),
+    };
+  }
+}
+
+class SettledGameRound {
+  constructor(
+    public readonly number: number,
+    public desk: GameDesk,
+    public moves: Moves,
+    private readonly game: StartedDurakGame,
+    readonly primalMove: Move,
+  ) {}
+
+  asNext() {
+    return new GameRound(
+      this.number + 1,
+      this.desk.withSameSettings(),
+      new EmptyMoves(),
+      this.game,
+    );
   }
 
-  // so, because primal attacker incapsulated DurakGame instance on it is creation
-  get betterNextAttacker() {
-    return this.primalAttackerAsLatest.isAttacker()
-      ? this.game.players.defender.left
-      : this.game.players.attacker.left;
+  toJSON() {
+    return {
+      number: this.number,
+      desk: this.desk.toJSON(),
+    };
+  }
+
+  get allowedPlayer() {
+    return SOME_PLAYER;
   }
 
   get isAllowsTransferMove() {
-    try {
-      this.moves.firstRealDefenderMove;
-      return false;
-    } catch {
-      return true;
-    }
+    return false;
   }
 
-  get nextAttacker(): BasePlayer {
-    return this.game.players.attacker.id === this.primalAttacker.id
-      ? this.game.players.defender.left
-      : this.game.players.attacker.left;
+  get nextAttacker(): Player {
+    return TODO;
   }
 
-  // it is better to return a super class than a sub class
-  get primalAttacker(): BasePlayer | never {
-    return this.moves.primalMove.performer as BasePlayer;
+  get primalAttacker(): Player {
+    return TODO;
   }
 
-  // than now  primal attacker can get own latest instance in incapsulated game
-  get primalAttackerAsLatest(): BasePlayer {
-    return this.moves.primalMove.performer.asLatest();
+  get primalAttackerAsLatest(): Player {
+    return TODO;
+  }
+}
+
+class UnsettledGameRound {
+  constructor(
+    public readonly number: number,
+    public desk: GameDesk,
+    public moves: Moves,
+    private readonly game: StartedDurakGame,
+  ) {}
+
+  asNext() {
+    return new GameRound(
+      this.number + 1,
+      this.desk.withSameSettings(),
+      new EmptyMoves(),
+      this.game,
+    );
+  }
+
+  toJSON() {
+    return {
+      number: this.number,
+      desk: this.desk.toJSON(),
+    };
+  }
+
+  get allowedPlayer() {
+    return SOME_PLAYER;
+  }
+
+  get isAllowsTransferMove() {
+    return false;
+  }
+
+  get nextAttacker(): Player {
+    return TODO;
+  }
+
+  get primalAttacker() {
+    return undefined;
+  }
+
+  get primalAttackerAsLatest() {
+    return undefined;
   }
 }
