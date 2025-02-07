@@ -33,7 +33,13 @@ export default class Lobbies {
       })
       .on("lobby##upgrade", ({ lobby }: { lobby: Lobby }) => {
         this.#emitter.emit("lobby##remove", { lobby });
-        durakGamesStore.set(makeNonStartedDurakGame(lobby));
+        durakGamesStore.set(
+          makeNonStartedDurakGame({
+            id: lobby.id,
+            settings: lobby.settings,
+            lobbyUsers: lobby.userSlots.map(slot => slot.user),
+          }),
+        );
         const event = new LobbyUpgradeToNonStartedGameEvent(lobby);
         lobby.userSlots.forEach((slot) => {
           socketsStore.room(slot.user.id).emit(event);
