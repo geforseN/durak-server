@@ -46,7 +46,7 @@
     "@durak-game/durak-dts": "^0.5.1",
     "@tsconfig/node22": "^22.0.0",
     "@tsconfig/recommended": "^1.0.2",
-    "@types/node": "^20.6.1",
+    "@types/node": "^22.0.0",
     "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@vitest/eslint-plugin": "^1.1.15",
