@@ -6,19 +6,19 @@ import type {
 
 import { describe, expect, it, test } from "vitest";
 
-import TrumpCard from "@/module/DurakGame/entity/Card/TrumpCard.js";
+import TrumpCard from "@/module/DurakGame/entity/Card/trump-card.js";
 import { Card } from "@/module/DurakGame/entity/index.js";
 import buildTalon from "@/module/DurakGame/entity/Deck/Talon/buildTalon.js";
 
-describe("buildTalon work good", () => {
-  test.each([0, 1, -36, 54])("throws on wrong count=%i", (count) => {
+describe("buildTalon", () => {
+  test.each([0, 1, -36, 54])("throws on wrong count (%i)", (count) => {
     expect(() => {
       buildTalon({ count: count as TalonCardCount });
     }).toThrow();
   });
 
   test.each<TalonCardCount>([24, 36, 52])(
-    "correctly builded with count=%i",
+    "returns same number of cards for count=%i",
     (count) => {
       expect(buildTalon({ count })).toHaveLength(count);
     },
@@ -26,38 +26,42 @@ describe("buildTalon work good", () => {
 
   const trumpCard: CardDTO = { rank: "10", suit: "♠" };
 
-  const TALON_SETTINGS: GameSettings["talon"][] = [
+  const TALON_SETTINGS = [
     { count: 24, trumpCard },
     { count: 36, trumpCard },
     { count: 52, trumpCard },
-  ];
+  ] as const satisfies GameSettings["talon"][];
 
-  TALON_SETTINGS.forEach(({ count, trumpCard }) => {
-    let talonCards: ReturnType<typeof buildTalon>;
-    expect(() => {
-      talonCards = buildTalon({ count, trumpCard });
-    }).not.toThrow();
+  describe.each(TALON_SETTINGS)(
+    "talon with count=%i and trump card=%o",
+    (talonSettings) => {
+      let talonCards: ReturnType<typeof buildTalon>;
+      expect(() => {
+        talonCards = buildTalon(talonSettings);
+      }).not.toThrow();
 
-    describe("given trump card are correct in talon cards", () => {
-      it("has trump card as most bottom card", () => {
-        expect(talonCards[0]).toEqual({
-          isTrump: true,
-          power: expect.any(Number),
-          ...trumpCard,
+      describe("most bottom card", () => {
+        const talonTrumpCard = talonCards[0];
+        it("has isTrump=true and number power", () => {
+          expect(talonTrumpCard).toEqual({
+            isTrump: true,
+            power: expect.any(Number),
+            ...trumpCard,
+          });
+        });
+
+        it("is instance of TrumpCard", () => {
+          expect(talonTrumpCard).toBeInstanceOf(TrumpCard);
         });
       });
 
-      it("is instance of TrumpCard", () => {
-        expect(talonCards[0]).toBeInstanceOf(TrumpCard);
+      describe("trump cards", () => {
+        const trumpCardsCount = talonSettings.count / Card.suits.length;
+        it(`are in right amount (${trumpCardsCount})`, () => {
+          const trumpCards = talonCards.filter((card) => card.isTrump);
+          expect(trumpCards).toHaveLength(trumpCardsCount);
+        });
       });
-
-      it(`deck has right amount of trump cards=${
-        count / Card.suits.length
-      }`, () => {
-        expect(talonCards.filter((card) => card.isTrump)).toHaveLength(
-          count / Card.suits.length,
-        );
-      });
-    });
-  });
+    },
+  );
 });

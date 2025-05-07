@@ -9,7 +9,9 @@ export default function initializeChat() {
 
   return function getChatContext(socket: WebSocket, request: FastifyRequest) {
     socketsStore.add(socket);
-    socketsStore.room(request.session.user.id).add(socket);
+    if (request.session.user) {
+      socketsStore.room(request.session.user.id).add(socket);
+    }
     socket
       .addListener("socket", defaultListeners.socket)
       .addListener("message", defaultListeners.message);

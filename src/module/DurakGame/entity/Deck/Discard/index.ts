@@ -1,25 +1,20 @@
-import Deck from "@/module/DurakGame/entity/Deck/Deck.abstract.js";
+import Deck from "@/module/DurakGame/entity/Deck/deck.js";
 import type Card from "@/module/DurakGame/entity/Card/index.js";
-import { type CanReceiveCards } from "@/module/DurakGame/DurakGame.js";
-import type GameDiscardWebsocketService from "@/module/DurakGame/entity/Deck/Discard/Discard.service.js";
 
-export default class Discard extends Deck implements CanReceiveCards {
-  readonly #wsService: GameDiscardWebsocketService;
+export default class Discard {
+  #deck;
 
-  constructor(wsService: GameDiscardWebsocketService) {
-    super();
-    this.#wsService = wsService;
+  constructor(readonly cards: Card[]) {
+    this.#deck = new Deck(cards);
   }
 
-  receiveCards(...cards: Card[]): void {
-    const hasBeenEmptyBeforeReceive = this.isEmpty;
-    this.value.push(...cards);
-    this.#wsService?.emitReceivedCards(this, cards, hasBeenEmptyBeforeReceive);
+  withAdded(...cards: Card[]) {
+    return new Discard([...this.cards, ...cards]);
   }
 
   toJSON() {
     return {
-      isEmpty: this.isEmpty,
+      isEmpty: this.#deck.isEmpty,
     };
   }
 }

@@ -1,63 +1,36 @@
-import type { Card as CardDTO, Power, Rank, Suit } from "@durak-game/durak-dts";
-
-import { powers, ranks, suits } from "@durak-game/durak-dts";
+import type { CardDTO, Power, Rank, Suit } from "@durak-game/durak-dts";
+import { ranks, suits } from "@durak-game/durak-dts";
+import CardRank from "@/module/DurakGame/entity/Card/card-rank.js";
+import CardSuit from "@/module/DurakGame/entity/Card/card-suit.js";
 
 export type { Power, Rank, Suit };
 
 export default class Card {
-  static oneCharRank = ranks.map((v) => (v === "10" ? "0" : v));
-  static powers = powers;
   static ranks = ranks;
   static suits = suits;
 
-  readonly isTrump: boolean = false;
+  constructor(
+    readonly rank: CardRank,
+    readonly suit: CardSuit,
+  ) {}
 
-  readonly power: number;
-  readonly rank: Rank;
-
-  readonly suit: Suit;
-
-  constructor({ rank, suit }: CardDTO) {
-    this.rank = rank;
-    this.suit = suit;
-    this.power = Card.powers[rank];
+  static create(rank: Rank, suit: Suit) {
+    return new Card(new CardRank(rank), new CardSuit(suit));
   }
 
-  static isDTO(cardLike: unknown): cardLike is CardDTO {
-    return (
-      typeof cardLike === "object" &&
-      cardLike !== null &&
-      "rank" in cardLike &&
-      typeof cardLike.rank === "string" &&
-      "suit" in cardLike &&
-      typeof cardLike.suit === "string" &&
-      ranks.some((rank): rank is Card["rank"] => rank === cardLike.rank) &&
-      suits.some((suit): suit is Card["suit"] => suit === cardLike.suit)
-    );
+  isEqualTo(card: Card | CardDTO) {
+    const dto = card instanceof Card ? card.toJSON() : card;
+    return this.rank.isEqualTo(dto.rank) && this.suit.isEqualTo(dto.suit);
   }
 
-  static isString(string: string): string is ReturnType<Card["asString"]> {
-    return (
-      Card.oneCharRank.includes(string[0] as Card["rankAsOneChar"]) &&
-      Card.suits.includes(string[1] as Card["suit"])
-    );
-  }
-
-  asString(): `${Card["rankAsOneChar"]}${Card["suit"]}` {
-    return `${this.rankAsOneChar}${this.suit}`;
-  }
-
-  hasSame(cardProperties: Partial<CardDTO>): boolean {
-    return Object.entries(cardProperties).every(([key, value]) => {
-      return this[key as keyof this] === value;
-    });
+  toTwoCharString(): `${ReturnType<CardRank["toOneCharString"]>}${ReturnType<CardSuit["toString"]>}` {
+    return `${this.rank.toOneCharString()}${this.suit.toString()}`;
   }
 
   toJSON() {
-    return { rank: this.rank, suit: this.suit };
-  }
-
-  get rankAsOneChar() {
-    return this.rank === "10" ? "0" : this.rank;
+    return {
+      rank: this.rank.value,
+      suit: this.suit.value,
+    };
   }
 }

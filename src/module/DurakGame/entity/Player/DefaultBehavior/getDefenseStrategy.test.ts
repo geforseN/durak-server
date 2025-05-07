@@ -1,7 +1,7 @@
 import { describe, it } from "vitest";
 import assert from "node:assert";
 import Card, { Suit } from "@/module/DurakGame/entity/Card/index.js";
-import { TrumpCard } from "@/module/DurakGame/entity/Card/TrumpCard.js";
+import TrumpCard from "@/module/DurakGame/entity/Card/trump-card.js";
 import getDefenseStrategy, {
   cardsSort,
   slotsSort,
@@ -26,12 +26,12 @@ describe("getDefenseStrategy", () => {
         () => {
           getDefenseStrategy(
             [
-              new TrumpCard({ rank: "10", suit: TRUMP_SUIT }),
-              new TrumpCard({ rank: "4", suit: TRUMP_SUIT }),
+              TrumpCard.create("10", TRUMP_SUIT),
+              TrumpCard.create("4", TRUMP_SUIT),
             ],
             [
-              new TrumpCard({ rank: "J", suit: TRUMP_SUIT }),
-              new TrumpCard({ rank: "2", suit: TRUMP_SUIT }),
+              TrumpCard.create("J", TRUMP_SUIT),
+              TrumpCard.create("2", TRUMP_SUIT),
             ],
           );
         },
@@ -43,16 +43,13 @@ describe("getDefenseStrategy", () => {
   describe("defense of trump unbeaten cards with best trump cards", () => {
     const { defenseStrategy, remainingDefenderTrumpCards } = getDefenseStrategy(
       [
-        new TrumpCard({ rank: "J", suit: TRUMP_SUIT }),
-        new TrumpCard({ rank: "6", suit: TRUMP_SUIT }),
-        new TrumpCard({ rank: "9", suit: TRUMP_SUIT }),
-        new TrumpCard({ rank: "K", suit: TRUMP_SUIT }),
-        new TrumpCard({ rank: "A", suit: TRUMP_SUIT }),
+        TrumpCard.create("J", TRUMP_SUIT),
+        TrumpCard.create("6", TRUMP_SUIT),
+        TrumpCard.create("9", TRUMP_SUIT),
+        TrumpCard.create("K", TRUMP_SUIT),
+        TrumpCard.create("A", TRUMP_SUIT),
       ],
-      [
-        new TrumpCard({ rank: "Q", suit: TRUMP_SUIT }),
-        new TrumpCard({ rank: "8", suit: TRUMP_SUIT }),
-      ],
+      [TrumpCard.create("Q", TRUMP_SUIT), TrumpCard.create("8", TRUMP_SUIT)],
     );
 
     it("correct remained defender trump cards count", () => {
@@ -63,9 +60,9 @@ describe("getDefenseStrategy", () => {
       assert.deepStrictEqual(
         [...remainingDefenderTrumpCards].sort(cardsSort),
         [
-          new TrumpCard({ rank: "A", suit: TRUMP_SUIT }),
-          new TrumpCard({ rank: "6", suit: TRUMP_SUIT }),
-          new TrumpCard({ rank: "J", suit: TRUMP_SUIT }),
+          TrumpCard.create("A", TRUMP_SUIT),
+          TrumpCard.create("6", TRUMP_SUIT),
+          TrumpCard.create("J", TRUMP_SUIT),
         ].sort(cardsSort),
       );
     });
@@ -75,12 +72,12 @@ describe("getDefenseStrategy", () => {
         [...defenseStrategy].sort(slotsSort),
         [
           {
-            attackCard: new TrumpCard({ rank: "Q", suit: TRUMP_SUIT }),
-            defendCard: new TrumpCard({ rank: "K", suit: TRUMP_SUIT }),
+            attackCard: TrumpCard.create("Q", TRUMP_SUIT),
+            defendCard: TrumpCard.create("K", TRUMP_SUIT),
           },
           {
-            attackCard: new TrumpCard({ rank: "8", suit: TRUMP_SUIT }),
-            defendCard: new TrumpCard({ rank: "9", suit: TRUMP_SUIT }),
+            attackCard: TrumpCard.create("8", TRUMP_SUIT),
+            defendCard: TrumpCard.create("9", TRUMP_SUIT),
           },
         ].sort(slotsSort),
       );
@@ -90,18 +87,18 @@ describe("getDefenseStrategy", () => {
   describe("defense of trump unbeaten cards with best trump cards 2", () => {
     const { defenseStrategy, remainingDefenderTrumpCards } = getDefenseStrategy(
       [
-        new TrumpCard({ rank: "Q", suit: TRUMP_SUIT }),
-        new TrumpCard({ rank: "9", suit: TRUMP_SUIT }),
-        new TrumpCard({ rank: "K", suit: TRUMP_SUIT }),
-        new Card({ rank: "J", suit: WEAK_SUITS["♦"] }),
-        new Card({ rank: "K", suit: WEAK_SUITS["♥"] }),
+        TrumpCard.create("Q", TRUMP_SUIT),
+        TrumpCard.create("9", TRUMP_SUIT),
+        TrumpCard.create("K", TRUMP_SUIT),
+        Card.create("J", WEAK_SUITS["♦"]),
+        Card.create("K", WEAK_SUITS["♥"]),
       ],
       [
-        new TrumpCard({ rank: "10", suit: TRUMP_SUIT }),
-        new TrumpCard({ rank: "8", suit: TRUMP_SUIT }),
-        new Card({ rank: "A", suit: WEAK_SUITS["♥"] }),
-        new Card({ rank: "10", suit: WEAK_SUITS["♦"] }),
-        new Card({ rank: "Q", suit: WEAK_SUITS["♥"] }),
+        TrumpCard.create("10", TRUMP_SUIT),
+        TrumpCard.create("8", TRUMP_SUIT),
+        Card.create("A", WEAK_SUITS["♥"]),
+        Card.create("10", WEAK_SUITS["♦"]),
+        Card.create("Q", WEAK_SUITS["♥"]),
       ],
       logger,
     );
@@ -115,27 +112,27 @@ describe("getDefenseStrategy", () => {
         [...defenseStrategy].sort(slotsSort),
         [
           {
-            attackCard: new Card({ rank: "Q", suit: WEAK_SUITS["♥"] }),
-            defendCard: new Card({ rank: "K", suit: WEAK_SUITS["♥"] }),
+            attackCard: Card.create("Q", WEAK_SUITS["♥"]),
+            defendCard: Card.create("K", WEAK_SUITS["♥"]),
           },
           {
-            attackCard: new Card({ rank: "A", suit: WEAK_SUITS["♥"] }),
-            defendCard: new TrumpCard({ rank: "K", suit: TRUMP_SUIT }),
+            attackCard: Card.create("A", WEAK_SUITS["♥"]),
+            defendCard: TrumpCard.create("K", TRUMP_SUIT),
           },
           {
-            attackCard: new TrumpCard({ rank: "10", suit: TRUMP_SUIT }),
-            defendCard: new TrumpCard({ rank: "Q", suit: TRUMP_SUIT }),
+            attackCard: TrumpCard.create("10", TRUMP_SUIT),
+            defendCard: TrumpCard.create("Q", TRUMP_SUIT),
           },
           {
-            attackCard: new TrumpCard({ rank: "8", suit: TRUMP_SUIT }),
-            defendCard: new TrumpCard({ rank: "9", suit: TRUMP_SUIT }),
+            attackCard: TrumpCard.create("8", TRUMP_SUIT),
+            defendCard: TrumpCard.create("9", TRUMP_SUIT),
           },
           {
-            attackCard: new Card({ rank: "10", suit: WEAK_SUITS["♦"] }),
-            defendCard: new Card({ rank: "J", suit: WEAK_SUITS["♦"] }),
+            attackCard: Card.create("10", WEAK_SUITS["♦"]),
+            defendCard: Card.create("J", WEAK_SUITS["♦"]),
           },
         ].sort(slotsSort),
       );
     });
-  })
+  });
 });

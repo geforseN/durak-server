@@ -2,13 +2,23 @@
   "include": [
     "src/**/*.ts"
   ],
+  "exclude": [
+    "prisma/**/*"
+  ],
   "extends": "@tsconfig/node22/tsconfig.json",
   "compilerOptions": {
+    "lib": [
+      "ESNext"
+    ],
+    "target": "ESNext",
     "baseUrl": ".",
     "paths": {
       "@/*": [
         "./src/*"
-      ]
+      ],
+      "@@/*": [
+        "./*"
+      ],
     },
     "outDir": "./dist",
     "declaration": true,

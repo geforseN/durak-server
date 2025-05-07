@@ -3,7 +3,7 @@ import type { CardDTO, GameSettings, Suit } from "@durak-game/durak-dts";
 import assert from "node:assert";
 import crypto from "node:crypto";
 
-import TrumpCard from "@/module/DurakGame/entity/Card/TrumpCard.js";
+import TrumpCard from "@/module/DurakGame/entity/Card/trump-card.js";
 import Card from "@/module/DurakGame/entity/Card/index.js";
 
 export default function buildTalon({
@@ -24,9 +24,7 @@ export default function buildTalon({
   );
   if (trumpCard) {
     assert.ok(
-      nonShuffledDeck.some((card) =>
-        card.hasSame({ rank: trumpCard.rank, suit: trumpCard.suit }),
-      ),
+      nonShuffledDeck.some((card) => card.isEqualTo(trumpCard)),
       "The trump card you provided does not exist on deck. Probably, the rank of card is to low",
     );
   }
@@ -39,7 +37,7 @@ export default function buildTalon({
   return shuffledCards.map(
     // NOTE - make card with trump suit TrumpCard, otherwise return same card
     (card, _, cards) =>
-      card.suit === cards[0].suit ? new TrumpCard(card) : card,
+      card.suit === cards[0].suit ? TrumpCard.from(card) : card,
   );
 }
 
@@ -47,7 +45,7 @@ function getCardsOfSuit(suit: Suit, maxCardsPerSuit: number) {
   return [...Card.ranks]
     .reverse()
     .filter((_, index) => index < maxCardsPerSuit)
-    .map((rank) => new Card({ rank, suit }));
+    .map((rank) => Card.create(rank, suit));
 }
 
 function makeModernFisherYatesShuffle(deck: Card[]) {
@@ -62,10 +60,8 @@ function withCorrectTrumpCard(deck: Card[], correctTrumpCard?: CardDTO) {
   if (!correctTrumpCard) {
     return deck;
   }
-  const correctTrumpCardIndex = deck.findIndex(
-    (card) =>
-      card.suit === correctTrumpCard.suit &&
-      card.rank === correctTrumpCard.rank,
+  const correctTrumpCardIndex = deck.findIndex((card) =>
+    card.isEqualTo(correctTrumpCard),
   );
   assert.ok(correctTrumpCardIndex >= 0);
   if (correctTrumpCardIndex === 0) {

@@ -35,10 +35,11 @@ export default function getDefenseStrategy(
       unbeatenDeskCards
         .filter((card) => !card.isTrump)
         .reduce<Record<Suit, Card[]>>((record, card) => {
-          if (!record[card.suit]) {
-            record[card.suit] = [];
+          const suit = card.suit.value;
+          if (!record[suit]) {
+            record[suit] = [];
           }
-          record[card.suit]!.push(card);
+          record[suit]!.push(card);
           return record;
         }, {} as Record<Suit, Card[]>),
     ).map(

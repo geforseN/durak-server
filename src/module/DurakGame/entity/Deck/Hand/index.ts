@@ -1,20 +1,22 @@
 import assert from "node:assert";
 
 import Card from "@/module/DurakGame/entity/Card/index.js";
-import Deck from "@/module/DurakGame/entity/Deck/Deck.abstract.js";
+import Deck from "@/module/DurakGame/entity/Deck/deck.js";
 
-export default class Hand extends Deck {
-  constructor(cards?: Card[]);
-  constructor(hand?: Hand);
-  constructor(data?: Card[] | Hand) {
-    super(data instanceof Hand ? data.value : data);
+export default class Hand {
+  constructor(readonly deck: Deck) {}
+
+  static create(payload?: Card[] | Hand) {
+    const deck =
+      payload instanceof Hand ? payload.deck : new Deck(payload || []);
+    return new Hand(deck);
   }
 
   [Symbol.toPrimitive](hint: "default" | "number" | "string") {
     if (hint === "number") {
-      return this.count;
+      return this.deck.count;
     }
-    if (hint === 'string') {
+    if (hint === "string") {
       return this.toString();
     }
   }
@@ -23,31 +25,17 @@ export default class Hand extends Deck {
     cb: (card: Card, index: number) => boolean,
     notFoundMessage = "У вас нет такой карты",
   ) {
-    const card = this.value.find(cb);
+    const card = this.deck.cards.find(cb);
     assert.ok(card, notFoundMessage);
     return card;
   }
 
-  getValidCard(cardLike: unknown) {
-    if (cardLike instanceof Card) {
-      assert.ok(this.value.includes(cardLike));
-      return cardLike;
-    }
-    if (typeof cardLike === "string" && Card.isString(cardLike)) {
-      return this.get((card) => card.asString() === cardLike);
-    }
-    assert.ok(Card.isDTO(cardLike));
-    return this.get((card) =>
-      card.hasSame({ rank: cardLike.rank, suit: cardLike.suit }),
-    );
-  }
-
-  receive(cards: Card[]): void {
-    this.value.push(...cards);
+  withAdded(cards: Card[]) {
+    return new Hand(new Deck([...this.deck.cards, ...cards]));
   }
 
   toDebugJSON() {
-    return this.value.map((card, index) => {
+    return this.deck.cards.map((card, index) => {
       return {
         index,
         ...card.toJSON(),
@@ -57,10 +45,10 @@ export default class Hand extends Deck {
   }
 
   toJSON() {
-    return this.value.map((card) => card.toJSON());
+    return this.deck.cards.map((card) => card.toJSON());
   }
 
   toString() {
-    return this.value.map((card, index) => `[${index}:${card}]`).join(" ");
+    return this.deck.cards.map((card, index) => `[${index}:${card}]`).join(" ");
   }
 }

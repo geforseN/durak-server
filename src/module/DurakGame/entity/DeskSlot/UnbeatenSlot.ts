@@ -4,31 +4,32 @@ import DeskSlot from "@/module/DurakGame/entity/DeskSlot/DeskSlot.abstract.js";
 import { DefendedSlot } from "@/module/DurakGame/entity/DeskSlot/index.js";
 
 export default class UnbeatenSlot extends DeskSlot {
-  constructor(index: number, public attackCard: Card) {
+  constructor(
+    index: number,
+    public attackCard: Card,
+  ) {
     super(index);
   }
 
-  override async ensureAllowsTransferMoveForRank(
-    rank: Card["rank"],
-  ): Promise<void> {
-    if (this.attackCard.hasSame({ rank })) {
+  override ensureAllowsTransferMove(card: Card) {
+    if (this.attackCard.rank.isEqualTo(card.rank)) {
       return;
     }
     throw new AllowedPlayerBadInputError(
-      `The card you threw has wrong rank, allowed rank is ${rank}`,
+      `The card you threw has wrong rank, allowed rank is ${card.rank}`,
       {
         header: "Transfer move attempt",
       },
     );
   }
 
-  override async ensureCanBeAttacked() {
+  override ensureCanBeAttacked() {
     throw new AllowedPlayerBadInputError("The slot already attacked", {
       header: "Attack move attempt",
     });
   }
 
-  override async ensureCanBeDefended(card: Card) {
+  override ensureCanBeDefended(card: Card) {
     if (card.isTrump) {
       return;
     }

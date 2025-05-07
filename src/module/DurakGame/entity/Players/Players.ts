@@ -1,13 +1,18 @@
 import assert from "node:assert";
 
 import type { Attacker } from "@/module/DurakGame/entity/Player/Attacker.js";
-import type { BasePlayer } from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
+import type Player from "@/module/DurakGame/entity/Player/BasePlayer.abstract.js";
 import type { Defender } from "@/module/DurakGame/entity/Player/Defender.js";
 
-export class Players {
-  readonly #value: BasePlayer[];
+export class SettledPlayers {
+  // here will be primal attacker
+  // here will be primal defender
+}
 
-  constructor(value: BasePlayer[]) {
+export class Players {
+  readonly #value: Player[];
+
+  constructor(value: Player[]) {
     this.#value = value;
   }
 
@@ -15,40 +20,40 @@ export class Players {
     yield* this.#value;
   }
 
-  get(
-    _cb: (_player: BasePlayer) => boolean,
-    _notFoundMessage?: string,
-  ): BasePlayer;
+  find(cb: (_player: Player) => boolean) {
+    return this.#value.find(cb);
+  }
 
-  get<PlayerToFind extends BasePlayer>(
-    _cb: (p: BasePlayer) => p is PlayerToFind,
+  get(
+    _cb: (_player: Player) => boolean,
+    _notFoundMessage?: string,
+  ): Player;
+
+  get<PlayerToFind extends Player>(
+    _cb: (p: Player) => p is PlayerToFind,
     _notFoundMessage?: string,
   ): PlayerToFind;
 
   get(
-    cb: (_player: BasePlayer) => boolean,
+    cb: (_player: Player) => boolean,
     notFoundMessage = "Игрок не найден",
-  ): BasePlayer {
+  ): Player {
     const player = this.#value.find(cb);
     assert.ok(player, notFoundMessage);
     return player;
   }
 
-  mutateWith(updatedPlayer: BasePlayer) {
-    const player: BasePlayer | never = this.get(
-      (player) => player.id === updatedPlayer.id,
-    );
+  with(player: Player) {
+    const linkedPlayer = new LinkedPlayer(player.asLinked());
     const index = this.#value.indexOf(player);
-    this.#value[index] = updatedPlayer;
-    updatedPlayer.becomeUpdated(player);
-    updatedPlayer.emitKind();
-    return this;
+    const players = this.#value.with(index, linkedPlayer);
+    return new Players(players);
   }
 
   remove(
-    cb: (_player: BasePlayer) => boolean,
+    cb: (_player: Player) => boolean,
     notRemovedMessage?: string,
-  ): BasePlayer {
+  ): Player {
     const playerIndex = this.#value.findIndex(cb);
     assert.ok(playerIndex, notRemovedMessage);
     const [player] = this.#value.splice(playerIndex, 1);
@@ -81,3 +86,5 @@ export class Players {
     );
   }
 }
+
+export default Players;

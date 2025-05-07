@@ -8,11 +8,13 @@
   },
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "dev": "tsx --env-file=.env.development.example $( [ -f .env.development ] && echo '--env-file=.env.development' ) scripts/dev.ts",
+    "dev:no-setup": "tsx watch --clear-screen=false --env-file=.env.development ./src/main.ts",
+    "dev": "tsx watch --clear-screen=false --env-file=.env.development src/main.ts",
     "lint": "eslint .",
     "test": "vitest",
     "build:railway": "tsc || true && tsc-alias",
-    "start:railway": "prisma generate && node dist/main.js"
+    "start:railway": "prisma generate && node dist/main.js",
+    "generate-zod-from-prisma": "npx prisma generate zod"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +24,7 @@
     "@fastify/cookie": "^11.0.1",
     "@fastify/cors": "^10.0.1",
     "@fastify/formbody": "^8.0.1",
+    "@fastify/sensible": "^6.0.2",
     "@fastify/session": "^11.0.1",
     "@fastify/swagger": "^9.4.0",
     "@fastify/swagger-ui": "^5.2.0",
@@ -36,17 +39,17 @@
     "fastify-type-provider-zod": "^4.0.2",
     "fastify-zod-openapi": "^3.0.4",
     "pino": "^9.5.0",
-    "socket.io": "^4.7.2",
     "std-env": "^3.8.0",
     "swagger-themes": "^1.4.3",
     "zod": "^3.22.2",
-    "zod-openapi": "^4.1.0"
+    "zod-openapi": "^4.1.0",
+    "zod-prisma-types": "^3.2.1"
   },
   "devDependencies": {
     "@durak-game/durak-dts": "^0.5.1",
     "@tsconfig/node22": "^22.0.0",
     "@tsconfig/recommended": "^1.0.2",
-    "@types/node": "^20.6.1",
+    "@types/node": "^22.10.2",
     "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@vitest/eslint-plugin": "^1.1.15",
@@ -57,7 +60,8 @@
     "tsc-alias": "^1.8.10",
     "tsx": "^4.19.2",
     "types-fastify-socket.io": "^0.0.1",
-    "typescript": "^5.1.6",
-    "vitest": "~2.1.8"
+    "typescript": "^5.7.2",
+    "vitest": "~2.1.8",
+    "zod-prisma-types": "^3.2.1"
   }
 }
