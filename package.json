@@ -26,7 +26,7 @@
     "@fastify/swagger": "^9.4.0",
     "@fastify/swagger-ui": "^5.2.0",
     "@fastify/websocket": "^11.0.1",
-    "@joggr/fastify-prisma": "^5.0.0",
+    "@joggr/fastify-prisma": "^6.0.0",
     "@prisma/client": "^6.0.1",
     "@quixo3/prisma-session-store": "^3.1.13",
     "@socket.io/admin-ui": "^0.5.1",
