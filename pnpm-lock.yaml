@@ -88,8 +88,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.8
       '@types/node':
-        specifier: ^20.6.1
-        version: 20.17.9
+        specifier: ^22.0.0
+        version: 22.18.12
       '@types/ws':
         specifier: ^8.5.13
         version: 8.5.13
@@ -98,7 +98,7 @@ importers:
         version: 8.18.0(@typescript-eslint/parser@6.21.0(eslint@9.16.0)(typescript@5.7.2))(eslint@9.16.0)(typescript@5.7.2)
       '@vitest/eslint-plugin':
         specifier: ^1.1.15
-        version: 1.1.15(@typescript-eslint/utils@8.18.0(eslint@9.16.0)(typescript@5.7.2))(eslint@9.16.0)(typescript@5.7.2)(vitest@2.1.8(@types/node@20.17.9))
+        version: 1.1.15(@typescript-eslint/utils@8.18.0(eslint@9.16.0)(typescript@5.7.2))(eslint@9.16.0)(typescript@5.7.2)(vitest@2.1.8(@types/node@22.18.12))
       eslint:
         specifier: ^9.16.0
         version: 9.16.0
@@ -125,7 +125,7 @@ importers:
         version: 5.7.2
       vitest:
         specifier: ~2.1.8
-        version: 2.1.8(@types/node@20.17.9)
+        version: 2.1.8(@types/node@22.18.12)
 
 packages:
 
@@ -663,8 +663,8 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
-  '@types/node@20.17.9':
-    resolution: {integrity: sha512-0JOXkRyLanfGPE2QRCwgxhzlBAvaRdCNMcvbd7jFfpmD4eEXll7LRwy5ymJmyeZqk7Nh7eD2LeUyQ68BbndmXw==}
+  '@types/node@22.18.12':
+    resolution: {integrity: sha512-BICHQ67iqxQGFSzfCFTT7MRQ5XcBjG5aeKh5Ok38UBbPe5fxTyE+aHFxwVrGyr8GNlqFMLKD1D3P2K/1ks8tog==}
 
   '@types/ws@8.5.13':
     resolution: {integrity: sha512-osM/gWBTPKgHV8XkTunnegTRIsvF6owmf5w+JtAfOw472dptdm0dlGv4xCt6GwQRcC2XVOvvRE/0bAoQcL2QkA==}
@@ -1779,8 +1779,8 @@ packages:
     resolution: {integrity: sha512-KPHm4VL5dDXKz01UuEd88Df+KzynaohSL9fBh096KWAxSKZQDI2uBrVqtvRM4rwrIrRRKsdLNML/lnaaVSRioA==}
     engines: {node: '>= 0.8'}
 
-  undici-types@6.19.8:
-    resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
@@ -2327,19 +2327,19 @@ snapshots:
 
   '@types/cors@2.8.17':
     dependencies:
-      '@types/node': 20.17.9
+      '@types/node': 22.18.12
 
   '@types/estree@1.0.6': {}
 
   '@types/json-schema@7.0.15': {}
 
-  '@types/node@20.17.9':
+  '@types/node@22.18.12':
     dependencies:
-      undici-types: 6.19.8
+      undici-types: 6.21.0
 
   '@types/ws@8.5.13':
     dependencies:
-      '@types/node': 20.17.9
+      '@types/node': 22.18.12
 
   '@typescript-eslint/eslint-plugin@8.18.0(@typescript-eslint/parser@6.21.0(eslint@9.16.0)(typescript@5.7.2))(eslint@9.16.0)(typescript@5.7.2)':
     dependencies:
@@ -2446,13 +2446,13 @@ snapshots:
       '@typescript-eslint/types': 8.18.0
       eslint-visitor-keys: 4.2.0
 
-  '@vitest/eslint-plugin@1.1.15(@typescript-eslint/utils@8.18.0(eslint@9.16.0)(typescript@5.7.2))(eslint@9.16.0)(typescript@5.7.2)(vitest@2.1.8(@types/node@20.17.9))':
+  '@vitest/eslint-plugin@1.1.15(@typescript-eslint/utils@8.18.0(eslint@9.16.0)(typescript@5.7.2))(eslint@9.16.0)(typescript@5.7.2)(vitest@2.1.8(@types/node@22.18.12))':
     dependencies:
       '@typescript-eslint/utils': 8.18.0(eslint@9.16.0)(typescript@5.7.2)
       eslint: 9.16.0
     optionalDependencies:
       typescript: 5.7.2
-      vitest: 2.1.8(@types/node@20.17.9)
+      vitest: 2.1.8(@types/node@22.18.12)
 
   '@vitest/expect@2.1.8':
     dependencies:
@@ -2461,13 +2461,13 @@ snapshots:
       chai: 5.1.2
       tinyrainbow: 1.2.0
 
-  '@vitest/mocker@2.1.8(vite@5.0.0(@types/node@20.17.9))':
+  '@vitest/mocker@2.1.8(vite@5.0.0(@types/node@22.18.12))':
     dependencies:
       '@vitest/spy': 2.1.8
       estree-walker: 3.0.3
       magic-string: 0.30.15
     optionalDependencies:
-      vite: 5.0.0(@types/node@20.17.9)
+      vite: 5.0.0(@types/node@22.18.12)
 
   '@vitest/pretty-format@2.1.8':
     dependencies:
@@ -2691,7 +2691,7 @@ snapshots:
     dependencies:
       '@types/cookie': 0.4.1
       '@types/cors': 2.8.17
-      '@types/node': 20.17.9
+      '@types/node': 22.18.12
       accepts: 1.3.8
       base64id: 2.0.0
       cookie: 0.7.2
@@ -3510,7 +3510,7 @@ snapshots:
     dependencies:
       random-bytes: 1.0.0
 
-  undici-types@6.19.8: {}
+  undici-types@6.21.0: {}
 
   uri-js@4.4.1:
     dependencies:
@@ -3520,13 +3520,13 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite-node@2.1.8(@types/node@20.17.9):
+  vite-node@2.1.8(@types/node@22.18.12):
     dependencies:
       cac: 6.7.14
       debug: 4.4.0
       es-module-lexer: 1.5.4
       pathe: 1.1.2
-      vite: 5.0.0(@types/node@20.17.9)
+      vite: 5.0.0(@types/node@22.18.12)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -3537,19 +3537,19 @@ snapshots:
       - supports-color
       - terser
 
-  vite@5.0.0(@types/node@20.17.9):
+  vite@5.0.0(@types/node@22.18.12):
     dependencies:
       esbuild: 0.19.5
       postcss: 8.4.31
       rollup: 4.4.1
     optionalDependencies:
-      '@types/node': 20.17.9
+      '@types/node': 22.18.12
       fsevents: 2.3.3
 
-  vitest@2.1.8(@types/node@20.17.9):
+  vitest@2.1.8(@types/node@22.18.12):
     dependencies:
       '@vitest/expect': 2.1.8
-      '@vitest/mocker': 2.1.8(vite@5.0.0(@types/node@20.17.9))
+      '@vitest/mocker': 2.1.8(vite@5.0.0(@types/node@22.18.12))
       '@vitest/pretty-format': 2.1.8
       '@vitest/runner': 2.1.8
       '@vitest/snapshot': 2.1.8
@@ -3565,11 +3565,11 @@ snapshots:
       tinyexec: 0.3.1
       tinypool: 1.0.2
       tinyrainbow: 1.2.0
-      vite: 5.0.0(@types/node@20.17.9)
-      vite-node: 2.1.8(@types/node@20.17.9)
+      vite: 5.0.0(@types/node@22.18.12)
+      vite-node: 2.1.8(@types/node@22.18.12)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 20.17.9
+      '@types/node': 22.18.12
     transitivePeerDependencies:
       - less
       - lightningcss
